@@ -1,4 +1,4 @@
-name: Deploy isolated R5 preview
+name: Deploy isolated R5.1 preview
 on:
   push:
     branches: [main]
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Verify audited static bundle
-        run: echo "8709b8d4f18738774453f72a88c1aa6b06d45e696913dd04aa3b7ea7c2b81df4  site.zip" | sha256sum --check --strict
+        run: echo "babf55b96b41bed061ff4f3bb93667cb2beaf4f99bc43d099ffedfc3722dbf93  site.zip" | sha256sum --check --strict
       - name: Extract frontend only
         run: unzip -q site.zip -d _site
       - uses: actions/configure-pages@v5
