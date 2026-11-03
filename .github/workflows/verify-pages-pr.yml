@@ -1,0 +1,35 @@
+name: Verify TCL Pages release PR
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify-pages-release:
+    name: verify-pages-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify all PR classes using pinned baseline policy
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # Run the verifier from the PR base, never the candidate release ZIP.
+          if git cat-file -e "$PR_BASE_SHA:release-ci/release_guard.py" 2>/dev/null; then
+            git show "$PR_BASE_SHA:release-ci/release_guard.py" > "$RUNNER_TEMP/tcl-trusted-gate.py"
+            python3 "$RUNNER_TEMP/tcl-trusted-gate.py" --verify-pr "$PR_BASE_SHA" "$PR_HEAD_SHA"
+          else
+            # First installation is a separately reviewed, non-release PR.
+            CHANGED="$(git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" | sort)"
+            EXPECTED="$(printf '.github/workflows/verify-pages-pr.yml\nrelease-ci/release_guard.py\nrelease-ci/test_release_guard.py' | sort)"
+            [[ "$CHANGED" == "$EXPECTED" ]] || { echo 'Bootstrap must contain exactly the three CI files'; exit 21; }
+            python3 release-ci/test_release_guard.py
+          fi
