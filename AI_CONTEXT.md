@@ -31,20 +31,33 @@
 
 ## 当前已验证的业务发布
 
-PR #5已合并，v0.9.1静态测试包已上线。
+完整修复工具、源码、回滚基线及复验证据固定归档：https://github.com/lijianjun004-star/tcl-v43-preview/releases/tag/v0.9.1-v2.3 。标签对应发布提交79dd870de604fc2558d470ba4c8eb419454d6ff4；资产 TCL-V2.3-verified-release-kit.zip SHA-256 f6da614bb11239804eb18f6f2568ae0c7f95cbe300fc112d636f3151065e26ec。
 
-- PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/5
-- 成功Actions：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41669055796
-- 该次发布提交：5070c140882748af5e4b6826fa99c076cec2ac95
-- 该次回滚基线：b2b7baf0b1a972ca1654efe9e2bd106143e8c044
-- site.zip SHA-256：4187aeaead2240d8b627c64d18dec52d2622aebe4013055bd249397c3ee3ff39
-- 包含93个文件：原根站43个文件逐字节保留，新增目录50个文件；49项静态资源清单校验通过。
-- 云端Chrome已验证：新旧入口、训练详情打开和关闭、r7-sandbox、baseline-v08、设备诊断页、ASR诊断页及offline-asr-worker.js可访问。
-- ASR检查真实返回模型未就绪，缺少ready.json（HTTP 404）。完整中文离线模型、真实AI评分、正式后台鉴权及跨设备共享尚未接入。
-- 尚未验证真人中文语音准确率、iPhone/Android硬件录音录像和中国大陆网络可达性。不得把云端页面访问等同这些验收。
-- 页面内部仍保留审核包的v0.9标题，v0.9.1指本次发布校验交付版本。
+任务 TCL-V23-20261104：按用户要求修复独立复验发现的问题，当前已部署 v0.9.1 / V2.3 稳定性修复静态测试版。
 
-此处为已验证业务快照。新增文档会使main提交变化；不能只因main与上面的历史提交不同就判定业务包被更改。新业务发布后更新本节及证据链接。
+- 发布PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/8
+- 发布提交：79dd870de604fc2558d470ba4c8eb419454d6ff4
+- 成功Pages Actions：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41720509159
+- 发布基线：ea9c8f2edf6f9d943fd3dfc18c58415d68209141
+- site.zip SHA-256：cc10c8849d1bd00453d6c46c8b1f24928e1552835c21ca9419abb1d0c722ade4
+- 静态包94文件：旧根站43个文件逐字节保留，子目录51文件；50项资源哈希与覆盖检查通过。页面标题仍保留原v0.9，资源清单版本为 v0.9.1-v2.3-stability。
+- 修复训练卡、live及诊断录音：授权前锁、独立会话和资源、迟到授权回收、构造/start/stop异常、旧事件、空音频失败、后台/离页释放、听写互斥。训练/live实际60秒、诊断45秒自动停止；正常live停止后保留相机预览，关闭或进入后台释放设备。
+- 修复诊断Worker相对路径。子站SW升级v2.3，5秒未取得HTTP响应时中止网络并回退当前版本cache；不清理旧根站或模型缓存。首次离线未缓存可明确返回503；不承诺完整资源5秒下载。
+- 本地执行：录音生命周期27/27、SW9/9、原诊断3/3、原发布门禁8/8、安全测试14/14、新ZIP/PR策略8/8、模拟HEAD变化合并拒绝、96项JS语法、HTTP9/9及50资源哈希通过。测试组存在覆盖重叠，不合并为单一通过率。
+- 云端Chrome已打开新旧入口、训练详情打开/关闭、设备诊断、ASR诊断、清单、SW和公开Worker；线上清单50哈希逐项与候选一致，新脚本会话锁与停止timer可见。浏览器扩展元数据报错与应用来源错误区分记录。
+- ASR诊断如实返回模型未就绪：ready.json HTTP404。完整中文离线模型、真实AI评分、后台鉴权及跨设备同步未接入。真人中文准确率、iPhone/Android录音录像和中国大陆可达性仍未验收。事件模拟不能替代真机验收。
+
+## PR校验与主分支保护的真实状态
+
+- CI安装PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/7 ，合并提交 ea9c8f2edf6f9d943fd3dfc18c58415d68209141。
+- 安装检查成功：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41718779145 。发布PR检查成功：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41720320054 。
+- main已有 .github/workflows/verify-pages-pr.yml 及 release-ci/release_guard.py、test_release_guard.py。每个main目标PR均运行 verify-pages-release；文档PR明确成功，发布PR只允许site.zip与校验值同步的pages.yml；CI维护独立校验。发布PR运行基线提交的校验器，不运行候选ZIP中的代码。
+- ZIP校验新增实际有界zlib输出、中央目录数量与边界、本地头一致性、实际长度/CRC和流结束检查。
+- **必需检查保护尚未保存成功**：GitHub保存规则时要求账号邮件再次验证。待配置：main要求PR、verify-pages-release由GitHub Actions提供、合并前保持最新、管理员也不绕过；无需额外他人审批。不能声称required check已强制生效。
+- 本次按已授权网页方式，在实际CI成功后人工核对并合并；未绕过现有保护。发布工具的 --merge-on-pass / merge_verified_pr.sh 仍必须检查服务端required规则，没有规则时主动拒绝。
+- 随本次交付提供修正发布脚本：始终以已验证SHA传入--match-head-commit；重复分支逐项核验后仅续接唯一open PR；main变化重新基于最新main准备新分支，不强推覆盖旧候选。CLI身份和完整真实gh流程尚未在本环境运行。
+
+旧版回滚基线：恢复已验证的 site.zip（SHA-256 4187aeaead2240d8b627c64d18dec52d2622aebe4013055bd249397c3ee3ff39）和对应pages.yml校验值，走独立PR。保留本地历史数据；浏览器SW回滚生命周期需另行验收。
 
 ## 可恢复的发布通道
 
