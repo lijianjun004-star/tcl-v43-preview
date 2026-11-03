@@ -1,0 +1,315 @@
+#!/usr/bin/env python3
+"""TCL Pages release gate (V2.1). Python stdlib only; does not access network or write to GitHub."""
+import argparse
+import hashlib
+import json
+import pathlib
+import re
+import sys
+import stat
+import zipfile
+import struct
+import zlib
+import subprocess
+import tempfile
+from datetime import datetime, timezone
+from pathlib import PurePosixPath
+
+PREFIX = 'tcl-v09-ab/'
+MAX_FILE_COUNT = 500
+MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024
+MAX_TOTAL_UNCOMPRESSED_BYTES = 60 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 250
+MAX_ARCHIVE_BYTES = 80 * 1024 * 1024
+
+
+class GateFailure(Exception):
+    pass
+
+
+def sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def _preflight_container(raw):
+    # Count central headers before ZipFile allocates its entry objects.
+    end = raw.rfind(b'PK\x05\x06', max(0, len(raw) - 65557))
+    if end < 0 or end + 22 > len(raw):
+        raise GateFailure('Missing ZIP end record')
+    _, disk, central_disk, disk_count, count, size, offset, comment = struct.unpack_from('<4s4H2IH', raw, end)
+    if disk or central_disk or disk_count != count or count == 65535 or offset == 0xffffffff or size == 0xffffffff:
+        raise GateFailure('Multi-disk and ZIP64 containers are not supported')
+    if end + 22 + comment != len(raw) or offset + size != end:
+        raise GateFailure('ZIP central directory boundary mismatch')
+    cursor = offset
+    actual = 0
+    while cursor < end:
+        if cursor + 46 > end or raw[cursor:cursor + 4] != b'PK\x01\x02':
+            raise GateFailure('Malformed ZIP central directory')
+        nlen, xlen, clen = struct.unpack_from('<3H', raw, cursor + 28)
+        cursor += 46 + nlen + xlen + clen
+        actual += 1
+        if actual > MAX_FILE_COUNT:
+            raise GateFailure(f'ZIP entry count exceeds limit {MAX_FILE_COUNT}')
+    if cursor != end or actual != count or not actual:
+        raise GateFailure('ZIP entry count or directory length mismatch')
+
+
+def _preflight_entries(infolist):
+    """Verify ZIP metadata *before* reading compressed contents/CRC/extracting."""
+    if not infolist or len(infolist) > MAX_FILE_COUNT:
+        raise GateFailure(f'ZIP entry count invalid or exceeds limit {MAX_FILE_COUNT}')
+    seen = set()
+    total = 0
+    for info in infolist:
+        name = info.filename
+        p = PurePosixPath(name)
+        if (not name or name.startswith('/') or '\\' in name or '\x00' in name
+                or ':' in p.parts[0] or '..' in p.parts or '.' in p.parts
+                or str(p) != name.rstrip('/') or '//' in name):
+            raise GateFailure(f'Unsafe ZIP name: {name!r}')
+        if info.flag_bits & 0x1:
+            raise GateFailure(f'Encrypted ZIP entry is prohibited: {name}')
+        if info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+            raise GateFailure(f'Unsupported ZIP compression method: {name}')
+        mode = info.external_attr >> 16
+        if stat.S_IFMT(mode) == stat.S_IFLNK:
+            raise GateFailure(f'Symlink is not allowed: {name}')
+        if info.is_dir():
+            continue
+        if name in seen:
+            raise GateFailure(f'Duplicate ZIP name: {name}')
+        seen.add(name)
+        if info.file_size > MAX_SINGLE_FILE_BYTES:
+            raise GateFailure(f'Single file exceeds size limit ({info.file_size} > {MAX_SINGLE_FILE_BYTES}): {name}')
+        total += info.file_size
+        if total > MAX_TOTAL_UNCOMPRESSED_BYTES:
+            raise GateFailure(f'Total uncompressed size exceeds limit ({total} > {MAX_TOTAL_UNCOMPRESSED_BYTES})')
+        if info.file_size > (1024 * 1024) and info.file_size / max(info.compress_size, 1) > MAX_COMPRESSION_RATIO:
+            raise GateFailure(f'Compression ratio exceeds limit ({MAX_COMPRESSION_RATIO}): {name}')
+
+
+def inspect_zip(path):
+    if not path.is_file():
+        raise GateFailure(f'ZIP file not found: {path}')
+    # Refuse oversized compressed containers before loading the bytes.
+    if path.stat().st_size > MAX_ARCHIVE_BYTES:
+        raise GateFailure(f'Archive compressed size exceeds limit ({MAX_ARCHIVE_BYTES})')
+    # Metadata preflight occurs before any decompression/CRC reading.
+    raw = path.read_bytes()
+    _preflight_container(raw)
+    files = {}
+    with zipfile.ZipFile(path) as z:
+        _preflight_entries(z.infolist())
+        total = 0
+        for info in z.infolist():
+            if info.is_dir():
+                continue
+            # Bound zlib output itself; ZipExtFile may inflate beyond its declared size.
+            start = info.header_offset
+            if start < 0 or start + 30 > len(raw):
+                raise GateFailure('Truncated ZIP local header')
+            header = struct.unpack_from('<4s5H3I2H', raw, start)
+            signature, _, flags, method, _, _, crc, packed, unpacked, nlen, xlen = header
+            if signature != b'PK\x03\x04' or flags != info.flag_bits or method != info.compress_type:
+                raise GateFailure('ZIP local/central header mismatch')
+            if not flags & 8 and (crc, packed, unpacked) != (info.CRC, info.compress_size, info.file_size):
+                raise GateFailure('ZIP local/central size or CRC mismatch')
+            name_start = start + 30
+            name_bytes = raw[name_start:name_start + nlen]
+            encoding = 'utf-8' if flags & 0x800 else 'cp437'
+            if name_bytes.decode(encoding) != info.orig_filename:
+                raise GateFailure('ZIP local/central name mismatch')
+            offset = name_start + nlen + xlen
+            end = offset + info.compress_size
+            if end > len(raw) or end > info._end_offset:
+                raise GateFailure('ZIP compressed entry exceeds its boundary')
+            if flags & 8:
+                descriptor = end + (4 if raw[end:end + 4] == b'PK\x07\x08' else 0)
+                if descriptor + 12 > info._end_offset or struct.unpack_from('<3I', raw, descriptor) != (info.CRC, info.compress_size, info.file_size):
+                    raise GateFailure('ZIP data descriptor mismatch')
+            limit = min(MAX_SINGLE_FILE_BYTES, MAX_TOTAL_UNCOMPRESSED_BYTES - total, info.file_size)
+            if method == zipfile.ZIP_STORED:
+                if info.compress_size != info.file_size:
+                    raise GateFailure('Stored ZIP entry size mismatch')
+                data = raw[offset:end]
+            else:
+                decoder = zlib.decompressobj(-15)
+                chunks = []
+                produced = 0
+                cursor = offset
+                while cursor < end:
+                    block = raw[cursor:min(cursor + 65536, end)]
+                    cursor += len(block)
+                    while block:
+                        output = decoder.decompress(block, min(65536, limit - produced + 1))
+                        produced += len(output)
+                        if produced > limit:
+                            raise GateFailure('Actual decompressed output exceeds declared size or resource limit')
+                        chunks.append(output)
+                        block = decoder.unconsumed_tail
+                        if decoder.eof:
+                            if decoder.unused_data or block or cursor != end:
+                                raise GateFailure('Trailing data after ZIP deflate stream')
+                            break
+                if not decoder.eof:
+                    raise GateFailure('Truncated ZIP deflate stream')
+                data = b''.join(chunks)
+            if len(data) != info.file_size or zlib.crc32(data) & 0xffffffff != info.CRC:
+                raise GateFailure(f'Actual byte length or CRC mismatch for {info.filename}')
+            total += len(data)
+            files[info.filename] = data
+    if not files:
+        raise GateFailure('ZIP is empty')
+    return raw, files
+
+
+def extract_zip_safely(path, destination):
+    """No unvalidated extractall(): all entries inspected before writing anything."""
+    _, files = inspect_zip(path)
+    root = pathlib.Path(destination).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    for name, data in files.items():
+        target = (root / name).resolve()
+        if not target.is_relative_to(root):
+            raise GateFailure(f'ZIP extraction escaped destination: {name}')
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    return len(files)
+
+
+def inspect_manifest(files):
+    key = PREFIX + 'static-manifest.json'
+    if key not in files:
+        raise GateFailure('Missing tcl-v09-ab/static-manifest.json')
+    obj = json.loads(files[key].decode('utf-8'))
+    mapping = obj.get('files')
+    if not isinstance(mapping, dict) or not mapping:
+        raise GateFailure('Manifest file mapping is empty or invalid')
+    expected_rel = {name[len(PREFIX):] for name in files if name.startswith(PREFIX) and name != key}
+    if set(mapping) != expected_rel:
+        missing_manifest = sorted(expected_rel - set(mapping))
+        dangling_manifest = sorted(set(mapping) - expected_rel)
+        raise GateFailure('Manifest coverage mismatch: ' + repr({'unlisted_files': missing_manifest, 'missing_files': dangling_manifest}))
+    issues = []
+    for rel, expected in mapping.items():
+        k = PREFIX + rel
+        if k not in files:
+            issues.append(f'missing {k}')
+        elif sha256(files[k]) != expected:
+            issues.append(f'hash mismatch {k}')
+    if issues:
+        raise GateFailure('Manifest check failed: ' + '; '.join(issues[:10]))
+    return len(mapping), obj.get('version')
+
+
+def check_workflow(text, candidate_sha):
+    # Match only the exact release checksum verification line.
+    pattern = r'(run:\s*echo\s+["\'])([0-9a-f]{64})(\s{2}site\.zip["\']\s*\|\s*sha256sum\s+--check\s+--strict)'
+    hits = list(re.finditer(pattern, text))
+    if len(hits) != 1:
+        raise GateFailure('Expected exactly one Pages ZIP SHA-256 check in workflow')
+    return hits[0].group(2)
+
+
+def verify_pr(base, head):
+    """Classify every PR; release PRs execute only this baseline verifier."""
+    for ref in (base, head):
+        if not re.fullmatch('[0-9a-f]{40}', ref):
+            raise GateFailure('Expected pinned Git commit SHA')
+    def show(ref, path):
+        return subprocess.check_output(['git', 'show', f'{ref}:{path}'])
+    changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
+    release = {'site.zip', '.github/workflows/pages.yml'}
+    ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py'}
+    docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
+    if changed & release:
+        if changed != release:
+            raise GateFailure('Unexpected PR paths: release must change exactly site.zip and pages.yml')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            for name, content in [('candidate.zip', show(head, 'site.zip')), ('baseline.zip', show(base, 'site.zip')), ('base.yml', show(base, '.github/workflows/pages.yml'))]:
+                (root / name).write_bytes(content)
+            subprocess.run([sys.executable, str(pathlib.Path(__file__).resolve()), '--candidate', str(root/'candidate.zip'), '--baseline', str(root/'baseline.zip'), '--workflow', str(root/'base.yml')], check=True)
+            before = (root/'base.yml').read_text()
+            after = show(head, '.github/workflows/pages.yml').decode()
+            older = sha256((root/'baseline.zip').read_bytes())
+            newer = sha256((root/'candidate.zip').read_bytes())
+            if check_workflow(after, newer) != newer or after != before.replace(f'{older}  site.zip', f'{newer}  site.zip', 1):
+                raise GateFailure('Workflow changed beyond ZIP checksum or candidate checksum mismatch')
+        print('verify-pages-release PASS: release/root/manifest/checksum/paths')
+    elif changed - docs and changed - docs <= ci:
+        # Read-only runner, no secrets; CI updates are separately reviewed changes.
+        for name in ('release-ci/release_guard.py', 'release-ci/test_release_guard.py'):
+            compile(show(head, name), name, 'exec')
+        subprocess.run([sys.executable, 'release-ci/test_release_guard.py'], check=True)
+        print('verify-pages-release PASS: dedicated CI update and regression tests')
+    elif changed <= docs:
+        print('verify-pages-release PASS: documentation only; no release changes')
+    else:
+        raise GateFailure('Unexpected PR paths: split release, CI and unrelated changes')
+    return 0
+
+
+def main():
+    if len(sys.argv) == 4 and sys.argv[1] == '--verify-pr':
+        try:
+            return verify_pr(sys.argv[2], sys.argv[3])
+        except (GateFailure, OSError, ValueError, subprocess.CalledProcessError) as exc:
+            print(f'verify-pages-release FAILED: {exc}', file=sys.stderr)
+            return 2
+    p = argparse.ArgumentParser()
+    p.add_argument('--candidate', required=True, type=pathlib.Path)
+    p.add_argument('--baseline', type=pathlib.Path, help='Current main site.zip, for root byte preservation gate')
+    p.add_argument('--workflow', type=pathlib.Path, help='Current main .github/workflows/pages.yml')
+    p.add_argument('--expected-sha', help='Optional pinned intended candidate SHA-256')
+    p.add_argument('--report', type=pathlib.Path)
+    a = p.parse_args()
+    out = {'checked_at_utc': datetime.now(timezone.utc).isoformat(), 'candidate': str(a.candidate), 'status': 'FAILED'}
+    try:
+        raw, current = inspect_zip(a.candidate)
+        candidate_sha = sha256(raw)
+        out.update({'candidate_sha256': candidate_sha, 'candidate_files': len(current)})
+        if a.expected_sha and candidate_sha != a.expected_sha.lower():
+            raise GateFailure(f'Unexpected candidate SHA-256: {candidate_sha}')
+        prefix_names = [x for x in current if x.startswith(PREFIX)]
+        root_names = [x for x in current if not x.startswith(PREFIX)]
+        if len(root_names) != 43:
+            raise GateFailure(f'Expected 43 existing root files, found {len(root_names)}')
+        for required in ('index.html', PREFIX + 'index.html', PREFIX + 'asr-check.html', PREFIX + '设备检查.html', PREFIX + 'src/offline-asr-worker.js'):
+            if required not in current:
+                raise GateFailure(f'Missing key entry: {required}')
+        out['root_files'] = len(root_names)
+        out['training_files'] = len(prefix_names)
+        out['manifest_entries'], out['manifest_version'] = inspect_manifest(current)
+        out['already_current'] = False
+        if a.baseline:
+            base_raw, baseline = inspect_zip(a.baseline)
+            out['baseline_sha256'] = sha256(base_raw)
+            changed_root = sorted(name for name, content in baseline.items() if not name.startswith(PREFIX) and current.get(name) != content)
+            unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith(PREFIX))
+            if changed_root or unexpected_new:
+                raise GateFailure('Root preservation failed: ' + repr({'changed_root': changed_root, 'unexpected_new': unexpected_new}))
+            if len([n for n in baseline if not n.startswith(PREFIX)]) != 43:
+                raise GateFailure('Baseline root count is not 43')
+            out['root_preserved_bytewise'] = True
+            out['already_current'] = base_raw == raw
+            if a.workflow:
+                workflow_sha = check_workflow(a.workflow.read_text(encoding='utf-8'), candidate_sha)
+                if workflow_sha != out['baseline_sha256']:
+                    raise GateFailure('Current workflow checksum does not match current main site.zip')
+                out['current_workflow_checksum'] = workflow_sha
+        elif a.workflow:
+            out['workflow_checksum'] = check_workflow(a.workflow.read_text(encoding='utf-8'), candidate_sha)
+        out['status'] = 'PASS'
+    except (GateFailure, OSError, zipfile.BadZipFile, UnicodeError, ValueError, KeyError, zlib.error, struct.error) as exc:
+        out['errors'] = [str(exc)]
+    if a.report:
+        a.report.parent.mkdir(parents=True, exist_ok=True)
+        a.report.write_text(json.dumps(out, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0 if out['status'] == 'PASS' else 2
+
+
+if __name__ == '__main__':
+    sys.exit(main())
