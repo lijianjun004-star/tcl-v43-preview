@@ -98,3 +98,16 @@
 - Worker/D1/R2未部署；中文ASR模型和真实AI评分未接入；主分支强制保护仍未保存成功。不得将测试部署等同正式全功能验收。
 - 回滚通过新PR恢复本次发布前 ee8d8b9f3cd6497556c0853d605f1ccf358fac0a 的site.zip与匹配校验值，保留浏览器历史数据。后续以实时main为基线，避免回滚覆盖期间其他改动。
 
+
+## V3.3.6 专项练播独立手机测试部署（2026-11-04，执行方：Claude）
+
+用户确认接受“单场录制最长8分钟”上限，并同意由 Claude 直接走独立分支、PR、CI、合并。当前是替换 V3.3.4 的静态手机测试版，不是生产放行。
+
+- 入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。旧根站43文件、/tcl-v09-ab/ 51文件逐字节不变；专项目录仍是 CI 白名单12文件（6个内容变化），共106文件。
+- 来源包 V3.3.6（Gemini 整改，Claude 独立复验）ZIP SHA-256：c18ac1043b5e6a1310247da0b8e031a7202b3694fe800a49cc612821bfc37c20。site.zip SHA-256：7dc5dcdd679ccef83fc4d05a2e913b03e8e16b5038efbb04d637925e85cb15a0。
+- 发布PR #13：https://github.com/lijianjun004-star/tcl-v43-preview/pull/13 ，head cab8cd9019df10e74df698efe48bb05562ff4284；verify-pages-release 成功 https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41890275253 。
+- 合并提交 8227785d59d492dbccd9e8418fec7f677fc45a7c；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41890430968 ，completed/success（含 site.zip 校验步骤）。
+- V3.3.6 相对 V3.3.4：整场音视频录制（单场8分钟或64MB自动停录，请求1Mbps）；未保存录像时 beforeunload 提示；录后 WAV 导出与可选 Whisper Tiny 识别（180秒/48MB 解码前预检）；第12板块旧平台名“抖音生活服务”只读兼容；9:16 contain 显示；TTS 手动朗读。
+- 本地实测（Claude）：基线校验器 --verify-pr PASS、CI 回归8/8；候选包单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；真实时间8分钟自动停录（480.1秒，录像保留）；刷新提示生效；超时长录像在分配内存前拒绝；第12板块旧数据可读且不串板块；发布 site.zip 在真实子路径下浏览器冒烟0个404、0个外部请求、0个页面错误。
+- 未验证：Claude 环境网络策略禁止访问 github.io，**未直接打开公网页面**，线上状态以 Pages Actions 成功为准，需用户手机确认。iPhone/Android 真机、iOS 实际码率（若忽略1Mbps，64MB可能早于8分钟触发）、中国大陆网络（ASR 依赖 cdn.jsdelivr.net 与 huggingface.co）、Whisper 模型 revision 未锁定、Worker/D1/R2 未部署。已知P3：页面标题仍显示 V3.3.5。
+- 回滚：新PR恢复 site.zip 2f6ba643a38b1d2e2a767b1526cc270396b2e5a9422a01cad8d29bf78b7a8346 与匹配的 pages.yml 校验值（即 V3.3.4，main 4ccd48cd650c562b3c88cf3ebf2fdf43be642a7b）。
