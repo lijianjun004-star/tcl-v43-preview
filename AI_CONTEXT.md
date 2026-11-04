@@ -82,3 +82,19 @@
 
 切换模型时传递本文件URL与当前任务即可。要求接手方确认读取到固定发布入口、实际最新发布证据和未完成能力；无法读取时明确报告，不假装拥有前一个模型的记忆或权限。
 
+
+## V3.3.4 专项练播独立手机测试部署（2026-11-04）
+
+用户在知悉完整浏览器回归未执行后，明确要求先部署并亲自真机测试。当前是静态测试版，不是正式语音评分产品。
+
+- 新入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。旧根站和 /tcl-v09-ab/ 保留，原有94文件逐字节不变；新目录仅12前端文件，共106文件。
+- 来源修复包 V3.3.4 SHA256：89cd175388c04fd33699676e96268d9c95d48128966c7dbb5fe7117aa3fc0b84。site.zip SHA256：2f6ba643a38b1d2e2a767b1526cc270396b2e5a9422a01cad8d29bf78b7a8346。
+- 修复：麦克风授权等待期间禁止重复申请和切题，离开后回收迟到流；独立语音会话阻止离页/切题/板块/平台后的旧回调，录音听写互斥。
+- 本地：22/22 Node测试（其中12项为VM合成竞态）、HTTP9/9、语法及完整源码清单59文件通过。Chromium下载收到无效ZIP，完整浏览器回归未执行；不以他方历史日志替代本轮验收。
+- CI规则PR #10：https://github.com/lijianjun004-star/tcl-v43-preview/pull/10 ，合并 ee8d8b9f3cd6497556c0853d605f1ccf358fac0a；新目录限定12文件及SHA清单，要求全部既有非specialty文件保持不变。原有8门禁测试通过，候选与额外/后端文件拒绝测试通过。
+- 发布PR #11：https://github.com/lijianjun004-star/tcl-v43-preview/pull/11 ，已验证head c8fc3c870c01e69fa6ba121393369f4eab1b90f1；CI成功 https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41842919069 。
+- 发布提交：2480ff30ae3bcf75aca2ec1f1126fda0817004e8；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41843092545 ，状态：completed/success。
+- 待用户真机验收：摄像头麦克风、授权期间切题、退出再进入、切后台返回、单段120秒自动停止及反复录音回放。真机和中国大陆网络尚未验收。
+- Worker/D1/R2未部署；中文ASR模型和真实AI评分未接入；主分支强制保护仍未保存成功。不得将测试部署等同正式全功能验收。
+- 回滚通过新PR恢复本次发布前 ee8d8b9f3cd6497556c0853d605f1ccf358fac0a 的site.zip与匹配校验值，保留浏览器历史数据。后续以实时main为基线，避免回滚覆盖期间其他改动。
+
