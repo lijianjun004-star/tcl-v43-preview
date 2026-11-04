@@ -111,3 +111,15 @@
 - 本地实测（Claude）：基线校验器 --verify-pr PASS、CI 回归8/8；候选包单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；真实时间8分钟自动停录（480.1秒，录像保留）；刷新提示生效；超时长录像在分配内存前拒绝；第12板块旧数据可读且不串板块；发布 site.zip 在真实子路径下浏览器冒烟0个404、0个外部请求、0个页面错误。
 - 未验证：Claude 环境网络策略禁止访问 github.io，**未直接打开公网页面**，线上状态以 Pages Actions 成功为准，需用户手机确认。iPhone/Android 真机、iOS 实际码率（若忽略1Mbps，64MB可能早于8分钟触发）、中国大陆网络（ASR 依赖 cdn.jsdelivr.net 与 huggingface.co）、Whisper 模型 revision 未锁定、Worker/D1/R2 未部署。已知P3：页面标题仍显示 V3.3.5。
 - 回滚：新PR恢复 site.zip 2f6ba643a38b1d2e2a767b1526cc270396b2e5a9422a01cad8d29bf78b7a8346 与匹配的 pages.yml 校验值（即 V3.3.4，main 4ccd48cd650c562b3c88cf3ebf2fdf43be642a7b）。
+
+## V3.3.7 摄像头稳定性修复（2026-11-04，执行方：Claude）
+
+用户真机反馈：摄像头"要么只显示一条横屏画面，要么整个画面被放大"，非常不稳定。已修复并部署到同一入口 /tcl-specialty-v33/ 。
+
+- 根因（Chromium 内核实测复现）：V3.3.6 请求固定的 720×1280 / 9:16。Chromium/Android Chrome 以 resizeMode=crop-and-scale 裁切横屏传感器画面，只保留 32% 视野、放大 1.78 倍；不裁切的浏览器返回横屏画面，在 9:16 框内只占 32%；画面尺寸变化时不重新适配。
+- 修复：取流不带固定比例并声明 resizeMode:'none'；竖持手机拿到横屏时，在同一轨道上 applyConstraints 换一次方向，不重复打开摄像头；与 9:16 相差 12% 以内铺满，其余完整显示，横屏时提示竖持；监听 video resize/loadedmetadata 与窗口 resize 自动重新适配；信息栏如实报告实际尺寸与显示方式；页面标题更正为 V3.3.7。
+- 来源包 V3.3.7 SHA-256：841c05e6211aff9a9b9e25a1a9d0880a2074547d8ef385ddca73427fd7bcd248。site.zip SHA-256：0b4bfaa5d3855710146bff3faf8353100ff3ebdf3ee0f4a2eaf835dff307141a。与 V3.3.6 相比仅 tcl-specialty-v33/ 下 app.js、index.html、style.css、static-manifest.json 四个文件变化，其余102文件逐字节不变。
+- 发布PR #15：https://github.com/lijianjun004-star/tcl-v43-preview/pull/15 ，head 412f5e18fc18bad31a677e49e3713be8e5f5c8b2，verify-pages-release 成功；合并提交 263fff02e8bc2d61fdb9519f34783d0d7ddd0997；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41894406293 。
+- 本地实测：A/B 对比 V3.3.6→V3.3.7，Chromium 视野 32%→100%，传感器方向设备画面占框 32%→100%；新增 tests/v337-camera-stability.py 17/17；原有单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；正向测试"必须contain"断言改为按本意检查不裁切（视野≥88%）。CI 校验器 PASS、回归8/8；部署版子路径冒烟0个404/0外部请求/0错误。
+- 未验证：iPhone Safari / Android Chrome 真机（模拟只覆盖已知摄像头行为）；Claude 环境无法访问 github.io，线上以 Pages Actions 成功为准。若真机仍异常，请记录设备检查页"摄像头实际 W×H"那一行、手机型号和浏览器。
+- 回滚：新PR恢复 V3.3.6 site.zip 7dc5dcdd679ccef83fc4d05a2e913b03e8e16b5038efbb04d637925e85cb15a0 与匹配的 pages.yml 校验值。
