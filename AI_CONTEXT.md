@@ -123,3 +123,14 @@
 - 本地实测：A/B 对比 V3.3.6→V3.3.7，Chromium 视野 32%→100%，传感器方向设备画面占框 32%→100%；新增 tests/v337-camera-stability.py 17/17；原有单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；正向测试"必须contain"断言改为按本意检查不裁切（视野≥88%）。CI 校验器 PASS、回归8/8；部署版子路径冒烟0个404/0外部请求/0错误。
 - 未验证：iPhone Safari / Android Chrome 真机（模拟只覆盖已知摄像头行为）；Claude 环境无法访问 github.io，线上以 Pages Actions 成功为准。若真机仍异常，请记录设备检查页"摄像头实际 W×H"那一行、手机型号和浏览器。
 - 回滚：新PR恢复 V3.3.6 site.zip 7dc5dcdd679ccef83fc4d05a2e913b03e8e16b5038efbb04d637925e85cb15a0 与匹配的 pages.yml 校验值。
+
+## V3.3.8 摄像头异步尺寸修复（2026-11-05，执行方：Claude；回应 ChatGPT V3.3.7 复验）
+
+ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不放行正式稳定版"，并发现 P2：方向纠正后轨道 getSettings() 已为竖屏、但 videoWidth/videoHeight 滞后，V3.3.7 据旧尺寸撤销纠正。该放行门禁对 V3.3.8 继续有效：仅用于独立测试站真机排障。
+
+- 修复：是否撤销以轨道 getSettings() 为准（轨道仍横屏或报告 crop-and-scale 才撤销）；纠正成功后最多等3秒至画面与轨道方向一致；摄像头开启期间每0.5秒兜底检查画面尺寸并重新适配，关闭后停止；信息栏增加"诊断：轨道 W×H · 画面 W×H · 裁切模式（未报告时写明无法确认）· 屏幕竖持/横持"及镜像说明；window.__cameraLog 记录纠正过程。仅 tcl-specialty-v33/ 的 app.js、index.html、static-manifest.json 变化。
+- 来源包 V3.3.8 SHA-256：41ccda1c8b77e3568a2ed25ff231c2969e3abfb8929afeec7ffc588737b07725。site.zip SHA-256：f80ffea116bef019d22014abcfd293235251f1e846cf3685b41fe1703b398abf。
+- 发布PR #17：https://github.com/lijianjun004-star/tcl-v43-preview/pull/17 ，head 57c06668863d46407e207e0dfc73e3827019605f，verify-pages-release 成功；合并提交 facad87bde887e0e621ea425418afb108b991acb；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41910032896 （success）。
+- 本地实测：新增 tests/v338-camera-async.py（about:blank 注入，受限环境可运行）V3.3.8 16/16 连续3轮一致，V3.3.7 上 8/16；ChatGPT 原 camera_offline_fallback.py 在 V3.3.8 6/6×3轮、applyConstraints 每轮1次，在 V3.3.7 上随时序波动（6轮中2轮5/6）且每轮2次（每次都撤销）。其余：v337 摄像头17/17、单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；CI 校验器 PASS、回归8/8；部署版子路径冒烟0个404/0外部请求/0错误。
+- 未验证：iPhone Safari、Android Chrome、微信/钉钉内置浏览器真机；真实传感器完整视野（需边缘参照物对照拍摄）。真机请记录设备检查页信息栏整行（含"诊断：…"）、机型系统版本和浏览器。
+- 回滚：新PR恢复 V3.3.7 site.zip 0b4bfaa5d3855710146bff3faf8353100ff3ebdf3ee0f4a2eaf835dff307141a 与匹配的 pages.yml 校验值。
