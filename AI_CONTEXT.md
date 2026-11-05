@@ -134,3 +134,17 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 本地实测：新增 tests/v338-camera-async.py（about:blank 注入，受限环境可运行）V3.3.8 16/16 连续3轮一致，V3.3.7 上 8/16；ChatGPT 原 camera_offline_fallback.py 在 V3.3.8 6/6×3轮、applyConstraints 每轮1次，在 V3.3.7 上随时序波动（6轮中2轮5/6）且每轮2次（每次都撤销）。其余：v337 摄像头17/17、单元30/30、正向35/35、反向28/28、限额19/19、回归12/12、isolated 7/7、HTTP 9/9；CI 校验器 PASS、回归8/8；部署版子路径冒烟0个404/0外部请求/0错误。
 - 未验证：iPhone Safari、Android Chrome、微信/钉钉内置浏览器真机；真实传感器完整视野（需边缘参照物对照拍摄）。真机请记录设备检查页信息栏整行（含"诊断：…"）、机型系统版本和浏览器。
 - 回滚：新PR恢复 V3.3.7 site.zip 0b4bfaa5d3855710146bff3faf8353100ff3ebdf3ee0f4a2eaf835dff307141a 与匹配的 pages.yml 校验值。
+
+## V3.3.9 中文录后识别修复（2026-11-05，Codex执行）
+
+- 目标：默认改为Vosk中文小模型，Whisper Tiny作为备用实验引擎；两者共用30ms能量静音筛选、约200ms余量、有声不足1秒拒绝、复读截断与中文比例质量提示。Whisper参数已核对transformers.js3.7.6源码，使用no_repeat_ngram_size=4、repetition_penalty=1.2。文本可编辑、不自动评分，原录像副本解码及SHA保护保留。
+- 来源V3.3.8候选包SHA256：41ccda1c8b77e3568a2ed25ff231c2969e3abfb8929afeec7ffc588737b07725。发布前main 801b6c72429d4fff6ffc0d17d012a19039230e1c。
+- 发布PR #19：https://github.com/lijianjun004-star/tcl-v43-preview/pull/19 ，已验证head 4c06a5dc6249cc0e74203805818c92089dd0f81b；PR检查success：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41965163912 。合并 e599d173f1c8144ec39f626859fcda7a31e03245；Pages completed/success：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41965316605 。
+- site.zip SHA256：64cae310abb86cc6796d38243b305fb5ff8a944515ce140b3f2b4daef2858818。专项目录仍12文件，清单版本v3.3.9-zh-asr，旧根站43与/tcl-v09-ab/51文件逐字节不动。CI规则未修改。
+- 分项实跑：原Node30/30、静音复读中文检查16/16、Vosk加载器13/13、入口取消/防重/离页/SHA保护6/6（Node VM模拟），npm65/65、HTTP9/9、门禁8/8、远端实际base/head的--verify-pr PASS。预览重新生成，标题/package/清单更新。
+- 未执行：原七组浏览器测试及新增7项Vosk浏览器mock、真实Vosk普通话推理、iPhone/Android真机；Python Playwright安装成功但Chromium下载无效ZIP。线上vosk.js真实下载SHA匹配，不等于模型准确率已验收；没有虚构识别文本、耗时或内存。
+- 有意的同源只读依赖：https://lijianjun004-star.github.io/live-practice-room/voice/ 。未修改该仓库；vosk.js固定SHA ed356edb8ac3c69df419d9252f1029bb04e23e381320f7a4611beb2d25217beb；11分片各自校验（固定映射在app.js），拼接43847018字节整包SHA ea1bfd4aebbe1bff20ec665c566bf4f2862e9e6cbfbb6d36dfb3357ebe1ef689。组件校验后才Blob执行，整包校验后才创建Model。对方更新资源后如哈希变化必须拒绝加载，需核验后同步固定哈希，不自动接受更新。
+- 独立缓存tcl-specialty-vosk-v1，不清理其他缓存；首次约48MB/Wi-Fi确认、文件进度、可重试、下载/模型/推理有界等待并保留真实后台作业锁，取消与旧结果不得串场。模型加载和准确率仍需真机验收。
+- 入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。手机验收：180秒/48MB以内清楚朗读测试中文2–3遍并停顿，结束后默认Vosk，确认首次下载，核对关键词和复读提示，保留机型/浏览器/时长/截图。测试句仅用于识别，不作商品或活动承诺。
+- 回滚用新PR恢复V3.3.8 site.zip f80ffea116bef019d22014abcfd293235251f1e846cf3685b41fe1703b398abf 和匹配校验值，不清理用户数据，先核对实时main期间改动。未接付费/后台服务、不加日文注音处理。本轮只放行独立测试站，不声称正式稳定版。
+
