@@ -148,3 +148,16 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。手机验收：180秒/48MB以内清楚朗读测试中文2–3遍并停顿，结束后默认Vosk，确认首次下载，核对关键词和复读提示，保留机型/浏览器/时长/截图。测试句仅用于识别，不作商品或活动承诺。
 - 回滚用新PR恢复V3.3.8 site.zip f80ffea116bef019d22014abcfd293235251f1e846cf3685b41fe1703b398abf 和匹配校验值，不清理用户数据，先核对实时main期间改动。未接付费/后台服务、不加日文注音处理。本轮只放行独立测试站，不声称正式稳定版。
 
+
+## V3.3.10 Vosk中文模型下载修复（2026-11-05，执行方：Claude）
+
+用户反馈线上 V3.3.9 Vosk 中文模型下载不了，提供 V3.3.10 修复包（ZIP SHA-256 d3470c164a68c578712b933298da2d2316af3293b4a223b2142fa9dad3384ce9）要求同步 web/。
+
+- **未按原包 web/ 直接同步**：原包 app.js 基于 V3.3.6 摄像头代码（目录/package/static-manifest 仍为3.3.6，标题V3.3.5），直接同步会恢复 aspectRatio:9/16 裁切放大取流并丢失 V3.3.7/V3.3.8 画面适配、兜底检查与诊断。改为以线上 V3.3.9（main e2850b7）为基础，只移植"静音筛查+Vosk加载器+录后转写"代码块及面板/按钮绑定/按钮状态4处；摄像头代码保持线上版本。
+- **根因核验（真实 vosk.js + 真实42MB模型，本地按线上URL提供）**：模型Blob URL提前释放——不成立（V3.3.9 真实库完整加载识别成功）；总超时120秒——成立（模拟约300KB/s：V3.3.9 121秒超时、12文件仅完成9个；V3.3.10 161秒完成）；缺少预下载入口——成立；缓存写入未捕获——基本不成立（已有try/catch，原包补了match/delete）；异步后确认框被拦截——依赖浏览器，未验证。
+- **对原包的修正**：原包以"window.confirm 是否为原生函数"区分测试替身，导致真实浏览器下载48MB前不询问。改为所有浏览器一致：转写按钮在静音检查后、下载前询问（取消时提示改用预下载）；预下载按钮文字写明48MB，点击即同意，不依赖原生确认框。v335-reverse-browser.py 改为模拟用户点确定，并新增"首次下载前弹出48MB确认框"检查。
+- 变化：模型准备超时转写300秒/预下载600秒；新增 #preloadVoskBtn；仅 tcl-specialty-v33/ 的 app.js、index.html、static-manifest.json 变化（标题V3.3.10，清单 v3.3.10-vosk-download）。合并包 SHA-256：70dae823276461f45391628855089b37032d62251b94c00a2ee33d9be8f098be。site.zip SHA-256：108fb2bcb6b88a817fc63296d39724f38ee90f3e29b21472bfce39c1dc02904a。
+- 发布PR #21：https://github.com/lijianjun004-star/tcl-v43-preview/pull/21 ，head a0ad2b248336c37b480d91252993dff660d46c44，verify-pages-release 成功；合并提交 64825e7cc941b50fe62a85291e47d1bc0b5f2780；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/41987491840 。
+- 本地实测：npm 65/65、v339 Vosk 浏览器mock 7/7、正向35/35、反向30/30、限额19/19、回归12/12、isolated 7/7、摄像头 v337 17/17 与 v338 16/16、HTTP 9/9、CI 校验器PASS与回归8/8；真实模型转写5.0秒、预下载3.0秒成功，0错误，缓存12条；发布 site.zip 子路径冒烟0个404/0外部请求/0错误。
+- 未验证：普通话识别准确率（无中文语音样本，测试音为蜂鸣，空结果属预期）；iPhone/Android 真机；中国大陆网络下 github.io 实际下载速度。手机验收：Wi-Fi 下先点「预下载/校验 Vosk 中文模型（48MB）」至完成，失败可重点（已缓存分片复用），再开播清楚朗读测试句并转写。
+- 回滚：新PR恢复 V3.3.9 site.zip 64cae310abb86cc6796d38243b305fb5ff8a944515ce140b3f2b4daef2858818 与匹配的 pages.yml 校验值。
