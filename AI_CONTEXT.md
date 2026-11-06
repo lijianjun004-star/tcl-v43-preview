@@ -189,3 +189,37 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 摄像头 `v338-camera-async` 16/16；`v337-camera-stability` 原版受模拟HTTPS域名访问策略阻断，采用相同合成媒体场景的 about:blank 离线适配跑通15/15，原脚本最后2项真实Chromium摄像头**未执行**，不能写作原版17/17通过。
 - `v339-vosk-browser` 原版因Node Playwright/浏览器安装及模拟域名限制未原样执行，采用离线隔离适配7/7；`v34-browser` 逐题转写/弹幕/mock模型 22/22；合规规则对内部测试517/517命中，4条正常表达无命中；知识改写草案244条数值标记比较未发现差异，但仍需运营逐句复核。
 - 未执行：真正普通话录后识别准确率、iPhone Safari/Android Chrome真机、长时间录制真实硬件/中国大陆网络可达性、Worker/D1/R2云端同步。云端Pages操作成功不等于这些能力通过；本次验证工具无法直接打开 `github.io` 公网页面。
+
+## V3.4.1 型号弹幕修复（2026-11-07）
+
+用户在手机实测 V3.4 后指出：练播房当前没有购物袋或商品编号，但弹幕仍问“几号链接/几号商品”，主播无法据此回答。V3.4.1 已修复为按当前训练板块提问公开型号功能、型号差异或品类通用问题。
+
+### 交互规则
+- 不再使用“几号商品/几号链接”作为问题前提；不假设直播间存在购物袋或商品链接编号。
+- 电视、冰箱、空调、洗衣机等有已收录公开型号的板块，从原 V3.4 公共型号清单中按品牌和品类匹配型号，再询问功能、特点或已列型号之间的区别。
+- 全品类弹幕须点明产品品类；型号对比不能把同一型号与自己比较。
+- 型号名称只使用已公开名单中已有内容；不能据系列名臆造尺寸SKU、功能参数、价格、优惠或卖点。
+- 雷鸟电视/显示器不借用 TCL 型号；智能门锁、本地生活及没有可靠型号资料的板块使用品类通用问题。
+- 京东/天猫仍共用规则，抖音仍单独配置；原16个训练板块不变。
+- 仅更改公开专项弹幕模板/规则及版本清单；逐题录音、Vosk录后转写、摄像头、旧站和65张历史卡均保持。
+
+### 安全与发布证据
+- 业务 PR #25：https://github.com/lijianjun004-star/tcl-v43-preview/pull/25
+- PR head：`c8b492906cf78bf8be303de1e8627cdfbc53ec59`
+- 独立分支：`fix/v341-model-based-barrage-20261107`
+- 发布合并提交：`b49fddda36606d750fa37dea3b00efcfb98eb57a`
+- verify-pages-release：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42255027148 ，completed/success；校验日志显示 candidate `site.zip` SHA-256 `6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544`，106文件（旧根43、原训练51、专项12），旧根逐字节保留，manifest/路径/哈希检查通过。
+- Pages 部署：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42255166738 ，completed/success；`Verify audited static bundle`、解压、Pages artifact上传、`Deploy independent test site` 均 success。
+- 线上入口仍为：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/
+- 本次未更改 CI策略、旧根站、`/tcl-v09-ab/`、其他仓库；未加入两个内部 XLSX、知识库讲解原文/改写版、517条监控原始记录。历史站脱敏仍为独立任务。
+- 新 `site.zip` SHA-256：`6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544`。
+- 回滚基线为 V3.4.0 `site.zip` SHA-256：`508f91d313da12c6465945b531540f4b476544f2dcde3de3c39a8a3e24dd37e5`，需以最新 main 建新PR并同步匹配校验值，不能直接重写 main。
+
+### 本次测试（仅列实际执行结果）
+- `npm run lint`：通过；`npm test`：65/65。
+- 新增型号弹幕专项：20/20。
+- V3.4逐题转写/弹幕模拟：22/22。
+- 正常浏览器流程：35/35；反向浏览器与录音异常测试：通过。
+- V3.3.8 摄像头异步适配：16/16；媒体生命周期：12项；隔离开播流程：通过；HTTP静态资源：9/9。
+- V3.3.7原版真实Chromium摄像头最后2项仍未执行；原版受限域名环境使用离线合成媒体适配15/15，不可视为真机测试。
+- 未执行：iPhone/Android真机验收、真实中文语音识别准确率、中国大陆实际模型下载速度；Pages部署成功不代表这些验收已通过。
