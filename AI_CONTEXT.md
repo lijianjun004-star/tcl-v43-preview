@@ -161,3 +161,31 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 本地实测：npm 65/65、v339 Vosk 浏览器mock 7/7、正向35/35、反向30/30、限额19/19、回归12/12、isolated 7/7、摄像头 v337 17/17 与 v338 16/16、HTTP 9/9、CI 校验器PASS与回归8/8；真实模型转写5.0秒、预下载3.0秒成功，0错误，缓存12条；发布 site.zip 子路径冒烟0个404/0外部请求/0错误。
 - 未验证：普通话识别准确率（无中文语音样本，测试音为蜂鸣，空结果属预期）；iPhone/Android 真机；中国大陆网络下 github.io 实际下载速度。手机验收：Wi-Fi 下先点「预下载/校验 Vosk 中文模型（48MB）」至完成，失败可重点（已缓存分片复用），再开播清楚朗读测试句并转写。
 - 回滚：新PR恢复 V3.3.9 site.zip 64cae310abb86cc6796d38243b305fb5ff8a944515ce140b3f2b4daef2858818 与匹配的 pages.yml 校验值。
+
+## V3.4.0 弹幕真实化 + 逐题转写检查 + 知识库接入准备（2026-11-06）
+
+本任务执行方为 ChatGPT；使用独立分支、业务 PR、固定 head SHA、实际 CI 成功后合并，之后由 GitHub Pages 发布。**这是独立测试站发布，不是正式评分产品验收。**
+
+- 发布入口保持：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ ；没有改动旧根站或 `/tcl-v09-ab/`，历史营销内容脱敏留作独立后续任务。
+- 用户最终决定：**京东/天猫共用训练数据与合规规则，抖音单独**。16个品类/平台板块不变，不拆出型号专属训练入口。
+- Part A：按平台生成模拟观众口吻弹幕，泛化昵称、无应答闲聊、随机连发与投诉优先处理；京东/天猫模板属于待补真实语料的中性过渡版本，不冒充原始弹幕。
+- Part B：每题独立会话ID、回答单题录音、Vosk已就绪自动录后转写、未就绪保留音频供补转写；跨题转写结果写回原题，离开会话旧结果作废；每题用时、合规提示与训练汇总保存在本机记录中，不宣称正式 AI 评分。
+- Part C：内部两份 XLSX **未提交至 GitHub，未加入 site.zip**。244条当前讲解词的合规改写草案仅在私有交付文件中、全部待运营审核且“允许公开=否”；本地导入脚本为独立交付，不放在12个公开静态资源中。知识库原文及任何改写版**必须经过运营审核与用户本轮明确同意公开后**方可上站；本次实际导入0条。
+- Part D：前端内置通用＋当前平台合规提示词表和人工复核标记，**不包含517条监控原始记录**。监控原话测试 517/517 命中只是关键词覆盖测试，不等于违法判定。
+- 维护边界：V3.3.7/V3.3.8摄像头原生视野、异步尺寸纠正与诊断未回退；V3.3.10 Vosk 模型预下载、固定SHA校验、300/600秒上限及缓存策略保留。没有修改 `live-practice-room`、CI策略或其他仓库。
+- 用户选择 **A：本轮先发布不新增敏感资料的V3.4；旧公开内容暂时保持原样，另行评估脱敏和安全回滚**。不得将该选择解释为授权新增知识库原文或促销素材。
+
+### 发布与校验
+- 业务PR #23：https://github.com/lijianjun004-star/tcl-v43-preview/pull/23
+- PR已验证head：`6d780808cb06cbc3cd2ad10ec4c4505f1fe227d2`
+- verify-pages-release：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42249890902 ，completed/success；GitHub可信基线检查实际输出 `verify-pages-release PASS: release/root/manifest/checksum/paths`，106个文件，旧根站43、原训练51、专项12，旧根逐字节保留。
+- 合并提交：`2b91fadad9d22f8d313825b8b3aa1f3c83abde83`
+- Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42250084012 ，completed/success，ZIP校验、解压、资源上传与deploy步骤全部success。
+- V3.4.0 site.zip SHA-256：`508f91d313da12c6465945b531540f4b476544f2dcde3de3c39a8a3e24dd37e5`。只修改 `site.zip` 和相应 `pages.yml` 哈希，未修改 CI。
+- 回滚需以届时最新main为基线走新PR恢复V3.3.10的 `site.zip` SHA-256 `108fb2bcb6b88a817fc63296d39724f38ee90f3e29b21472bfce39c1dc02904a` 与匹配工作流校验值；不得直接重写或清理用户数据。
+
+### 本轮独立测试与未验证项
+- `npm run lint` 通过；`npm test` 65/65；`local-http-static` 9/9；`v335-browser-independent` 35/35；`v335-reverse-browser` 进程成功完成；`v336-reverse-guards` 19/19；`flow-v331-regression` 12项通过；`flow-v331-isolated` 成功完成。
+- 摄像头 `v338-camera-async` 16/16；`v337-camera-stability` 原版受模拟HTTPS域名访问策略阻断，采用相同合成媒体场景的 about:blank 离线适配跑通15/15，原脚本最后2项真实Chromium摄像头**未执行**，不能写作原版17/17通过。
+- `v339-vosk-browser` 原版因Node Playwright/浏览器安装及模拟域名限制未原样执行，采用离线隔离适配7/7；`v34-browser` 逐题转写/弹幕/mock模型 22/22；合规规则对内部测试517/517命中，4条正常表达无命中；知识改写草案244条数值标记比较未发现差异，但仍需运营逐句复核。
+- 未执行：真正普通话录后识别准确率、iPhone Safari/Android Chrome真机、长时间录制真实硬件/中国大陆网络可达性、Worker/D1/R2云端同步。云端Pages操作成功不等于这些能力通过；本次验证工具无法直接打开 `github.io` 公网页面。
