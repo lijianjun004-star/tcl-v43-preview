@@ -189,3 +189,26 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 摄像头 `v338-camera-async` 16/16；`v337-camera-stability` 原版受模拟HTTPS域名访问策略阻断，采用相同合成媒体场景的 about:blank 离线适配跑通15/15，原脚本最后2项真实Chromium摄像头**未执行**，不能写作原版17/17通过。
 - `v339-vosk-browser` 原版因Node Playwright/浏览器安装及模拟域名限制未原样执行，采用离线隔离适配7/7；`v34-browser` 逐题转写/弹幕/mock模型 22/22；合规规则对内部测试517/517命中，4条正常表达无命中；知识改写草案244条数值标记比较未发现差异，但仍需运营逐句复核。
 - 未执行：真正普通话录后识别准确率、iPhone Safari/Android Chrome真机、长时间录制真实硬件/中国大陆网络可达性、Worker/D1/R2云端同步。云端Pages操作成功不等于这些能力通过；本次验证工具无法直接打开 `github.io` 公网页面。
+
+## V3.4.1 训练弹幕去商品编号、改问已公开型号（2026-11-07）
+
+用户在 iPhone Safari 实测发现：练播房没有购物袋或商品号，V3.4 弹幕仍问“几号多少钱/有什么功能”，实际无法对应商品。按用户要求 **只调整公开弹幕模板与生成器**，保持16个板块、平台分组和媒体/ASR链路不变。
+
+- 本次把两组平台（京东/天猫共用，抖音单独）的 `{n}号` 提问替换为 `{型号}` 及不同型号比较提问；包括价格咨询、功能、优惠、对比与连发。
+- 型号只取 V3.4 已经**公开**的 `training-boards.json.public_model_names`。电视组合条目如 `98/85/75/65 T7M Pro` 只展示来源中已记录的 **T7M Pro 系列**，不臆造任何具体尺寸 SKU。
+- 型号必须与练播品类一致：全品类问题显式注明 TCL 产品品类。雷鸟电视、雷鸟显示器、本地生活、智能门锁尚无核准的公开型号清单，**用通用品类问题替代**，不能拿 TCL 电视/显示器型号冒充雷鸟型号。
+- 用户原有安全决定 A 继续有效：旧根站、旧 `/tcl-v09-ab/`、`legacy-65.json` 保持不变，旧站脱敏留作后续独立任务；未审核知识库原文或改写版、内部两份 XLSX、原监控记录均**不能**加入公开站点。
+- 此次型号仅用于模拟观众提问，**没有依据未审核知识库生成标准答案，也不宣称型号级自动事实评分**。
+
+### 实际复验与发布
+
+- 本地：`npm run lint` PASS；`npm test` 65/65；新增型号弹幕 Chromium 模拟 20/20；V3.4 逐题转写模拟 22/22；原浏览器正常流程 35/35；浏览器反向测试进程 PASS；V3.3.8 摄像头异步 16/16；旧媒体生命周期 12项 PASS；隔离训练流程 PASS；HTTP静态资源 9/9。
+- 新安全与品牌隔离测试涵盖16板块全部平台、通用型号回退、系列名去尺寸组合、同品类不同型号比较、雷鸟品牌隔离及旧编号模式回退。
+- 当前主分支中与旧 V3.4 `site.zip` 相比只有4个 `tcl-specialty-v33/` 文件内容改变：`app.js`、`training-boards.json`、`index.html`、`static-manifest.json`。总计106个文件，根站43、旧训练站51、专项12；旧站和65卡逐字节保留。
+- 新 SHA-256：`6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544`；旧 V3.4 SHA-256：`508f91d313da12c6465945b531540f4b476544f2dcde3de3c39a8a3e24dd37e5`。
+- 业务 PR #25：https://github.com/lijianjun004-star/tcl-v43-preview/pull/25；锁定 CI 通过的 head `c8b492906cf78bf8be303de1e8627cdfbc53ec59`。
+- trusted `verify-pages-release` 实际运行 PASS：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42255027148 ；校验输出证实旧站逐字节保留、白名单、清单、SHA均通过。
+- 合并提交：`b49fddda36606d750fa37dea3b00efcfb98eb57a`；Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42255166738 ，completed/success，原生 GitHub Actions 完成部署。
+- 测试入口仍为：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
+- **未执行**：用户新发布版本的真实iPhone/Android二次验收、真人中文Vosk识别准确率、真实云数据库跨设备核验；自动化模拟结果不能代替这些检查。
+- 需要回滚时按独立 PR 恢复旧V3.4 `site.zip` 与 `pages.yml` 对应校验值，先核对当时最新 main，不修改根站、旧站或用户记录。
