@@ -248,3 +248,58 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 固定测试入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。本轮工具无法直接打开 github.io 公网页面，因此公网页面内容本身仍需用户真机确认；Actions success只证明部署链路成功。
 - **仍未执行**：iPhone Safari/Android Chrome V3.4.2真机复验、真人普通话Vosk准确率、中国大陆真实模型下载速度、长时间真实硬件录制、真实云数据库跨设备同步。当前没有正式AI评分，不得用模拟结果替代这些验收。
 - 回滚需以届时最新main建立新PR，同时恢复 V3.4.1 `site.zip` SHA-256 `6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544` 及匹配的 `pages.yml` 校验值；不得直接重写main或清理用户历史数据。
+
+
+## V3.4.3 训练逻辑一致性 + Agent 联合复验（2026-11-07）
+
+用户授权根据 V3.4.2 逆向审计发现继续修复，并允许调度可用 Agent 协作。Notion 已启用的“代码开发、排错与审查”“需求澄清、提示词优化与验收”技能实际加载并用于规则/验收方法；Notion Custom Agent 搜索/会话能力实际调用时返回 workspace entitlement 限制（需要 Notion Business），**未执行、无副作用**。独立 Agent 审查由仓库已启用的 GitHub Codex Review 承担。
+
+### 本轮确认并修复的核心业务问题
+
+- **主弹幕与参考要点同源**：V3.4.2 seed 题会用 `pickDanmu()` 另外随机一条主弹幕，但 `keyPoints` 仍来自当前 `q`，存在“回答 A、按 B 的要点自查”风险。V3.4.3 主训练题固定使用当前 `q.question`；随机弹幕只保留为辅助闲聊/投诉，不进入当前题的要点覆盖链。
+- **16 板块 × 3 阶段真正品类化**：48 道 seed 基础题按原有公开 `shared_product_knowledge_topics` 重写成各自品类的需求问诊、产品/服务讲解、价格与成交；不加入未经审核的型号事实或知识库原文。本地生活不再使用型号/SKU/耗电等家电泛化逻辑；智能门锁覆盖门体、供电、解锁、安装/售后。
+- **原子要点 + 受控同义表达**：seed exercise 增加与 `semantic_points` 等长的 `semantic_keywords`；自查仍明确“非 AI 评分”。上传/审核题没有关键词组时保留兼容 fuzzy 路径。
+- **负向语义边界**：否定/核对提示必须支配所命中的概念，不能只因附近出现无关“不能”而加分；短负向要点精确/同义表达继续兼容；受控 alias 自带“不/不能/核对/为准”等安全语义时可直接命中，纯“最低价/补贴/库存”等概念 alias 仍必须有约束提示。
+
+### Agent 复审形成的新增回归
+
+GitHub Codex 对多个固定 head 独立复审，真实发现并驱动修复：
+1. 上传/审核题无 `pointKeywords` 时负向同义句兼容回退；
+2. “禁止夸大 / 不做保证”等短负向要点精确匹配；
+3. “不能保证安装时间，但承诺最低价”不能误判为“已覆盖不承诺最低价”；
+4. “不能混用参数 / 不跨品类 / 分别核对”等自带安全语义的受控 seed alias 要能独立命中。
+
+最终 head `820679ccd07ff7cca2ffb13956a003d1d2d09476` 的 Codex Review：completed，`has_any_findings=false`、`has_unresolved_findings=false`。
+
+### ZIP 中文文件名事故与安全恢复
+
+- 首个 V3.4.3 候选用 shell `zip` 打包，`tcl-v09-ab/设备检查.html` 的 central-directory 名称未带 UTF-8 flag，被解释为 `tcl-v09-ab/Φ«╛σñçµúÇµƒÑ.html`。PR #30 在 trusted PR gate 的失败被处理前已合并到 main；随后 Pages 本身成功部署，但 trusted gate 已正确记录 `Missing key entry: tcl-v09-ab/设备检查.html`。
+- 直接提交正确 UTF-8 ZIP 时，当前 main 的坏 ZIP 已成为 baseline，旧门禁又会以“非专项文件名变化”拒绝修复。PR #31 因此关闭、未合并。
+- CI-only PR #32 仅修改 `release-ci/release_guard.py` 与测试，新增**一次性、精确 baseline SHA + 精确坏名→正确名**的字节保持映射：
+  - 仅 baseline ZIP SHA `f2bae680a6262e41352e53f0f81edb68ad18dfb4769b2690da91e2e37db6e9dd` 可触发；
+  - 仅 `tcl-v09-ab/Φ«╛σñçµúÇµƒÑ.html` → `tcl-v09-ab/设备检查.html`；
+  - 坏源缺失或正确目标已存在均立即失败；
+  - 未知 SHA 完全不做 normalization；
+  - 其他 ZIP 边界、清单、文件数量、字节保持、路径白名单、Pages SHA 规则全部不放宽。
+- PR #32 trusted CI 成功，Codex exact-head 复审 0 finding 后合并：`df8d955a1a63fc5728ec393236c1db7c50c73515`。
+- 最终发布包使用 Python `zipfile`，106 文件，`tcl-v09-ab/设备检查.html` 存在且 UTF-8 flag = 0x800，CRC/testzip PASS。
+
+### 最终测试与发布证据
+
+- 最终 `site.zip` SHA-256：`687b2da761b8b394d6528684f85f5ed322adb2ce6da9d72e89be06483cad486e`。
+- V3.4.2 boundary guard：22/22 PASS，0 fail，1 WARN；WARN 仅提示 `training-boards.json` 的 `boards, version` 是预期业务变化，人工核对未引入未审核知识原文。
+- Claude V3.4.2 defect：23/23 PASS；invariant：11/11 PASS。
+- V3.4.2 Codex follow-up：9/9 PASS。
+- V3.4.3 targeted：27/27 PASS。
+- `app.js` 与 `lib/qa-import.js` Node syntax：PASS。
+- 最终业务 PR #34：https://github.com/lijianjun004-star/tcl-v43-preview/pull/34 ；trusted gate：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42351666382 ，completed/success。
+- 最终业务合并提交：`309df80525ec84199fa973a323be079bd5d1a98b`。
+- Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42351910450 ，completed/success；`Verify audited static bundle`、解压、artifact 上传、`Deploy independent test site` 全部 success。
+- 固定实测入口仍为：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
+
+### 仍未执行 / 不得冒充通过
+
+- 当前容器没有 Playwright，V3.4.3 真浏览器自动化层未执行；Node/纯函数测试不能替代浏览器断言。
+- iPhone Safari、Android Chrome V3.4.3 真机；真人普通话 Vosk 准确率；中国大陆首次约 48MB 模型下载；长时间真实硬件录像；真实云数据库跨设备同步仍未执行。
+- 当前要点覆盖属于关键词/受控同义表达“自查”，不是正式 AI 评分或事实判定。
+- 摄像头 V3.3.7/V3.3.8、Vosk 来源/整包 SHA/缓存与超时、旧根站 43 文件、`/tcl-v09-ab/` 51 文件内容、`legacy-65.json` 继续受保护；未加入内部 XLSX、未审核知识库原文/改写版、517 条监控原话。
