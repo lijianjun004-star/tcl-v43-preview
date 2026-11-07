@@ -280,3 +280,34 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 原浏览器全流程 Playwright 因 URLBlocklist 管理策略阻断目标地址，未执行到业务断言。iPhone Safari、Android Chrome、真人普通话 Vosk、中国大陆网络首次模型下载速度、长时真实硬件录制、真实跨设备后端均**未执行**。
 - 当前工具无法直接打开 `github.io` 公网入口进行端到端验证；Pages Actions 成功证明发布链路，不证明所有客户端可用。
 - 后续如需回滚：先核对实时 main，以新 PR 修改 `site.zip` 及 Pages SHA，禁止强制改写 main 或清理用户历史数据。
+
+
+## V3.4.4 逐题汇总与中文数字后处理修复（2026-11-07）
+
+**用户实测反馈**：V3.4.3 的“逐题回答汇总”没有文字；中文口述数字、型号可能被 ASR 听错或被转换逻辑误改。本次修复只改善保留、汇总、回填和保守数字格式化，不宣称 Vosk 模型本身识别准确率已提升。
+
+### 业务调整
+- 逐题汇总优先显示用户已保存的人工回答，再回退到本题识别文字；录音存在但识别未完成时显示明确的待补转写状态和入口。
+- Vosk 在用户主动触发准备后可以串行补转写此前本场保留的单题录音。浏览器语音识别结果也写回当前本题记录，不仅停留在临时编辑框。
+- 题目切换和结束本场时保存当前编辑稿；全场录后文字只在用户明确选择复制时填入当前题，不自动拆分并伪造逐题转写。
+- 同题重录清除旧 normalized/raw ASR 文字，使用每题 `audioRevision` 阻止旧音频识别回写。Vosk 与浏览器 ASR 共享修订状态，避免旧结果覆盖新结果；任务出队前检查已识别的题并跳过过期队列项。
+- 保留模型**识别原文**供核对，手动修改的文本优先显示、保存。识别原文与规范化文本相同时，若与人工修正答案不同仍允许展开原文。
+- **保守口述数字格式化**：仅转换明确的数字与单位，例如 `七十五寸→75寸`、`两点五匹→2.5匹`、`一千九百九十九元→1999元`、`百分之八十→80%`。保留 `两三分钟`、`十五六分钟`、`一万五元`、`百分之十几`、`几十分钟`、`三到五元` 等近似或省略表达，禁止局部转换。将 `千瓦`、`千瓦时` 等复合单位视为完整单位，避免拆错。并不从训练题推测实际型号、价格和正确数值。
+- 合规负向要点匹配的后置否定范围得到额外修复（例如“最低价不用怀疑”不误判为“不承诺最低价”）。其结果仍是有限规则的参考自查，而非正式 AI 自动评分。
+
+### GitHub 分支、审查、CI 和上线
+- 仅使用独立业务 PR #37：https://github.com/lijianjun004-star/tcl-v43-preview/pull/37 。审查过程中 Codex 多次提出真实 P2：模糊数字误转换、重录旧 rawTranscript、复合单位拆分、模糊百分比局部转换、双引擎识别竞态、排队 Vosk 覆盖浏览器识别、清空人工编辑后答案不同步，以及十几/十七八等区间误转换。每次先修再提交和重新审查。
+- 唯一最终业务 head：`8690e8299dc70e96371b5a8f885b25f8d5d3efc7`。Codex 对该 exact head 的最新代码复审为 `status=completed`，`has_any_findings=false`，`has_unresolved_findings=false`。旧 head 的绿灯不得替代新 head。
+- Trusted PR CI：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42358888120 ，`completed/success`。
+- 业务合并 SHA：`062f92a039a44ba93d585e936ae7046c66bcaa54`。
+- 最终 106 文件 `site.zip` SHA-256：`05ccd22f13acad926128e59155c83b57c98576ee2351975a990220c7a2faf745`，并与 Pages workflow 中的 pinned SHA 匹配。只修改 `site.zip` 和其 Pages SHA。
+- Pages 发布：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42360506753 ，`completed/success`；Verify audited static bundle、Extract、Upload 和 Deploy 全部成功。
+- 实测入口保持：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
+- 根站 43 文件、`/tcl-v09-ab/` 51 文件、`legacy-65.json` 和原摄像头核心、Vosk 模型来源/整包 SHA 等边界保持；未纳入未审核知识资料。
+
+### 测试证据、保留风险
+- V3.4.4 专项回归 74/74 PASS；V3.4.3 专项 30/30 PASS；Claude 旧缺陷 23/23 PASS、不变量 11/11 PASS；边界守卫 22/22 PASS。
+- 已用隔离 Chromium + 模拟浏览器 ASR 事件验证页面、逐题 DOM 汇总、人工纠错显示、补转写入队、跨引擎回调竞态；未见该测试中的 JS 异常。这些测试**不能代替真人普通话模型识别测试**。
+- **仍未执行**：iPhone Safari 和 Android Chrome 真机权限/录音/回放、真实普通话语音下的数字/型号准确率、中国大陆网络 Vosk 首次下载、长时录制、真实跨设备后端同步，以及完整端到端 Playwright 公网导航。
+- 后续需要收集同一题的“用户实际说法、原始模型识别文本、人工纠正文本、浏览器/设备、模型准备状态”，区分声学模型听错与文本格式化错误。明确禁止在缺少真实语音证据时声称“中文准确率已达到验收标准”。
+- 本版本不改仓库 `tcl-live-monitor`；不修改旧版训练站或其他 Pages 路径。回滚须先核对届时实时 main，通过新独立 PR 及可信门禁实施。
