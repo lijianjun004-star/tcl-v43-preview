@@ -311,3 +311,27 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - **仍未执行**：iPhone Safari 和 Android Chrome 真机权限/录音/回放、真实普通话语音下的数字/型号准确率、中国大陆网络 Vosk 首次下载、长时录制、真实跨设备后端同步，以及完整端到端 Playwright 公网导航。
 - 后续需要收集同一题的“用户实际说法、原始模型识别文本、人工纠正文本、浏览器/设备、模型准备状态”，区分声学模型听错与文本格式化错误。明确禁止在缺少真实语音证据时声称“中文准确率已达到验收标准”。
 - 本版本不改仓库 `tcl-live-monitor`；不修改旧版训练站或其他 Pages 路径。回滚须先核对届时实时 main，通过新独立 PR 及可信门禁实施。
+
+## V3.4.5 弹幕多样化专项发布（2026-11-07）
+
+本次按用户确认的原 GitHub 发布链路直接实施；不要求 Work、不重建仓库、不触碰其他项目。**性质仍是测试站**，不等于正式稳定版。
+
+### 真实发布证据
+
+- 来源：用户上传的 `TCL-V3.4.5-弹幕多样化-复验与候选包(4).zip`，内含 `01-候选发布/site.zip` 及复验证据和修复脚本。
+- 发布 PR #39：https://github.com/lijianjun004-star/tcl-v43-preview/pull/39 ，唯一业务 head `be193cc4b9b15272e55d9629d883b752a1314eda`，从 V3.4.4 main 基线 `741a198d92683816f76b87f00dfc737b08381c3a` 建独立分支。仅修改 `site.zip` 与 `.github/workflows/pages.yml` 中的匹配校验值。
+- GitHub Blob 传输后重新计算并核对 Git 对象 SHA：`070d06323a4e076f86c3bd5ebfc5abaa42dd20f5`；候选 `site.zip` 的 SHA-256 为 `a4db4efed7e095f01d283ca8866a348b34c8f8f74816fe8e6a716cc097c7eed8`。
+- 候选 106 个 ZIP 文件全部通过 CRC/testzip；12 个专项文件与上传包的 12 个源码文件逐字节一致。独立读取 GitHub 最新 main 的旧 `site.zip` 对账了全部 106 个目录项：仅 `tcl-specialty-v33/app.js`、`index.html`、`training-boards.json`、`static-manifest.json` 四项出现 CRC/解压长度变化，其余 102 项一致；可信 CI 进一步执行发布门禁。受压缩参数影响，重新压缩后的 ZIP 成员压缩字节不保证相同，保留结论针对解压资源内容。
+- 可信 PR CI：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42373906885 ，`verify-pages-release` completed/success。
+- 合并提交：`305ef81cdb548cd9c692ee7ce2131c6a9ea344da`；对应 Pages Actions：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42373987406 ，completed/success；验证静态包、解压、上传和 Pages 部署步骤全部 success。
+- 固定专项入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。本次外部网页访问工具未能直接访问 `github.io`，**没有宣称完成真实公网端到端浏览器验收**；Actions 发布成功是独立证据。
+
+### 变更边界与功能
+
+- 保留 16 个板块及原训练要点、合规自查，不生成未经核准的知识库讲解词。
+- 观众弹幕采用同阶段不同口语问法、洗牌袋避免快速重复、随机昵称、平台差异化闲聊和优先投诉；主播提示展示原训练要点。
+- 不更改根站 43 个文件与 `/tcl-v09-ab/` 51 个文件的解压资源、摄像头核心、Vosk 整包 SHA 校验和来源、转写防串题、`legacy-65.json` 或 `app-config.json`。不修改 `live-practice-room`、`tcl-live-monitor` 或 CloudBase。
+- 上传包所附复验记录：弹幕多样化测试通过；v335-browser-independent 35/35、v335-reverse-browser 29/29、v336-reverse-guards 19/19、V3.3.7 camera 17/17、V3.3.8 camera async 16/16、V3.3.9 mock 7/7，以及实际 Vosk 下载/初始化/逐题识别/写回链路在合成音频环境下通过。上述细项为**交接包提供的证据**，不能误称本次 GitHub Actions 全部重新运行。独立执行过 ZIP 完整性、106 项差异检查；PR 可信发布门禁已在 GitHub 重新通过。
+- 已知 P2：旧 V3.3.10 单测资产在 V3.4.4 与 V3.4.5 上均只有 44/59 通过，另有一个超时；不能将过期断言当作 V3.4.5 新回归，也不能声称全套单测通过。
+- **未完成**：iPhone Safari、Android Chrome 真机；真人普通话及数字/型号识别准确率；中国大陆网络首次加载约 48MB Vosk 模型；长时真机音画录制；跨设备后端；本工具对 `github.io` 公网入口的直接访问。不可伪造识别文字或宣布正式稳定。
+- 回滚基线：V3.4.4 `site.zip` SHA-256 `05ccd22f13acad926128e59155c83b57c98576ee2351975a990220c7a2faf745`；重新开独立 PR 同步恢复 `site.zip` 和 Pages 校验值，不强推、不清缓存。
