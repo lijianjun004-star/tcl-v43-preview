@@ -1,6 +1,6 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-04。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-07。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
@@ -143,7 +143,7 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - site.zip SHA256：64cae310abb86cc6796d38243b305fb5ff8a944515ce140b3f2b4daef2858818。专项目录仍12文件，清单版本v3.3.9-zh-asr，旧根站43与/tcl-v09-ab/51文件逐字节不动。CI规则未修改。
 - 分项实跑：原Node30/30、静音复读中文检查16/16、Vosk加载器13/13、入口取消/防重/离页/SHA保护6/6（Node VM模拟），npm65/65、HTTP9/9、门禁8/8、远端实际base/head的--verify-pr PASS。预览重新生成，标题/package/清单更新。
 - 未执行：原七组浏览器测试及新增7项Vosk浏览器mock、真实Vosk普通话推理、iPhone/Android真机；Python Playwright安装成功但Chromium下载无效ZIP。线上vosk.js真实下载SHA匹配，不等于模型准确率已验收；没有虚构识别文本、耗时或内存。
-- 有意的同源只读依赖：https://lijianjun004-star.github.io/live-practice-room/voice/ 。未修改该仓库；vosk.js固定SHA ed356edb8ac3c69df419d9252f1029bb04e23e381320f7a4611beb2d25217beb；11分片各自校验（固定映射在app.js），拼接43847018字节整包SHA ea1bfd4aebbe1bff20ec665c566bf4f2862e9e6cbfbb6d36dfb3357ebe1ef689。组件校验后才Blob执行，整包校验后才创建Model。对方更新资源后如哈希变化必须拒绝加载，需核验后同步固定哈希，不自动接受更新。
+- 有意的同源只读依赖：https://lijianjun004-star.github.io/live-practice-room/voice/ 。未修改该仓库；vosk.js固定SHA ed356edb8ac3c69df419d9252f1029bb04e23e381320f7a4611beb2d25217beb；11个模型分片当前使用固定文件名映射并做大小/非HTML启发式检查，**没有逐分片SHA-256**；真正的密码学完整性闸门是拼接43847018字节后的整包SHA ea1bfd4aebbe1bff20ec665c566bf4f2862e9e6cbfbb6d36dfb3357ebe1ef689。V3.4.2继续强制整包SHA校验，并在整包校验失败时清除11个缓存分片后再允许重试；vosk.js校验后才Blob执行，整包模型校验后才创建Model。对方更新资源后如哈希变化必须拒绝加载，需核验后同步固定哈希，不自动接受更新。
 - 独立缓存tcl-specialty-vosk-v1，不清理其他缓存；首次约48MB/Wi-Fi确认、文件进度、可重试、下载/模型/推理有界等待并保留真实后台作业锁，取消与旧结果不得串场。模型加载和准确率仍需真机验收。
 - 入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。手机验收：180秒/48MB以内清楚朗读测试中文2–3遍并停顿，结束后默认Vosk，确认首次下载，核对关键词和复读提示，保留机型/浏览器/时长/截图。测试句仅用于识别，不作商品或活动承诺。
 - 回滚用新PR恢复V3.3.8 site.zip f80ffea116bef019d22014abcfd293235251f1e846cf3685b41fe1703b398abf 和匹配校验值，不清理用户数据，先核对实时main期间改动。未接付费/后台服务、不加日文注音处理。本轮只放行独立测试站，不声称正式稳定版。
@@ -212,3 +212,39 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 测试入口仍为：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
 - **未执行**：用户新发布版本的真实iPhone/Android二次验收、真人中文Vosk识别准确率、真实云数据库跨设备核验；自动化模拟结果不能代替这些检查。
 - 需要回滚时按独立 PR 恢复旧V3.4 `site.zip` 与 `pages.yml` 对应校验值，先核对当时最新 main，不修改根站、旧站或用户记录。
+
+
+## V3.4.2 Gemini/Claude/Codex 回归加固（2026-11-07）
+
+用户将 V3.4.1 固定提交 `daea8a41f5aadf8f42d610f6946aed42cdb831bb` 先交由 Gemini 第一轮全面反推，再由 Claude 第二轮独立交叉复验，并提供 `tcl-v342-regression-pack.zip`。本轮由 ChatGPT 结合两份报告、回归包和额外代码审查实施最小增量修复。**仍属于独立测试站迭代，不等于真人中文识别、真机或正式AI评分已经验收。**
+
+### 修复范围与边界
+
+- Vosk 预下载改为独立生命周期：准备页显示下载/校验进度，开始直播不再误取消预下载；模型就绪后刷新既有题目的“补转写”按钮。
+- toast 提升到直播/准备/抽屉之上；优先投诉弹幕保留警示底色并作为独立插入，不再混入主训练问题。
+- 单题 Vosk 转写串行队列化，阻止与整场识别并发；录音/封装期间不再从队列移除待转写题，录音结束后继续消费；业务取消不销毁已加载模型。
+- 重录会清理旧 transcript、合规和要点结果，但保留已人工保存且不同于旧 transcript 的回答；首次响应用时不被重录覆盖；结束直播时收敛未完成录音状态。
+- 切平台、切板块、返回首页清理本场 session/active turn/音频和转写状态，避免跨场串题。
+- 显示器尺寸、本地生活、智能门锁、全品类参数/场景按当前品类修正；公开型号清洗支持多系列拆分并剔除歧义单尺寸SKU；雷鸟继续禁止借用TCL型号。
+- 京东/天猫仍共享训练规则，但按当前直播间识别“提到其他平台”；CR05收紧为竞品语境，避免普通描述误报。
+- ASR复读检测不再因为正常多次说“TCL”删词；要点匹配收紧否定语义与过短片段；运营导入补齐参考话术等答案列别名和冲突校验。
+- 运营导入表头采用精确优先、短表头模糊匹配；问题列与答案列必须不同；识别到问题表头但没有答案表头时保持 `incomplete`，不得拿“来源”等元数据冒充答案；无表头两列问答继续兼容。
+- 品类共享冲突在实际导入路径显式带入当前 category，只在同品类比较；不同品类同名问题不互相阻断。
+- Vosk整包SHA-256继续是无条件最终完整性闸门；整包校验失败清除11个缓存分片，避免坏缓存无限重试。没有新增或宣称不存在的逐分片SHA。
+- 额外加固：识别器异步 error 可立即结束等待而不是白等30秒；云端待审ID写入 `data-*` 前转义。
+- **未处理且继续独立**：F-17旧根站SW/CI策略、F-19参考话术展示、F-20旧站脱敏；Claude判定不成立的F-13未据此修改识别器。
+- 旧根站43文件、`/tcl-v09-ab/` 51文件、`legacy-65.json`、V3.3.7/V3.3.8摄像头核心代码/样式逐字节或受守卫保持；未加入内部XLSX、未审核知识库原文/改写版或517条监控原话。
+
+### 回归、Codex复审与发布证据
+
+- 最终候选 `site.zip` 共106文件，SHA-256：`fa9bd90b750d7ad5aa5312858b86c068b4804b74c9ae7a6595e5942f15ff9747`；ZIP CRC/testzip通过。
+- 本地边界守卫：22/22 PASS，0 fail / 0 warn；Claude纯函数回归：23/23缺陷用例 PASS、11/11不变量 PASS；针对Codex后续发现追加定向用例最终9/9 PASS；`app.js` 与 `lib/qa-import.js` Node语法检查通过。
+- 原始Playwright浏览器回归**未执行到业务断言**：当前执行容器Chromium受系统管理策略 `URLBlocklist=["*"]` 阻断，生产origin与localhost均返回 `ERR_BLOCKED_BY_ADMINISTRATOR`。此项不能写作通过或失败，也不能用Node模拟替代真浏览器。
+- 业务 PR #28：https://github.com/lijianjun004-star/tcl-v43-preview/pull/28 。最终固定 head：`49d87dc94dd83663c811497ccb05abe1a4df1808`。
+- trusted `verify-pages-release` 最终运行：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42345104558 ，completed/success。
+- Codex在早期head依次发现4项P2、1项P2、1项P2，共6项真实边界缺陷，均先修复并新增定向回归；对最终head `49d87dc...` 的复审 completed，`has_any_findings=false`、`has_unresolved_findings=false`。
+- 合并提交：`cb4319bffdbc837ce6cbbbb4c39c400afd540e82`。
+- Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42345345717 ，completed/success；`Verify audited static bundle`、解压、Pages artifact上传、`Deploy independent test site` 全部 success。
+- 固定测试入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。本轮工具无法直接打开 github.io 公网页面，因此公网页面内容本身仍需用户真机确认；Actions success只证明部署链路成功。
+- **仍未执行**：iPhone Safari/Android Chrome V3.4.2真机复验、真人普通话Vosk准确率、中国大陆真实模型下载速度、长时间真实硬件录制、真实云数据库跨设备同步。当前没有正式AI评分，不得用模拟结果替代这些验收。
+- 回滚需以届时最新main建立新PR，同时恢复 V3.4.1 `site.zip` SHA-256 `6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544` 及匹配的 `pages.yml` 校验值；不得直接重写main或清理用户历史数据。
