@@ -73,6 +73,26 @@ class GateTests(unittest.TestCase):
             with self.assertRaises(gate.GateFailure):gate.inspect_zip(self.archive(payload=b'x'*9))
         finally:gate.MAX_SINGLE_FILE_BYTES=old
 
+    def test_known_baseline_filename_repair_is_exact_and_byte_preserving(self):
+        known = 'f2bae680a6262e41352e53f0f81edb68ad18dfb4769b2690da91e2e37db6e9dd'
+        bad = 'tcl-v09-ab/Φ«╛σñçµúÇµƒÑ.html'
+        good = 'tcl-v09-ab/设备检查.html'
+        original = {bad: b'device-bytes', 'index.html': b'root'}
+        repaired, mapping = gate.normalize_known_baseline_names(known, original)
+        self.assertEqual(mapping, {bad: good})
+        self.assertEqual(repaired[good], b'device-bytes')
+        self.assertNotIn(bad, repaired)
+        self.assertIn(bad, original)  # helper must not mutate its input
+
+        unchanged, mapping = gate.normalize_known_baseline_names('0' * 64, original)
+        self.assertEqual(mapping, {})
+        self.assertEqual(unchanged, original)
+
+        with self.assertRaisesRegex(gate.GateFailure, 'source is missing'):
+            gate.normalize_known_baseline_names(known, {'index.html': b'root'})
+        with self.assertRaisesRegex(gate.GateFailure, 'target already exists'):
+            gate.normalize_known_baseline_names(known, {bad: b'a', good: b'b'})
+
     def test_pr_policy(self):
         repo=self.root/'repo';repo.mkdir()
         def git(*args):
