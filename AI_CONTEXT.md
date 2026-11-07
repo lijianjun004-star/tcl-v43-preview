@@ -248,3 +248,35 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 固定测试入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。本轮工具无法直接打开 github.io 公网页面，因此公网页面内容本身仍需用户真机确认；Actions success只证明部署链路成功。
 - **仍未执行**：iPhone Safari/Android Chrome V3.4.2真机复验、真人普通话Vosk准确率、中国大陆真实模型下载速度、长时间真实硬件录制、真实云数据库跨设备同步。当前没有正式AI评分，不得用模拟结果替代这些验收。
 - 回滚需以届时最新main建立新PR，同时恢复 V3.4.1 `site.zip` SHA-256 `6af70cb7b21911a605aa47c8df4e0bd96a4b436084a6f7527187bfa95e324544` 及匹配的 `pages.yml` 校验值；不得直接重写main或清理用户历史数据。
+
+
+## V3.4.3 多 Agent 训练一致性修复（2026-11-07）
+
+**业务与安全边界**：仅 TCL 智能练播房独立测试站 `tcl-v43-preview/tcl-specialty-v33/`。旧根站 43 文件、`/tcl-v09-ab/` 51 文件、`legacy-65.json`、摄像头 V3.3.7/V3.3.8 核心、Vosk 整包 SHA 与原有限额保持不变。未导入未审核知识库原文、内部 XLSX 或直播监控记录。本版仍没有正式 AI 自动评分。
+
+### 已实现
+- 训练主弹幕使用当前教学题 `q.question`，与对应 `keyPoints` / `pointKeywords` 同源；随机弹幕只作辅助闲聊/投诉。
+- 16 板块 × 3 阶段共 48 道 seed 题按现有品类重写，特别纠正本地生活、智能门锁及显示器等板块的通用家电错配。
+- seed 题增加受控 `semantic_keywords` 原子要点同义词；上传/审核题无 aliases 时仍保留兼容判断。自查是规则匹配，不是语义大模型评分。
+- 负向要点由词面相似升级为邻接否定/核对约束，修复短负向、同义改写、无关否定和自带否定含义别名等 Codex 反馈。自然语言组合仍不保证语义完全正确，出现前后矛盾的回答需人工复核。
+
+### 并发和发布门禁的经验
+- PR #30 业务初版因 ZIP 中文文件名编码导致可信门禁失败，但被过早合并；随后 PR #31 被关闭，没有合并。
+- CI-only PR #32 已完成针对**唯一已知坏 ZIP SHA**的定点中文文件名恢复规则和回归；该例外不适用于其他 ZIP/文件名。
+- PR #33 与 #34 是同源重复发布候选。为防止重复合并，#33 主动关闭且未合并，只以 #34 作最终发布。
+- 真实最终发布 PR #34：https://github.com/lijianjun004-star/tcl-v43-preview/pull/34
+- PR #34 最终 head：`820679ccd07ff7cca2ffb13956a003d1d2d09476`；GitHub trusted CI：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42351666382 （success）。
+- Codex 对该 **exact head** 的最后复审：`status=completed, has_any_findings=false, has_unresolved_findings=false`。对旧 head 的历史 P2 不能与最终 head 混淆。
+- 合并提交：`309df80525ec84199fa973a323be079bd5d1a98b`。
+- 最终 `site.zip`：106 文件，SHA-256 `687b2da761b8b394d6528684f85f5ed322adb2ce6da9d72e89be06483cad486e`；UTF-8 `tcl-v09-ab/设备检查.html` 存在，ZIP CRC/testzip PASS。
+- Pages：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42351910450 ，completed/success；Verify audited static bundle、Extract、Upload、Deploy 全部 success。
+- 入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/
+
+### 已执行与未执行的边界
+- V3.4.2 boundary guard：22/22 PASS，0 fail，1 个预期人工审核 WARN（只因 `training-boards.json` 的 `boards/version` 变化）。
+- 旧缺陷回归：23/23 PASS；旧不变量：11/11 PASS；Codex 既有定向回归：9/9 PASS；V3.4.3 新定向：27/27 PASS。
+- `app.js`、`lib/qa-import.js` Node 语法检查通过；ZIP CRC/testzip、manifest 11 文件哈希核对通过。
+- 在受限 Chromium 用 about:blank 注入应用脚本和本地 JSON 替身，已实际看到 16 板块首页及“本地生活”板块入口，未观察到该检查中的 JS 页面错误；**不等于完整 Playwright 流程回归或真机验收**。
+- 原浏览器全流程 Playwright 因 URLBlocklist 管理策略阻断目标地址，未执行到业务断言。iPhone Safari、Android Chrome、真人普通话 Vosk、中国大陆网络首次模型下载速度、长时真实硬件录制、真实跨设备后端均**未执行**。
+- 当前工具无法直接打开 `github.io` 公网入口进行端到端验证；Pages Actions 成功证明发布链路，不证明所有客户端可用。
+- 后续如需回滚：先核对实时 main，以新 PR 修改 `site.zip` 及 Pages SHA，禁止强制改写 main 或清理用户历史数据。
