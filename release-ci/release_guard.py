@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TCL Pages release gate (V2.1). Python stdlib only; does not access network or write to GitHub."""
+"""TCL Pages release gate (V2.2). Python stdlib only; does not access network or write to GitHub."""
 import argparse
 import hashlib
 import json
@@ -24,6 +24,14 @@ MAX_TOTAL_UNCOMPRESSED_BYTES = 60 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 250
 MAX_ARCHIVE_BYTES = 80 * 1024 * 1024
 
+# One-time recovery for the exact malformed V3.4.3 archive that reached main.
+# This is deliberately pinned to one baseline SHA and one exact byte-preserving filename rename.
+KNOWN_BASELINE_FILENAME_REPAIRS = {
+    'f2bae680a6262e41352e53f0f81edb68ad18dfb4769b2690da91e2e37db6e9dd': {
+        'tcl-v09-ab/Φ«╛σñçµúÇµƒÑ.html': PREFIX + '设备检查.html',
+    },
+}
+
 
 class GateFailure(Exception):
     pass
@@ -31,6 +39,23 @@ class GateFailure(Exception):
 
 def sha256(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def normalize_known_baseline_names(baseline_sha, files):
+    """Repair only explicitly pinned malformed baseline names; never normalize arbitrary archives."""
+    repaired = dict(files)
+    mapping = KNOWN_BASELINE_FILENAME_REPAIRS.get(baseline_sha, {})
+    if not mapping:
+        return repaired, {}
+    applied = {}
+    for bad, good in mapping.items():
+        if bad not in repaired:
+            raise GateFailure(f'Known baseline filename repair source is missing: {bad}')
+        if good in repaired:
+            raise GateFailure(f'Known baseline filename repair target already exists: {good}')
+        repaired[good] = repaired.pop(bad)
+        applied[bad] = good
+    return repaired, applied
 
 
 def _preflight_container(raw):
@@ -298,6 +323,9 @@ def main():
         if a.baseline:
             base_raw, baseline = inspect_zip(a.baseline)
             out['baseline_sha256'] = sha256(base_raw)
+            baseline, filename_repairs = normalize_known_baseline_names(out['baseline_sha256'], baseline)
+            if filename_repairs:
+                out['baseline_filename_repairs'] = filename_repairs
             changed_root = sorted(name for name, content in baseline.items() if not name.startswith((PREFIX, SPECIALTY)) and current.get(name) != content)
             unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith((PREFIX, SPECIALTY)))
             if changed_root or unexpected_new:
