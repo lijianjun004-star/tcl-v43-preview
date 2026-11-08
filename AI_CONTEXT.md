@@ -335,3 +335,23 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 已知 P2：旧 V3.3.10 单测资产在 V3.4.4 与 V3.4.5 上均只有 44/59 通过，另有一个超时；不能将过期断言当作 V3.4.5 新回归，也不能声称全套单测通过。
 - **未完成**：iPhone Safari、Android Chrome 真机；真人普通话及数字/型号识别准确率；中国大陆网络首次加载约 48MB Vosk 模型；长时真机音画录制；跨设备后端；本工具对 `github.io` 公网入口的直接访问。不可伪造识别文字或宣布正式稳定。
 - 回滚基线：V3.4.4 `site.zip` SHA-256 `05ccd22f13acad926128e59155c83b57c98576ee2351975a990220c7a2faf745`；重新开独立 PR 同步恢复 `site.zip` 和 Pages 校验值，不强推、不清缓存。
+
+## V3.4.6 Gemini 复验修复发布（2026-11-08）
+
+状态：**GitHub Pages 独立专项测试站部署成功，仍非正式稳定版**。沿用 `tcl-specialty-v33/` 固定入口，不修改其他仓库、CloudBase 或旧版本业务资源。
+
+### 发布与审查的可追溯事实
+- 来源：用户上传 `TCL-V3.4.6-Gemini核实与修复候选包.zip`，先读 `00-先读我-Gemini报告核实与V3.4.6候选.md`。交接说明包含 Gemini 五个 P2 的重现/修复记录及旧测试调整，外部报告结论需和实测区分。
+- 基线 main：`8bf8363a1ac28d3b8b4697e1ef0b373a804a4417`（V3.4.5）。业务 PR #41：https://github.com/lijianjun004-star/tcl-v43-preview/pull/41 。分支 `release/v346-gemini-fixes-20261108`；唯一审查 head `72fa976a93d3e33b509d8cc8d6034f2eb85596f8`。
+- 可信 PR CI：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42461675709 ，`verify-pages-release` completed/success。
+- **Codex 对同一最终 head 的审查已等待完成再合并**：PR 评论中的 `codex-review-state:v1` 记录 `commit_sha=72fa976a93d3e33b509d8cc8d6034f2eb85596f8`，`status=completed`、`has_any_findings=false`、`has_unresolved_findings=false`；无未解决的 review threads。没有重复 V3.4.5 业务 PR #39 在 Codex 提交 P2 前合并的问题（PR #39 合并 2026-11-07T12:46:50Z，Codex P2 评论随后 12:48:34Z 发布）。
+- 业务合并 SHA：`4908af4d86dba83e02704204b7c3a11b9cf4eae9`。对应 Pages Actions：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42462079203 ，completed/success；Verify audited static bundle、Extract、Upload 与 Deploy 全部 success。
+- 候选 `site.zip` SHA-256：`bbe690233242f458e95032e4d62c087ae0b60bc91d58803777f5d337b3fbb3bf`，与 `pages.yml` pinned SHA 相符。Git Blob SHA：`522df429dc88027b9db76c5365eff5f116f90117`。
+- 线上固定地址：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。**工作流部署成功不能代替真机或公网端到端验证**；本运行环境未独立访问线上 `github.io` 页面。
+
+### 变更和测试边界
+- `site.zip` 共 106 个文件且 CRC 完整。逐项解压内容对比 V3.4.5：仅 `tcl-specialty-v33/app.js`、`index.html`、`style.css`、`training-boards.json`、`static-manifest.json` 五项变更，其他 101 个资源逐字节一致（包括旧根站、旧训练站、`legacy-65.json`、Vosk 模型加载及 SHA 校验配置）。
+- 修复：雷鸟电视/雷鸟显示器问法隔离（qv184/qv214）；全品类跨品类对比；本地生活抖音成交问法；同题重录的新识别文本回填；主动清空人工回答后回退识别原文；聚焦态投诉红棕背景；单题识别推理锁，防止超时后新旧推理并发。
+- 本轮独立运行：Chromium 修复回归 `v346-fixes.py` **6/6 PASS**，弹幕多样化浏览器测试 PASS，v335-browser-independent / v335-reverse-browser / v336-reverse-guards 均退出 0；Node 可运行的六个测试文件 **61/61 PASS**。另外两个后端/源包测试文件因交接包缺少 `worker/src.js` 无法运行，不能计入通过。旧摄像头异步测试在本次重跑中已输出 `COMPLETE 16/16`，但测试进程未在调用超时前正常退出，**不计作完整退出成功**。交接包列有更广泛的复验和 69/69 记录，属于交接方结果，不能当成全部被本轮重新执行。
+- **仍未执行**：真人普通话与数字型号准确率、iPhone Safari / Android Chrome 摄像头与麦克风真机、国内网络首次下载约 48MB Vosk 模型、长时真实硬件音画同步、跨设备云端后端、公网完整端到端。
+- 回滚基线：V3.4.5 `site.zip` SHA-256 `a4db4efed7e095f01d283ca8866a348b34c8f8f74816fe8e6a716cc097c7eed8`；需开独立 PR 同时恢复 `site.zip` 和 `pages.yml` 校验值，禁止强推 main 或清除浏览器历史数据。
