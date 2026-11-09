@@ -355,3 +355,35 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 本轮独立运行：Chromium 修复回归 `v346-fixes.py` **6/6 PASS**，弹幕多样化浏览器测试 PASS，v335-browser-independent / v335-reverse-browser / v336-reverse-guards 均退出 0；Node 可运行的六个测试文件 **61/61 PASS**。另外两个后端/源包测试文件因交接包缺少 `worker/src.js` 无法运行，不能计入通过。旧摄像头异步测试在本次重跑中已输出 `COMPLETE 16/16`，但测试进程未在调用超时前正常退出，**不计作完整退出成功**。交接包列有更广泛的复验和 69/69 记录，属于交接方结果，不能当成全部被本轮重新执行。
 - **仍未执行**：真人普通话与数字型号准确率、iPhone Safari / Android Chrome 摄像头与麦克风真机、国内网络首次下载约 48MB Vosk 模型、长时真实硬件音画同步、跨设备云端后端、公网完整端到端。
 - 回滚基线：V3.4.5 `site.zip` SHA-256 `a4db4efed7e095f01d283ca8866a348b34c8f8f74816fe8e6a716cc097c7eed8`；需开独立 PR 同时恢复 `site.zip` 和 `pages.yml` 校验值，禁止强推 main 或清除浏览器历史数据。
+
+## V3.4.7 最小修正发布（2026-11-09）
+
+状态：**GitHub Pages 专项测试站已部署成功，仍不等同正式稳定版**。固定入口继续为 `/tcl-specialty-v33/`；不修改旧根站、`/tcl-v09-ab/`、其他仓库或 CloudBase。
+
+### 来源、复验与候选修正
+- 用户上传 `TCL-V3.4.7-复验与最小修正候选包.zip`，先读 `00-先读我-V3.4.6改版复验与V3.4.7候选.md`。该包说明：线上 V3.4.6 main 为 `a947aa967e677f0fc63e8191e7e5f02d6c75a239`，线上 `site.zip` SHA-256 `bbe690233242f458e95032e4d62c087ae0b60bc91d58803777f5d337b3fbb3bf`。
+- 原 V3.4.7 候选 `site.zip` SHA-256 为 `bcb4c4d8308a00cb6f023f86347435b3207f24e734a12b0ebd75610c8b8429b9`。独立复验确认 106 文件 ZIP CRC 正常、12 个专项文件与源码逐字节一致；当前环境实际重跑 `npm test` **66/66 PASS**、`npm run lint` PASS、`v346-fixes.py` PASS、`v346b-typing.py` PASS、`retry_after_timeout.py` PASS（`maxActive=1`）、`v345-danmu-variety.py` 16 板块 / 25 平台组合 PASS、`v338-camera-async.py` **16/16 PASS**。
+- 原包已纠正上一轮“69/69”统计错误：完整 Node 单元测试实际为 **66/66**。本包中“iPhone 14 Pro / Pixel 7 尺寸实测”不作为有效真机/准确视口证据；记录中的实际宽度均为 500px。
+- V3.4.7 相对线上 V3.4.6 的实质业务变化：转写等待期间人工输入即时保存、保留人工修改；本地生活/显示器/昵称弹幕隔离；保留单题 Vosk 推理互斥、不在超时时强制释放仍在运行的推理锁；分片等待时间随测试超时设置收敛；版本号更新为 V3.4.7。
+
+### PR #43、Codex P2 与最终修复
+- 业务 PR #43：https://github.com/lijianjun004-star/tcl-v43-preview/pull/43 。首次 head `95d0c57893f713646083175e63c6fba6e4540b33`。
+- 首次 head 的可信 PR CI 成功，但 Codex exact-head 审查发现 **P2**：当本题已有浏览器语音识别的旧自动文字，再执行 Vosk 补转写且得到不同新文字时，`turn.answer` 与逐题汇总会更新，但当前 `#answerText` 输入框仍可能保留旧自动文字；切题/结束时旧文字可能反向覆盖新回答。
+- GitHub 中 `@codex address that feedback` 因该仓库未配置 Codex Environment，未能直接自动修改分支；随后按该 finding 做最小修复并补回归：
+  - 没有人工编辑时，Vosk 新自动结果同步更新当前题输入框、`turn.answer` 和汇总；
+  - 识别等待期间人工输入继续保留；
+  - 识别等待期间用户主动清空也继续保留，Vosk 结果仅作为识别原文/回退文本；
+  - 新增精确回归覆盖“旧浏览器 ASR → Vosk 新结果”以及等待期间人工输入/清空，**3/3 PASS**。
+- 修复后重新构建最终 `site.zip`，SHA-256 **`2e2183c83067211c4ba550ad5dd8a065c7aaf8152fb7ce5e0037dd93ac2ad7da`**；Git blob SHA `ed4907bb1ffb48efb92dfab894cc0ec551f1faa2`。原候选 `bcb4c4d8…` 已作废，不得再发布。
+- 修复后重新运行：66/66 单元测试 PASS、lint PASS、Codex-P2 精确回归 3/3 PASS、V3.4.6 修复回归 PASS、真实输入事件回归 PASS、超时后重试 PASS（最大并发识别仍为 1）。
+- 最终业务 head：`39a7dc363db806f0780b3a67caf46934d8337f9d`。可信 PR CI：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42586600518 ，completed/success。
+- Codex 对该**最终 head**重新审查，状态：`completed`、`has_any_findings=false`、`has_unresolved_findings=false`；旧 head 的 P2 finding 不再作为最终未解决项。
+- 业务合并 SHA：`96e64451470be3cb0a4cdf71e93f26561ba60a46`。
+- Pages 部署：https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42587047560 ，completed/success；Verify audited static bundle、Extract、Upload、Deploy 均 success。
+
+### 发布边界、剩余风险与回滚
+- 独立对比候选 ZIP 与线上 V3.4.6：106 个目录项数量一致；实质内容变化集中在 `tcl-specialty-v33/app.js`、`index.html`、`training-boards.json`、`static-manifest.json`。中文 `设备检查.html` 在不同 ZIP 读取路径中出现文件名编码表现差异，但 CRC 与解压大小一致，不是内容变化。
+- 当前仍有 **P3**：回答框每次输入事件都会立即调用保存并重绘汇总；300 次连续输入测试触发约 300 次写库。当前模拟环境耗时约 53ms，功能正确，但低端手机 + 中文输入法下可能需要后续 300ms 左右防抖优化。本次不扩大需求。
+- **未执行/不能宣称**：真人普通话及数字/型号准确率、iPhone Safari / Android Chrome 真机权限与长时录制、中国大陆网络首次约 48MB Vosk 下载、完整公网端到端。当前网页读取工具无法直接访问 `github.io`，Pages Actions 成功只证明发布链路，不证明所有客户端已验收。
+- 固定测试入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
+- 回滚基线：V3.4.6 `site.zip` SHA-256 `bbe690233242f458e95032e4d62c087ae0b60bc91d58803777f5d337b3fbb3bf`；通过新的独立 PR 同步恢复 `site.zip` 和 `pages.yml` 校验值，禁止强推 main 或清除用户浏览器历史。
