@@ -407,3 +407,30 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 本轮独立执行：Node 事务模型双标签/去重/回滚/通知 15/15 PASS（**不是原生双标签 IndexedDB 验收**）；Chromium about:blank 注入 UI 14/14 PASS、隐私/截止状态 12/12 PASS；弹幕计时 15/15 PASS；JS 语法、ZIP CRC、manifest 完整性 PASS。Node Playwright 完整脚本因环境缺包未执行。
 - **未执行**：真实同源双标签原生 IndexedDB、iPhone Safari/Android Chrome 真机、真人普通话与产品数字/型号准确率、中国大陆网络模型首次加载、长时真机录制、正式跨设备后端及身份鉴权。姓名输入仅供本机测试，不能宣称运营数据生产级隔离。直播监控相关仓库、CloudBase、其他 Pages 路径均未改动。
 - 回滚：以届时最新 main 开新独立 PR，同时恢复 V3.4.8 `site.zip` SHA `155d56b66a8b4678e70407fe37da918a27b9a46914f864ec82a122e53357676d` 与对应 `pages.yml` pinned SHA；不得重写 main、清浏览器数据或覆盖其他站点。
+
+## 直播监控 R2.1 接力审计与修复（2026-11-10，执行方：Claude）
+
+**这是另一个项目的记录**：仓库 `lijianjun004-star/tcl-live-monitor`（TCL 京东直播监控），不是练播房。应用户要求记在本文件；该仓库自身没有 AI_CONTEXT.md。本节不改变练播房的任何状态、发布或回滚基线，本仓库的 `site.zip` 与 `pages.yml` 未动。
+
+### 来源与任务
+- 用户上传 `TCL京东直播监控_R2.1_Gemini复验与Claude交接完整包_20261110.zip`，按其中 `02-Claude接力审计任务书.md` 的 4 项执行审计，随后按用户逐步指示修复并合并。
+- 独立核验：`MANIFEST.json` 7/7、`HANDOFF_MANIFEST.json` 95/95 SHA-256 匹配；包内源码与分支 `experiment/r21-jd-today-delivery` 的 `5836da6` 逐字节一致；本地 `node --test tests/*.test.mjs` 188/188。
+
+### 审计结论
+- 未发现可绕过 `formal_opening_rate_percent: null` 的路径：7 条映射全为 `PENDING`，即使提供已核实排班与自称已证实的 LIVE 观测，结果仍为 `null` / `BLOCKED_IDENTITY`。
+- `MIXED_OBSERVED` 与 `OBSERVED_LIVE_PRESENT` 的差异不是数据问题：包内 `r21-accepted.json` 由提交 `50d75df`（20:22）生成，真实巡检 20:23:50 运行，`27a31ed`（20:28）才改枚举。
+- 单个 `OFFLINE` 会整包 `BLOCKED` 并清空房间；真实链路目前到不了这里（`tcl-jd-all.mjs` 写死 `offlineRuleValidated:false`），保留为上游契约被破坏的报警。
+- 15 分钟与 60 秒边界本身无漏洞。
+
+### 修复与合并（均为 squash 合入 `experiment/r21-jd-today-delivery`，合并前 CI 通过且 Codex 对该 head 无发现）
+- PR #33，head `9ff10b1`，合并 `80ed382`：预览页每 30 秒及切回标签页重算有效期；CSV 公式防护覆盖前导空白、控制字符、全角符号；`BLOCKED` 不渲染不导出房间；0 房间改为 `BLOCKED`/`EMPTY_ROOM_CATALOG`；`maxAgeMs` 非有限值或负数按过期拦截；验收报告补证据版本说明。测试 188→196。
+- PR #34，head `6a17d8f`，合并 `6aa9fa6`：LIVE 必须具备采集端在线、分钟数据 3 分钟内、非停播候选，否则 `LIVE_EVIDENCE_INCONSISTENT`；`reason` 限定字符集并截 80；`category`/`warnings` 去控制字符；不存在的时间戳拒绝；映射表有任一未核实身份时不出开播率（新增 `crosswalk_identities_complete` 与状态 `NOT_READY_CROSSWALK_IDENTITIES_INCOMPLETE`）；预览页内嵌样本与真实证据对齐。测试 196→200。
+- PR #35，head `538fd8a`，合并 `578cce0`：处理 Codex 在 PR #32 上的 P2（已复现）。`catalog_complete_attested` 除分页范围外还要求 `catalogStatus === 'RECEIVED'`，并尊重 `monitoringCoverage.roomCatalogComplete === false`。测试 200→201。该问题是首轮审计漏掉的，不是 #33/#34 引入。
+- PR #32（R2.1 当日交付）：应用户要求由草稿转正式；Codex 首次审查 `6aa9fa6` 报上述 P2，修复后经 `@codex review` 对 `578cce0` 复审 `has_any_findings=false`；该 head 上 `offline-quality`×2 与 `audit` 均 success。以普通 merge 合入 `experiment/r20-jd-opening-rate-readiness`，合并提交 `7f70280cbe9b032bc9f84bfb676ae36cd64f81ae`。https://github.com/lijianjun004-star/tcl-live-monitor/pull/32
+
+### 边界与未完成
+- **main、旧 Pages、生产 cron 均未改动**；R2.1 目前只在实验分支 `experiment/r20-jd-opening-rate-readiness` 上。合并 #32 之后该分支上的 CI 结果未查看。
+- 未访问真实 TCL 运营源，未重跑真实源工作流；手机 Safari 真机未测，预览页只在无头 Chromium（390×844）验证。
+- 有意未改：房间 1 的期望品类（冰箱/空调，待运营确认，改掉会让品类冲突告警消失）；`r21-jd-real-source-one-shot.yml` 步骤名中的 "six-room"（改该文件会在合并时触发一次真实源巡检）；开播率命令行默认读 R2.0 六房间映射表（R2.0 工作流依赖）。
+- 副作用：重新生成的 `r21-formal-readiness.json` 多一个字段 `crosswalk_identities_complete:false`，不再与交付包逐字节相同；LIVE 复核的 3 分钟阈值镜像 `probes/lib/tcl-ops.mjs`，上游阈值变更需同步。
+- 仍不可宣称：京东公开主播账号映射（0/7）、正式排班（0 条）、可靠 OFFLINE 反例、真实开播率/准时率、跨运行持久化、24 小时无人值守。7/7 LIVE 是一次状态截面，不是开播率。
