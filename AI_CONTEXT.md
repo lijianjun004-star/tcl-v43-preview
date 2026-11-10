@@ -387,3 +387,23 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - **未执行/不能宣称**：真人普通话及数字/型号准确率、iPhone Safari / Android Chrome 真机权限与长时录制、中国大陆网络首次约 48MB Vosk 下载、完整公网端到端。当前网页读取工具无法直接访问 `github.io`，Pages Actions 成功只证明发布链路，不证明所有客户端已验收。
 - 固定测试入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。
 - 回滚基线：V3.4.6 `site.zip` SHA-256 `bbe690233242f458e95032e4d62c087ae0b60bc91d58803777f5d337b3fbb3bf`；通过新的独立 PR 同步恢复 `site.zip` 和 `pages.yml` 校验值，禁止强推 main 或清除用户浏览器历史。
+
+
+## V3.4.8 主播/运营简化交互与作业流（2026-11-09）
+
+- 产品：手机优先双入口「主播练播房 / 直播运营」，仅姓名进入（**前端演示，不是真实身份认证**）；自由训练可反复练习、主动选择运营提交；运营作业按运营姓名/作业名称/训练板块搜索，作业提交固定归原运营，不自动提交；截止时间可选，运营能看加入/训练日志和次数，但未提交成绩、逐题、转写、媒体详情不得展示。
+- 流程：开播前设备检测、弹幕间隔 30秒/1分钟/2分钟（用于闲聊/投诉，题目切换仍手动）、手机 9:16 专注态、结束后独立复盘。
+- PR #45 原合并时存在未处理 Codex P1/P2，不能视为最终安全基线；修复 PR #46 最终 head `80d3d97b94a9411756acf2dd4e81d7b5b42f38d8`，合并 main `b9041f158d066853cc06783fe63d3c72418a4c8d`；Pages `https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42609797558` completed/success。
+- V3.4.8 `site.zip` SHA-256：`155d56b66a8b4678e70407fe37da918a27b9a46914f864ec82a122e53357676d`，保留作回滚基线。
+
+## V3.4.9 界面逻辑修复与跨标签原子事务补丁（2026-11-10）
+
+- V3.4.9 原候选 `site.zip` SHA-256 `4d8b6231952280cf2af13c0d96e97bf574737dfb03dd3a82939dea3614a1af08`，**已作废，禁止重新发布**：静态「先读再写」无法防止两个标签页真正并发时的丢更新。
+- 原候选改善：离开复盘可临时返回本场、手机返回行为、文字模式作答、中文连续搜索不失焦、截止时间状态、作业上下文清理、运营可看训练次数、手机复盘布局和交互提示。静态页面刷新、身份切换或关闭浏览器仍可能丢失未提交的会话媒体；页面提示中须如实告知。
+- 新 P2 修复：`updatePrefList()` 将 `assignments` / `assignmentJoins` / `trainingLogs` 的读取、同步 mutate、写入放在**同一 IndexedDB prefs readwrite 事务**。仅在 tx.complete 后返回和 BroadcastChannel 通知，异常 abort/reject；内存回退兼容。影响范围仅 `tcl-specialty-v33/app.js` + `static-manifest.json`，媒体/摄像头/Vosk/ASR 核心、旧根站及 `/tcl-v09-ab/` 资源不变。
+- **最终线上 `site.zip`**：SHA-256 `183777276ed14d05293fa5f92e93b22b59a363569335647009d0b6cbb8ca158b`，106 文件，ZIP CRC PASS，Manifest 11/11。Git blob SHA `c4199707fa3a9fe6b3f93f38901ae2e532450105`。
+- 业务 PR #47：https://github.com/lijianjun004-star/tcl-v43-preview/pull/47；exact head `eb66f43d68c6a915fd0340cb978b8cad17e9bf0e`；可信 CI https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42764829301 completed/success；Codex 对该 head review completed，`has_any_findings=false`、`has_unresolved_findings=false`；合并 SHA `6fb948bb82a13216abc371033fa860467f4b328d`。
+- Pages https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/42765273529 completed/success；Verify ZIP、解压、artifact 上传、Deploy 全部成功。固定测试站 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-specialty-v33/ 。当前外部网页访问工具打不开该网站，**Actions 成功不是公网真机验收**。
+- 本轮独立执行：Node 事务模型双标签/去重/回滚/通知 15/15 PASS（**不是原生双标签 IndexedDB 验收**）；Chromium about:blank 注入 UI 14/14 PASS、隐私/截止状态 12/12 PASS；弹幕计时 15/15 PASS；JS 语法、ZIP CRC、manifest 完整性 PASS。Node Playwright 完整脚本因环境缺包未执行。
+- **未执行**：真实同源双标签原生 IndexedDB、iPhone Safari/Android Chrome 真机、真人普通话与产品数字/型号准确率、中国大陆网络模型首次加载、长时真机录制、正式跨设备后端及身份鉴权。姓名输入仅供本机测试，不能宣称运营数据生产级隔离。直播监控相关仓库、CloudBase、其他 Pages 路径均未改动。
+- 回滚：以届时最新 main 开新独立 PR，同时恢复 V3.4.8 `site.zip` SHA `155d56b66a8b4678e70407fe37da918a27b9a46914f864ec82a122e53357676d` 与对应 `pages.yml` pinned SHA；不得重写 main、清浏览器数据或覆盖其他站点。
