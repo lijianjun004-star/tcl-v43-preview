@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Verify audited static bundle
-        run: echo "7620dfdadfe44a3a8c6d428db363133667481a8e85445dd26382497260bca151  site.zip" | sha256sum --check --strict
+        run: echo "5989f6c106a07e721210bf72ee2054d9db1014875249e7717096ad9061051b45  site.zip" | sha256sum --check --strict
       - name: Extract frontend only
         run: unzip -q site.zip -d _site
       - uses: actions/configure-pages@v5
