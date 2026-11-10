@@ -93,6 +93,36 @@ class GateTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.GateFailure, 'target already exists'):
             gate.normalize_known_baseline_names(known, {bad: b'a', good: b'b'})
 
+
+    def test_isolated_mobile_qa_validation_and_browser_namespaces(self):
+        import json
+        prefix = gate.QA_PREFIX
+        paths = {n: (b'qa-file-' + n.encode('utf-8')) for n in gate.SPECIALTY_FILES - {'static-manifest.json'}}
+        paths['app.js'] = (
+            b"const STORE_NAME='tcl-specialty-v352-mobile-qa';"
+            b"new BroadcastChannel('tcl-specialty-v352-mobile-qa-workflow');"
+            b"const VOSK_CACHE_NAME='tcl-specialty-v352-mobile-qa-vosk-v1';"
+        )
+        manifest = {'files': {n: hashlib.sha256(data).hexdigest() for n, data in paths.items()}}
+        paths['static-manifest.json'] = json.dumps(manifest).encode('utf-8')
+        bundle = {prefix + name: data for name, data in paths.items()}
+        self.assertEqual(gate.inspect_isolated_qa(bundle), len(gate.SPECIALTY_FILES))
+        self.assertEqual(gate.inspect_isolated_qa({}), 0)
+        corrupt = dict(bundle)
+        corrupt[prefix+'app.js'] = b'corrupt'
+        with self.assertRaisesRegex(gate.GateFailure,'hash mismatch'):
+            gate.inspect_isolated_qa(corrupt)
+        absent = dict(bundle)
+        absent.pop(prefix + 'style.css')
+        with self.assertRaisesRegex(gate.GateFailure,'allowlist'):
+            gate.inspect_isolated_qa(absent)
+        wrong_namespace = dict(bundle)
+        wrong_namespace[prefix+'app.js'] = b'not production safe'
+        manifest['files']['app.js'] = hashlib.sha256(wrong_namespace[prefix+'app.js']).hexdigest()
+        wrong_namespace[prefix+'static-manifest.json'] = json.dumps(manifest).encode('utf-8')
+        with self.assertRaisesRegex(gate.GateFailure,'namespace'):
+            gate.inspect_isolated_qa(wrong_namespace)
+
     def test_pr_policy(self):
         repo=self.root/'repo';repo.mkdir()
         def git(*args):
