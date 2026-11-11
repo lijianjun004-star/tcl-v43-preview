@@ -278,6 +278,16 @@ def inspect_isolated_ui_r3(files):
     ):
         if marker not in js:
             raise GateFailure('UI R3 browser state namespace missing: ' + marker)
+    # Reject direct reuse of already deployed browser data namespaces, even if
+    # the required R3 marker was also added. Runtime review is still required.
+    protected_names = (
+        'tcl-specialty-v3', 'tcl-specialty-workflow', 'tcl-specialty-vosk-v1',
+        'tcl-specialty-v352-mobile-qa', 'tcl-specialty-v352-mobile-qa-workflow',
+        'tcl-specialty-v352-mobile-qa-vosk-v1',
+    )
+    for name in protected_names:
+        if any(f'{quote}{name}{quote}' in js for quote in ("'", '"', '`')):
+            raise GateFailure('UI R3 reuses protected browser state namespace: ' + name)
     return len(ui)
 
 
