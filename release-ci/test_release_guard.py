@@ -276,6 +276,16 @@ class UIR3GateTests(unittest.TestCase):
             code, result = self.verify(candidate)
             self.assertNotEqual(code, 0, result)
 
+    def test_existing_browser_namespaces_cannot_be_reused(self):
+        for old in ('tcl-specialty-v3', 'tcl-specialty-workflow', 'tcl-specialty-vosk-v1',
+                    'tcl-specialty-v352-mobile-qa', 'tcl-specialty-v352-mobile-qa-workflow',
+                    'tcl-specialty-v352-mobile-qa-vosk-v1'):
+            candidate = {**self.base, **self.ui}
+            candidate[gate.UI_R3_PREFIX+'app.js'] += (f"\nlet unsafe = '{old}';").encode()
+            self.rehash(candidate, gate.UI_R3_PREFIX)
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
     def test_ui_update_allows_only_ui_changes(self):
         baseline = {**self.base, **self.ui}
         candidate = dict(baseline)
