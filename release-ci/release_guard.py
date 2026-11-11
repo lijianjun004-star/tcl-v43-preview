@@ -20,6 +20,7 @@ SPECIALTY = 'tcl-specialty-v33/'
 SPECIALTY_FILES = {'index.html', 'app.js', 'style.css', 'training-boards.json', 'legacy-65.json', 'app-config.json', 'lib/qa-import.js', 'lib/parser.js', 'lib/xls.js', 'lib/pdf.js', 'lib/zip.js', 'static-manifest.json'}
 QA_PREFIX = 'tcl-v352-mobile-qa/'
 UI_R3_PREFIX = 'tcl-v352-ui-r3/'
+UI_R3_ROLLBACK_SHA256 = 'fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727'
 MAX_FILE_COUNT = 500
 MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_UNCOMPRESSED_BYTES = 60 * 1024 * 1024
@@ -397,10 +398,11 @@ def main():
                 raise GateFailure('Baseline root count is not 43')
             old_ui = {name: data for name, data in baseline.items() if name.startswith(UI_R3_PREFIX)}
             new_ui = {name: data for name, data in current.items() if name.startswith(UI_R3_PREFIX)}
-            if old_ui and not new_ui:
-                raise GateFailure('Existing UI R3 path cannot be removed')
             old_non_ui = {name: data for name, data in baseline.items() if not name.startswith(UI_R3_PREFIX)}
             new_non_ui = {name: data for name, data in current.items() if not name.startswith(UI_R3_PREFIX)}
+            if old_ui and not new_ui:
+                if candidate_sha != UI_R3_ROLLBACK_SHA256 or old_non_ui != new_non_ui:
+                    raise GateFailure('UI R3 removal requires the pinned rollback and unchanged non-UI files')
             if old_ui != new_ui and old_non_ui != new_non_ui:
                 raise GateFailure('UI R3 release must preserve every existing non-UI file')
             if specialty and any(current.get(name) != data for name, data in baseline.items() if not name.startswith((SPECIALTY, UI_R3_PREFIX))):
