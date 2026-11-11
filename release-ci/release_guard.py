@@ -19,6 +19,7 @@ PREFIX = 'tcl-v09-ab/'
 SPECIALTY = 'tcl-specialty-v33/'
 SPECIALTY_FILES = {'index.html', 'app.js', 'style.css', 'training-boards.json', 'legacy-65.json', 'app-config.json', 'lib/qa-import.js', 'lib/parser.js', 'lib/xls.js', 'lib/pdf.js', 'lib/zip.js', 'static-manifest.json'}
 QA_PREFIX = 'tcl-v352-mobile-qa/'
+UI_R3_PREFIX = 'tcl-v352-ui-r3/'
 MAX_FILE_COUNT = 500
 MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_UNCOMPRESSED_BYTES = 60 * 1024 * 1024
@@ -256,6 +257,30 @@ def inspect_isolated_qa(files):
     return len(qa)
 
 
+def inspect_isolated_ui_r3(files):
+    """Validate the UI test path and its independent browser storage."""
+    ui = {name[len(UI_R3_PREFIX):]: data for name, data in files.items() if name.startswith(UI_R3_PREFIX)}
+    if not ui:
+        return 0
+    if set(ui) != SPECIALTY_FILES:
+        raise GateFailure('UI R3 allowlist mismatch')
+    manifest = json.loads(ui['static-manifest.json'].decode('utf-8'))
+    if set(manifest.get('files', {})) != SPECIALTY_FILES - {'static-manifest.json'}:
+        raise GateFailure('UI R3 manifest coverage mismatch')
+    for name, digest in manifest['files'].items():
+        if sha256(ui[name]) != digest:
+            raise GateFailure('UI R3 manifest hash mismatch: ' + name)
+    js = ui['app.js'].decode('utf-8')
+    for marker in (
+        "const STORE_NAME='tcl-specialty-v352-ui-r3';",
+        "new BroadcastChannel('tcl-specialty-v352-ui-r3-workflow')",
+        "const VOSK_CACHE_NAME='tcl-specialty-v352-ui-r3-vosk-v1';",
+    ):
+        if marker not in js:
+            raise GateFailure('UI R3 browser state namespace missing: ' + marker)
+    return len(ui)
+
+
 def check_workflow(text, candidate_sha):
     # Match only the exact release checksum verification line.
     pattern = r'(run:\s*echo\s+["\'])([0-9a-f]{64})(\s{2}site\.zip["\']\s*\|\s*sha256sum\s+--check\s+--strict)'
@@ -326,7 +351,7 @@ def main():
         if a.expected_sha and candidate_sha != a.expected_sha.lower():
             raise GateFailure(f'Unexpected candidate SHA-256: {candidate_sha}')
         prefix_names = [x for x in current if x.startswith(PREFIX)]
-        root_names = [x for x in current if not x.startswith((PREFIX, SPECIALTY, QA_PREFIX))]
+        root_names = [x for x in current if not x.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX))]
         if len(root_names) != 43:
             raise GateFailure(f'Expected 43 existing root files, found {len(root_names)}')
         for required in ('index.html', PREFIX + 'index.html', PREFIX + 'asr-check.html', PREFIX + '设备检查.html', PREFIX + 'src/offline-asr-worker.js'):
@@ -347,19 +372,28 @@ def main():
                 raise GateFailure('Specialty manifest hash mismatch')
             out['specialty_files'] = len(specialty)
         out['isolated_qa_files'] = inspect_isolated_qa(current)
+        out['isolated_ui_r3_files'] = inspect_isolated_ui_r3(current)
         if a.baseline:
             base_raw, baseline = inspect_zip(a.baseline)
             out['baseline_sha256'] = sha256(base_raw)
             baseline, filename_repairs = normalize_known_baseline_names(out['baseline_sha256'], baseline)
             if filename_repairs:
                 out['baseline_filename_repairs'] = filename_repairs
-            changed_root = sorted(name for name, content in baseline.items() if not name.startswith((PREFIX, SPECIALTY, QA_PREFIX)) and current.get(name) != content)
-            unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith((PREFIX, SPECIALTY, QA_PREFIX)))
+            changed_root = sorted(name for name, content in baseline.items() if not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX)) and current.get(name) != content)
+            unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX)))
             if changed_root or unexpected_new:
                 raise GateFailure('Root preservation failed: ' + repr({'changed_root': changed_root, 'unexpected_new': unexpected_new}))
-            if len([n for n in baseline if not n.startswith((PREFIX, SPECIALTY))]) != 43:
+            if len([n for n in baseline if not n.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX))]) != 43:
                 raise GateFailure('Baseline root count is not 43')
-            if specialty and any(current.get(name) != data for name, data in baseline.items() if not name.startswith(SPECIALTY)):
+            old_ui = {name: data for name, data in baseline.items() if name.startswith(UI_R3_PREFIX)}
+            new_ui = {name: data for name, data in current.items() if name.startswith(UI_R3_PREFIX)}
+            if old_ui and not new_ui:
+                raise GateFailure('Existing UI R3 path cannot be removed')
+            old_non_ui = {name: data for name, data in baseline.items() if not name.startswith(UI_R3_PREFIX)}
+            new_non_ui = {name: data for name, data in current.items() if not name.startswith(UI_R3_PREFIX)}
+            if old_ui != new_ui and old_non_ui != new_non_ui:
+                raise GateFailure('UI R3 release must preserve every existing non-UI file')
+            if specialty and any(current.get(name) != data for name, data in baseline.items() if not name.startswith((SPECIALTY, UI_R3_PREFIX))):
                 raise GateFailure('Specialty release must preserve every existing non-specialty file')
             old_qa = {name: data for name, data in baseline.items() if name.startswith(QA_PREFIX)}
             new_qa = {name: data for name, data in current.items() if name.startswith(QA_PREFIX)}
