@@ -2,6 +2,8 @@
 """Bounded ZIP and PR policy regressions. Stdlib only, no network."""
 import hashlib
 import importlib.util
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -198,7 +200,7 @@ class UIR3GateTests(unittest.TestCase):
         files.update(self.isolated_files(gate.QA_PREFIX, 'tcl-specialty-v352-mobile-qa'))
         return files
 
-    def verify(self, candidate, baseline=None):
+    def verify(self, candidate, baseline=None, test_pin=None):
         def archive(path, files):
             with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
                 for name, data in files.items():
@@ -206,6 +208,23 @@ class UIR3GateTests(unittest.TestCase):
         base_path, candidate_path = self.root/'base.zip', self.root/'candidate.zip'
         archive(base_path, self.base if baseline is None else baseline)
         archive(candidate_path, candidate)
+        if test_pin is not None:
+            # A generated fixture cannot match the real historical ZIP hash.
+            # Exercise the same gate with a fixture-only substituted pin.
+            saved_pin, saved_argv = gate.UI_R3_ROLLBACK_SHA256, os.sys.argv
+            gate.UI_R3_ROLLBACK_SHA256 = (
+                hashlib.sha256(candidate_path.read_bytes()).hexdigest()
+                if test_pin == 'candidate' else test_pin
+            )
+            os.sys.argv = ['release_guard.py', '--candidate', str(candidate_path),
+                           '--baseline', str(base_path)]
+            captured = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(captured):
+                    code = gate.main()
+                return code, json.loads(captured.getvalue())
+            finally:
+                gate.UI_R3_ROLLBACK_SHA256, os.sys.argv = saved_pin, saved_argv
         result = subprocess.run([os.sys.executable, str(HERE/'release_guard.py'),
                                  '--candidate', str(candidate_path),
                                  '--baseline', str(base_path)], text=True, capture_output=True)
@@ -302,6 +321,30 @@ class UIR3GateTests(unittest.TestCase):
         baseline = {**self.base, **self.ui}
         code, result = self.verify(self.base, baseline)
         self.assertNotEqual(code, 0, result)
+
+    def test_production_rollback_pin_is_exact(self):
+        self.assertEqual(gate.UI_R3_ROLLBACK_SHA256,
+                         'fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727')
+
+    def test_matching_pinned_archive_with_unchanged_non_ui_can_rollback(self):
+        baseline = {**self.base, **self.ui}
+        code, result = self.verify(self.base, baseline, test_pin='candidate')
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result['isolated_ui_r3_files'], 0)
+
+    def test_nonmatching_archive_cannot_remove_ui(self):
+        baseline = {**self.base, **self.ui}
+        code, result = self.verify(self.base, baseline, test_pin='0'*64)
+        self.assertNotEqual(code, 0, result)
+        self.assertIn('UI R3 removal requires the pinned rollback', result['errors'][0])
+
+    def test_pinned_rollback_refuses_any_non_ui_change(self):
+        baseline = {**self.base, **self.ui}
+        baseline[gate.SPECIALTY+'style.css'] = b'changed after historical baseline'
+        self.rehash(baseline, gate.SPECIALTY)
+        code, result = self.verify(self.base, baseline, test_pin='candidate')
+        self.assertNotEqual(code, 0, result)
+        self.assertIn('UI R3 removal requires the pinned rollback', result['errors'][0])
 
     def test_qa_directory_remains_immutable(self):
         baseline = {**self.base, **self.ui}
