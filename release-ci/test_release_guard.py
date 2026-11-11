@@ -154,5 +154,163 @@ class GateTests(unittest.TestCase):
         git('reset','--hard',base);bundle(b'new');p=repo/'.github/workflows/pages.yml';p.write_text(p.read_text()+'# unrelated workflow edit\n');r=policy();self.assertNotEqual(r.returncode,0)
 
 
+class UIR3GateTests(unittest.TestCase):
+    """A realistic 118-file baseline plus R3 isolation and mixed-release checks."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.base = self.base_files()
+        self.assertEqual(len(self.base), 118)
+        self.ui = self.isolated_files(gate.UI_R3_PREFIX, 'tcl-specialty-v352-ui-r3')
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def isolated_files(self, prefix, namespace):
+        files = {name: ('fixture:' + name).encode() for name in gate.SPECIALTY_FILES - {'static-manifest.json'}}
+        files['app.js'] = (
+            f"const STORE_NAME='{namespace}';"
+            f"new BroadcastChannel('{namespace}-workflow')"
+            f"const VOSK_CACHE_NAME='{namespace}-vosk-v1';"
+        ).encode()
+        files['static-manifest.json'] = json.dumps(
+            {'files': {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}}
+        ).encode()
+        return {prefix + name: data for name, data in files.items()}
+
+    def rehash(self, files, prefix):
+        members = {name[len(prefix):]: data for name, data in files.items()
+                   if name.startswith(prefix) and name != prefix + 'static-manifest.json'}
+        files[prefix + 'static-manifest.json'] = json.dumps(
+            {'files': {name: hashlib.sha256(data).hexdigest() for name, data in members.items()}}
+        ).encode()
+
+    def base_files(self):
+        files = {'index.html': b'root'}
+        files.update({f'root-{n}.html': b'root' for n in range(42)})
+        p = gate.PREFIX
+        files.update({p+'index.html': b'i', p+'asr-check.html': b'a',
+                      p+'设备检查.html': b'd', p+'src/offline-asr-worker.js': b'w'})
+        files.update({f'{p}file-{n}.txt': b'training' for n in range(46)})
+        self.rehash(files, p)
+        files.update(self.isolated_files(gate.SPECIALTY, 'tcl-specialty'))
+        files.update(self.isolated_files(gate.QA_PREFIX, 'tcl-specialty-v352-mobile-qa'))
+        return files
+
+    def verify(self, candidate, baseline=None):
+        def archive(path, files):
+            with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
+                for name, data in files.items():
+                    z.writestr(name, data)
+        base_path, candidate_path = self.root/'base.zip', self.root/'candidate.zip'
+        archive(base_path, self.base if baseline is None else baseline)
+        archive(candidate_path, candidate)
+        result = subprocess.run([os.sys.executable, str(HERE/'release_guard.py'),
+                                 '--candidate', str(candidate_path),
+                                 '--baseline', str(base_path)], text=True, capture_output=True)
+        return result.returncode, json.loads(result.stdout)
+
+    def test_existing_118_file_baseline_is_valid(self):
+        code, result = self.verify(self.base)
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result['root_files'], 43)
+        self.assertEqual(result['isolated_qa_files'], 12)
+
+    def test_first_ui_addition_preserves_118_files(self):
+        code, result = self.verify({**self.base, **self.ui})
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result['candidate_files'], 130)
+        self.assertEqual(result['isolated_ui_r3_files'], 12)
+
+    def test_modified_or_deleted_existing_files_are_rejected(self):
+        for name in ('index.html', gate.PREFIX+'index.html', gate.SPECIALTY+'style.css',
+                     gate.QA_PREFIX+'style.css'):
+            for action in ('edit', 'delete'):
+                with self.subTest(name=name, action=action):
+                    candidate = {**self.base, **self.ui}
+                    if action == 'edit':
+                        candidate[name] = b'tampered'
+                    else:
+                        del candidate[name]
+                    # Rehash intact legacy manifests so the byte-preservation check,
+                    # rather than merely stale hashes, must reject edits.
+                    for prefix in (gate.PREFIX, gate.SPECIALTY, gate.QA_PREFIX):
+                        if name.startswith(prefix):
+                            self.rehash(candidate, prefix)
+                    code, result = self.verify(candidate)
+                    self.assertNotEqual(code, 0, result)
+
+    def test_unexpected_file_and_missing_ui_file_rejected(self):
+        for action in ('add', 'remove'):
+            candidate = {**self.base, **self.ui}
+            if action == 'add':
+                candidate[gate.UI_R3_PREFIX+'extra.js'] = b'unsafe'
+                self.rehash(candidate, gate.UI_R3_PREFIX)
+            else:
+                del candidate[gate.UI_R3_PREFIX+'style.css']
+                self.rehash(candidate, gate.UI_R3_PREFIX)
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
+    def test_manifest_hash_and_coverage_are_enforced(self):
+        for action in ('hash', 'coverage'):
+            candidate = {**self.base, **self.ui}
+            if action == 'hash':
+                candidate[gate.UI_R3_PREFIX+'style.css'] = b'tampered'
+            else:
+                m = json.loads(candidate[gate.UI_R3_PREFIX+'static-manifest.json'])
+                del m['files']['style.css']
+                candidate[gate.UI_R3_PREFIX+'static-manifest.json'] = json.dumps(m).encode()
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
+    def test_all_three_browser_namespaces_are_enforced(self):
+        for old in (b"const STORE_NAME='tcl-specialty-v352-ui-r3';",
+                    b"new BroadcastChannel('tcl-specialty-v352-ui-r3-workflow')",
+                    b"const VOSK_CACHE_NAME='tcl-specialty-v352-ui-r3-vosk-v1';"):
+            candidate = {**self.base, **self.ui}
+            app = gate.UI_R3_PREFIX+'app.js'
+            candidate[app] = candidate[app].replace(old, b'/* absent */')
+            self.rehash(candidate, gate.UI_R3_PREFIX)
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
+    def test_existing_browser_namespaces_cannot_be_reused(self):
+        for old in ('tcl-specialty-v3', 'tcl-specialty-workflow', 'tcl-specialty-vosk-v1',
+                    'tcl-specialty-v352-mobile-qa', 'tcl-specialty-v352-mobile-qa-workflow',
+                    'tcl-specialty-v352-mobile-qa-vosk-v1'):
+            candidate = {**self.base, **self.ui}
+            candidate[gate.UI_R3_PREFIX+'app.js'] += (f"\nlet unsafe = '{old}';").encode()
+            self.rehash(candidate, gate.UI_R3_PREFIX)
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
+    def test_ui_update_allows_only_ui_changes(self):
+        baseline = {**self.base, **self.ui}
+        candidate = dict(baseline)
+        candidate[gate.UI_R3_PREFIX+'style.css'] = b'new style'
+        self.rehash(candidate, gate.UI_R3_PREFIX)
+        code, result = self.verify(candidate, baseline)
+        self.assertEqual(code, 0, result)
+        candidate[gate.SPECIALTY+'style.css'] = b'changed too'
+        self.rehash(candidate, gate.SPECIALTY)
+        code, result = self.verify(candidate, baseline)
+        self.assertNotEqual(code, 0, result)
+
+    def test_existing_ui_directory_cannot_be_removed(self):
+        baseline = {**self.base, **self.ui}
+        code, result = self.verify(self.base, baseline)
+        self.assertNotEqual(code, 0, result)
+
+    def test_qa_directory_remains_immutable(self):
+        baseline = {**self.base, **self.ui}
+        candidate = dict(baseline)
+        candidate[gate.QA_PREFIX+'style.css'] = b'changed'
+        self.rehash(candidate, gate.QA_PREFIX)
+        code, result = self.verify(candidate, baseline)
+        self.assertNotEqual(code, 0, result)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
