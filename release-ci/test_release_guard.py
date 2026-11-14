@@ -160,6 +160,43 @@ class GateTests(unittest.TestCase):
 
 
 
+
+    def test_exact_r6_model_and_speech_gate(self):
+        """Only an independently reviewed app.js + manifest can upgrade R5 QA."""
+        p = gate.ASR_PREFIX
+        old = {f'protected-{i}.txt': b'old' for i in range(142)}
+        old.update({p+'app.js': b'old asr', p+'static-manifest.json': b'old manifest'})
+        old.update({p+f'file-{i}': b'old' for i in range(10)})
+        self.assertEqual(len(old), 154)
+        new = dict(old)
+        new[p+'app.js'] = b'R6 reviewed asr'
+        new[p+'static-manifest.json'] = b'new manifest'
+        constants = ('ASR_R6_BASE_SHA','ASR_R6_TARGET_SHA','ASR_R6_APP_SHA')
+        prior = [getattr(gate,n) for n in constants]
+        try:
+            gate.ASR_R6_BASE_SHA = '1'*64
+            gate.ASR_R6_TARGET_SHA = '2'*64
+            gate.ASR_R6_APP_SHA = gate.sha256(new[p+'app.js'])
+            self.assertTrue(gate.allow_once_asr_r6(old,new,'1'*64,'2'*64))
+            with self.assertRaisesRegex(gate.GateFailure, 'exact R5 baseline'):
+                gate.allow_once_asr_r6(old,new,'0'*64,'2'*64)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact R5 baseline'):
+                gate.allow_once_asr_r6(old,new,'1'*64,'0'*64)
+            tampered=dict(new);tampered['protected-0.txt']=b'changed'
+            with self.assertRaisesRegex(gate.GateFailure, 'may change only'):
+                gate.allow_once_asr_r6(old,tampered,'1'*64,'2'*64)
+            tampered=dict(new);tampered[p+'file-0']=b'changed'
+            with self.assertRaisesRegex(gate.GateFailure, 'may change only'):
+                gate.allow_once_asr_r6(old,tampered,'1'*64,'2'*64)
+            truncated=dict(new);truncated.pop(p+'file-0')
+            with self.assertRaisesRegex(gate.GateFailure, '154'):
+                gate.allow_once_asr_r6(old,truncated,'1'*64,'2'*64)
+            gate.ASR_R6_APP_SHA='0'*64
+            with self.assertRaisesRegex(gate.GateFailure, 'app.js SHA-256'):
+                gate.allow_once_asr_r6(old,new,'1'*64,'2'*64)
+        finally:
+            for n,v in zip(constants, prior):setattr(gate,n,v)
+
     def test_exact_asr_restart_device_preview_and_digit_release(self):
         p=gate.ASR_PREFIX
         old={f'protected-{i}.txt':b'original' for i in range(142)}
