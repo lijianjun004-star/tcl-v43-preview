@@ -157,6 +157,37 @@ class GateTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.GateFailure, 'reuses protected'):
             gate.inspect_isolated_ui_r4(injected)
 
+    def test_exact_asr_stopfix_one_time_release(self):
+        old = {gate.ASR_PREFIX+'app.js': b'old', gate.ASR_PREFIX+'static-manifest.json': b'old-manifest', 'root.html': b'unchanged'}
+        new = dict(old)
+        new[gate.ASR_PREFIX+'app.js'] = b'new app'
+        new[gate.ASR_PREFIX+'static-manifest.json'] = b'new-manifest'
+        names = ('ASR_STOPFIX_BASELINE_SHA','ASR_STOPFIX_TARGET_SHA','ASR_STOPFIX_JS_SHA')
+        original = [getattr(gate, name) for name in names]
+        try:
+            gate.ASR_STOPFIX_BASELINE_SHA = '1'*64
+            gate.ASR_STOPFIX_TARGET_SHA = '2'*64
+            gate.ASR_STOPFIX_JS_SHA = gate.sha256(new[gate.ASR_PREFIX+'app.js'])
+            more = {gate.ASR_PREFIX+f'file-{i}': b'same' for i in range(10)}
+            old.update(more);new.update(more)
+            self.assertTrue(gate.allow_once_asr_stopfix(old,new,'1'*64,'2'*64))
+            self.assertFalse(gate.allow_once_asr_stopfix(new,new,'1'*64,'2'*64))
+            with self.assertRaisesRegex(gate.GateFailure,'immutable'):
+                gate.allow_once_asr_stopfix(old,new,'0'*64,'2'*64)
+            with self.assertRaisesRegex(gate.GateFailure,'immutable'):
+                gate.allow_once_asr_stopfix(old,new,'1'*64,'0'*64)
+            altered = dict(new); altered['root.html'] = b'changed'
+            with self.assertRaisesRegex(gate.GateFailure,'preserve'):
+                gate.allow_once_asr_stopfix(old,altered,'1'*64,'2'*64)
+            altered = dict(new); altered[gate.ASR_PREFIX+'file-0']=b'changed'
+            with self.assertRaisesRegex(gate.GateFailure,'only update'):
+                gate.allow_once_asr_stopfix(old,altered,'1'*64,'2'*64)
+            gate.ASR_STOPFIX_JS_SHA = '3'*64
+            with self.assertRaisesRegex(gate.GateFailure,'JS SHA'):
+                gate.allow_once_asr_stopfix(old,new,'1'*64,'2'*64)
+        finally:
+            for name,value in zip(names,original):setattr(gate,name,value)
+
     def test_pr_policy(self):
         repo=self.root/'repo';repo.mkdir()
         def git(*args):
