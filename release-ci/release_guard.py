@@ -28,6 +28,9 @@ ASR_STOPFIX_JS_SHA = 'dfbcce274a65dc98ebebcaee9d6b775c527c4be6b72de2c38ccd656622
 ASR_ROUND2_BASELINE_SHA = '7e9338775ab5afd29cdb75c5c4eb4c887337a8fa092428fb53286fe97923833f'
 ASR_ROUND2_TARGET_SHA = 'cdd32b5a7924fb959561d5980e9be0afd6f05d4df3b480578cc717a31b6a7dcc'
 ASR_ROUND2_APP_SHA = '6b9fa1e2aadcccbce8120bd03ba9faf3b4ef0ae3d5cadd1818f874034f5893f7'
+ASR_END_DIALOG_BASE_SHA = 'cdd32b5a7924fb959561d5980e9be0afd6f05d4df3b480578cc717a31b6a7dcc'
+ASR_END_DIALOG_TARGET_SHA = '17c542a847161be845459c1a63911f57c6da59c2f0170eeb7f6171acb654882e'
+ASR_END_DIALOG_APP_SHA = 'f6e75e3efeba0497e927b1f575903b8f79b9b9cf036e4a0d27c39f439b3b9e15'
 
 UI_R3_ROLLBACK_SHA256 = 'fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727'
 MAX_FILE_COUNT = 500
@@ -411,6 +414,23 @@ def allow_once_asr_round2(baseline, current, baseline_sha, candidate_sha):
     return True
 
 
+
+def allow_once_asr_end_dialog(baseline, current, baseline_sha, candidate_sha):
+    """Guard one accessible in-page end-live confirmation update to ASR QA only."""
+    if (baseline_sha,candidate_sha)!=(ASR_END_DIALOG_BASE_SHA,ASR_END_DIALOG_TARGET_SHA):
+        raise GateFailure('End dialog repair must match exact baseline and candidate SHA-256')
+    if len(baseline)!=154 or len(current)!=154:
+        raise GateFailure('End dialog repair requires exactly 154 ZIP members')
+    changes={name for name in set(baseline)|set(current) if baseline.get(name)!=current.get(name)}
+    expected={ASR_PREFIX+'app.js',ASR_PREFIX+'static-manifest.json'}
+    if changes!=expected:
+        raise GateFailure('End dialog repair may update only ASR app.js and matching manifest')
+    if sha256(current[ASR_PREFIX+'app.js'])!=ASR_END_DIALOG_APP_SHA:
+        raise GateFailure('End dialog repair JS SHA mismatch')
+    # Main verify calls inspect_isolated_asr() and checks its 11 manifest entries.
+    return True
+
+
 def check_workflow(text, candidate_sha):
     # Match only the exact release checksum verification line.
     pattern = r'(run:\s*echo\s+["\'])([0-9a-f]{64})(\s{2}site\.zip["\']\s*\|\s*sha256sum\s+--check\s+--strict)'
@@ -547,7 +567,9 @@ def main():
             if new_asr and not old_asr and any(current.get(name) != data for name, data in baseline.items()):
                 raise GateFailure('Adding ASR QA must preserve all baseline files byte-for-byte')
             if old_asr and old_asr != new_asr:
-                if (out['baseline_sha256'], candidate_sha) == (ASR_ROUND2_BASELINE_SHA, ASR_ROUND2_TARGET_SHA):
+                if (out['baseline_sha256'], candidate_sha) == (ASR_END_DIALOG_BASE_SHA, ASR_END_DIALOG_TARGET_SHA):
+                    out['asr_end_dialog_pinned'] = allow_once_asr_end_dialog(baseline, current, out['baseline_sha256'], candidate_sha)
+                elif (out['baseline_sha256'], candidate_sha) == (ASR_ROUND2_BASELINE_SHA, ASR_ROUND2_TARGET_SHA):
                     out['asr_round2_pinned'] = allow_once_asr_round2(baseline, current, out['baseline_sha256'], candidate_sha)
                 else:
                     out['asr_stopfix_pinned'] = allow_once_asr_stopfix(baseline, current, out['baseline_sha256'], candidate_sha)

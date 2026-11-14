@@ -158,6 +158,40 @@ class GateTests(unittest.TestCase):
             gate.inspect_isolated_ui_r4(injected)
 
 
+
+    def test_exact_asr_accessible_end_dialog_release(self):
+        p=gate.ASR_PREFIX
+        old={f'protected-{i}.txt':b'untouched' for i in range(142)}
+        old.update({p+'app.js':b'old',p+'static-manifest.json':b'old-manifest'})
+        old.update({p+f'file-{i}':b'still-old' for i in range(10)})
+        self.assertEqual(len(old),154)
+        new=dict(old);new[p+'app.js']=b'new';new[p+'static-manifest.json']=b'new-manifest'
+        names=('ASR_END_DIALOG_BASE_SHA','ASR_END_DIALOG_TARGET_SHA','ASR_END_DIALOG_APP_SHA')
+        saved=[getattr(gate,n) for n in names]
+        try:
+            gate.ASR_END_DIALOG_BASE_SHA='a'*64
+            gate.ASR_END_DIALOG_TARGET_SHA='b'*64
+            gate.ASR_END_DIALOG_APP_SHA=gate.sha256(new[p+'app.js'])
+            self.assertTrue(gate.allow_once_asr_end_dialog(old,new,'a'*64,'b'*64))
+            with self.assertRaisesRegex(gate.GateFailure,'exact baseline'):
+                gate.allow_once_asr_end_dialog(old,new,'0'*64,'b'*64)
+            with self.assertRaisesRegex(gate.GateFailure,'exact baseline'):
+                gate.allow_once_asr_end_dialog(old,new,'a'*64,'0'*64)
+            bad=dict(new);bad['protected-0.txt']=b'changed'
+            with self.assertRaisesRegex(gate.GateFailure,'only ASR'):
+                gate.allow_once_asr_end_dialog(old,bad,'a'*64,'b'*64)
+            bad=dict(new);bad[p+'file-0']=b'changed'
+            with self.assertRaisesRegex(gate.GateFailure,'only ASR'):
+                gate.allow_once_asr_end_dialog(old,bad,'a'*64,'b'*64)
+            bad=dict(new);bad.pop(p+'file-0')
+            with self.assertRaisesRegex(gate.GateFailure,'154'):
+                gate.allow_once_asr_end_dialog(old,bad,'a'*64,'b'*64)
+            gate.ASR_END_DIALOG_APP_SHA='0'*64
+            with self.assertRaisesRegex(gate.GateFailure,'JS SHA'):
+                gate.allow_once_asr_end_dialog(old,new,'a'*64,'b'*64)
+        finally:
+            for name,value in zip(names,saved):setattr(gate,name,value)
+
     def test_exact_asr_round2_one_time_release(self):
         """A second strict release cannot modify other 152 entries or evade exact pins."""
         p = gate.ASR_PREFIX
