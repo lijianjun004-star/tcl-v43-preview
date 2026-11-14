@@ -22,6 +22,10 @@ QA_PREFIX = 'tcl-v352-mobile-qa/'
 UI_R3_PREFIX = 'tcl-v352-ui-r3/'
 UI_R4_PREFIX = 'tcl-v352-ui-r4/'
 ASR_PREFIX = 'tcl-v352-asr/'
+ASR_STOPFIX_BASELINE_SHA = 'c384b43c81327eddd2c21f4463845e05bbe2fd03737052a129785e3237d04a0b'
+ASR_STOPFIX_TARGET_SHA = '7e9338775ab5afd29cdb75c5c4eb4c887337a8fa092428fb53286fe97923833f'
+ASR_STOPFIX_JS_SHA = 'dfbcce274a65dc98ebebcaee9d6b775c527c4be6b72de2c38ccd6566220be12d'
+
 UI_R3_ROLLBACK_SHA256 = 'fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727'
 MAX_FILE_COUNT = 500
 MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024
@@ -365,6 +369,26 @@ def inspect_isolated_asr(files):
     return len(ui)
 
 
+def allow_once_asr_stopfix(baseline, current, baseline_sha, candidate_sha):
+    """One known ASR recorder deadlock fix only; all other deployed bytes are immutable."""
+    old = {name: data for name, data in baseline.items() if name.startswith(ASR_PREFIX)}
+    new = {name: data for name, data in current.items() if name.startswith(ASR_PREFIX)}
+    if old == new:
+        return False
+    if baseline_sha != ASR_STOPFIX_BASELINE_SHA or candidate_sha != ASR_STOPFIX_TARGET_SHA:
+        raise GateFailure('Existing ASR QA is immutable except exactly pinned stopfix release')
+    changed = {name for name in set(old)|set(new) if old.get(name) != new.get(name)}
+    expected = {ASR_PREFIX+'app.js', ASR_PREFIX+'static-manifest.json'}
+    if changed != expected or len(old) != 12 or set(old) != set(new):
+        raise GateFailure('Stopfix may only update app.js and its matching manifest')
+    if sha256(new[ASR_PREFIX+'app.js']) != ASR_STOPFIX_JS_SHA:
+        raise GateFailure('Stopfix JS SHA-256 mismatch')
+    for name, value in baseline.items():
+        if not name.startswith(ASR_PREFIX) and current.get(name) != value:
+            raise GateFailure('Stopfix must preserve every existing non-ASR site file')
+    return True
+
+
 def check_workflow(text, candidate_sha):
     # Match only the exact release checksum verification line.
     pattern = r'(run:\s*echo\s+["\'])([0-9a-f]{64})(\s{2}site\.zip["\']\s*\|\s*sha256sum\s+--check\s+--strict)'
@@ -480,7 +504,7 @@ def main():
                     raise GateFailure('UI R3 removal requires the pinned rollback and unchanged non-UI files')
             if old_ui != new_ui and old_non_ui != new_non_ui:
                 raise GateFailure('UI R3 release must preserve every existing non-UI file')
-            if specialty and any(current.get(name) != data for name, data in baseline.items() if not name.startswith((SPECIALTY, UI_R3_PREFIX))):
+            if specialty and any(current.get(name) != data for name, data in baseline.items() if not name.startswith((SPECIALTY, UI_R3_PREFIX, ASR_PREFIX))):
                 raise GateFailure('Specialty release must preserve every existing non-specialty file')
             old_qa = {name: data for name, data in baseline.items() if name.startswith(QA_PREFIX)}
             new_qa = {name: data for name, data in current.items() if name.startswith(QA_PREFIX)}
@@ -501,7 +525,7 @@ def main():
             if new_asr and not old_asr and any(current.get(name) != data for name, data in baseline.items()):
                 raise GateFailure('Adding ASR QA must preserve all baseline files byte-for-byte')
             if old_asr and old_asr != new_asr:
-                raise GateFailure('Existing ASR QA assets must remain immutable')
+                out['asr_stopfix_pinned'] = allow_once_asr_stopfix(baseline, current, out['baseline_sha256'], candidate_sha)
             out['root_preserved_bytewise'] = True
             out['already_current'] = base_raw == raw
             if a.workflow:
