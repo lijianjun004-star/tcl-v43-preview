@@ -159,6 +159,45 @@ class GateTests(unittest.TestCase):
 
 
 
+
+    def test_exact_asr_restart_device_preview_and_digit_release(self):
+        p=gate.ASR_PREFIX
+        old={f'protected-{i}.txt':b'original' for i in range(142)}
+        old.update({p+'app.js':b'old JS',p+'style.css':b'old CSS',p+'static-manifest.json':b'old manifest'})
+        old.update({p+f'file-{i}':b'unchanged' for i in range(9)})
+        self.assertEqual(len(old),154)
+        new=dict(old)
+        new[p+'app.js']=b'new JS';new[p+'style.css']=b'new CSS';new[p+'static-manifest.json']=b'new manifest'
+        constants=('ASR_RESTART_BASE_SHA','ASR_RESTART_TARGET_SHA','ASR_RESTART_APP_SHA','ASR_RESTART_CSS_SHA')
+        saved=[getattr(gate,k) for k in constants]
+        try:
+            gate.ASR_RESTART_BASE_SHA='a'*64
+            gate.ASR_RESTART_TARGET_SHA='b'*64
+            gate.ASR_RESTART_APP_SHA=gate.sha256(new[p+'app.js'])
+            gate.ASR_RESTART_CSS_SHA=gate.sha256(new[p+'style.css'])
+            self.assertTrue(gate.allow_once_asr_restart_fix(old,new,'a'*64,'b'*64))
+            for baseline,target in [('x'*64,'b'*64),('a'*64,'x'*64)]:
+                with self.assertRaisesRegex(gate.GateFailure,'exact baseline'):
+                    gate.allow_once_asr_restart_fix(old,new,baseline,target)
+            tampered=dict(new);tampered['protected-0.txt']=b'tampered'
+            with self.assertRaisesRegex(gate.GateFailure,'only app'):
+                gate.allow_once_asr_restart_fix(old,tampered,'a'*64,'b'*64)
+            tampered=dict(new);tampered[p+'file-0']=b'tampered'
+            with self.assertRaisesRegex(gate.GateFailure,'only app'):
+                gate.allow_once_asr_restart_fix(old,tampered,'a'*64,'b'*64)
+            tampered=dict(new);tampered.pop(p+'file-0')
+            with self.assertRaisesRegex(gate.GateFailure,'154'):
+                gate.allow_once_asr_restart_fix(old,tampered,'a'*64,'b'*64)
+            gate.ASR_RESTART_APP_SHA='0'*64
+            with self.assertRaisesRegex(gate.GateFailure,'JavaScript SHA'):
+                gate.allow_once_asr_restart_fix(old,new,'a'*64,'b'*64)
+            gate.ASR_RESTART_APP_SHA=gate.sha256(new[p+'app.js'])
+            gate.ASR_RESTART_CSS_SHA='0'*64
+            with self.assertRaisesRegex(gate.GateFailure,'CSS SHA'):
+                gate.allow_once_asr_restart_fix(old,new,'a'*64,'b'*64)
+        finally:
+            for k,v in zip(constants,saved):setattr(gate,k,v)
+
     def test_exact_asr_accessible_end_dialog_release(self):
         p=gate.ASR_PREFIX
         old={f'protected-{i}.txt':b'untouched' for i in range(142)}
