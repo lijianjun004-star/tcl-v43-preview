@@ -387,5 +387,69 @@ class UIR3GateTests(unittest.TestCase):
         self.assertNotEqual(code, 0, result)
 
 
+
+class ASRReleaseGateTests(unittest.TestCase):
+    """The candidate adds exactly 12 isolated ASR files to a 142-file baseline."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.base = self.base_files()
+        self.base.update(self.isolated_files(gate.UI_R3_PREFIX, 'tcl-specialty-v352-ui-r3'))
+        self.base.update(self.isolated_files(gate.UI_R4_PREFIX, 'tcl-specialty-v352-ui-r4'))
+        self.assertEqual(len(self.base), 142)
+        self.asr = self.isolated_files(gate.ASR_PREFIX, 'tcl-specialty-v352-asr')
+
+    isolated_files = UIR3GateTests.isolated_files
+    base_files = UIR3GateTests.base_files
+    rehash = UIR3GateTests.rehash
+    verify = UIR3GateTests.verify
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_asr_addition_preserves_existing_files(self):
+        code, result = self.verify({**self.base, **self.asr})
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result['candidate_files'], 154)
+        self.assertEqual(result['isolated_asr_files'], 12)
+
+    def test_each_baseline_file_cannot_change_or_disappear(self):
+        for name in self.base:
+            for action in ('edit', 'delete'):
+                with self.subTest(name=name, action=action):
+                    candidate = {**self.base, **self.asr}
+                    if action == 'edit': candidate[name] += b' modified'
+                    else: del candidate[name]
+                    code, result = self.verify(candidate)
+                    self.assertNotEqual(code, 0, (name, action, result))
+
+    def test_asr_namespace_is_distinct_from_r4(self):
+        for protected in ('tcl-specialty-v352-ui-r4', 'tcl-specialty-v352-ui-r4-workflow', 'tcl-specialty-v352-ui-r4-vosk-v1'):
+            candidate = {**self.base, **self.asr}
+            candidate[gate.ASR_PREFIX+'app.js'] += (";const bad='" + protected + "';").encode()
+            self.rehash(candidate, gate.ASR_PREFIX)
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+            self.assertIn('reuses protected', result['errors'][0])
+
+    def test_asr_manifest_and_allowlist_enforced(self):
+        for action in ('missing', 'extra', 'tamper'):
+            candidate = {**self.base, **self.asr}
+            if action == 'missing': del candidate[gate.ASR_PREFIX+'style.css']
+            if action == 'extra': candidate[gate.ASR_PREFIX+'extra.js'] = b'bad'
+            if action == 'tamper': candidate[gate.ASR_PREFIX+'app.js'] += b'tamper'
+            code, result = self.verify(candidate)
+            self.assertNotEqual(code, 0, result)
+
+    def test_asr_after_release_is_immutable(self):
+        baseline = {**self.base, **self.asr}
+        candidate = dict(baseline)
+        candidate[gate.ASR_PREFIX+'style.css'] = b'changed'
+        self.rehash(candidate, gate.ASR_PREFIX)
+        code, result = self.verify(candidate, baseline)
+        self.assertNotEqual(code, 0, result)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
+
