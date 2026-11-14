@@ -125,6 +125,38 @@ class GateTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.GateFailure,'namespace'):
             gate.inspect_isolated_qa(wrong_namespace)
 
+
+    def test_ui_r4_namespace_and_allowlist_gate(self):
+        prefix = gate.UI_R4_PREFIX
+        def make_files():
+            payload = {name: ('R4-' + name).encode() for name in gate.SPECIALTY_FILES - {'static-manifest.json'}}
+            payload['app.js'] = (
+                b"const STORE_NAME='tcl-specialty-v352-ui-r4';"
+                b"new BroadcastChannel('tcl-specialty-v352-ui-r4-workflow');"
+                b"const VOSK_CACHE_NAME='tcl-specialty-v352-ui-r4-vosk-v1';"
+            )
+            payload['static-manifest.json'] = json.dumps({
+                'files': {name: hashlib.sha256(content).hexdigest() for name, content in payload.items()}
+            }).encode()
+            return {prefix+name: data for name, data in payload.items()}
+        data = make_files()
+        self.assertEqual(gate.inspect_isolated_ui_r4(data), 12)
+        self.assertEqual(gate.inspect_isolated_ui_r4({}), 0)
+        missing = dict(data); missing.pop(prefix+'index.html')
+        with self.assertRaisesRegex(gate.GateFailure, 'allowlist'):
+            gate.inspect_isolated_ui_r4(missing)
+        broken = dict(data);broken[prefix+'style.css']=b'forged'
+        with self.assertRaisesRegex(gate.GateFailure, 'manifest hash'):
+            gate.inspect_isolated_ui_r4(broken)
+        injected = make_files()
+        content = injected[prefix+'app.js'] + b";const previous='tcl-specialty-v352-ui-r3';"
+        injected[prefix+'app.js'] = content
+        m = json.loads(injected[prefix+'static-manifest.json'])
+        m['files']['app.js'] = hashlib.sha256(content).hexdigest()
+        injected[prefix+'static-manifest.json'] = json.dumps(m).encode()
+        with self.assertRaisesRegex(gate.GateFailure, 'reuses protected'):
+            gate.inspect_isolated_ui_r4(injected)
+
     def test_pr_policy(self):
         repo=self.root/'repo';repo.mkdir()
         def git(*args):
