@@ -157,6 +157,42 @@ class GateTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.GateFailure, 'reuses protected'):
             gate.inspect_isolated_ui_r4(injected)
 
+
+    def test_exact_asr_round2_one_time_release(self):
+        """A second strict release cannot modify other 152 entries or evade exact pins."""
+        p = gate.ASR_PREFIX
+        old = {f'protected-{i}.txt': b'original' for i in range(142)}
+        old.update({p+'app.js': b'original JS', p+'static-manifest.json': b'original manifest'})
+        old.update({p+f'file-{i}': b'unchanged' for i in range(10)})
+        self.assertEqual(len(old), 154)
+        new = dict(old)
+        new[p+'app.js'] = b'candidate JS'
+        new[p+'static-manifest.json'] = b'candidate manifest'
+        names = ('ASR_ROUND2_BASELINE_SHA', 'ASR_ROUND2_TARGET_SHA', 'ASR_ROUND2_APP_SHA')
+        saved = [getattr(gate, name) for name in names]
+        try:
+            gate.ASR_ROUND2_BASELINE_SHA = 'a'*64
+            gate.ASR_ROUND2_TARGET_SHA = 'b'*64
+            gate.ASR_ROUND2_APP_SHA = gate.sha256(new[p+'app.js'])
+            self.assertTrue(gate.allow_once_asr_round2(old, new, 'a'*64, 'b'*64))
+            for badbase, badcandidate in [('0'*64, 'b'*64), ('a'*64, '0'*64)]:
+                with self.assertRaisesRegex(gate.GateFailure, 'exact baseline'):
+                    gate.allow_once_asr_round2(old, new, badbase, badcandidate)
+            wrong = dict(new);wrong['protected-0.txt'] = b'mutated'
+            with self.assertRaisesRegex(gate.GateFailure, 'only app'):
+                gate.allow_once_asr_round2(old, wrong, 'a'*64, 'b'*64)
+            wrong = dict(new);wrong[p+'file-0'] = b'mutated'
+            with self.assertRaisesRegex(gate.GateFailure, 'only app'):
+                gate.allow_once_asr_round2(old, wrong, 'a'*64, 'b'*64)
+            wrong = dict(new);wrong.pop(p+'file-0')
+            with self.assertRaisesRegex(gate.GateFailure, '154 files'):
+                gate.allow_once_asr_round2(old, wrong, 'a'*64, 'b'*64)
+            gate.ASR_ROUND2_APP_SHA = 'f'*64
+            with self.assertRaisesRegex(gate.GateFailure, 'app.js SHA'):
+                gate.allow_once_asr_round2(old, new, 'a'*64, 'b'*64)
+        finally:
+            for name, value in zip(names, saved):setattr(gate, name, value)
+
     def test_exact_asr_stopfix_one_time_release(self):
         old = {gate.ASR_PREFIX+'app.js': b'old', gate.ASR_PREFIX+'static-manifest.json': b'old-manifest', 'root.html': b'unchanged'}
         new = dict(old)
