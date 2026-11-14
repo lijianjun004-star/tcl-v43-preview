@@ -20,6 +20,7 @@ SPECIALTY = 'tcl-specialty-v33/'
 SPECIALTY_FILES = {'index.html', 'app.js', 'style.css', 'training-boards.json', 'legacy-65.json', 'app-config.json', 'lib/qa-import.js', 'lib/parser.js', 'lib/xls.js', 'lib/pdf.js', 'lib/zip.js', 'static-manifest.json'}
 QA_PREFIX = 'tcl-v352-mobile-qa/'
 UI_R3_PREFIX = 'tcl-v352-ui-r3/'
+UI_R4_PREFIX = 'tcl-v352-ui-r4/'
 UI_R3_ROLLBACK_SHA256 = 'fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727'
 MAX_FILE_COUNT = 500
 MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024
@@ -292,6 +293,41 @@ def inspect_isolated_ui_r3(files):
     return len(ui)
 
 
+
+def inspect_isolated_ui_r4(files):
+    """Allow only a distinct R4 mobile QA snapshot; preserve every deployed older version."""
+    ui = {name[len(UI_R4_PREFIX):]: data for name, data in files.items() if name.startswith(UI_R4_PREFIX)}
+    if not ui:
+        return 0
+    if set(ui) != SPECIALTY_FILES:
+        raise GateFailure('UI R4 allowlist mismatch')
+    manifest = json.loads(ui['static-manifest.json'].decode('utf-8'))
+    if set(manifest.get('files', {})) != SPECIALTY_FILES - {'static-manifest.json'}:
+        raise GateFailure('UI R4 manifest coverage mismatch')
+    for name, digest in manifest['files'].items():
+        if sha256(ui[name]) != digest:
+            raise GateFailure('UI R4 manifest hash mismatch: ' + name)
+    js = ui['app.js'].decode('utf-8')
+    for marker in (
+        "const STORE_NAME='tcl-specialty-v352-ui-r4';",
+        "new BroadcastChannel('tcl-specialty-v352-ui-r4-workflow')",
+        "const VOSK_CACHE_NAME='tcl-specialty-v352-ui-r4-vosk-v1';",
+    ):
+        if marker not in js:
+            raise GateFailure('UI R4 browser state namespace missing: ' + marker)
+    old_names = (
+        'tcl-specialty-v3', 'tcl-specialty-workflow', 'tcl-specialty-vosk-v1',
+        'tcl-specialty-v352-mobile-qa', 'tcl-specialty-v352-mobile-qa-workflow',
+        'tcl-specialty-v352-mobile-qa-vosk-v1',
+        'tcl-specialty-v352-ui-r3', 'tcl-specialty-v352-ui-r3-workflow',
+        'tcl-specialty-v352-ui-r3-vosk-v1',
+    )
+    for name in old_names:
+        if any(f'{quote}{name}{quote}' in js for quote in ("'", '"', '`')):
+            raise GateFailure('UI R4 reuses protected browser state namespace: ' + name)
+    return len(ui)
+
+
 def check_workflow(text, candidate_sha):
     # Match only the exact release checksum verification line.
     pattern = r'(run:\s*echo\s+["\'])([0-9a-f]{64})(\s{2}site\.zip["\']\s*\|\s*sha256sum\s+--check\s+--strict)'
@@ -362,7 +398,7 @@ def main():
         if a.expected_sha and candidate_sha != a.expected_sha.lower():
             raise GateFailure(f'Unexpected candidate SHA-256: {candidate_sha}')
         prefix_names = [x for x in current if x.startswith(PREFIX)]
-        root_names = [x for x in current if not x.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX))]
+        root_names = [x for x in current if not x.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX, UI_R4_PREFIX))]
         if len(root_names) != 43:
             raise GateFailure(f'Expected 43 existing root files, found {len(root_names)}')
         for required in ('index.html', PREFIX + 'index.html', PREFIX + 'asr-check.html', PREFIX + '设备检查.html', PREFIX + 'src/offline-asr-worker.js'):
@@ -384,17 +420,18 @@ def main():
             out['specialty_files'] = len(specialty)
         out['isolated_qa_files'] = inspect_isolated_qa(current)
         out['isolated_ui_r3_files'] = inspect_isolated_ui_r3(current)
+        out['isolated_ui_r4_files'] = inspect_isolated_ui_r4(current)
         if a.baseline:
             base_raw, baseline = inspect_zip(a.baseline)
             out['baseline_sha256'] = sha256(base_raw)
             baseline, filename_repairs = normalize_known_baseline_names(out['baseline_sha256'], baseline)
             if filename_repairs:
                 out['baseline_filename_repairs'] = filename_repairs
-            changed_root = sorted(name for name, content in baseline.items() if not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX)) and current.get(name) != content)
-            unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX)))
+            changed_root = sorted(name for name, content in baseline.items() if not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX, UI_R4_PREFIX)) and current.get(name) != content)
+            unexpected_new = sorted(name for name in current if name not in baseline and not name.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX, UI_R4_PREFIX)))
             if changed_root or unexpected_new:
                 raise GateFailure('Root preservation failed: ' + repr({'changed_root': changed_root, 'unexpected_new': unexpected_new}))
-            if len([n for n in baseline if not n.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX))]) != 43:
+            if len([n for n in baseline if not n.startswith((PREFIX, SPECIALTY, QA_PREFIX, UI_R3_PREFIX, UI_R4_PREFIX))]) != 43:
                 raise GateFailure('Baseline root count is not 43')
             old_ui = {name: data for name, data in baseline.items() if name.startswith(UI_R3_PREFIX)}
             new_ui = {name: data for name, data in current.items() if name.startswith(UI_R3_PREFIX)}
@@ -414,6 +451,12 @@ def main():
                     raise GateFailure('Existing mobile QA path must remain immutable')
             elif new_qa and any(current.get(name) != data for name, data in baseline.items()):
                 raise GateFailure('Adding mobile QA must preserve all 106 baseline files byte-for-byte')
+            old_r4 = {name: data for name, data in baseline.items() if name.startswith(UI_R4_PREFIX)}
+            new_r4 = {name: data for name, data in current.items() if name.startswith(UI_R4_PREFIX)}
+            if old_r4 and old_r4 != new_r4:
+                raise GateFailure('Existing R4 QA assets must remain immutable')
+            if new_r4 and not old_r4 and any(current.get(name) != data for name, data in baseline.items()):
+                raise GateFailure('Adding R4 QA must preserve all 130 baseline files byte-for-byte')
             out['root_preserved_bytewise'] = True
             out['already_current'] = base_raw == raw
             if a.workflow:
