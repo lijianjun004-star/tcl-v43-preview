@@ -21,6 +21,7 @@
     "evidence/node_15_tests.log": "9fa33298ab70080deccbd6d82674fa677d66abfa79f9192ebd9e4f847afb32e1",
     "evidence/node_16_tests.log": "2a2abd5362c0fe2cfd34b51aab80d43561f638656daecdc8fda87f65ffdb08d4",
     "evidence/r23_model_choice.log": "a9652d0b8a7f18152ca04bfe57a88e8623abcd182d841cbbbfdf61bb6d13ca4d",
+    "evidence/real_mandarin_base_vs_tiny.json": "dbd0086425c5428c65a7e7dd567123b90455f6b64c3c646b77c73f463467214c",
     "reference/gemini-r2-original-whisper-bridge.mjs": "84270d95cca431c2e4b0517efc176fca34f33b55b008711475ebba61bfc24a6c",
     "site/tcl-v352-asr-autoqa-r23/app-config.json": "52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511",
     "site/tcl-v352-asr-autoqa-r23/app.js": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add",
