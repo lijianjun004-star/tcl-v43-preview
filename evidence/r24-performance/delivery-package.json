@@ -1,0 +1,21 @@
+{
+  "path": "/workspace/shared/downloads/TCL-R24-卡顿与缩放修复交付-20261116.zip",
+  "bytes": 14019103,
+  "files": 739,
+  "sha256": "4fb9e2d46a92b7ccc72716ccef78c3725a3bf6db2b30120d4359d81259519dee",
+  "source_commit": "9b1cd7419866248305a803c6e466cfa774d056a9",
+  "main_commit": "f6ee029dd2b23265a5504847ab4bcdce6ce56347",
+  "drive_file_id": "1gsHgLaY-hbKgo_AiFqcmasVTaW0JTwCT",
+  "drive_url": "https://drive.google.com/file/d/1gsHgLaY-hbKgo_AiFqcmasVTaW0JTwCT/view?usp=drivesdk",
+  "drive_metadata_verified": {
+    "name": "TCL-R24-卡顿与缩放修复交付-20261116.zip",
+    "size": 14019103,
+    "parent": "1xjr-e9-TzOoa9zTJwH3cJw8v1920AtEi",
+    "shared": false
+  },
+  "local_crc_and_all_manifest_files": "PASS",
+  "first_build_attempt": "Stopped before creating archive because expected hashes were wrapped in files metadata; unwrap corrected, staged 217 paths/hash all equal. Product unchanged.",
+  "control_doc": "https://docs.google.com/document/d/1NwtsWXeHamz-R7ZvMDnIURP1ZSJl7Z56oU1vF0WN6dI",
+  "control_doc_section": "14",
+  "package_scope": "Source9b1cd74 and product mainf6ee029; later documentation-only updates intentionally not repackaged."
+}

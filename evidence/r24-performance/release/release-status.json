@@ -8,7 +8,7 @@
   ],
   "gate_tests": 92,
   "gate_test_result": "PASS",
-  "independent_review": "PASS: original 71 module constants unchanged, four old snapshots and three adjacent pairs preserved; archive/freeze/all 22 file hashes match; only new smooth\u2194review three-file pair; Worker/bridge unchanged.",
+  "independent_review": "PASS: original 71 module constants unchanged, four old snapshots and three adjacent pairs preserved; archive/freeze/all 22 file hashes match; only new smooth↔review three-file pair; Worker/bridge unchanged.",
   "stage": "/workspace/scratch/r24-review-final-pages-63519c50a532",
   "state": "DEPLOYED_FULL_PUBLIC_VERIFICATION_PENDING",
   "gate_sha256": "d73ff1ff29ef75527436259b4bd87de29ebf56e1e4ba0be412a01549bf8b22bd",
@@ -28,5 +28,17 @@
   "pages_run": 43951625263,
   "pages_result": "success",
   "pages_head_sha": "f6ee029dd2b23265a5504847ab4bcdce6ce56347",
-  "fresh_five_asset_hashes": "PASS"
+  "fresh_five_asset_hashes": "PASS",
+  "docs": {
+    "docs_pr": 122,
+    "docs_head": "c89607aa30d90f19cac26b742ea511c3a7ce73e4",
+    "docs_check_run": 43952285750,
+    "docs_check_result": "success",
+    "merge": "6cb913b6bce432136014788f3f3b009128152bf9",
+    "pages_run": 43952442350,
+    "pages_status": "completed",
+    "pages_conclusion": "success",
+    "public_app_status": 200,
+    "public_app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816"
+  }
 }

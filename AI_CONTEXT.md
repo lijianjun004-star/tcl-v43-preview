@@ -557,3 +557,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 原入口 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 已上线。公网217资源单轮全部HTTP200/SHA匹配，实际文字练播→复盘→刷新恢复通过，无页面错误及外部/模型请求。
 - 最终同hash完整公网题库32项通过（原31业务检查+实际加载版本检查）；16份浏览器实际app.js响应均HTTP200且正文SHA为63519c，app/parser/qa首尾hash不变，页面错误0。证据evidence/r24-performance/public-question-bank/。
 - 回滚通过独立PR恢复上一smooth-mobile归档faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1，精确五版本门禁只允许相邻版本更新/回滚；不清理本机记录、不改其他旧站点、不退回没有Worker的更旧版本。
+
+交付补充：新版ZIP https://drive.google.com/file/d/1gsHgLaY-hbKgo_AiFqcmasVTaW0JTwCT/view?usp=drivesdk ，14019103字节/739文件，SHA256 4fb9e2d46a92b7ccc72716ccef78c3725a3bf6db2b30120d4359d81259519dee。包含产品mainf6ee029与源码证据9b1cd74；CRC/逐文件manifest通过，Drive元数据大小/名称/目录回读一致，shared=false。替代旧题库包，后续仅文档元数据提交不反复重打包。总控文档第14节同步本轮交付和最新Argon无实质结果。
+
+文档PR122 headc89607aa30d90f19cac26b742ea511c3a7ce73e4检查43952285750成功后合并到6cb913b6bce432136014788f3f3b009128152bf9；最后Pages43952442350成功，app重新HTTP200/hash仍63519c。仅文档变化，不改变已验证产品或交付包。
