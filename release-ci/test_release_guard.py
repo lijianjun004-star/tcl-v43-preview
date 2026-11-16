@@ -711,7 +711,7 @@ class R21TrustedStageTests(unittest.TestCase):
         self.assertIn('python3 release-ci/stage_r21.py',gate.R21_STEP)
         self.assertIn(gate.R21_ARCHIVE,gate.R21_STEP)
         self.assertIn(gate.R21_APP_SHA,gate.R21_STEP)
-        self.assertEqual(gate.R21_STEP.count('tcl-v352-asr-autoqa-r2'),2)
+        self.assertEqual(gate.R21_STEP.count('tcl-v352-asr-autoqa-r2'),1)
         self.assertNotIn('unzip -o',gate.R21_STEP)
         self.assertEqual(old.count('      - uses: actions/configure-pages@v5\n'),1)
 
