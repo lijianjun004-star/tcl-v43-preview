@@ -23,6 +23,11 @@ jobs:
         run: echo "099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e  site.zip" | sha256sum --check --strict
       - name: Extract frontend only
         run: unzip -q site.zip -d _site
+      - name: Stage isolated audio research preview
+        run: |
+          mkdir -p _site/tcl-v352-asr-lab
+          cp experiments/r6-asr-original-audio-qa/index.html _site/tcl-v352-asr-lab/index.html
+          echo "d1b8e9418b7dd811a6f995b41a6a01e2fc38a585ac16081d6b88810c3c87c9fd  _site/tcl-v352-asr-lab/index.html" | sha256sum --check --strict
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
