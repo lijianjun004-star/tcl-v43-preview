@@ -122,10 +122,24 @@ def run():
                         mandarinResult={status:'FAIL',error:String(e?.message||e)};
                       }
                     }
+                    let baseResult={status:'NOT RUN'};
+                    if(mandarin) {
+                      try {
+                        const {pipeline} = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+                        const {prepareAudio}=await import('./whisper-bridge.mjs');
+                        const zhAudio=Uint8Array.from(atob(mandarin), c=>c.charCodeAt(0));
+                        const prepared=await prepareAudio(new Blob([zhAudio],{type:'audio/wav'}));
+                        const startBase=performance.now();
+                        const base=await pipeline('automatic-speech-recognition','onnx-community/whisper-base',{device:'wasm',dtype:'q8'});
+                        const baseOut=await base(prepared.data,{language:'chinese',task:'transcribe',chunk_length_s:30,stride_length_s:5});
+                        baseResult={status:'PASS',text:String(baseOut?.text??''),
+                                    elapsed_ms:Math.round(performance.now()-startBase)};
+                      } catch(err) {baseResult={status:'FAIL',error:String(err?.message||err)};}
+                    }
                     return {ok: typeof ans?.text === 'string',
                             text_type: typeof ans?.text, text_length: String(ans?.text ?? '').length,
                             duration: ans?.duration, rms:ans?.rms,
-                            mandarin:mandarinResult,
+                            mandarin:mandarinResult,base:baseResult,
                             progress, elapsed_ms:Math.round(performance.now()-started)};
                   } catch(err) {
                     return {ok:false, error:String(err?.message||err),
@@ -134,6 +148,12 @@ def run():
                   }
                 }""", {"wav": generated_wav(), "mandarin": mandarin_audio})
                 report["inference"] = outcome
+                sample_base=outcome.get("base") or {}
+                if sample_base.get("status") == "PASS":
+                    r=normalize_text(MANDARIN_REFERENCE)
+                    t=normalize_text(sample_base.get("text", ""))
+                    report["mandarin_base_one_sample_CER"] = round(edit_distance(r,t)/max(1,len(r)),4)
+                    report["mandarin_base_single_sample_note"]="Public single sample; not representative of TCL products or iPhone"
                 spoken = outcome.get("mandarin") or {}
                 if spoken.get("status", "").startswith("PASS"):
                     a = normalize_text(MANDARIN_REFERENCE)
