@@ -1086,6 +1086,78 @@ class R24InPlaceUpdateTests(unittest.TestCase):
                     gate.verify_pr('a' * 40, 'b' * 40)
 
 
+class R24QuestionBankUpdateTests(unittest.TestCase):
+    freeze_fixture = R24InPlaceUpdateTests.freeze_fixture
+    write_archive = R24InPlaceUpdateTests.write_archive
+    freeze_update = R24InPlaceUpdateTests.freeze_update
+    rebuild_fixture = R24InPlaceUpdateTests.rebuild_fixture
+
+    def setUp(self):
+        R24InPlaceUpdateTests.setUp(self)
+        self.question_patcher = mock.patch.multiple(gate,
+            R24_QUESTION_ASSET_HASHES={}, R24_QUESTION_ARCHIVE_B64_SHA='', R24_QUESTION_ARCHIVE_SHA='')
+        self.question_patcher.start()
+        self.addCleanup(self.question_patcher.stop)
+        self.question_resources = {**self.new_resources,
+            'app.js': b'export const value = 3;\n',
+            'lib/qa-import.js': b'export const qa = 3;\n'}
+        self.freeze_question()
+
+    def freeze_question(self):
+        self.question_resources['static-manifest.json'] = json.dumps({'files': {
+            name: gate.sha256(data) for name, data in self.question_resources.items()
+            if name != 'static-manifest.json'}}).encode()
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as z:
+            for name, value in self.question_resources.items():
+                z.writestr(gate.R24_DEST + '/' + name, value)
+        raw = data.getvalue()
+        self.question_encoded = base64.b64encode(raw) + b'\n'
+        gate.R24_QUESTION_ARCHIVE_SHA = gate.sha256(raw)
+        gate.R24_QUESTION_ARCHIVE_B64_SHA = gate.sha256(self.question_encoded)
+        gate.R24_QUESTION_ASSET_HASHES = {name: gate.sha256(data)
+                                         for name, data in self.question_resources.items()}
+
+    def verify_question(self, old, new):
+        return gate.verify_r24_archive_update(self.workflow, old, new, self.zipbytes, self.trusted)
+
+    def test_all_three_fixed_snapshots_are_readable(self):
+        self.assertEqual(gate.r24_resource_bytes(self.old_encoded), self.resources)
+        self.assertEqual(gate.r24_resource_bytes(self.new_encoded), self.new_resources)
+        self.assertEqual(gate.r24_resource_bytes(self.question_encoded), self.question_resources)
+
+    def test_question_update_and_reverse_preserve_all_other_files(self):
+        with mock.patch.object(gate, 'r24_rebuild_previous_stages', side_effect=self.rebuild_fixture):
+            update = self.verify_question(self.new_encoded, self.question_encoded)
+            rollback = self.verify_question(self.question_encoded, self.new_encoded)
+        self.assertEqual(update['direction'], 'update')
+        self.assertEqual(rollback['direction'], 'rollback')
+        expected = sorted(gate.R24_DEST + '/' + name for name in gate.R24_QUESTION_CHANGED_FILES)
+        self.assertEqual(update['changed'], expected)
+        self.assertEqual(rollback['changed'], expected)
+        self.assertEqual(update['protected_assets'], len(self.baselines))
+
+    def test_skipping_the_data_integrity_version_is_rejected(self):
+        for pair in ((self.old_encoded, self.question_encoded),
+                     (self.question_encoded, self.old_encoded),
+                     (self.question_encoded, self.question_encoded)):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                self.verify_question(*pair)
+
+    def test_question_update_cannot_rewrite_parser_even_with_pinned_outer_bytes(self):
+        self.question_resources['lib/parser.js'] = b'export const parser = 3;'
+        self.freeze_question()
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed three files'):
+            self.verify_question(self.new_encoded, self.question_encoded)
+
+    def test_unfrozen_third_snapshot_does_not_break_live_second_snapshot(self):
+        with mock.patch.object(gate, 'R24_QUESTION_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            self.assertEqual(gate.r24_resource_bytes(self.new_encoded), self.new_resources)
+            self.assertEqual(gate.r24_resource_bytes(self.old_encoded), self.resources)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r24_resource_bytes(self.question_encoded)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
