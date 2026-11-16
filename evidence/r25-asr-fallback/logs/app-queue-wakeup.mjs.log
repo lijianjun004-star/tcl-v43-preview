@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: pending Whisper wakes after timed-out Vosk raw job resolves
+ok 1 - pending Whisper wakes after timed-out Vosk raw job resolves
+  ---
+  duration_ms: 30.009913
+  type: 'test'
+  ...
+# Subtest: pending Whisper wakes after timed-out Vosk raw job rejects
+ok 2 - pending Whisper wakes after timed-out Vosk raw job rejects
+  ---
+  duration_ms: 28.522707
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 108.138251

@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: three callers share one pipeline and never overlap actual inference
+ok 1 - three callers share one pipeline and never overlap actual inference
+  ---
+  duration_ms: 54.084122
+  type: 'test'
+  ...
+# Subtest: timed-out raw inference remains locked; waiting and future callers cannot enter
+ok 2 - timed-out raw inference remains locked; waiting and future callers cannot enter
+  ---
+  duration_ms: 55.459692
+  type: 'test'
+  ...
+# Subtest: cancelled waiter does not start inference or cancel owner
+ok 3 - cancelled waiter does not start inference or cancel owner
+  ---
+  duration_ms: 8.491613
+  type: 'test'
+  ...
+# Subtest: silence avoids model download; malformed and overlong PCM fail before loading
+ok 4 - silence avoids model download; malformed and overlong PCM fail before loading
+  ---
+  duration_ms: 1.029282
+  type: 'test'
+  ...
+# Subtest: valid 180-second prepared audio is supported and models have immutable revisions
+ok 5 - valid 180-second prepared audio is supported and models have immutable revisions
+  ---
+  duration_ms: 31.700477
+  type: 'test'
+  ...
+# Subtest: pre-aborted audio decode does not allocate AudioContext
+ok 6 - pre-aborted audio decode does not allocate AudioContext
+  ---
+  duration_ms: 0.3469
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 205.811252

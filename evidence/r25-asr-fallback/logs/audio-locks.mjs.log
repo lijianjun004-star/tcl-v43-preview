@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: decoder timeout keeps actual resource locked until native promise resolves
+ok 1 - decoder timeout keeps actual resource locked until native promise resolves
+  ---
+  duration_ms: 27.039644
+  type: 'test'
+  ...
+# Subtest: Vosk initialization timeout retains worker job and its blob URL; no duplicate initialization
+ok 2 - Vosk initialization timeout retains worker job and its blob URL; no duplicate initialization
+  ---
+  duration_ms: 103.522921
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 176.759736
