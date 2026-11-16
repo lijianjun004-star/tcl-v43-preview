@@ -1,0 +1,32 @@
+{
+  "task_id": "TCL-R24-SMOOTH-GEMINI-20261116",
+  "owner": "ChatGPT",
+  "executor": "Gemini 4 Argon（代码与分析） via browser",
+  "status": "NO_SUBSTANTIVE_REVIEW",
+  "source_commit": "6b50517a80063ae61ea5e5de75d067fb1f3a2e13",
+  "evidence_commit": "d82e0ad",
+  "published_main": "ce128d32e7ef93759e69646006bb4585b23e9fd5",
+  "target": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/",
+  "model_preference": "4 Argon（代码与分析）",
+  "business_request_budget": 1,
+  "sent": 1,
+  "automatic_retries": 0,
+  "scope": "read-only review of mobile responsiveness, native-scale inputs, MediaRecorder question changes, worker lifecycle and recovery",
+  "limits": [
+    "no deployment",
+    "no source edits",
+    "no paid API or credits purchase",
+    "no false hardware or independent execution claims"
+  ],
+  "input_file": "Gemini_R24_Smooth_Frozen_Input_20261116.txt",
+  "input_bytes": 489478,
+  "input_sha256": "bdd93ef0fbd7c10346994cd3b4b2d28a434cdb83270933947ac56f2123728314",
+  "drive_input_url": "https://drive.google.com/file/d/1oxkQNsOlflinNBRU-r7sswsgrmfweHus/view?usp=drivesdk",
+  "readback_state": "NOT_ESTABLISHED",
+  "browser_run_id": "b5c0f550-a224-4b85-a2ac-3e22c4623cc7",
+  "sent_status": "confirmed",
+  "chat_url": "https://gemini.google.com/app/d1ef0d70c4ab79f4",
+  "refusal_verbatim": "我只是一个文本 AI，在这方面没法帮到你。",
+  "execution_evidence": "none returned",
+  "product_changed": false
+}
