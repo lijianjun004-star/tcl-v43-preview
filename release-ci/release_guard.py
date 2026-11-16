@@ -490,16 +490,16 @@ LAB_SOURCE = 'experiments/r6-asr-original-audio-qa/index.html'
 LAB_TARGET = 'tcl-v352-asr-lab/index.html'
 LAB_HTML_SHA256 = 'd1b8e9418b7dd811a6f995b41a6a01e2fc38a585ac16081d6b88810c3c87c9fd'
 LAB_BASELINE_ZIP_SHA256 = '099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e'
-LAB_ANCHOR = '      - uses: actions/configure-pages@v5\\n'
+LAB_ANCHOR = '      - uses: actions/configure-pages@v5\n'
 
 
 def lab_stage_step():
     return (
-        '      - name: Stage isolated audio research preview\\n'
-        '        run: |\\n'
-        '          mkdir -p _site/tcl-v352-asr-lab\\n'
-        '          cp experiments/r6-asr-original-audio-qa/index.html _site/tcl-v352-asr-lab/index.html\\n'
-        f'          echo "{LAB_HTML_SHA256}  _site/tcl-v352-asr-lab/index.html" | sha256sum --check --strict\\n'
+        '      - name: Stage isolated audio research preview\n'
+        '        run: |\n'
+        '          mkdir -p _site/tcl-v352-asr-lab\n'
+        '          cp experiments/r6-asr-original-audio-qa/index.html _site/tcl-v352-asr-lab/index.html\n'
+        f'          echo "{LAB_HTML_SHA256}  _site/tcl-v352-asr-lab/index.html" | sha256sum --check --strict\n'
     )
 
 
