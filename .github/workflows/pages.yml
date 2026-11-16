@@ -36,6 +36,10 @@ jobs:
         run: |
           python3 release-ci/stage_r21.py --site-dir _site --archive experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64
           echo "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4  _site/tcl-v352-asr-autoqa-r2/app.js" | sha256sum --check --strict
+      - name: Stage R2.3 isolated free Mandarin ASR preview
+        run: |
+          python3 release-ci/stage_r23.py --site-dir _site --archive experiments/r6-asr-autoqa-r23/site-only.tar.gz.b64
+          echo "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add  _site/tcl-v352-asr-autoqa-r23/app.js" | sha256sum --check --strict
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
