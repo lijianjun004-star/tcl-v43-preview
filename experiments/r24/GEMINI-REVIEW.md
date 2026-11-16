@@ -1,14 +1,14 @@
 # Gemini 单次复验任务书
 
-任务：TCL-R24-DELIVERY-20261116。用户已授权将该项目材料交给Gemini，使用现有Google AI Pro；最多1条业务请求、0次自动重试，不购买API或升级。
+任务：TCL-R24-DELIVERY-20261116。用户已授权将该项目材料交给Gemini，使用现有Google AI Pro；最初最多1条业务请求；Pro已发送后，用户明确指定Argon，因而新增最多1条Argon请求，累计预算2条、0次自动重试，不购买API或升级。
 
-当前实际状态：已实际打开云端 Gemini，页面显示“Sign in / Sign in to save activity”，当前会话未登录。浏览器尝试 1 次已结束，附件未挂载、业务请求 0 次、未取得 Gemini 回复；状态 BLOCKED_SIGN_IN，已停止该路线且未自动重试。用户报告已保存登录，但该状态未出现在本次云端会话，不能据此判断其他浏览器是否已登录。 以下是准备好的交接，不是Gemini返回。
+当前实际状态：Google登录已保存并在浏览器实测可用。此前Pro已明确挂载源码附件并发送1条请求，但仅回复“我只是一个文本 AI, 在这方面没法帮到你。”，未提供读取校验或复验内容。随后用户明确指定Argon；本次浏览器已选中“4 Argon（代码与分析）”，但附件入口操作未成功，因此Argon请求0次、累计业务请求1次，状态BLOCKED_ATTACHMENT_ENTRY。没有完成Gemini实质复验，不推测Pro回复原因，也不据一次界面操作外推Argon永远不支持附件。 以下是准备好的交接范围，不能当作Gemini复验结果。
 
-浏览器运行记录：`6d32caf6-93f0-45e3-be04-d9488a187a64`；未登录默认显示 Flash-Lite，不是选定的复验模型。详细状态在源码分支 `fix/r24-delivery-20261116` 的 `evidence/r24-delivery/gemini-status.json`。原交付 ZIP 与冻结复验输入保持原哈希；本条是后续状态更正。
+浏览器运行记录：未登录 `6d32caf6-93f0-45e3-be04-d9488a187a64`（0请求）；Pro `0fdb3765-047b-4cfe-86a6-53ae550ef0a6`（1请求，无实质复验）；Argon `687005d0-2bf6-4349-b888-34057043a5fa`（已选中模型，附件受阻，0请求）。完整证据见源码分支 `fix/r24-delivery-20261116` 的 `evidence/r24-delivery/GEMINI-OUTCOME.md` 和各次JSON。原交付ZIP与冻结输入保持原哈希，本条为后续状态更正。
 
 请在Gemini支持附件的会话中，从Drive明确附加 `TCL-R24-Gemini-复验输入-b086a0c5.txt`，不要仅粘贴链接并假定已经读到。文件：https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk 。SHA256 d13c3e3f54cd39fce7fd32fc7ddc80f42e49962cf21c094ed64e75676fdfbc32。
 
-建议一次发送：
+给Argon准备的复验范围（尚未成功发送，当前附件路线已停止）：
 
 > 对附件中的练播房R24最终源码和证据独立复核，目标是找出影响交付的剩余P1/P2问题。先确认读到冻结app哈希、restoreLocalSession恢复边界，以及音频报告里的模型版本信息。重点检查队列取消及跨场迟到、人工清空、异步身份变化、模型超时资源锁、IndexedDB保存/恢复/失败、导入文件边界。输出每个问题的文件、函数、触发步骤、影响和最小修复；没有证据的事项标为未确定。不要把已读取的测试报告说成你实际运行过；如具备代码执行工具可运行可用的离线测试，否则明确只做代码/证据审阅。最后区分本机版本可交付、真实手机待验、TCL语音准确度待验。只处理本任务，不购买API、不发起递归代理或后台任务。
 

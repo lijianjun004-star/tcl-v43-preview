@@ -487,5 +487,5 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 最终本地证据：60项发布门禁；恢复10项、history事件2项、队列/文本14组、作业8项、bridge/资源锁8项、迟到唤醒2项；最终两套3题Chromium模拟流程通过。导入格式/竞态6套在仅最后pageshow改动前的609f哈希通过，历史证据保留。真实Base/Tiny各3条公开电话普通话与Vosk3条、4种音频解码通过，但Base CER13/44、Tiny23/44，不能视为TCL准确率通过。
 - 公网独立复核：全部216资源HTTP200且哈希与完整构建一致；真实上线页面390px视口文字练播→复盘→刷新→同姓名恢复完成，零页面异常、零外部/模型请求。无物理手机/大陆网络/TCL业务语音验收；WebKit依赖不足未运行。
 - 完整源码和证据在 GitHub分支 fix/r24-delivery-20261116（已测试代码提交 c48653520c32b4b11501ada1e50ba06f518f9687，后续仅追加交付证据）；入口 experiments/r24/DELIVERY.md。PR104仍是旧失败草稿，不能再作为发布入口或直接合并。
-- Gemini实际复验未执行：已实际打开云端 Gemini，页面显示“Sign in / Sign in to save activity”，当前会话未登录。浏览器尝试 1 次已结束，附件未挂载、业务请求 0 次、未取得 Gemini 回复；状态 BLOCKED_SIGN_IN，已停止该路线且未自动重试。用户报告已保存登录，但该状态未出现在本次云端会话，不能据此判断其他浏览器是否已登录。材料已备 https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk ，从Drive明确附加后单次复验，0自动重试，不购买API。本轮内部独立Codex审查不冒称Gemini。
+- Gemini当前状态：Google登录已保存并在浏览器实测可用。此前Pro已明确挂载源码附件并发送1条请求，但仅回复“我只是一个文本 AI, 在这方面没法帮到你。”，未提供读取校验或复验内容。随后用户明确指定Argon；本次浏览器已选中“4 Argon（代码与分析）”，但附件入口操作未成功，因此Argon请求0次、累计业务请求1次，状态BLOCKED_ATTACHMENT_ENTRY。没有完成Gemini实质复验，不推测Pro回复原因，也不据一次界面操作外推Argon永远不支持附件。 用户指定模型后最多允许新增1条Argon请求（累计预算2），本次未发送，不自动重试、不购买API。三次浏览器尝试和原始回复见源码分支 evidence/r24-delivery/GEMINI-OUTCOME.md；模型选择仅确认本次会话，不声称更改全局默认。
 - 回滚：独立PR只删除精确R24归档和对应Pages步骤，既有门禁验证原档hash与旧阶段完全不变；不强推main、不删用户浏览器数据、不修改其他项目。
