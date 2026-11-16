@@ -591,3 +591,15 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 原报告、原始日志、hash及详细接收判定见evidence/r24-gemini-receipt-20261116/RECEIPT.md、GEMINI-REPORT-ORIGINAL.md与RAW-EVIDENCE.md。旧Gemini未实质回复记录不删除；此次已收到实质文本，但其通过结论未获证据支持。真机/国内网络/TCL语音仍未验收；不自动重启Gemini浏览器或新发请求。后续先按真实脚本路径修正报告，新增实跑另记范围和预算。
 
 - 后续用户补充分享页 https://share.gemini.google/OsbtBfWsirG9 （规范URL https://gemini.google.com/share/acdbbaa21bc9 ）。已实际渲染读到29235字符的摘要与画布，仍是原有通过陈述，无更正或新增完整日志，接收冲突结论不变。页头“基于Carbon创建”仅记UI标签，不推断后端执行模型；新增Gemini业务请求0。来源回读详见同RECEIPT.md补充节；本轮只补文档。
+
+
+## R25 已按用户明确指令直接部署（2026-11-16）
+
+任务TCL-R25-DEPLOY-20261116。用户本轮明确“**不用接力直接部属吧**”，已批准本次独立测试发布，覆盖旧接力任务书的待批准状态；不要继续要求同范围重复批准。ChatGPT统筹/Codex执行，Gemini新增0、付费模型API0。
+
+- 当前R25入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/ ，版本r25-asr-fallback-20261116，app2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc；ZIP52a47cf131c8dc402747230c672d96dfb1d3a9805b8a3dd18fc3d000c2cbe9d5/B64d710574…。
+- 默认同源Vosk，Whisper超时/网络失败后回退；修下载失败后逐题静默重试及整场Tiny/Base标签。产品修复b3950ea、冻结源码3bd0ff1在codex/r25-followup-fixes-20261116；15Node+4浏览器+真实Vosk合成语音等前置验证见该分支。R25本机库/词表/缓存隔离，旧R24和其他入口/历史记录保留，不自动迁移数据。
+- CI PR127 head8bf0583，检查43977169011成功，合并42ab929b31fc55e3f7ab724d5304eca4ed280fa6，旧版Pages43977323220成功。发行PR128 head e5fa5d9729580dfd545d33fcbf09f98fb634c548，检查43977558275成功，核对精确head/main后合并b24abea1be778024edf493c01418fec22ae4e8ea；R25 Pages43977679324 completed/success。CI与发行拆分，不改site.zip/旧SHA白名单。
+- 110门禁、真实完整正逆构建通过；旧217字节保留+新22=239。发布后公网239单轮HTTP200及SHA全部匹配、失败0/补读0，起止app/manifest一致。公开页面两题文字/复盘/刷新恢复11检查通过，3次实际app响应hash匹配，0页面错误/模型请求；首轮夹具延后读响应失败原件保留，修驱动重跑通过，无产品改动。
+- 公开页默认Vosk另实际读取12个同源模型文件，用合成普通话+相机完成录音→原题回答栏→复盘，0页面错误/外部请求。识别有明显错字，不作真人/TCL准确率结论。真实iPhone/Android/大陆网络/Whisper权重及真人语音仍未验收，首下约42MB建议Wi-Fi。
+- 权威发布记录evidence/r25-deployment-20261116/DEPLOYMENT.md，完整新证据在源码分支提交ddd3384的同目录。旧Drive冻结包待批准文字仅为历史，不是当前状态；本轮不再交接后才执行，已实际部署。回滚独立PR仅删除R25归档及唯一staging步骤，精确恢复旧217，不覆盖其他改动或清理本机数据。
