@@ -688,6 +688,56 @@ def verify_r21_release(before, after, archive_bytes, baseline_bytes):
     return True
 
 
+
+# Exact one-time R2.3 free Base/Tiny model test path. No official ZIP mutation.
+R23_ARCHIVE='experiments/r6-asr-autoqa-r23/site-only.tar.gz.b64'
+R23_ARCHIVE_SHA256='3876e40c30ac787f9833338fd4dce5d3df611f6120010174d82d3246e7f802c0'
+R23_APP_SHA256='3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add'
+R23_STEP=(
+    '      - name: Stage R2.3 isolated free Mandarin ASR preview\n'
+    '        run: |\n'
+    '          python3 release-ci/stage_r23.py --site-dir _site --archive experiments/r6-asr-autoqa-r23/site-only.tar.gz.b64\n'
+    '          echo "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add  _site/tcl-v352-asr-autoqa-r23/app.js" | sha256sum --check --strict\n'
+)
+
+def verify_r23_additive_release(before, after, archive, zipbytes):
+    if sha256(zipbytes)!=LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.3 cannot change production site.zip')
+    if sha256(archive)!=R23_ARCHIVE_SHA256:
+        raise GateFailure('R2.3 release must use exact audited archive')
+    if check_workflow(before,LAB_BASELINE_ZIP_SHA256)!=LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('Unexpected Pages deployment workflow baseline')
+    anchor='      - uses: actions/configure-pages@v5\n'
+    if before.count(anchor)!=1 or R23_STEP in before:
+        raise GateFailure('R2.3 path must be staged once only')
+    if after!=before.replace(anchor,R23_STEP+anchor,1):
+        raise GateFailure('R2.3 altered unrelated Pages steps')
+    if check_workflow(after,LAB_BASELINE_ZIP_SHA256)!=LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.3 cannot change production ZIP digest')
+    with tempfile.TemporaryDirectory() as temp:
+        root=pathlib.Path(temp)
+        zip_path=root/'site.zip'
+        zip_path.write_bytes(zipbytes)
+        site=root/'_site'
+        extract_zip_safely(zip_path,site)
+        if (site/'tcl-v352-asr-autoqa-r23').exists():
+            raise GateFailure('R2.3 would overwrite existing test path')
+        source=root/'r23-site.tar.gz.b64'
+        source.write_bytes(archive)
+        runner=pathlib.Path('release-ci/stage_r23.py').resolve()
+        if not runner.is_file() or not runner.with_name('r23_browser_e2e.py').is_file():
+            raise GateFailure('Required trusted R2.3 staging and browser tests not on main')
+        try:
+            subprocess.run([sys.executable,str(runner),'--site-dir',str(site),
+                            '--archive',str(source),'--browser'],
+                           cwd=root,check=True,timeout=500)
+        except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as err:
+            raise GateFailure('R2.3 browser/asset QA FAILED: '+str(err))
+        if sha256((site/'tcl-v352-asr-autoqa-r23/app.js').read_bytes())!=R23_APP_SHA256:
+            raise GateFailure('R2.3 built app.js changed')
+    return True
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -697,9 +747,17 @@ def verify_pr(base, head):
         return subprocess.check_output(['git', 'show', f'{ref}:{path}'])
     changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
     release = {'site.zip', '.github/workflows/pages.yml'}
-    ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/r21_real_model_probe.py'}
+    ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R21_ARCHIVE,'.github/workflows/pages.yml'}:
+    if changed == {R23_ARCHIVE,'.github/workflows/pages.yml'}:
+        verify_r23_additive_release(
+            show(base,'.github/workflows/pages.yml').decode('utf-8'),
+            show(head,'.github/workflows/pages.yml').decode('utf-8'),
+            show(head,R23_ARCHIVE),
+            show(base,'site.zip'),
+        )
+        print('verify-pages-release PASS: R2.3 exact ZIP + 14 static resources + real Chromium 3-turn mocked speech')
+    elif changed == {R21_ARCHIVE,'.github/workflows/pages.yml'}:
         verify_r21_release(
             show(base,'.github/workflows/pages.yml').decode('utf-8'),
             show(head,'.github/workflows/pages.yml').decode('utf-8'),
@@ -753,6 +811,9 @@ def verify_pr(base, head):
             compile(show(head, name), name, 'exec')
         if 'release-ci/stage_r21.py' in changed:
             compile(show(head, 'release-ci/stage_r21.py'), 'release-ci/stage_r21.py', 'exec')
+        for new_ci_path in ('release-ci/stage_r23.py','release-ci/r23_browser_e2e.py'):
+            if new_ci_path in changed:
+                compile(show(head,new_ci_path),new_ci_path,'exec')
         if 'release-ci/r21_real_model_probe.py' in changed:
             compile(show(head,'release-ci/r21_real_model_probe.py'),'release-ci/r21_real_model_probe.py','exec')
         if '.github/workflows/r21-real-model-smoke.yml' in changed:
