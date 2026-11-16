@@ -1,0 +1,90 @@
+{
+  "test_mode": "REAL Whisper Tiny + MediaRecorder + public human Mandarin replay (desktop, not live human mic)",
+  "url": "http://127.0.0.1:40079/experiments/r24/tcl-v352-asr-r24-qa/",
+  "steps": {
+    "choose_anchor": 0.19,
+    "name": 0.02,
+    "login": 0.09,
+    "freePractice": 0.09,
+    "device_recheck": 0.18,
+    "startScene": 0.05,
+    "next_Q1": 0.04,
+    "stop_Q2": 0.05,
+    "open_tools": 1.97,
+    "open_text_answer": 0.05,
+    "save_manual": 0.03,
+    "next_Q2": 0.03,
+    "finish_menu": 0.07,
+    "finish_confirm": 0.13,
+    "reviewDetails": 0.1
+  },
+  "errors": [],
+  "preset_before_run": "tiny",
+  "finish_transition_ms": 156,
+  "inspect": {
+    "title": "TCL 智能练播房｜V3.5.2 · ASR 逐题测试 测试版｜R2.4 语音修复候选（待真机验收）",
+    "rows": [
+      {
+        "answer": "我想查试我目前的张互语\n查看模型识别原文\n保存本题修改将整场文字填入本题",
+        "status": "已写入本题答案 · Whisper Tiny 轻量 本题转写完成（型号数字需人工核对）",
+        "audio": true
+      },
+      {
+        "answer": "人工修改测试：T7M Pro 75英寸\n查看模型识别原文\n保存本题修改将整场文字填入本题",
+        "status": "已编辑识别文字（草稿已存）",
+        "audio": true
+      },
+      {
+        "answer": "我相信我目前的张亏语\n查看模型识别原文\n保存本题修改将整场文字填入本题",
+        "status": "已写入本题答案 · Whisper Tiny 轻量 本题转写完成（型号数字需人工核对）",
+        "audio": true
+      }
+    ],
+    "recordCount": 3,
+    "records": [
+      {
+        "rawTranscript": "我想查试我目前的张互语",
+        "answer": "我想查试我目前的张互语",
+        "transcript": "我想查试我目前的张互语",
+        "whisperCandidate": "",
+        "asrStatus": "已写入本题答案 · Whisper Tiny 轻量 本题转写完成（型号数字需人工核对）"
+      },
+      {
+        "rawTranscript": "我相信我目前的张亏语",
+        "answer": "我相信我目前的张亏语",
+        "transcript": "我相信我目前的张亏语",
+        "whisperCandidate": "",
+        "asrStatus": "已写入本题答案 · Whisper Tiny 轻量 本题转写完成（型号数字需人工核对）"
+      },
+      {
+        "rawTranscript": "我相信我目前的张互语",
+        "answer": "人工修改测试：T7M Pro 75英寸",
+        "transcript": "我相信我目前的张互语",
+        "whisperCandidate": "",
+        "asrStatus": "已编辑识别文字（草稿已存）"
+      }
+    ],
+    "calls": [
+      {
+        "stage": "inference-complete",
+        "model": "onnx-community/whisper-tiny",
+        "time": 1794849352859,
+        "question": 1
+      },
+      {
+        "stage": "inference-complete",
+        "model": "onnx-community/whisper-tiny",
+        "time": 1794849357646,
+        "question": 2
+      },
+      {
+        "stage": "inference-complete",
+        "model": "onnx-community/whisper-tiny",
+        "time": 1794849370276,
+        "question": 3
+      }
+    ],
+    "modelLoaded": null
+  },
+  "ok": true
+}

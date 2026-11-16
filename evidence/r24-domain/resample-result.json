@@ -1,0 +1,12 @@
+{
+  "duration": 4.778616780045351,
+  "sampleRate": 16000,
+  "prepared_samples": 76458,
+  "native_16k_samples": 76458,
+  "ffmpeg_samples": 76458,
+  "correlation_native_16k": 0.9999997989561062,
+  "correlation_ffmpeg": 0.9999765044492527,
+  "rms_prepared": 0.09646346630213973,
+  "rms_native": 0.09647977326677026,
+  "rms_ffmpeg": 0.09648662805557251
+}

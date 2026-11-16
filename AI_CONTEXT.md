@@ -454,3 +454,23 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 界面仍为本机体验，运营和主播不能跨设备同步，姓名不等于身份认证，无正式 AI 评分；仅闲聊/投诉按所设间隔自动出现，训练题仍需手动切换。当前录像最多 8 分钟或约 64MB；原视频应及时下载；整场录后提取最多 180 秒且 48MB 以内。
 - 未完成：iPhone Safari / Android Chrome 真机摄像头、麦克风、录制回放及时间轴，真人语音识别，以及中国大陆网络可达性；不得把云端浏览器或静态发布成功当成真机验收。
 - 本次旧资源回滚基线为 `fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727`。应通过独立 PR 同时恢复 ZIP 和对应工作流校验值；不可强推 main 或删除历史数据。
+
+
+## R2.4 ASR 复验候选（2026-11-16，当前 ChatGPT/Codex 环境）
+
+基线 main b672281725392a2e23e656dd5ff410531f660175，与用户提供 R2.3 包一致。独立分支 fix/r24-asr-normalization；仅候选，不合并、不发布，不改 site.zip/工作流/旧门禁。详见 experiments/r24/REPORT.md 与 evidence/r24。
+
+已修复：OpenCC 1.4.2 词级繁简；失效 Whisper 回写 double shift 跳过下一题；录音回调读取他题文本；暂存复盘写库守卫；镜像选项；新增匿名阶段诊断、下载进度。保留人工修改、原始文本和 Base 默认，Tiny 手动选择。
+
+实测：原包哈希 PASS；旧繁简缺陷复现；VM 回归12项组 PASS；bridge 合成预检/静音/超时锁 PASS；release_guard 44项 PASS；Chromium mock 三题 PASS；公开真人语音+REAL Whisper Tiny三题页面/MediaRecorder/IndexedDB PASS（音源为语料回放，非真麦克风）。真实 Tiny/Base 各3段中文推理完成；CER分别23/44=52.27%、13/44=29.55%，准确度不放行。截图和逐条结果见 evidence/r24。
+
+iPhone/Android/微信、真实大陆网络、Safari MP4/AAC、后台与内存压力、Vosk真实回退、刷新后完整会话媒体恢复均 NOT RUN。无付费 API、无 Gemini 调用。旧站保持原样；下一轮任务见 experiments/r24/NEXT_TASK.md。
+
+
+## R2.4 本机讲解术语优化（2026-11-16，PR104续做）
+
+用户询问词库并提及之前TCL讲解词。查到两份XLSX/244条历史记录，但当前附件及Drive无原件，未读取私有讲解词。新增本机导入预览/显式保存英文术语，只校正大小写/空格/连字符，保留完整型号版本、原始识别和人工修改；不训练模型、不猜参数、不公开私有词表。报告 experiments/r24/DOMAIN_REPORT.md。
+
+独立实测：当前Transformers.js3.8.1忽略prompt_ids；有效decoder提示在同一公开电话录音中反而使CER50%→83.33%，未采用。单样本重采样与原生16k/ffmpeg高度一致。新增术语单测/浏览器导入与存储/模拟三题回写通过。iPhone与真实TCL语料仍NOT RUN。旧real_flow复用同一语音源，不证明三段不同录音；三独立文件CER证据不变。
+
+PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁44项本地单测不能代替发布检查。继续Draft不合并不发布，不放宽门禁、不修改site.zip。待用户补讲解词后私下制作词表和真实业务录音对照集。

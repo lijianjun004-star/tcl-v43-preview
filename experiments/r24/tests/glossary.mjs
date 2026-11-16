@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {parseTerms,extractTerms,canonicalizeTerms,GLOSSARY_LIMITS} from '../tcl-v352-asr-r24-qa/asr-glossary.mjs';
+
+assert.deepEqual(parseTerms('TCL\ntcl\nT7M Pro,HDMI 2.1'),['TCL','T7M Pro','HDMI 2.1']);
+for(const input of ['量子点','https://example.com','a@example.com','13912345678','T13912345678','2500元','支持144Hz','最高清晰度','<|startofprev|>','TCL\u0000','a'.repeat(25),'a '.repeat(8)])assert.throws(()=>parseTerms(input),undefined,input);
+assert.throws(()=>parseTerms(Array.from({length:25},(_,i)=>'T'+i).join('\n')));
+assert.throws(()=>parseTerms(Array.from({length:24},(_,i)=>'MODELONG'+i+'PRO').join('\n')));
+assert.equal(parseTerms('').length,0);
+const parsed={fileName:'SECRET-MODEL77.docx',blocks:[{kind:'paragraph',locator:'SENSITIVE99',text:'这款T7M Pro使用Mini LED和HDMI 2.1，价格2500元，144Hz，不要访问https://example.com/T999，邮箱T888@example.com。'}, {kind:'table',rows:[{cells:['TCL','VRR 与 ALLM','Q10K 75英寸']}]}]};
+assert.deepEqual(extractTerms(parsed),['T7M Pro','Mini LED','HDMI 2.1','TCL','VRR','ALLM','Q10K']);
+assert.deepEqual(extractTerms({blocks:[{kind:'paragraph',text:'HDMI2.10 HDR10+ USB3.10 HDMI 2.10 T7M Pro Max'}]}),['HDMI2.10','HDR10+','USB3.10','T7M Pro Max']);
+assert.deepEqual(extractTerms({blocks:[{kind:'paragraph',text:' '.repeat(GLOSSARY_LIMITS.sourceChars)+'T999'}]}),[]);
+const terms=['TCL','T7M','T7M Pro','HDMI 2.1','Mini LED'];
+assert.deepEqual(canonicalizeTerms('t c l电视，t7m pro有h d m i 2.1、mini-led',terms),{text:'TCL电视，T7M Pro有HDMI 2.1、Mini LED',changes:4});
+assert.equal(canonicalizeTerms('XT7M T7MPLUS XTCL123 T7M-PRO-X',terms).text,'XT7M T7MPLUS XTCL123 T7M-PRO-X');
+assert.equal(canonicalizeTerms('梯七艾姆 高清接口 未说型号 2500元',terms).text,'梯七艾姆 高清接口 未说型号 2500元');
+assert.equal(canonicalizeTerms('',terms).text,'');
+assert.equal(canonicalizeTerms('我们说 T7M Pro 的型号是 T7M Pro',terms).changes,0);
+assert.equal(canonicalizeTerms('我想查账户余额',terms).text,'我想查账户余额');
+assert.equal(canonicalizeTerms('tcl',[]).text,'tcl');
+assert.equal(canonicalizeTerms('hdmi2.10 hdr10+ t7m pro max',['HDMI2.1','HDR10','T7M Pro']).text,'hdmi2.10 hdr10+ t7m pro max');
+console.log('GLOSSARY_PASS: limits, private source extraction, spelling-only normalization, model boundaries, no inferred speech');

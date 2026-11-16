@@ -1,0 +1,25 @@
+{
+  "version": "r24-qa-asr-fix",
+  "files": {
+    "app-config.json": "52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511",
+    "app.js": "ca811945013adb5b787f080ad7d24edcf729e58df122433ce898dbaa5c174c96",
+    "asr-glossary.mjs": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
+    "asr-normalize.mjs": "9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13",
+    "glossary-ui.mjs": "e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb",
+    "index.html": "aeb555a10f83752249976d76b1bb6c8229cf1f38fb17ef8e44ca7ebbf0375495",
+    "legacy-65.json": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f",
+    "lib/parser.js": "bd41beeece826d58ca8d4b41fee00137227defe9f355a55939db83f947a90f56",
+    "lib/pdf.js": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b",
+    "lib/qa-import.js": "bfe7562e3c2647693ce9d58f87f466acc8459aa06ab4e983115b012d754d155f",
+    "lib/xls.js": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c",
+    "lib/zip.js": "83dd040652016cabd947c0024db8e4f5d1fb7a741dd0956fba86629d551c75b3",
+    "r23-model-choice.js": "c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596",
+    "style.css": "9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed",
+    "training-boards.json": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11",
+    "vendor/opencc/LICENSE": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e",
+    "vendor/opencc/LICENSES/Apache-2.0.txt": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308",
+    "vendor/opencc/THIRD_PARTY_LICENSES.md": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806",
+    "vendor/opencc/t2cn.mjs": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6",
+    "whisper-bridge.mjs": "a1c2024d47853e85558cffba28772e95e4b02336d351a9684fcaa3dbc9c5d59e"
+  }
+}
