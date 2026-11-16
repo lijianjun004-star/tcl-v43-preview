@@ -700,6 +700,21 @@ class AutoqaNamespaceFixGateTests(unittest.TestCase):
         self.assertNotIn('site.zip',gate.AUTOQA_NAMESPACE_PATCH)
         self.assertNotIn('.github/workflows/pages.yml',gate.AUTOQA_NAMESPACE_PATCH)
 
+
+class R21TrustedStageTests(unittest.TestCase):
+    def test_r21_one_time_release_exact_workflow_addition(self):
+        old=(
+            'name: Deploy\n'
+            f'run: echo "{gate.LAB_BASELINE_ZIP_SHA256}  site.zip" | sha256sum --check --strict\n'
+            '      - uses: actions/configure-pages@v5\n'
+        )
+        self.assertIn('python3 release-ci/stage_r21.py',gate.R21_STEP)
+        self.assertIn(gate.R21_ARCHIVE,gate.R21_STEP)
+        self.assertIn(gate.R21_APP_SHA,gate.R21_STEP)
+        self.assertEqual(gate.R21_STEP.count('tcl-v352-asr-autoqa-r2'),1)
+        self.assertNotIn('unzip -o',gate.R21_STEP)
+        self.assertEqual(old.count('      - uses: actions/configure-pages@v5\n'),1)
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
