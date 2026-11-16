@@ -40,6 +40,9 @@ jobs:
         run: |
           python3 release-ci/stage_r23.py --site-dir _site --archive experiments/r6-asr-autoqa-r23/site-only.tar.gz.b64
           echo "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add  _site/tcl-v352-asr-autoqa-r23/app.js" | sha256sum --check --strict
+      - name: Stage R2.4 isolated practice-room delivery
+        run: |
+          python3 release-ci/release_guard.py --stage-r24 _site experiments/r24-release/site-only.zip.b64
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
