@@ -1,0 +1,24 @@
+{
+  "task": "TCL-R24-QUESTION-BANK-20261116",
+  "type": "documentation-only",
+  "base": "157f735be541db82f2a7051e9cdf7768b8e9cb0e",
+  "pr": 115,
+  "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/115",
+  "head": "eae941f60fb2e92cc292da2978cce056d188a868",
+  "files": [
+    "AI_CONTEXT.md",
+    "experiments/r24/QUESTION-BANK.md"
+  ],
+  "status": "MERGED_AND_PAGES_SUCCESS",
+  "check_run": 43943768882,
+  "check_url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43943768882",
+  "check_conclusion": "success",
+  "merge_sha": "3e4198afa9c7aecbbbff4c8bbc9d01b3efd8e15c",
+  "product_archive_workflow_and_gate_unchanged": true,
+  "pages": {
+    "run": 43943845591,
+    "head": "3e4198afa9c7aecbbbff4c8bbc9d01b3efd8e15c",
+    "conclusion": "success",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43943845591"
+  }
+}
