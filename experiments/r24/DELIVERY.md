@@ -59,3 +59,8 @@ python release-ci/test_release_guard.py
 CI PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/105 。原195个文件逐字节保留、新增21个；60项门禁、完整staging和精确回滚通过。最终源码的会话恢复10项、history2项、队列/文本14组、作业8项、资源锁及bridge8项、迟到队列唤醒2项和两套三题浏览器流程通过。文件格式/导入等六项完整浏览器脚本在仅pageshow回调变更前的609f源码通过，保留旧哈希，不冒充最终哈希。
 
 发布PR、Pages运行及公网校验将在完成后追加。Gemini状态见 `evidence/r24-delivery/gemini-status.json`；当前尚待Google登录连接，已准备单次复验输入，未实际调用。
+
+
+发布完成：PR106 https://github.com/lijianjun004-star/tcl-v43-preview/pull/106 ，合并 `7c2c8c4429166654a63b9c20f2258ec1cfd31b7b`；Pages https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43923233532 成功。公网216/216资源HTTP200且哈希匹配，真实上线文字练播/复盘/刷新恢复PASS，零页面异常与外部请求。入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。
+
+Gemini交接任务见 `GEMINI-REVIEW.md`，当前仍待Google登录连接，不是已完成复验。

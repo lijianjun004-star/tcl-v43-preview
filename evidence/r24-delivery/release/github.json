@@ -1,0 +1,19 @@
+{
+  "repository": "lijianjun004-star/tcl-v43-preview",
+  "source_commit": "c48653520c32b4b11501ada1e50ba06f518f9687",
+  "ci_pr": 105,
+  "ci_head": "81dd74577b4fbd112e3fc4405ab4ca51df034bd0",
+  "ci_run": 43922808259,
+  "ci_conclusion": "success",
+  "ci_merge": "25d73d5dd89e22554d15e457554cea2a93386d3f",
+  "release_pr": 106,
+  "release_head": "5bb528968d736087d9414ab0c2197475fd43bf5b",
+  "release_ci_run": 43923068984,
+  "release_ci_conclusion": "success",
+  "release_merge": "7c2c8c4429166654a63b9c20f2258ec1cfd31b7b",
+  "pages_run": 43923233532,
+  "pages_status": "completed",
+  "pages_conclusion": "success",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/",
+  "rollback": "New PR removing only the exact R24 archive and exact R24 workflow stage; baseline policy validates unchanged old stages and archive digest."
+}
