@@ -690,6 +690,16 @@ class AutoqaGateTests(unittest.TestCase):
         self.assertIn('python3 experiments/r6-asr-autoqa/build_qa.py',gate.AUTOQA_STEP)
         self.assertEqual(gate.AUTOQA_STEP.count('build_qa.py'),1)
 
+
+class AutoqaNamespaceFixGateTests(unittest.TestCase):
+    def test_patch_is_two_source_files_only(self):
+        self.assertEqual(set(gate.AUTOQA_NAMESPACE_PATCH),{
+            'experiments/r6-asr-autoqa/build_qa.py',
+            'experiments/r6-asr-autoqa/test_build_qa.py',
+        })
+        self.assertNotIn('site.zip',gate.AUTOQA_NAMESPACE_PATCH)
+        self.assertNotIn('.github/workflows/pages.yml',gate.AUTOQA_NAMESPACE_PATCH)
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
