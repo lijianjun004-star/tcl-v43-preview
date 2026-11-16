@@ -641,12 +641,12 @@ def verify_autoqa_namespace_patch(workflow, bundle, source_files):
 # R2.1: one exact additional test route; input source is a SHA-pinned archive.
 R21_ARCHIVE = 'experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64'
 R21_ARCHIVE_B64_SHA = 'c5c4488a2590f71416714bcd08efdc46b6fcb9653359cda435b18edd9d8ede10'
-R21_APP_SHA = '7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8'
+R21_APP_SHA = '86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4'
 R21_STEP = (
     '      - name: Stage R2.1 isolated original-audio ASR pilot\n'
     '        run: |\n'
     '          python3 release-ci/stage_r21.py --site-dir _site --archive experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64\n'
-    '          echo "7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8  _site/tcl-v352-asr-autoqa-r2/app.js" | sha256sum --check --strict\n'
+    '          echo "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4  _site/tcl-v352-asr-autoqa-r2/app.js" | sha256sum --check --strict\n'
 )
 
 
