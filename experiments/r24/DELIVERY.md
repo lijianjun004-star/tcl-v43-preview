@@ -58,9 +58,9 @@ python release-ci/test_release_guard.py
 
 CI PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/105 。原195个文件逐字节保留、新增21个；60项门禁、完整staging和精确回滚通过。最终源码的会话恢复10项、history2项、队列/文本14组、作业8项、资源锁及bridge8项、迟到队列唤醒2项和两套三题浏览器流程通过。文件格式/导入等六项完整浏览器脚本在仅pageshow回调变更前的609f源码通过，保留旧哈希，不冒充最终哈希。
 
-发布PR、Pages运行及公网校验将在完成后追加。Gemini状态见 `evidence/r24-delivery/gemini-status.json`；当前尚待Google登录连接，已准备单次复验输入，未实际调用。
+发布与公网校验已完成，见下方记录。Gemini状态见源码分支 `fix/r24-delivery-20261116` 的 `evidence/r24-delivery/gemini-status.json`；已实际打开云端 Gemini，页面显示“Sign in / Sign in to save activity”，当前会话未登录。浏览器尝试 1 次已结束，附件未挂载、业务请求 0 次、未取得 Gemini 回复；状态 BLOCKED_SIGN_IN，已停止该路线且未自动重试。用户报告已保存登录，但该状态未出现在本次云端会话，不能据此判断其他浏览器是否已登录。
 
 
 发布完成：PR106 https://github.com/lijianjun004-star/tcl-v43-preview/pull/106 ，合并 `7c2c8c4429166654a63b9c20f2258ec1cfd31b7b`；Pages https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43923233532 成功。公网216/216资源HTTP200且哈希匹配，真实上线文字练播/复盘/刷新恢复PASS，零页面异常与外部请求。入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。
 
-Gemini交接任务见 `GEMINI-REVIEW.md`，当前仍待Google登录连接，不是已完成复验。
+Gemini交接任务见 `GEMINI-REVIEW.md`；当前为 BLOCKED_SIGN_IN，尚未执行复验。上述发布和本机测试结论不变。
