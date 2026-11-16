@@ -718,7 +718,7 @@ class R21TrustedStageTests(unittest.TestCase):
 
 class RealModelOneShotGateTests(unittest.TestCase):
     def test_manual_asr_probe_is_separate_from_pages_release(self):
-        policy=pathlib.Path(gate.__file__).read_text(encoding='utf-8')
+        policy=Path(gate.__file__).read_text(encoding='utf-8')
         self.assertIn('.github/workflows/r21-real-model-smoke.yml', policy)
         self.assertIn('release-ci/r21_real_model_probe.py', policy)
         self.assertIn("permissions:\\n  contents: read",policy)
