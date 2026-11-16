@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """TCL Pages release gate (V2.2). Python stdlib only; does not access network or write to GitHub."""
 import argparse
+import base64
 import hashlib
 import io
 import json
@@ -750,6 +751,208 @@ def verify_r23_additive_release(before, after, archive, zipbytes):
     return True
 
 
+# R2.4 uses a separately reviewed, fixed static archive. This policy is merged
+# first; the later release PR can only add that archive and one exact workflow
+# stage. Parsing/syntax checking the static JS does not execute candidate code.
+R24_ARCHIVE = 'experiments/r24-release/site-only.zip.b64'
+R24_DEST = 'tcl-v352-asr-r24-qa'
+R24_ARCHIVE_B64_SHA = '1e2135de3c602c1a934fbc86f1b14999899116d035fe01d627903fd1ceb0f456'
+R24_ARCHIVE_SHA = '7dc19da8838015a9e870ac21c2672b57a273f342f657d9b254f495ee15ba08ef'
+R24_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511',
+ 'app.js': 'b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13',
+ 'glossary-ui.mjs': 'e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb',
+ 'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '7509eb3b9b43a5cec8aff80f2f6f3ccf4857e194608e87740ea117553cf225cd',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'bfe7562e3c2647693ce9d58f87f466acc8459aa06ab4e983115b012d754d155f',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596',
+ 'static-manifest.json': '1bd52fc2e11966101ed53309b8e6861bb05fbd8fa65f1a984463347945748ba8',
+ 'style.css': '9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': 'b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4'}
+R24_MAX_ENCODED_BYTES = 2_000_000
+R24_MAX_RAW_BYTES = 1_500_000
+R24_MAX_RESOURCE_BYTES = 750_000
+R24_MAX_TOTAL_BYTES = 3_000_000
+R24_TRUSTED_INPUTS = (
+    LAB_SOURCE,
+    'experiments/r6-asr-autoqa/build_qa.py',
+    'experiments/r6-asr-autoqa/whisper-bridge.mjs',
+    'release-ci/stage_r21.py', R21_ARCHIVE,
+    'release-ci/stage_r23.py', R23_ARCHIVE,
+)
+R24_REQUIRED_BASELINES = {
+    ASR_PREFIX + 'app.js': ASR_R6_APP_SHA,
+    'tcl-v352-asr-autoqa-r2/app.js': R21_APP_SHA,
+    'tcl-v352-asr-autoqa-r23/app.js': R23_APP_SHA256,
+}
+
+
+def r24_stage_step():
+    return (
+        '      - name: Stage R2.4 isolated practice-room delivery\n'
+        '        run: |\n'
+        f'          python3 release-ci/release_guard.py --stage-r24 _site {R24_ARCHIVE}\n'
+    )
+
+
+def r24_resource_bytes(encoded):
+    if not R24_ASSET_HASHES or not all(re.fullmatch('[0-9a-f]{64}', digest)
+            for digest in (R24_ARCHIVE_B64_SHA, R24_ARCHIVE_SHA, *R24_ASSET_HASHES.values())):
+        raise GateFailure('R2.4 policy has not been frozen to reviewed content')
+    if len(encoded) > R24_MAX_ENCODED_BYTES or sha256(encoded) != R24_ARCHIVE_B64_SHA:
+        raise GateFailure('R2.4 exact encoded archive hash/size mismatch')
+    try:
+        raw = base64.b64decode(encoded.strip(), validate=True)
+    except (ValueError, TypeError) as err:
+        raise GateFailure('R2.4 invalid base64 archive') from err
+    if len(raw) > R24_MAX_RAW_BYTES or sha256(raw) != R24_ARCHIVE_SHA:
+        raise GateFailure('R2.4 exact ZIP archive hash/size mismatch')
+    _, resources = inspect_zip_bytes_for_autoqa(raw)
+    allowed = {R24_DEST + '/' + name for name in R24_ASSET_HASHES}
+    if set(resources) != allowed:
+        raise GateFailure('R2.4 static resource allowlist mismatch')
+    # A directory record is not a static resource; reject even harmless extras.
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        if len(archive.infolist()) != len(allowed):
+            raise GateFailure('R2.4 archive entry count mismatch')
+        if any(stat.S_IFMT(info.external_attr >> 16) not in (0, stat.S_IFREG)
+               for info in archive.infolist()):
+            raise GateFailure('R2.4 non-regular static resource')
+        if any(not info.file_size or info.file_size > R24_MAX_RESOURCE_BYTES
+               for info in archive.infolist()):
+            raise GateFailure('R2.4 static resource size invalid')
+    if sum(map(len, resources.values())) > R24_MAX_TOTAL_BYTES:
+        raise GateFailure('R2.4 static resource total size exceeded')
+    data = {name: resources[R24_DEST + '/' + name] for name in R24_ASSET_HASHES}
+    for name, digest in R24_ASSET_HASHES.items():
+        if sha256(data[name]) != digest:
+            raise GateFailure('R2.4 resource hash mismatch: ' + name)
+    manifest = json.loads(data['static-manifest.json'])
+    expected = {name: sha256(value) for name, value in data.items()
+                if name != 'static-manifest.json'}
+    if manifest.get('files') != expected:
+        raise GateFailure('R2.4 manifest coverage/hash mismatch')
+    return data
+
+
+def stage_r24(site_path, archive_path):
+    site = pathlib.Path(site_path).resolve()
+    archive = pathlib.Path(archive_path)
+    if not site.is_dir() or archive.stat().st_size > R24_MAX_ENCODED_BYTES:
+        raise GateFailure('R2.4 staging site absent or archive oversized')
+    if any(path.is_symlink() for path in site.rglob('*')):
+        raise GateFailure('R2.4 staging cannot traverse existing symlinks')
+    output = site / R24_DEST
+    if output.exists() or output.is_symlink():
+        raise GateFailure('R2.4 target already exists; refuse overwrite')
+    for name, digest in R24_REQUIRED_BASELINES.items():
+        path = site / name
+        if not path.is_file() or sha256(path.read_bytes()) != digest:
+            raise GateFailure('R2.4 protected baseline absent/changed: ' + name)
+    resources = r24_resource_bytes(archive.read_bytes())
+    before = {path.relative_to(site).as_posix(): sha256(path.read_bytes())
+              for path in site.rglob('*') if path.is_file()}
+    # Validate every byte and JS syntax before publishing the new directory.
+    # Use a sibling filesystem temporary directory so rename is atomic.
+    with tempfile.TemporaryDirectory(prefix='.r24-stage-', dir=site.parent) as temp:
+        staged = pathlib.Path(temp) / R24_DEST
+        staged.mkdir()
+        for name, data in resources.items():
+            target = staged / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            if name.endswith(('.js', '.mjs')):
+                try:
+                    subprocess.run(['node', '--input-type=module', '--check'],
+                                   input=data, check=True, capture_output=True, timeout=30)
+                except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
+                    raise GateFailure('R2.4 JavaScript syntax check failed: ' + name) from err
+        for name, digest in before.items():
+            if sha256((site / name).read_bytes()) != digest:
+                raise GateFailure('R2.4 altered protected resource: ' + name)
+        staged.rename(output)
+    report = {'files': len(resources), 'old_assets_unchanged': len(before),
+              'app_sha': R24_ASSET_HASHES['app.js']}
+    print('R24_STAGE_PASS', json.dumps(report, sort_keys=True))
+    return report
+
+
+def verify_r24_additive_release(before, after, encoded, zipbytes, trusted_inputs):
+    if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 cannot change the protected site.zip')
+    if check_workflow(before, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 baseline workflow ZIP hash mismatch')
+    if before.count(LAB_ANCHOR) != 1 or r24_stage_step() in before:
+        raise GateFailure('R2.4 workflow insertion must occur exactly once')
+    if any(before.count(step) != 1 for step in
+           (lab_stage_step(), AUTOQA_STEP, R21_STEP, R23_STEP)):
+        raise GateFailure('R2.4 requires the unchanged preceding Pages stages')
+    if after != before.replace(LAB_ANCHOR, r24_stage_step() + LAB_ANCHOR, 1):
+        raise GateFailure('R2.4 changed unrelated Pages workflow content')
+    if set(trusted_inputs) != set(R24_TRUSTED_INPUTS):
+        raise GateFailure('R2.4 trusted baseline input set mismatch')
+    r24_resource_bytes(encoded)
+    with tempfile.TemporaryDirectory() as temp:
+        root = pathlib.Path(temp)
+        zip_path = root / 'baseline.zip'
+        zip_path.write_bytes(zipbytes)
+        site = root / '_site'
+        extract_zip_safely(zip_path, site)
+        # These are read with git show(base, path), never from candidate paths.
+        for name, data in trusted_inputs.items():
+            target = root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        if sha256(trusted_inputs[LAB_SOURCE]) != LAB_HTML_SHA256:
+            raise GateFailure('R2.4 protected audio lab hash mismatch')
+        lab = site / LAB_TARGET
+        lab.parent.mkdir(parents=True, exist_ok=True)
+        lab.write_bytes(trusted_inputs[LAB_SOURCE])
+        commands = (
+            [sys.executable, 'experiments/r6-asr-autoqa/build_qa.py',
+             str(site), 'experiments/r6-asr-autoqa'],
+            [sys.executable, 'release-ci/stage_r21.py', '--site-dir', str(site),
+             '--archive', R21_ARCHIVE],
+            [sys.executable, 'release-ci/stage_r23.py', '--site-dir', str(site),
+             '--archive', R23_ARCHIVE],
+        )
+        for command in commands:
+            try:
+                subprocess.run(command, cwd=root, check=True, timeout=180)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
+                raise GateFailure('R2.4 protected preceding stage failed') from err
+        source = root / 'r24-source.zip.b64'
+        source.write_bytes(encoded)
+        stage_r24(site, source)
+    return True
+
+
+def verify_r24_rollback(before, after, removed_archive, zipbytes):
+    """Only undo this exact additive release; never erase older routes/data."""
+    if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 rollback cannot change protected site.zip')
+    r24_resource_bytes(removed_archive)
+    step = r24_stage_step()
+    if before.count(step) != 1 or after != before.replace(step, '', 1):
+        raise GateFailure('R2.4 rollback must remove only the exact R2.4 stage')
+    if check_workflow(after, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 rollback changed original ZIP checksum')
+    if any(after.count(old) != 1 for old in
+           (lab_stage_step(), AUTOQA_STEP, R21_STEP, R23_STEP)):
+        raise GateFailure('R2.4 rollback must retain all preceding Pages stages')
+    return True
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -761,7 +964,27 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R23_ARCHIVE,'.github/workflows/pages.yml'}:
+    if changed == {R24_ARCHIVE, '.github/workflows/pages.yml'}:
+        archive_at_head = subprocess.check_output(
+            ['git', 'ls-tree', '--name-only', head, '--', R24_ARCHIVE], text=True).strip()
+        if archive_at_head == R24_ARCHIVE:
+            verify_r24_additive_release(
+                show(base, '.github/workflows/pages.yml').decode('utf-8'),
+                show(head, '.github/workflows/pages.yml').decode('utf-8'),
+                show(head, R24_ARCHIVE), show(base, 'site.zip'),
+                {path: show(base, path) for path in R24_TRUSTED_INPUTS},
+            )
+            print('verify-pages-release PASS: exact R2.4 static bundle; all preceding stages preserved')
+        elif not archive_at_head:
+            verify_r24_rollback(
+                show(base, '.github/workflows/pages.yml').decode('utf-8'),
+                show(head, '.github/workflows/pages.yml').decode('utf-8'),
+                show(base, R24_ARCHIVE), show(base, 'site.zip'),
+            )
+            print('verify-pages-release PASS: exact R2.4 rollback; older routes unchanged')
+        else:
+            raise GateFailure('Unexpected R2.4 archive tree entry')
+    elif changed == {R23_ARCHIVE,'.github/workflows/pages.yml'}:
         verify_r23_additive_release(
             show(base,'.github/workflows/pages.yml').decode('utf-8'),
             show(head,'.github/workflows/pages.yml').decode('utf-8'),
@@ -842,6 +1065,13 @@ def verify_pr(base, head):
 
 
 def main():
+    if len(sys.argv) == 4 and sys.argv[1] == '--stage-r24':
+        try:
+            stage_r24(sys.argv[2], sys.argv[3])
+            return 0
+        except (GateFailure, OSError, ValueError, subprocess.CalledProcessError) as exc:
+            print(f'R24_STAGE_FAILED: {exc}', file=sys.stderr)
+            return 2
     if len(sys.argv) == 4 and sys.argv[1] == '--verify-pr':
         try:
             return verify_pr(sys.argv[2], sys.argv[3])

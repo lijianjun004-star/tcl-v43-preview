@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Bounded ZIP and PR policy regressions. Stdlib only, no network."""
 import hashlib
+import base64
 import importlib.util
 import contextlib
 import io
@@ -12,6 +13,7 @@ import struct
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 import zlib
 
@@ -737,6 +739,216 @@ class R23PinnedReleasePolicyTests(unittest.TestCase):
         self.assertIn(gate.R23_APP_SHA256,gate.R23_STEP)
         self.assertEqual(gate.R23_STEP.count('site.zip'),0)
         self.assertEqual(len(gate.R23_ARCHIVE_SHA256),64)
+
+class R24FrozenStaticReleaseTests(unittest.TestCase):
+    """Adversarial fixtures exercise the actual decoder, stage and PR classifier."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.site = self.root / '_site'
+        self.site.mkdir()
+        self.baselines = {'old-root/index.html': b'old root',
+                          'r6/app.js': b'old R6', 'r21/app.js': b'old R21',
+                          'r23/app.js': b'old R23'}
+        for name, data in self.baselines.items():
+            p = self.site / name
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_bytes(data)
+        self.resources = {'app.js': b'export const value = 1;\n',
+                          'index.html': b'<!doctype html><title>fixture</title>'}
+        self.archive = self.root / 'site-only.zip.b64'
+        self.patcher = mock.patch.multiple(gate,
+            R24_ASSET_HASHES={}, R24_ARCHIVE_B64_SHA='', R24_ARCHIVE_SHA='',
+            R24_REQUIRED_BASELINES={name: gate.sha256(data)
+                                    for name, data in self.baselines.items()})
+        self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+        self.freeze_fixture()
+
+    def freeze_fixture(self):
+        self.resources['static-manifest.json'] = json.dumps({'files': {
+            name: gate.sha256(data) for name, data in self.resources.items()
+            if name != 'static-manifest.json'}}).encode()
+        gate.R24_ASSET_HASHES = {name: gate.sha256(data)
+                                 for name, data in self.resources.items()}
+        self.write_archive(self.resources)
+
+    def write_archive(self, resources, extra=None):
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as z:
+            for name, value in resources.items():
+                z.writestr(gate.R24_DEST + '/' + name, value)
+            if extra:
+                z.writestr(*extra)
+        raw = data.getvalue()
+        encoded = base64.b64encode(raw) + b'\n'
+        gate.R24_ARCHIVE_SHA = gate.sha256(raw)
+        gate.R24_ARCHIVE_B64_SHA = gate.sha256(encoded)
+        self.archive.write_bytes(encoded)
+        return encoded
+
+    def assert_old_unchanged(self):
+        for name, data in self.baselines.items():
+            self.assertEqual((self.site / name).read_bytes(), data)
+
+    def test_success_stages_exact_resources_and_preserves_old_routes(self):
+        report = gate.stage_r24(self.site, self.archive)
+        self.assertEqual(report['files'], len(self.resources))
+        self.assertEqual(report['old_assets_unchanged'], len(self.baselines))
+        for name, data in self.resources.items():
+            self.assertEqual((self.site / gate.R24_DEST / name).read_bytes(), data)
+        self.assert_old_unchanged()
+
+    def test_existing_target_is_never_overwritten(self):
+        target = self.site / gate.R24_DEST
+        target.mkdir()
+        (target / 'index.html').write_text('keep')
+        with self.assertRaisesRegex(gate.GateFailure, 'refuse overwrite'):
+            gate.stage_r24(self.site, self.archive)
+        self.assertEqual((target / 'index.html').read_text(), 'keep')
+        self.assert_old_unchanged()
+
+    def test_missing_or_changed_preceding_route_fails(self):
+        (self.site / 'r21/app.js').write_bytes(b'changed')
+        with self.assertRaisesRegex(gate.GateFailure, 'baseline absent/changed'):
+            gate.stage_r24(self.site, self.archive)
+        self.assertFalse((self.site / gate.R24_DEST).exists())
+
+    def test_symlink_in_existing_tree_is_rejected(self):
+        (self.site / 'alias').symlink_to(self.root)
+        with self.assertRaisesRegex(gate.GateFailure, 'existing symlinks'):
+            gate.stage_r24(self.site, self.archive)
+
+    def test_encoded_and_decoded_container_hashes_are_both_pinned(self):
+        encoded = self.archive.read_bytes()
+        with self.assertRaisesRegex(gate.GateFailure, 'encoded archive'):
+            gate.r24_resource_bytes(encoded + b'\n')
+        gate.R24_ARCHIVE_SHA = '0' * 64
+        with self.assertRaisesRegex(gate.GateFailure, 'ZIP archive'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_resource_changes_fail_even_with_new_outer_container_pins(self):
+        changed = {**self.resources, 'app.js': b'export const changed = true;'}
+        encoded = self.write_archive(changed)
+        with self.assertRaisesRegex(gate.GateFailure, 'resource hash mismatch'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_extra_resource_and_directory_entry_are_rejected(self):
+        encoded = self.write_archive({**self.resources, 'secret.txt': b'no'})
+        with self.assertRaisesRegex(gate.GateFailure, 'allowlist'):
+            gate.r24_resource_bytes(encoded)
+        encoded = self.write_archive(self.resources, (gate.R24_DEST + '/extra/', b''))
+        with self.assertRaisesRegex(gate.GateFailure, 'entry count'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_archive_traversal_and_symlink_are_rejected(self):
+        encoded = self.write_archive(self.resources, ('../escape', b'no'))
+        with self.assertRaisesRegex(gate.GateFailure, 'Unsafe ZIP name'):
+            gate.r24_resource_bytes(encoded)
+        info = zipfile.ZipInfo(gate.R24_DEST + '/link')
+        info.create_system = 3
+        info.external_attr = (0o120777 << 16)
+        encoded = self.write_archive(self.resources, (info, b'../outside'))
+        with self.assertRaisesRegex(gate.GateFailure, 'Symlink'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_duplicate_archive_member_is_rejected(self):
+        with self.assertWarns(UserWarning):
+            encoded = self.write_archive(self.resources,
+                (gate.R24_DEST + '/app.js', self.resources['app.js']))
+        with self.assertRaisesRegex(gate.GateFailure, 'Duplicate ZIP'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_manifest_must_cover_exact_files_and_hashes(self):
+        self.resources['static-manifest.json'] = b'{"files":{}}'
+        gate.R24_ASSET_HASHES = {name: gate.sha256(data)
+                                for name, data in self.resources.items()}
+        encoded = self.write_archive(self.resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'manifest coverage'):
+            gate.r24_resource_bytes(encoded)
+
+    def test_failed_syntax_does_not_publish_partial_directory(self):
+        self.resources['app.js'] = b'export const = syntax error;'
+        self.freeze_fixture()
+        with self.assertRaisesRegex(gate.GateFailure, 'syntax check failed'):
+            gate.stage_r24(self.site, self.archive)
+        self.assertFalse((self.site / gate.R24_DEST).exists())
+        self.assert_old_unchanged()
+        self.assertFalse(list(self.root.glob('.r24-stage-*')))
+
+    def test_exact_workflow_only_and_protected_zip(self):
+        oldzip = b'baseline bytes'
+        digest = gate.sha256(oldzip)
+        before = (f'run: echo "{digest}  site.zip" | sha256sum --check --strict\n'
+                  + gate.lab_stage_step() + gate.AUTOQA_STEP + gate.R21_STEP
+                  + gate.R23_STEP + gate.LAB_ANCHOR)
+        after = before.replace(gate.LAB_ANCHOR, gate.r24_stage_step() + gate.LAB_ANCHOR)
+        inputs = {name: b'base-only' for name in gate.R24_TRUSTED_INPUTS}
+        with mock.patch.object(gate, 'LAB_BASELINE_ZIP_SHA256', digest):
+            with self.assertRaisesRegex(gate.GateFailure, 'protected site.zip'):
+                gate.verify_r24_additive_release(before, after,
+                    self.archive.read_bytes(), oldzip + b'changed', inputs)
+            with self.assertRaisesRegex(gate.GateFailure, 'unrelated Pages'):
+                gate.verify_r24_additive_release(before, after + '# unrelated',
+                    self.archive.read_bytes(), oldzip, inputs)
+            with self.assertRaisesRegex(gate.GateFailure, 'unchanged preceding'):
+                gate.verify_r24_additive_release(before.replace(gate.R23_STEP, ''), after,
+                    self.archive.read_bytes(), oldzip, inputs)
+
+    def test_release_classifier_reads_old_builders_from_base_commit(self):
+        base, head = 'a' * 40, 'b' * 40
+        changed = gate.R24_ARCHIVE + '\n.github/workflows/pages.yml\n'
+        calls = []
+        def output(command, **kwargs):
+            calls.append(command)
+            if command[:3] == ['git', 'diff', '--name-only']:
+                return changed
+            if command[:3] == ['git', 'ls-tree', '--name-only']:
+                return gate.R24_ARCHIVE + '\n'
+            self.assertEqual(command[:2], ['git', 'show'])
+            return command[2].encode()
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output):
+            with mock.patch.object(gate, 'verify_r24_additive_release') as verify:
+                self.assertEqual(gate.verify_pr(base, head), 0)
+        args = verify.call_args.args
+        self.assertEqual(args[3], (base + ':site.zip').encode())
+        self.assertEqual(args[4], {name: (base + ':' + name).encode()
+                                  for name in gate.R24_TRUSTED_INPUTS})
+        self.assertFalse(any(head + ':release-ci/' in part for command in calls for part in command))
+
+    def test_exact_reverse_release_is_rollbackable_without_touching_old_stages(self):
+        oldzip = b'baseline bytes'
+        digest = gate.sha256(oldzip)
+        original = (f'run: echo "{digest}  site.zip" | sha256sum --check --strict\n'
+                    + gate.lab_stage_step() + gate.AUTOQA_STEP + gate.R21_STEP
+                    + gate.R23_STEP + gate.LAB_ANCHOR)
+        released = original.replace(gate.LAB_ANCHOR,
+                                     gate.r24_stage_step() + gate.LAB_ANCHOR)
+        encoded = self.archive.read_bytes()
+        with mock.patch.object(gate, 'LAB_BASELINE_ZIP_SHA256', digest):
+            self.assertTrue(gate.verify_r24_rollback(released, original, encoded, oldzip))
+            with self.assertRaisesRegex(gate.GateFailure, 'only the exact'):
+                gate.verify_r24_rollback(released, original.replace(gate.R21_STEP, ''), encoded, oldzip)
+            with self.assertRaisesRegex(gate.GateFailure, 'encoded archive'):
+                gate.verify_r24_rollback(released, original, encoded + b'changed', oldzip)
+
+    def test_unfrozen_policy_and_oversized_container_fail_closed(self):
+        encoded = self.archive.read_bytes()
+        with mock.patch.object(gate, 'R24_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r24_resource_bytes(encoded)
+        with mock.patch.object(gate, 'R24_MAX_ENCODED_BYTES', len(encoded) - 1):
+            with self.assertRaisesRegex(gate.GateFailure, 'oversized'):
+                gate.stage_r24(self.site, self.archive)
+        self.assertFalse((self.site / gate.R24_DEST).exists())
+
+    def test_mixed_ci_and_release_changes_remain_rejected(self):
+        changed = gate.R24_ARCHIVE + '\n.github/workflows/pages.yml\nrelease-ci/release_guard.py\n'
+        with mock.patch.object(gate.subprocess, 'check_output', return_value=changed):
+            with self.assertRaisesRegex(gate.GateFailure, 'exactly site.zip and pages.yml'):
+                gate.verify_pr('a' * 40, 'b' * 40)
+
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
