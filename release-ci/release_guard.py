@@ -674,7 +674,7 @@ def verify_r21_release(before, after, archive_bytes, baseline_bytes):
             raise GateFailure('R2.1 would overwrite an existing Pages path')
         archive=root/'source.tar.gz.b64'
         archive.write_bytes(archive_bytes)
-        runner=pathlib.Path(__file__).resolve().parent/'stage_r21.py'
+        runner=pathlib.Path('release-ci/stage_r21.py').resolve()
         if not runner.is_file():
             raise GateFailure('Trusted R2.1 builder missing from current main')
         try:
