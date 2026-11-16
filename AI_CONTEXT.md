@@ -579,3 +579,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - ZIP含当前22文件完整产品源码、r24全部测试/阶段报告、关键成功/失败/性能/存储/题库证据、main可信门禁及旧站staging输入，00-先读说明.md、01-复制给Gemini的复验任务.txt、核心源码合并阅读、release identity/读取核验字段及逐文件manifest。用户上传ZIP并复制01内任务即可。无.git、模型、node_modules、浏览器凭据、原始用户录音/未提供的244条私有话术或旧浏览器自动化原始日志。
 - 包含验证脚本verify_package.py；独立临时解压执行退出0，426负载文件SHA/大小通过，ZIP429项CRC/路径/唯一性/非加密/非链接通过。对外层和解码staging共627项有限凭据/签名钱包URL模式扫描无命中，不保证任意隐蔽敏感值均可检测。
 - 本轮没有重跑产品全suite，也未取得Gemini新报告或真实手机验收。旧证据仍带各自版本及失败边界；缺依赖/不能解压或执行时必须明确未运行，不把旧记录当Gemini新实跑。92门禁和此前217公网验证沿用对应历史来源，不冒充本轮新结果。交付元数据与独立核验见evidence/r24-manual-review-zip/。
+
+
+## R24 用户返回 Gemini 复验：证据冲突待更正（2026-11-16）
+
+任务 TCL-R24-GEMINI-RECEIPT-20261116；用户上传复验结果ZIP。ChatGPT统筹/本Codex接收核对，内部独立原始日志及源码审查；本轮新增Gemini请求0、自动重试0，无产品变更。状态 **REVIEW_RECEIVED_EVIDENCE_CONFLICT**，不能采纳“12项实跑全通过”。
+
+- 返回ZIP SHA256 `9374c50fda53902df4edc6ecfd424f803f22cd6692c3ad44e973e940c32e503c`，5文件可读、自带4条SHA通过；身份readback及app63519c与既有冻结包一致。14条原始执行仅前2条exit0，10项Node全因MODULE_NOT_FOUND exit1，2项Python因脚本文件不存在exit2。报告却写12项通过、8浏览器脚本缺Playwright，与日志不符；环境、3文件hash与多个源码引文亦矛盾，不能认定完整真实实跑或全面源码审查。不是10项产品测试失败，实际未启动相应测试。
+- 源码实核：恢复冷缓存首checkpoint全写是已披露/已测边界，无report所称records.clear，实际prefs/records事务；逐题框需保存按钮提交，整场文字框每字保存。报告建议依赖不存在的recs/recordStorageFingerprint/safeFocus，不能照抄。timer未显式清理和裸search.focus存在，可保留低风险改进候选，尚无本轮动态复现。维持当前发行，不因报告冲突回滚或宣称缺陷已修。
+- 接收时实时main3277519a917e8bea8aa7fa5846b4348d8627353d/PR124，Pages43958381029 completed/success；相较冻结93584fa仅文档变化。发行ZIP仍8c569a3f…、app63519c50…，本轮公网22产品文件单轮全部HTTP200且字节等于main归档；仅HTTP/hash，不是功能或全站217资源重测。
+- 原报告、原始日志、hash及详细接收判定见evidence/r24-gemini-receipt-20261116/RECEIPT.md、GEMINI-REPORT-ORIGINAL.md与RAW-EVIDENCE.md。旧Gemini未实质回复记录不删除；此次已收到实质文本，但其通过结论未获证据支持。真机/国内网络/TCL语音仍未验收；不自动重启Gemini浏览器或新发请求。后续先按真实脚本路径修正报告，新增实跑另记范围和预算。
