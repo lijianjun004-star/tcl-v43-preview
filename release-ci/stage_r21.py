@@ -13,8 +13,8 @@ import sys
 import tarfile
 import tempfile
 
-ARCHIVE_SHA = "e425fac10d6ed85e576af10ed377a42d61b8644ca6ab0c09b47e33583a56b7de"
-B64_SHA = "fb5cfbea6640b671c13c1c73695e872f08b7cb8bf4c22ce24679d80b44eb4b76"
+ARCHIVE_SHA = "de792669f4e3d8317199c37c835063d0ce2ced4fbc76304eb960479f59927c37"
+B64_SHA = "c5c4488a2590f71416714bcd08efdc46b6fcb9653359cda435b18edd9d8ede10"
 SOURCE_SHA = {
     "source/experiments/r6-asr-autoqa/build_qa.py": "92c6df299d9e06b0ea4df82bfd06f838badc53f035b4e3545c30e4966689af2b",
     "source/experiments/r6-asr-autoqa/test_build_qa.py": "b6a8329ee860faa9daa91a30d37a5bdf2e803221660ff1629d5e1fb7a66cf153",
@@ -22,6 +22,7 @@ SOURCE_SHA = {
     "tests/test_timeout_safety.mjs": "58142c6b4ca585131683b14f734ce4ee3175f294bbe14bac18d9f6c876351cf6",
     "tests/test_whisper_bridge.mjs": "da53f661d5e8fab396d48717cd4fb4fe6081499034bfac0b3dd173aa42d6b10d",
     "tests/browser_e2e_r2.py": "7f2f2959b0e11550bff39bfea333ffa175c39b6c8ba197c6f5e6fb13f0ce5fa4",
+    "reference/gemini-r2-original-whisper-bridge.mjs": "84270d95cca431c2e4b0517efc176fca34f33b55b008711475ebba61bfc24a6c",
 }
 PILOT = "tcl-v352-asr-autoqa-r2"
 APP_SHA = "7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8"
