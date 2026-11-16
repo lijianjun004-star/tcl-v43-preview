@@ -43,6 +43,9 @@ jobs:
       - name: Stage R2.4 isolated practice-room delivery
         run: |
           python3 release-ci/release_guard.py --stage-r24 _site experiments/r24-release/site-only.zip.b64
+      - name: Stage R2.5 isolated Vosk-first test delivery
+        run: |
+          python3 release-ci/release_guard.py --stage-r25 _site experiments/r25-release/site-only.zip.b64
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
