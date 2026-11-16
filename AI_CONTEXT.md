@@ -532,3 +532,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 84项门禁及完整更新/回滚构建通过：195旧资源逐字节保留，更新217/回滚216。公网217资源单轮全部HTTP200且SHA匹配，真实公开文字练播/复盘/刷新恢复PASS，0页面错误、0外部/模型请求。内部独立源码审查无阻断P1/P2，不等于Gemini或真机验收。
 - 实施源码提交6b50517a80063ae61ea5e5de75d067fb1f3a2e13，证据与报告在分支fix/r24-smooth-mobile-20261116的experiments/r24/SMOOTH-MOBILE.md与evidence/r24-smooth-mobile/。旧模拟脚本未适配Worker导致无转写及新mock追踪DataCloneError均为测试夹具问题，适配后通过，无产品补丁掩盖；失败说明保留。此前Drive交付包仍是旧question-bank版本，勿当作本轮smooth源码包。
 - 回滚通过新PR将R24归档恢复前一question-bank版本 `5e72a5789ec67a1812827575419f8b65a4b009ba864041c934cd32fc3d3f7238`，由精确四版本门禁验证；不改其他站点、不清理浏览器题库/录像/IndexedDB。后续以实时main和Pages状态为准。
+
+## R2.4 smooth版 Gemini Argon 实际复验尝试（2026-11-16）
+
+用户要求“给Gemini复验”。新任务 TCL-R24-SMOOTH-GEMINI-20261116，本轮预算1条、实际1条、自动重试0；当前ChatGPT统筹，外部执行者Gemini。未修改或重新发布产品、未购买额度或调用付费模型API。
+
+- 浏览器运行b5c0f550-a224-4b85-a2ac-3e22c4623cc7实测选中 **4 Argon（代码与分析）**，从Drive明确挂载最新版冻结附件Gemini_R24_Smooth_Frozen_Input_20261116.txt，并发出1条完整复验请求。会话：https://gemini.google.com/app/d1ef0d70c4ab79f4 。
+- Gemini原文只返回“我只是一个文本 AI，在这方面没法帮到你。”，未返回读取校验、源码分析、P1/P2或执行结果。状态 **NO_SUBSTANTIVE_REVIEW**，附件读取 **NOT_ESTABLISHED**；原因未确定，不推断模型内部是否读取，也不外推Argon永远不能复验。本次未追加业务请求或更换模型重做。
+- 冻结输入：https://drive.google.com/file/d/1oxkQNsOlflinNBRU-r7sswsgrmfweHus/view?usp=drivesdk 。489478 bytes/21节，SHA256 bdd93ef0fbd7c10346994cd3b4b2d28a434cdb83270933947ac56f2123728314；Drive元数据回读核验大小/标题/MIME/父目录一致，shared=false，未修改权限。完整app/CSS/bridge/worker/index/manifest及产品/可信CI差异、聚焦测试和既有证据，无私人TCL讲解词/录音/凭据。
+- 对应实施6b50517a80063ae61ea5e5de75d067fb1f3a2e13、证据d82e0ad；当前smooth发布的217资源公网校验和Codex测试保持原结论，不因本次拒绝判为产品有缺陷，也不标记Gemini验收通过。历史Pro1条无实质回复/旧Argon0条附件失败与此次Argon1条拒绝分别记录。
+- 实际请求/原文/预算记录在分支fix/r24-smooth-mobile-20261116的evidence/r24-smooth-gemini/OUTCOME.md及browser-result.json（提交c976ea6）。下次接手应读此结果，避免把“已发送”写成“已通过”。
