@@ -681,6 +681,15 @@ class StandaloneLabPolicyTests(unittest.TestCase):
             gate.verify_lab_addition(before,after,self.html,zipped)
 
 
+
+class AutoqaGateTests(unittest.TestCase):
+    def test_pinned_sources_and_workflow_are_restrictive(self):
+        self.assertEqual(len(gate.AUTOQA_FILES), 3)
+        self.assertEqual(len(set(gate.AUTOQA_FILES.values())), 3)
+        self.assertIn('tcl-v352-asr-autoqa/',gate.AUTOQA_PATH)
+        self.assertIn('python3 experiments/r6-asr-autoqa/build_qa.py',gate.AUTOQA_STEP)
+        self.assertEqual(gate.AUTOQA_STEP.count('build_qa.py'),1)
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 

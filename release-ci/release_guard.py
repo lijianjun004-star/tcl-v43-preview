@@ -522,6 +522,72 @@ def verify_lab_addition(before, after, html, baseline_zip):
     return True
 
 
+
+# One-time isolated R6 live-flow ASR AutoQA. No change to release ZIP.
+AUTOQA_FILES = {
+    'experiments/r6-asr-autoqa/build_qa.py': '0ccb522de2625d73b08d6b463e0b3e4c017b265a64262250bfad76751f8f8065',
+    'experiments/r6-asr-autoqa/whisper-bridge.mjs': '61293bef617312ceb8476c154126e13d81bb7e1b1fc32ba62c1d45f19724524e',
+    'experiments/r6-asr-autoqa/test_build_qa.py': 'e3b2afbe5065fe1dafe9fd1b4cbb3ce5d75ebfc8d2d587d84dc34d513a075c10',
+}
+AUTOQA_PATH = 'tcl-v352-asr-autoqa/'
+AUTOQA_STEP = (
+    '      - name: Stage isolated R6 original-audio AutoQA preview\n'
+    '        run: |\n'
+    '          python3 experiments/r6-asr-autoqa/build_qa.py _site experiments/r6-asr-autoqa\n'
+    '          test -s _site/tcl-v352-asr-autoqa/index.html\n'
+)
+
+
+def verify_autoqa_release(before, after, old_zip, provided):
+    if sha256(old_zip) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R6 baseline ZIP changed; AutoQA release refused')
+    if set(provided) != set(AUTOQA_FILES):
+        raise GateFailure('AutoQA source file allowlist mismatch')
+    for path, expected in AUTOQA_FILES.items():
+        if sha256(provided[path]) != expected:
+            raise GateFailure('AutoQA pinned file mismatch: ' + path)
+    if check_workflow(before, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('Original Pages checksum changed')
+    anchor = '      - uses: actions/configure-pages@v5\n'
+    if before.count(anchor) != 1 or AUTOQA_STEP in before:
+        raise GateFailure('AutoQA workflow insert anchor invalid')
+    if after != before.replace(anchor, AUTOQA_STEP + anchor, 1):
+        raise GateFailure('AutoQA changed workflow beyond the one allowed stage')
+    if check_workflow(after, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('AutoQA cannot modify R6 release checksum')
+    _, base_files = inspect_zip_bytes_for_autoqa(old_zip)
+    if any(name.startswith(AUTOQA_PATH) for name in base_files):
+        raise GateFailure('AutoQA path collision in site.zip')
+    with tempfile.TemporaryDirectory() as temp:
+        root = pathlib.Path(temp)
+        site = root / '_site'
+        for name, raw in base_files.items():
+            target = site / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(raw)
+        src = root / 'experiments' / 'r6-asr-autoqa'
+        src.mkdir(parents=True)
+        for path, raw in provided.items():
+            (src / pathlib.Path(path).name).write_bytes(raw)
+        subprocess.run([sys.executable, str(src / 'test_build_qa.py')], check=True, cwd=root)
+        subprocess.run([sys.executable, str(src / 'build_qa.py'), str(site), str(src)], check=True, cwd=root)
+        if not (site / AUTOQA_PATH / 'whisper-bridge.mjs').is_file():
+            raise GateFailure('AutoQA output missing required engine')
+        if not (site / ASR_PREFIX / 'app.js').is_file():
+            raise GateFailure('R6 original ASR source lost')
+        for name, raw in base_files.items():
+            if (site / name).read_bytes() != raw:
+                raise GateFailure('AutoQA changed original released asset: ' + name)
+    return True
+
+
+def inspect_zip_bytes_for_autoqa(raw):
+    with tempfile.TemporaryDirectory() as d:
+        file = pathlib.Path(d) / 'source.zip'
+        file.write_bytes(raw)
+        return inspect_zip(file)
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -533,7 +599,16 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {LAB_SOURCE, '.github/workflows/pages.yml'}:
+    if changed == set(AUTOQA_FILES) | {'.github/workflows/pages.yml'}:
+        provided = {p: show(head, p) for p in AUTOQA_FILES}
+        verify_autoqa_release(
+            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(head, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, 'site.zip'),
+            provided,
+        )
+        print('verify-pages-release PASS: unchanged R6 ZIP plus isolated AutoQA test copy')
+    elif changed == {LAB_SOURCE, '.github/workflows/pages.yml'}:
         verify_lab_addition(
             show(base, '.github/workflows/pages.yml').decode('utf-8'),
             show(head, '.github/workflows/pages.yml').decode('utf-8'),
