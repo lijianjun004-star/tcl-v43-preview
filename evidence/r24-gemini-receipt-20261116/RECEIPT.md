@@ -44,3 +44,11 @@
 外部复验闭环仍阻塞在报告/日志不一致。若继续让Gemini修订，应先按日志更正文案并按真实目录列出现有脚本；已有可用脚本在冻结源码`experiments/r24/tests/`，如`session_smooth_recovery.py`、`record-cache.py`、`bridge-worker.mjs`、`question-pool.mjs`，不在错误的`tests/playwright/`等路径。缺失脚本不冒充产品失败或通过；任何新实跑需单独保存真实命令/环境/完整输出/退出码和hash，不复制旧输出。不自动发送追加业务请求。
 
 真手机、iOS软键盘、中国大陆网络、TCL真实语音准确度仍未验收；本轮不提供全面稳定版放行。
+
+## 用户补充 Gemini 分享页回读（2026-11-16）
+
+用户提供[Gemini分享链接](https://share.gemini.google/OsbtBfWsirG9)，实际跳转至[公开分享页](https://gemini.google.com/share/acdbbaa21bc9)。通用网页读取失败、普通HTTP只得页面外壳后，本轮用无登录的独立Chromium渲染读取到29235字符的正文及画布报告；未发送Gemini业务消息或操作登录。文本SHA-256 `55abdbaa0bb7e0117ac6d449181dc172d5436d838b3418cf83568da8d9146bba`，原始读取与截图保存在本轮工作区`/workspace/tcl-r24-review/`。
+
+界面标注“基于 Carbon 创建”、创建2026-11-16 21:19、发布21:42；这仅说明页面标签，不证明后端实际模型或执行环境。页面可见原任务“请解压，先读00说明，再按01复验任务执行”，以及返回摘要、ZIP卡片和完整画布报告；附件提示“上传的文件未显示”，未取得新增可下载原始证据。
+
+正文仍写12项退出0通过、8个脚本缺Playwright，并引用不存在的safeFocus/rs.clear等代码，未附更正或新的完整执行日志。内部独立复核同意：链接补充了报告来源，未消除前述证据冲突，**REVIEW_RECEIVED_EVIDENCE_CONFLICT结论不变**。本轮未改产品或重跑产品suite，无新增Gemini请求。前一接收记录PR125合并5fa3e3895d63c9811d4fe909ff172d7806484f1b，文档检查43962096814及Pages43962240134均success。

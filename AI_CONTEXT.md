@@ -589,3 +589,5 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 源码实核：恢复冷缓存首checkpoint全写是已披露/已测边界，无report所称records.clear，实际prefs/records事务；逐题框需保存按钮提交，整场文字框每字保存。报告建议依赖不存在的recs/recordStorageFingerprint/safeFocus，不能照抄。timer未显式清理和裸search.focus存在，可保留低风险改进候选，尚无本轮动态复现。维持当前发行，不因报告冲突回滚或宣称缺陷已修。
 - 接收时实时main3277519a917e8bea8aa7fa5846b4348d8627353d/PR124，Pages43958381029 completed/success；相较冻结93584fa仅文档变化。发行ZIP仍8c569a3f…、app63519c50…，本轮公网22产品文件单轮全部HTTP200且字节等于main归档；仅HTTP/hash，不是功能或全站217资源重测。
 - 原报告、原始日志、hash及详细接收判定见evidence/r24-gemini-receipt-20261116/RECEIPT.md、GEMINI-REPORT-ORIGINAL.md与RAW-EVIDENCE.md。旧Gemini未实质回复记录不删除；此次已收到实质文本，但其通过结论未获证据支持。真机/国内网络/TCL语音仍未验收；不自动重启Gemini浏览器或新发请求。后续先按真实脚本路径修正报告，新增实跑另记范围和预算。
+
+- 后续用户补充分享页 https://share.gemini.google/OsbtBfWsirG9 （规范URL https://gemini.google.com/share/acdbbaa21bc9 ）。已实际渲染读到29235字符的摘要与画布，仍是原有通过陈述，无更正或新增完整日志，接收冲突结论不变。页头“基于Carbon创建”仅记UI标签，不推断后端执行模型；新增Gemini业务请求0。来源回读详见同RECEIPT.md补充节；本轮只补文档。
