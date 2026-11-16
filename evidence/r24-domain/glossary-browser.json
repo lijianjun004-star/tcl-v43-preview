@@ -1,0 +1,14 @@
+{
+  "mode": "browser UI and local storage; no real ASR accuracy claim",
+  "checks": [
+    "file preview is local, excludes price, does not save automatically",
+    "explicit save survives reload",
+    "case/spacing corrected; Chinese prose, number and version preserved",
+    "invalid source does not overwrite saved terms",
+    "training locks glossary edits"
+  ],
+  "status": "PASS",
+  "browser": "156.0.8078.79",
+  "errors": [],
+  "external_requests": []
+}

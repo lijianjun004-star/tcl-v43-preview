@@ -905,3 +905,16 @@ body.focus-open #toast{top:27vh}
 @media(max-width:375px){.prep-recheck-actions{gap:6px}.prep-recheck-actions button{font-size:11px}}
 
 .r23-model-box{display:flex;flex-direction:column;gap:6px;padding:12px;max-width:310px}.r23-model-box label{font-size:13px;font-weight:600}.r23-model-box select{width:100%;font:inherit;color:inherit;background:#15243a;border:1px solid #60718b;border-radius:8px;padding:10px}.r23-model-box small{font-size:11px;opacity:.8;line-height:1.5}
+
+/* R24 local terminology editor; wraps inside mobile tools drawer. */
+#asrGlossaryPanel{max-width:100%;margin-top:12px;padding-top:12px;border-top:1px solid #dce3ed;white-space:normal}
+#asrGlossaryPanel textarea,#asrGlossaryPanel input{max-width:100%;box-sizing:border-box}
+#asrGlossaryPanel textarea{width:100%;min-height:100px}
+#asrGlossaryPanel p{line-height:1.5;font-size:12px}
+
+.header-tools[open]>.asr-tools-panel{position:fixed;top:70px;right:12px;z-index:100;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 160px);overflow-y:auto;background:#fff;border:1px solid #dce3ed;border-radius:16px;padding:16px;box-sizing:border-box;box-shadow:0 16px 48px #10204033;display:flex;flex-direction:column;gap:12px;color:#26364c}
+.header-tools .asr-tools-panel .ghost-btn{position:static;white-space:normal;box-shadow:none;width:100%}
+.asr-tools-panel .r23-model-box{display:grid;gap:8px}
+.asr-tools-panel select{max-width:100%;min-height:40px;background:#fff;color:#26364c;border:1px solid #b9c6d8}
+.asr-tools-panel label{display:block;font-size:13px;line-height:1.5;margin:8px 0}
+.asr-tools-panel h3{font-size:16px;margin:0 0 8px}

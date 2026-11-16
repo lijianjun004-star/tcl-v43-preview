@@ -1,3 +1,5 @@
+import { canonicalizeTerms } from './asr-glossary.mjs';
+import { initGlossaryUI } from './glossary-ui.mjs';
 import { toSimplified } from './asr-normalize.mjs';
 import { createLocalWhisper } from './whisper-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js';
@@ -439,7 +441,7 @@ const perQuestionAudio=new Map();
 function normalizeWhisperChinese(raw){
   let s=String(raw??'').trim();
   if(!s)return '';
-  s=toSimplified(s);
+  s=canonicalizeTerms(toSimplified(s),asrGlossary.getTerms()).text;
   // Filter well-known Whisper silence/subtitle hallucinations and 3x+ repetitive loop hallucinations
   if(/^(?:字幕由|Amara\.org|优优独播剧场|感谢观看|谢谢观看|请不吝点赞|订阅转发|Thank you for watching)/i.test(s))return '';
   if(/^(.{2,12})\1{2,}$/u.test(s.replace(/[\s\p{P}\p{S}]/gu,'')))return '';
@@ -2480,4 +2482,5 @@ window.addEventListener('pagehide',()=>{clearSubmittedPlayback();clearReviewQues
 let cameraFitFrame=0;window.addEventListener('resize',()=>{cancelAnimationFrame(cameraFitFrame);cameraFitFrame=requestAnimationFrame(applyCameraFit);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshWorkflowState();if(document.visibilityState==='hidden'){if(!(speechFinishingRun&&speechFinishingRun===runId&&isRunPage()))cancelSpeech();cancelTTS();if(sessionRecorder?.state==='recording'){try{sessionRecorder.requestData?.()}catch{}}}if(document.visibilityState==='visible'&&roomPhase==='live'&&sessionVideoMeta?.startedAt&&Date.now()-sessionVideoMeta.startedAt>=captureMaxMs()){sessionStopReason='后台恢复时发现录制时长超过安全上限';finishScene();toast('已达到单场录制安全时长，正在封装原始录像');return;}if(document.visibilityState==='visible'&&roomPhase==='live'&&deviceCheck.mode!=='text'&&(!camStream||camStream.getVideoTracks().every(t=>t.readyState!=='live')||!sessionMicStream||sessionMicStream.getAudioTracks().every(t=>t.readyState!=='live'))){finishScene();toast('摄像头或麦克风已中断：练播安全结束。请重新检查设备后开播');}});
 syncExitWarning();
+const asrGlossary=initGlossaryUI({parseDocumentFile,isEditable:()=>page==='home'&&!r6WhisperRunning&&!oneShotAsrJob&&!transcriptBusy&&!speechRecognizer});
 init();

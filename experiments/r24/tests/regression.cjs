@@ -3,6 +3,8 @@ const root=path.resolve(__dirname,'../tcl-v352-asr-r24-qa');
 const source=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const tick=()=>new Promise(r=>setImmediate(r));
 (async()=>{
+ const {canonicalizeTerms}=await import(path.join(root,'asr-glossary.mjs'));
+ const asrGlossary={getTerms:()=>['TCL','HDMI','T7M Pro']};
  const {toSimplified}=await import(path.join(root,'asr-normalize.mjs'));
  const cases=[
   ['這款電視支援語音辨識','这款电视支援语音辨识'],
@@ -16,7 +18,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const body=source.slice(source.indexOf('function r6WhisperSubmit('),source.indexOf('globalThis.r6WhisperSubmit='));
  const normalize=source.slice(source.indexOf('function normalizeWhisperChinese('),source.indexOf('function normalizeInterfaceDecimals('));
  const valid=source.slice(source.indexOf('const r6WhisperValid='),source.indexOf('function r6WhisperCancelAll('));
- const context=vm.createContext({assert,toSimplified,setTimeout,clearTimeout,console});
+ const context=vm.createContext({assert,toSimplified,canonicalizeTerms,asrGlossary,setTimeout,clearTimeout,console});
  vm.runInContext(`
  let runId='run',alive=true,r6WhisperRunning=false,r6WhisperCancelSeq=0;
  const sessionTurns=[],perQuestionAudio=new Map(),r6WhisperQueue=[],pending=[],saved=[];

@@ -56,3 +56,6 @@ R23_SITE_ROOT="$PWD" R23_BROWSER_REPORT="$PWD/evidence/r24/real-flow.json" pytho
 
 只提交独立源码/测试/证据和 AI_CONTEXT 更新；site.zip、Pages 工作流、release_guard 均不动。Draft PR 不触发新页面发布。候选不是可直接覆盖当前 site.zip 的发布包；未来发布需要按原门禁单独审计新路径，不得放宽旧 SHA 检查跳过失败。
 当前线上无需回滚；撤销候选可关闭 Draft PR。以后发布必须保留旧路径，通过新的 PR 回滚，不清理浏览器数据。
+
+
+后续独立复核更正：旧 real-flow 复用了同一公开语音源，不能表述为三段不同真人语音归属验收。PR104远端发布CI因候选文件路径分类拒绝而失败，不具备发布资格。术语优化与新证据详见 DOMAIN_REPORT.md。

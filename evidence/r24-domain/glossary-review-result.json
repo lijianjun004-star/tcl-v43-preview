@@ -1,0 +1,9 @@
+{
+  "blocked_save_preserves": true,
+  "blocked_clear_preserves": true,
+  "navigate_away_return_cancels": true,
+  "status": "已离开首页，本次导入预览已取消；原词表保持不变。",
+  "saved": [
+    "TCL"
+  ]
+}

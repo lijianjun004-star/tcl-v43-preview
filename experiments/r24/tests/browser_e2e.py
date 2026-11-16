@@ -90,6 +90,7 @@ try:
   pref=page.locator('#r23ModelChoice')
   assert pref.input_value() in ('tiny','base')
   result['preset_before_run']=pref.input_value()
+  page.locator('details.header-tools summary').click()
   step('freePractice',lambda:page.locator('#freePractice').click())
   page.wait_for_function("document.body.dataset.page==='training'",timeout=7000)
   step('device_recheck',lambda:page.locator('#prepQuickRecheck').click())
