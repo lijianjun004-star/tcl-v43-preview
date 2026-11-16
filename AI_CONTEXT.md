@@ -454,3 +454,38 @@ ChatGPT 独立复验 V3.3.7 的结论为"有条件通过独立测试阶段，不
 - 界面仍为本机体验，运营和主播不能跨设备同步，姓名不等于身份认证，无正式 AI 评分；仅闲聊/投诉按所设间隔自动出现，训练题仍需手动切换。当前录像最多 8 分钟或约 64MB；原视频应及时下载；整场录后提取最多 180 秒且 48MB 以内。
 - 未完成：iPhone Safari / Android Chrome 真机摄像头、麦克风、录制回放及时间轴，真人语音识别，以及中国大陆网络可达性；不得把云端浏览器或静态发布成功当成真机验收。
 - 本次旧资源回滚基线为 `fa488483cd3489e47a976f4a745b588438a3f5f0680e6dedff05c81262902727`。应通过独立 PR 同时恢复 ZIP 和对应工作流校验值；不可强推 main 或删除历史数据。
+
+
+## R2.4 ASR 复验候选（2026-11-16，当前 ChatGPT/Codex 环境）
+
+基线 main b672281725392a2e23e656dd5ff410531f660175，与用户提供 R2.3 包一致。独立分支 fix/r24-asr-normalization；仅候选，不合并、不发布，不改 site.zip/工作流/旧门禁。详见 experiments/r24/REPORT.md 与 evidence/r24。
+
+已修复：OpenCC 1.4.2 词级繁简；失效 Whisper 回写 double shift 跳过下一题；录音回调读取他题文本；暂存复盘写库守卫；镜像选项；新增匿名阶段诊断、下载进度。保留人工修改、原始文本和 Base 默认，Tiny 手动选择。
+
+实测：原包哈希 PASS；旧繁简缺陷复现；VM 回归12项组 PASS；bridge 合成预检/静音/超时锁 PASS；release_guard 44项 PASS；Chromium mock 三题 PASS；公开真人语音+REAL Whisper Tiny三题页面/MediaRecorder/IndexedDB PASS（音源为语料回放，非真麦克风）。真实 Tiny/Base 各3段中文推理完成；CER分别23/44=52.27%、13/44=29.55%，准确度不放行。截图和逐条结果见 evidence/r24。
+
+iPhone/Android/微信、真实大陆网络、Safari MP4/AAC、后台与内存压力、Vosk真实回退、刷新后完整会话媒体恢复均 NOT RUN。无付费 API、无 Gemini 调用。旧站保持原样；下一轮任务见 experiments/r24/NEXT_TASK.md。
+
+
+## R2.4 本机讲解术语优化（2026-11-16，PR104续做）
+
+用户询问词库并提及之前TCL讲解词。查到两份XLSX/244条历史记录，但当前附件及Drive无原件，未读取私有讲解词。新增本机导入预览/显式保存英文术语，只校正大小写/空格/连字符，保留完整型号版本、原始识别和人工修改；不训练模型、不猜参数、不公开私有词表。报告 experiments/r24/DOMAIN_REPORT.md。
+
+独立实测：当前Transformers.js3.8.1忽略prompt_ids；有效decoder提示在同一公开电话录音中反而使CER50%→83.33%，未采用。单样本重采样与原生16k/ffmpeg高度一致。新增术语单测/浏览器导入与存储/模拟三题回写通过。iPhone与真实TCL语料仍NOT RUN。旧real_flow复用同一语音源，不证明三段不同录音；三独立文件CER证据不变。
+
+PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁44项本地单测不能代替发布检查。继续Draft不合并不发布，不放宽门禁、不修改site.zip。待用户补讲解词后私下制作词表和真实业务录音对照集。
+
+
+## R2.4 本机练播交付（2026-11-16，当前ChatGPT/Codex）
+
+任务 TCL-R24-DELIVERY-20261116。用户要求为次日交付跑通、修复并交Gemini复验，授权同范围GitHub操作。来源附件与PR104 d4d8057完全一致；原main b672281725392a2e23e656dd5ff410531f660175。
+
+- 已上线独立入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。这是本机练播版本，不是手机ASR准确度正式放行。
+- CI PR105，head81dd74577b4fbd112e3fc4405ab4ca51df034bd0；检查43922808259成功，合并25d73d5dd89e22554d15e457554cea2a93386d3f。发布PR106，head5bb528968d736087d9414ab0c2197475fd43bf5b；可信检查43923068984成功，合并7c2c8c4429166654a63b9c20f2258ec1cfd31b7b。Pages43923233532完成成功，旧阶段和新R24阶段全部成功。
+- 固定app SHA256 b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb；ZIP SHA256 7dc19da8838015a9e870ac21c2672b57a273f342f657d9b254f495ee15ba08ef。main的 experiments/r24-release/site-only.zip.b64 与 release-ci 固定策略是发布依据；site.zip未变。新21资源、旧195资源逐字节保留。
+- 修复跨场迟到队列误删、模型并发/超时资源锁、人工清空被旧文字恢复、异步身份切换、导入竞态和异常ZIP/XLSX、刷新后复盘媒体恢复、历史缓存页上保存失效。每姓名最近一场恢复限96MiB/200题；未停止录音片段及浏览器清理后不保证恢复。姓名是本机标识，非正式认证，无跨设备同步或AI评分。
+- 最终本地证据：60项发布门禁；恢复10项、history事件2项、队列/文本14组、作业8项、bridge/资源锁8项、迟到唤醒2项；最终两套3题Chromium模拟流程通过。导入格式/竞态6套在仅最后pageshow改动前的609f哈希通过，历史证据保留。真实Base/Tiny各3条公开电话普通话与Vosk3条、4种音频解码通过，但Base CER13/44、Tiny23/44，不能视为TCL准确率通过。
+- 公网独立复核：全部216资源HTTP200且哈希与完整构建一致；真实上线页面390px视口文字练播→复盘→刷新→同姓名恢复完成，零页面异常、零外部/模型请求。无物理手机/大陆网络/TCL业务语音验收；WebKit依赖不足未运行。
+- 完整源码和证据在 GitHub分支 fix/r24-delivery-20261116（已测试代码提交 c48653520c32b4b11501ada1e50ba06f518f9687，后续仅追加交付证据）；入口 experiments/r24/DELIVERY.md。PR104仍是旧失败草稿，不能再作为发布入口或直接合并。
+- Gemini实际调用0次：Google安全登录已按用户要求发起，但尚未完成连接。材料已备 https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk ，从Drive明确附加后单次复验，0自动重试，不购买API。本轮内部独立Codex审查不冒称Gemini。
+- 回滚：独立PR只删除精确R24归档和对应Pages步骤，既有门禁验证原档hash与旧阶段完全不变；不强推main、不删用户浏览器数据、不修改其他项目。
