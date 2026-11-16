@@ -1,0 +1,45 @@
+{
+ "sub": "tcl-v352-asr-r25-qa",
+ "engine": "(default)",
+ "mode": "abort",
+ "voskPre": "none",
+ "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+ "selector": {
+  "value": "vosk",
+  "options": [
+   "vosk",
+   "tiny",
+   "base"
+  ]
+ },
+ "prelive": {
+  "voskBtn": "正在下载/校验 Vosk…",
+  "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+ },
+ "autoRecording": "recording",
+ "timeline": [
+  [
+   0,
+   "本题自动录音中，切题后转文字"
+  ],
+  [
+   1,
+   "正在录后转写…"
+  ],
+  [
+   10,
+   "已转写（请核对文本）"
+  ]
+ ],
+ "review": {
+  "answer": "我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否",
+  "text": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —11.1秒 我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+ },
+ "answerFilled": true,
+ "answerHasTraditional": false,
+ "externalRequests": {},
+ "voskFileRequests": 12,
+ "pageErrors": []
+}
+
+STDERR:

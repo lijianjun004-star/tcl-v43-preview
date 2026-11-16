@@ -1,0 +1,14 @@
+✔ three callers share one pipeline and never overlap actual inference (55.054497ms)
+✔ timed-out raw inference remains locked; waiting and future callers cannot enter (54.410254ms)
+✔ cancelled waiter does not start inference or cancel owner (7.291584ms)
+✔ silence avoids model download; malformed and overlong PCM fail before loading (1.534054ms)
+✔ valid 180-second prepared audio is supported and models have immutable revisions (61.025085ms)
+✔ pre-aborted audio decode does not allocate AudioContext (0.724984ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 246.081245

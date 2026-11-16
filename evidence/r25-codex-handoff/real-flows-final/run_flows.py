@@ -1,0 +1,17 @@
+from pathlib import Path
+import subprocess,os,json,concurrent.futures,hashlib,time,datetime
+out=Path('/workspace/r25-codex-flows-final');(out/'flows').mkdir(exist_ok=True);(out/'logs').mkdir(exist_ok=True);(out/'shots').mkdir(exist_ok=True)
+r25=Path('/workspace/tcl-r25-fix/experiments/r25');r24=Path('/workspace/tcl-r24-product');aud=r25/'tests/audio'
+fixtures=[('R25-V1-default-vosk',r25,'tcl-v352-asr-r25-qa','','abort','none','q1pad.wav',11000,True,False),('R25-WA-base-hostfail',r25,'tcl-v352-asr-r25-qa','base','abort','none','q1pad.wav',11000,True,False),('R25-WB-base-hosthang',r25,'tcl-v352-asr-r25-qa','base','hang','none','q1pad.wav',11000,True,False),('R25-WD-base-hang-voskready',r25,'tcl-v352-asr-r25-qa','base','hang','ready','q1pad.wav',11000,True,False),('R25-M3-three-questions',r25,'tcl-v352-asr-r25-qa','','abort','none','q2pad.wav',13000,True,True),('R24-A-hostfail',r24,'tcl-v352-asr-r24-qa','','abort','none','q1pad.wav',11000,False,False),('R24-B-hosthang',r24,'tcl-v352-asr-r24-qa','','hang','none','q1pad.wav',11000,False,False),('R24-D-hang-voskready',r24,'tcl-v352-asr-r24-qa','','hang','ready','q1pad.wav',11000,False,False)]
+fixtures=[f for f in fixtures if f[0].startswith('R25-')]
+def run(f):
+ name,site,sub,engine,mode,pre,audio,ms,filled,multi=f;env=os.environ.copy();env.update(NODE_PATH='/workspace/r25-tools/node_modules',R25_VOICE_DIR=str(out/'voice'),SITE=str(site),SUB=sub,ENGINE=engine,MODE=mode,VOSKPRE=pre,AUDIO=str(aud/audio),REC_MS=str(ms),MULTI='1' if multi else '',OUT=str(out/'flows'/f'{name}.json'),SHOT=str(out/'shots'/name))
+ start=time.monotonic();r=subprocess.run(['node',str(out/'runner/r25-flow.cjs')],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=360)
+ (out/'logs'/f'{name}.log').write_text(r.stdout+'\nSTDERR:\n'+r.stderr)
+ data=json.loads((out/'flows'/f'{name}.json').read_text()) if (out/'flows'/f'{name}.json').exists() else {};ok=r.returncode==0 and not data.get('interrupted') and data.get('answerFilled')==filled and not data.get('answerHasTraditional',True) and data.get('pageErrors')==[]
+ if multi:ok=ok and len(data.get('questions',[]))==3 and all(x.get('answer','').strip() for x in data.get('questions',[]))
+ row={'name':name,'command':['node',str(out/'runner/r25-flow.cjs')],'returncode':r.returncode,'elapsed_seconds':round(time.monotonic()-start,2),'result':'PASS' if ok and filled else 'BASELINE_BUG_REPRODUCED' if ok else 'FAIL','app_sha256':hashlib.sha256((site/sub/'app.js').read_bytes()).hexdigest(),'flow':data};print(name,row['result'],row['elapsed_seconds'],flush=True);return row
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:rows=list(pool.map(run,fixtures))
+summary={'executed_by':'Codex fresh independent runs','scope':'Real Vosk runtime/model; supplied espeak synthetic Mandarin audio, synthetic camera; blocked external runtime/model hosts; no real phone or human ASR accuracy test','source_commit':'followup based on 910b3a1; app2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc','fixture_adaptations':['Node playwright alias uses installed Python Playwright driver package','Chromium executablePath=/usr/bin/chromium','VOICE path provided by env; original /home/user path unavailable'],'started_date_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'runs':rows}
+(out/'SUMMARY.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n');print('SUMMARY',[(r['name'],r['result']) for r in rows],flush=True)
+raise SystemExit(any(r['result']=='FAIL' for r in rows))

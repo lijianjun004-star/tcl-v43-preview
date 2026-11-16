@@ -1,0 +1,39 @@
+{
+  "source_app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "addition": {
+    "files": 22,
+    "old_assets_unchanged": 217,
+    "total_assets": 239,
+    "app_sha": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc"
+  },
+  "rollback": {
+    "removed_files": 22,
+    "protected_assets": 217
+  },
+  "stage": {
+    "files": 22,
+    "old_assets_unchanged": 217,
+    "total_assets": 239,
+    "app_sha": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc"
+  },
+  "deployment": "NOT RUN; only local preparation",
+  "local_commits": {
+    "base_commit": "d277aaba54929b7344a42d387f513fe069fe709c",
+    "ci_commit": "8bf0583f67d85a9576f5a9d1f6db40e0e1047a55",
+    "release_candidate_commit": "e28550f4500ea6e251d169ace784238e9e490752",
+    "rollback_candidate_commit": "05106fcbab7c9cfe263599e005b0684426b45e25",
+    "published": false
+  },
+  "gate_tests": {
+    "count": 110,
+    "status": "PASS",
+    "command": "baseline trusted-pre-r25-guard.py --verify-pr <d277aab> <8bf0583>",
+    "log": "ci-maintenance-verify-pr.log"
+  },
+  "fixed_sha_release": "PASS",
+  "fixed_sha_rollback": "PASS",
+  "old_policy_definitions": "byte-for-byte unchanged",
+  "pushed": false,
+  "merged": false,
+  "deployed": false
+}

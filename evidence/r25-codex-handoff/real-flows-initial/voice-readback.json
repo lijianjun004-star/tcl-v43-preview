@@ -1,0 +1,91 @@
+{
+  "files": [
+    {
+      "path": "vosk.js",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/vosk.js",
+      "status": 200,
+      "bytes": 5804777,
+      "sha256": "ed356edb8ac3c69df419d9252f1029bb04e23e381320f7a4611beb2d25217beb"
+    },
+    {
+      "path": "cn.part1.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part1.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "866402950fd0c6546418364529a174debbfc049ea19c365348d65b8ac921c2c2"
+    },
+    {
+      "path": "cn.part2.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part2.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "ade0352e17e65c3097862f01dd0907235c51b9f1b72f902590fff01d438e7a62"
+    },
+    {
+      "path": "cn.part3.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part3.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "6c37651d6a0f8044f5085ca829d7dc61e217c1f4c2ac401d997ce8b228954f37"
+    },
+    {
+      "path": "cn.part4.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part4.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "8b3aebc56d4624a6ab2068b55ede9a0e30a844faf30c761fc4f2ef637db15db3"
+    },
+    {
+      "path": "cn.part5.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part5.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "d2062de057b7e728955814671a849a90dc00dcbff688088e618478059ded31ab"
+    },
+    {
+      "path": "cn.part6.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part6.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "a5812d3d78a538bbbe7cab1abbbd6bb0a920f9c928333ff983f334068be98c9c"
+    },
+    {
+      "path": "cn.part7.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part7.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "af63f27821901cd0fd04badaa8d069c61de904f8b174209aca7971d5ea3a9a6a"
+    },
+    {
+      "path": "cn.part8.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part8.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "ef6cb52926fb86ac1cca478ed23cc1056e09358bfdc39517ffc105b38f9f1844"
+    },
+    {
+      "path": "cn.part9.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part9.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "8d67180a60f32e6b1252663cd6eade9cc063f89985e59b5ef662f8235e3c5698"
+    },
+    {
+      "path": "cn.part10.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part10.bin",
+      "status": 200,
+      "bytes": 4194304,
+      "sha256": "8c2cc419fcf8de49b0740bdb510a2013b9cfcb88e4afd3aa740e5b0ca14919bf"
+    },
+    {
+      "path": "cn.part11.bin",
+      "url": "https://lijianjun004-star.github.io/live-practice-room/voice/cn.part11.bin",
+      "status": 200,
+      "bytes": 1903978,
+      "sha256": "0b1c9dc1b5352eb3013f9dd3bf2cb03f9a89eba838df8a3d01c9066a6f9b81db"
+    }
+  ],
+  "model_archive_bytes": 43847018,
+  "model_archive_sha256": "ea1bfd4aebbe1bff20ec665c566bf4f2862e9e6cbfbb6d36dfb3357ebe1ef689",
+  "note": "Public existing same-origin model downloaded for local replay; no live site changes."
+}

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "mode": "Actual whole-session handler and actual model preset expression; mocked audio/model, no speech or network",
+  "checks": {
+    "vosk": {
+      "configured": "tiny",
+      "label_matches": true
+    },
+    "tiny": {
+      "configured": "tiny",
+      "label_matches": true
+    },
+    "base": {
+      "configured": "base",
+      "label_matches": true
+    }
+  }
+}

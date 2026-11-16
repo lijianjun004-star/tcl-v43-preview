@@ -1,0 +1,32 @@
+{
+  "record-cache/result.json": {
+    "checks": 10,
+    "steps": 0,
+    "errors": [],
+    "status": "PASS"
+  },
+  "concurrency/result.json": {
+    "checks": 10,
+    "steps": 0,
+    "errors": [],
+    "status": true
+  },
+  "recovery/result.json": {
+    "checks": 10,
+    "steps": 0,
+    "errors": [],
+    "status": true
+  },
+  "recording/result.json": {
+    "checks": 0,
+    "steps": 15,
+    "errors": [],
+    "status": true
+  },
+  "progress/result.json": {
+    "checks": 5,
+    "steps": 0,
+    "errors": null,
+    "status": "PASS"
+  }
+}

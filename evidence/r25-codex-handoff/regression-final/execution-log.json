@@ -1,0 +1,313 @@
+{
+  "commit": "910b3a1c8ff7c6e2c6452b9acaeb1e2dac1d2b08",
+  "app_sha256_before": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "environment": {
+    "os": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "node": "v24.22.1",
+    "chromium": "Chromium 156.0.8078.79 built on Debian GNU/Linux 13 (trixie)"
+  },
+  "scope": "Independent rerun of 15 Node groups with mocked inference and 4 Chromium groups with synthetic data/mocked Whisper. No real model accuracy or hardware claims. No product modifications.",
+  "executions": [
+    {
+      "label": "assignment-regression.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/assignment-regression.cjs"
+      ],
+      "test_source_sha256": "6edad2279d73cde2efb1f16f38180ff4a1ebd048ca75fb2fbbb1783d6d4b314f",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/assignment-regression.cjs.log",
+      "log_sha256": "da82650a36da7eb9d380164d5ddd806eb206156025e7446685ed3148b256c371",
+      "status": "PASS"
+    },
+    {
+      "label": "manual-clear-regression.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/manual-clear-regression.cjs"
+      ],
+      "test_source_sha256": "50243d0512ad0d5bdb7928fc41bdf5805833adf47cbdb4e37f0a584577f3d173",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.033,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/manual-clear-regression.cjs.log",
+      "log_sha256": "91cb2de5446d7ee231c498e8f818813718f036cae48898ae3dba21b5ddcb470e",
+      "status": "PASS"
+    },
+    {
+      "label": "r25-retry-policy.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/r25-retry-policy.cjs"
+      ],
+      "test_source_sha256": "c1d19e6b291ed0b6a2b44567123cc980d33b816ab6492e0b70dbe6a94c8cf28f",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/r25-retry-policy.cjs.log",
+      "log_sha256": "0343c1b8d028c8180b84e32091af95e0aec742bd703814ce3c85d1b3bc41d73f",
+      "status": "PASS"
+    },
+    {
+      "label": "r25-routing.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/r25-routing.cjs"
+      ],
+      "test_source_sha256": "9b3d766829195e3049e739289035f853e385ab821601db316a415c8c5ced1737",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/r25-routing.cjs.log",
+      "log_sha256": "3d213ba70db4b372d1491a50aaa831601f5336264f7d1f636eb9762f55742503",
+      "status": "PASS"
+    },
+    {
+      "label": "r25-session-engine-label.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/r25-session-engine-label.cjs"
+      ],
+      "test_source_sha256": "c169587ed5c873b696b05cc7c4cd0d22d6e71d388cb813291210656457e0b0d3",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.036,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/r25-session-engine-label.cjs.log",
+      "log_sha256": "4fda2d4d93257fc156c4300323ff3a18f94d293edfbf3c30395d311cf0f7829f",
+      "status": "PASS"
+    },
+    {
+      "label": "app-queue-wakeup.mjs",
+      "command": [
+        "node",
+        "--test",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/app-queue-wakeup.mjs"
+      ],
+      "test_source_sha256": "bc68cc8c8a82624427a7fe0854d651f28eb68d0bca2734881863a516cee76ee4",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.165,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/app-queue-wakeup.mjs.log",
+      "log_sha256": "1772b5e13ae9c7f1bf3040d9291f7a21fe42b397583d9220ca4a90a905b516a9",
+      "status": "PASS"
+    },
+    {
+      "label": "audio-locks.mjs",
+      "command": [
+        "node",
+        "--test",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/audio-locks.mjs"
+      ],
+      "test_source_sha256": "d11ca4ae9fbda73b4178654b8a51dd017afe9197e82aaf78223c7d178de5bc90",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.266,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/audio-locks.mjs.log",
+      "log_sha256": "605ab53c25afd3342d0aae45cf66f016ed68468aed063936e3b89becdd936b4f",
+      "status": "PASS"
+    },
+    {
+      "label": "bridge-delivery.mjs",
+      "command": [
+        "node",
+        "--test",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/bridge-delivery.mjs"
+      ],
+      "test_source_sha256": "d42e79457767cb1025946cc8cf6e2d82b0af4cc3595b438d5241db1d88a6a712",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.316,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/bridge-delivery.mjs.log",
+      "log_sha256": "ef5bb7af1d35926b1564743dfc066deeeb333e3036302017a4477574e00d1ffc",
+      "status": "PASS"
+    },
+    {
+      "label": "bridge-worker.mjs",
+      "command": [
+        "node",
+        "--test",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/bridge-worker.mjs"
+      ],
+      "test_source_sha256": "5ca3fb95776d3e0cf41814c7d5dd808b8b1b9549c2cd5ac2d6aa7fa876c971b7",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.165,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/bridge-worker.mjs.log",
+      "log_sha256": "47839a1e3fb7f9831062deda3a53b0a70223ddbd8fddf6cdbd00bad81bfadd27",
+      "status": "PASS"
+    },
+    {
+      "label": "bridge.mjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/bridge.mjs"
+      ],
+      "test_source_sha256": "985479f2f9c7da51b0ed071fe52ad8db7caae0b0ced540f4c993d0f1701a025c",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.115,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/bridge.mjs.log",
+      "log_sha256": "e9ed9f85337eb5787d9f9c25c1642052bc4109f2d7e3522006f616c4c37f0b83",
+      "status": "PASS"
+    },
+    {
+      "label": "glossary.mjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/glossary.mjs"
+      ],
+      "test_source_sha256": "90b7bfebe9d52b4012f1c0e2dc060b46ac29677ba9e0d725e1b3653a7d03f521",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/glossary.mjs.log",
+      "log_sha256": "71fec63a84973fd4a3e6c5310fb85ae1fc7cdec314176a4eb30f83ed3a72bd9f",
+      "status": "PASS"
+    },
+    {
+      "label": "performance-progress.mjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/performance-progress.mjs"
+      ],
+      "test_source_sha256": "e7472d23d238a3e5081c1278eb20b63f687ad0b9e41a3e426c89af5a8e09394f",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/performance-progress.mjs.log",
+      "log_sha256": "8c9b0ec5478d85917d8b66bb9072607fda4740d8ee7b1e5f2d5446dbc167ec26",
+      "status": "PASS"
+    },
+    {
+      "label": "question-pool.mjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/question-pool.mjs"
+      ],
+      "test_source_sha256": "f069ea717ec9f6864b2c0d5e18631a7eb2967d5397729115b47132b8e1f29852",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/question-pool.mjs.log",
+      "log_sha256": "466c4e13b81518004afbb255d16b7fd8d055c989d070783651fc032406fff327",
+      "status": "PASS"
+    },
+    {
+      "label": "r25-bridge-release.mjs",
+      "command": [
+        "node",
+        "--test",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/r25-bridge-release.mjs"
+      ],
+      "test_source_sha256": "c2f07b0660652c38e6179493ad90a36ca052e903ec02555dd4d19273fc0d2837",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.315,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/r25-bridge-release.mjs.log",
+      "log_sha256": "8c9aefcbdcb462c89071ea454798394996268a7c3a2e59972368e7a07ada8390",
+      "status": "PASS"
+    },
+    {
+      "label": "record-cache.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/record-cache.py"
+      ],
+      "test_source_sha256": "8a544829254e1a3924ebb758cebb4355fe95e666cae0225dce1cb7c0d3fad1ae",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 7.126,
+      "scope": "Chromium synthetic/mocked Whisper",
+      "log": "/workspace/r25-codex-regression-final/logs/record-cache.py.log",
+      "log_sha256": "095095d29a585068f22a1f564d78507c8b6be5de14bbed9ad393b62c9a284daf",
+      "status": "PASS"
+    },
+    {
+      "label": "session_concurrency.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/session_concurrency.py"
+      ],
+      "test_source_sha256": "4d9593839b33d4c9c13766835c1448f0f4c363a23b6d01efa35d074be3cb1d1b",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 16.155,
+      "scope": "Chromium synthetic/mocked Whisper",
+      "log": "/workspace/r25-codex-regression-final/logs/session_concurrency.py.log",
+      "log_sha256": "321f32fe73df2c525d53cc4f422e582f85e543df08531b39e642b8378ade7150",
+      "status": "PASS"
+    },
+    {
+      "label": "session_smooth_recovery.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/session_smooth_recovery.py"
+      ],
+      "test_source_sha256": "cafedcbecff0b82c45811049ffe9136805a6fe2f12b740133f643a2ff2afdaae",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 17.98,
+      "scope": "Chromium synthetic/mocked Whisper",
+      "log": "/workspace/r25-codex-regression-final/logs/session_smooth_recovery.py.log",
+      "log_sha256": "bd07bb9f2ce66ac94b59a7cb925b7bd53191ed77c38b7485b8a713acfe213799",
+      "status": "PASS"
+    },
+    {
+      "label": "browser_smooth_e2e.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/browser_smooth_e2e.py"
+      ],
+      "test_source_sha256": "b89caa5fc036f6e3933acac85babaa65227d39bac3e648d2708b173461fd1640",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 9.283,
+      "scope": "Chromium synthetic/mocked Whisper",
+      "log": "/workspace/r25-codex-regression-final/logs/browser_smooth_e2e.py.log",
+      "log_sha256": "626d28851dd88f744fdaaa3796996359c47162492c8f77fce3cf7a2016bc733b",
+      "status": "PASS"
+    },
+    {
+      "label": "regression.cjs",
+      "command": [
+        "node",
+        "/workspace/tcl-r25-fix/experiments/r25/tests/regression.cjs"
+      ],
+      "test_source_sha256": "15f79b50f9e4b61ac42d5cc135fdd1f414feb3563dfff6067c06c98e7ade8063",
+      "app_sha256_at_execution": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "exit_code": 0,
+      "elapsed_seconds": 0.066,
+      "scope": "MOCK",
+      "log": "/workspace/r25-codex-regression-final/logs/regression.cjs.log",
+      "log_sha256": "7df12f005090e5326a408f30d6e683cf7873b609939e0da4fa068f7e513755c2",
+      "status": "PASS"
+    }
+  ],
+  "git_status_before": "M experiments/r25/tcl-v352-asr-r25-qa/app.js\n M experiments/r25/tcl-v352-asr-r25-qa/static-manifest.json\n M experiments/r25/tests/regression.cjs\n M experiments/r25/tools/patch_r25.py\n?? experiments/r25/tests/r25-retry-policy.cjs\n?? experiments/r25/tests/r25-session-engine-label.cjs",
+  "commit_after": "910b3a1c8ff7c6e2c6452b9acaeb1e2dac1d2b08",
+  "app_sha256_after": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "source_unchanged": true,
+  "git_status_after": "M experiments/r25/R24-to-R25.diff\n M experiments/r25/R25-REPORT.md\n M experiments/r25/tcl-v352-asr-r25-qa/app.js\n M experiments/r25/tcl-v352-asr-r25-qa/static-manifest.json\n M experiments/r25/tests/regression.cjs\n M experiments/r25/tools/patch_r25.py\n?? evidence/r25-codex-review/\n?? experiments/r25/CODEX-REVIEW.md\n?? experiments/r25/tests/r25-retry-policy.cjs\n?? experiments/r25/tests/r25-session-engine-label.cjs",
+  "status": "PASS"
+}

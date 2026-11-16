@@ -591,3 +591,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 原报告、原始日志、hash及详细接收判定见evidence/r24-gemini-receipt-20261116/RECEIPT.md、GEMINI-REPORT-ORIGINAL.md与RAW-EVIDENCE.md。旧Gemini未实质回复记录不删除；此次已收到实质文本，但其通过结论未获证据支持。真机/国内网络/TCL语音仍未验收；不自动重启Gemini浏览器或新发请求。后续先按真实脚本路径修正报告，新增实跑另记范围和预算。
 
 - 后续用户补充分享页 https://share.gemini.google/OsbtBfWsirG9 （规范URL https://gemini.google.com/share/acdbbaa21bc9 ）。已实际渲染读到29235字符的摘要与画布，仍是原有通过陈述，无更正或新增完整日志，接收冲突结论不变。页头“基于Carbon创建”仅记UI标签，不推断后端执行模型；新增Gemini业务请求0。来源回读详见同RECEIPT.md补充节；本轮只补文档。
+
+
+## R25 Codex接手：复核完成、候选待批准（2026-11-16）
+
+任务TCL-R25-ASR-FALLBACK-20261116，接收Claude ZIP4cc3d4fa…/远端source910b3a1，基线main d277aab；104条SHA全过，原生成脚本重建22资源逐字节一致。ChatGPT统筹、Codex独立复核，Gemini新增0、付费API0。任务书明确待用户批准才合并/部署，本轮仅候选分支，不动main或线上。
+
+- 修P2：Vosk下载失败后每题静默重试，改等待手动重试，录音保留、成功后补转；另修整场Whisper默认Vosk时Tiny错标Base。产品修复b3950ea3b0c2e212031e26ca820369424a9a3bf1，app2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc，仍由patch脚本生成，仅app/manifest变动。
+- 最终同hash15Node+4浏览器组全exit0；5组真实Vosk+合成普通话流程通过，另实际浏览器失败后3题仅1次下载、点重试升至2次且3题补转通过。初稿13Node+4浏览器+5模型流程通过，R24三种空白对照复现；均非真人准确率。原失败和适配保留。
+- 发布准备CI8bf0583仅2门禁文件，110项通过、固定SHA实际正逆构建、独立再审及越界负探针通过。旧217不变，新22=239，本地239HTTP/SHA通过；ZIP52a47cf…、B64d710574…，旧SHA白名单不变。独立CI/发行/回滚3补丁备妥，不把本地对象当上线。目标/tcl-v352-asr-r25-qa/尚未部署。
+- 权威源码候选codex/r25-followup-fixes-20261116、CI候选codex/r25-release-preparation-20261116；详见experiments/r25/CODEX-HANDOFF.md和evidence/r25-codex-handoff/。批准后先CI独立PR再基于最新main发布，确认Actions、公网239及真机；真手机/大陆网络/Whisper真实权重/真人TCL准确率均未验收，不自动调用Gemini或上传真人录音。

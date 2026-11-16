@@ -1,0 +1,7 @@
+{
+  "base_commit": "d277aaba54929b7344a42d387f513fe069fe709c",
+  "ci_commit": "8bf0583f67d85a9576f5a9d1f6db40e0e1047a55",
+  "release_candidate_commit": "e28550f4500ea6e251d169ace784238e9e490752",
+  "rollback_candidate_commit": "05106fcbab7c9cfe263599e005b0684426b45e25",
+  "published": false
+}

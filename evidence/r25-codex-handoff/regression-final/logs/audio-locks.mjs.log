@@ -1,0 +1,10 @@
+✔ decoder timeout keeps actual resource locked until native promise resolves (29.594866ms)
+✔ Vosk initialization timeout retains worker job and its blob URL; no duplicate initialization (107.062198ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 189.75794

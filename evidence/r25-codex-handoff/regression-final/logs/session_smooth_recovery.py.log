@@ -1,0 +1,39 @@
+{
+  "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "mode": "real Chromium IndexedDB + MediaRecorder; synthetic mic/video, MOCK model",
+  "checks": {
+    "two_audio_and_video_committed": true,
+    "other_name_does_not_offer_media": true,
+    "reload_same_name_restores_exact_blobs": true,
+    "manual_clear_and_audio_players_restored": true,
+    "video_player_restored": true,
+    "quota_failure_visible_previous_checkpoint_intact": true,
+    "explicit_retry_persists_new_answer": true,
+    "manual_clear_kept_in_record_and_submission": true,
+    "text_only_workflow_and_reload_without_model": true,
+    "interrupted_run_restores_stopped_question_not_active_video": true
+  },
+  "errors": [],
+  "media_hashes": [
+    {
+      "id": "draft-media:fc6f976e-21ec-4350-8755-7556fa2457e1:11cad3d5-ad39-4e9f-8e87-a13fa073dcca",
+      "turnId": "11cad3d5-ad39-4e9f-8e87-a13fa073dcca",
+      "size": 27250,
+      "sha": "4084ee8aa6dc6a27b42a6504bd01da734d615e76f38a8679aa4882ad06b116c9"
+    },
+    {
+      "id": "draft-media:fc6f976e-21ec-4350-8755-7556fa2457e1:c63c5e17-f358-498c-82b4-97f26d300448",
+      "turnId": "c63c5e17-f358-498c-82b4-97f26d300448",
+      "size": 30151,
+      "sha": "91eb82837e02e7ad4f0930c240e5115fcb22d4959dff2949907a618df371a08d"
+    },
+    {
+      "id": "draft-media:fc6f976e-21ec-4350-8755-7556fa2457e1:video",
+      "turnId": "video",
+      "size": 67055,
+      "sha": "a5979a70503e65c8d32c6b97bbab4e51f09fc740242dcfa13b04012df9c18994"
+    }
+  ],
+  "source_unchanged": true,
+  "ok": true
+}

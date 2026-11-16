@@ -1,0 +1,1 @@
+PASS: empty/oversize/silence, diagnostic metadata, timeout prevents model reentry (synthetic AudioContext)

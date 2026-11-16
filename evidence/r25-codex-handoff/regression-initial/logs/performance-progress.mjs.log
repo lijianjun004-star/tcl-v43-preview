@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "mode": "Actual app createLocalWhisper onProgress and r6WhisperValid evaluated in Node VM; synthetic notifications and fake clock; no model/network call",
+  "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+  "source_unchanged": true,
+  "input_download_events": 1195,
+  "rendered_download_updates": 9,
+  "checks": {
+    "load_message_immediate": true,
+    "download_1195_events_coalesced": true,
+    "ready_message_immediate": true,
+    "stale_owner_does_not_render": true,
+    "non_download_error_message_immediate": true
+  }
+}

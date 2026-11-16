@@ -1,0 +1,11 @@
+✔ inference timeout: one inference only, Worker terminated, late result ignored, Whisper stays off, Vosk no longer locked (61.905842ms)
+✔ load timeout (runtime import hangs): Worker terminated and not busy (61.283753ms)
+✔ page-level injected pipeline cannot be terminated, so it keeps the fail-closed lock (54.69532ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 250.547459

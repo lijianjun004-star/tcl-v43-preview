@@ -1,0 +1,472 @@
+{
+  "executed_by": "Codex fresh independent runs",
+  "scope": "Real Vosk runtime/model; supplied espeak synthetic Mandarin audio, synthetic camera; blocked external runtime/model hosts; no real phone or human ASR accuracy test",
+  "source_commit": "910b3a1c8ff7c6e2c6452b9acaeb1e2dac1d2b08",
+  "fixture_adaptations": [
+    "Node playwright alias uses installed Python Playwright driver package",
+    "Chromium executablePath=/usr/bin/chromium",
+    "VOICE path provided by env; original /home/user path unavailable"
+  ],
+  "started_date_utc": "2026-11-16T22:57:21.923537+00:00",
+  "runs": [
+    {
+      "name": "R25-V1-default-vosk",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 25.02,
+      "result": "PASS",
+      "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "(default)",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "vosk",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "正在下载/校验 Vosk…",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "正在录后转写…"
+          ],
+          [
+            9,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {},
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WA-base-hostfail",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 27.8,
+      "result": "PASS",
+      "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "Whisper 不可用（Failed to fetch dynamically imported module: https://cdn.jsdelivr.net/npm/@huggingface/transformers@），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答 · 备用 Vosk 准备中"
+          ],
+          [
+            3,
+            "正在录后转写…"
+          ],
+          [
+            12,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+          "text": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。 查看本题参考与来源 —11.1秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WB-base-hosthang",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 33.28,
+      "result": "PASS",
+      "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "hang",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            7,
+            "Whisper 不可用（启动后台语音识别运行时超时（6秒）），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答 · 备用 Vosk 准备中"
+          ],
+          [
+            9,
+            "正在录后转写…"
+          ],
+          [
+            18,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WD-base-hang-voskready",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 34.4,
+      "result": "PASS",
+      "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "hang",
+        "voskPre": "ready",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "✓ Vosk 中文模型已就绪",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            7,
+            "正在录后转写…"
+          ],
+          [
+            15,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+          "text": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —11秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-M3-three-questions",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 124.23,
+      "result": "PASS",
+      "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "(default)",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q2pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "vosk",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "正在下载/校验 Vosk…",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.1秒 给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。 查看本题参考与来源 —13秒 比如张柏芝的否裂缝杀人狂结束以来鬼节水湿的水源就之一王牌所以最好是是否还否李芒给盲区 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —2.5秒 能否只要"
+        },
+        "questions": [
+          {
+            "answer": "给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.1秒 给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？请把尺"
+          },
+          {
+            "answer": "比如张柏芝的否裂缝杀人狂结束以来鬼节水湿的水源就之一王牌所以最好是是否还否李芒给盲区",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.1秒 给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？请把尺"
+          },
+          {
+            "answer": "能否只要有否裂缝王杰",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.1秒 给盲区露蟠桃之眼瞅着往结束以来理解随之结束一段就只吃王牌所以最好是是否好忙 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？请把尺"
+          }
+        ],
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {},
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R24-A-hostfail",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 15.81,
+      "result": "BASELINE_BUG_REPRODUCED",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "flow": {
+        "sub": "tcl-v352-asr-r24-qa",
+        "engine": "(default)",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次逐题转写需联网下载 Whisper"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "Whisper 识别未完成：Failed to fetch dynamically imported module: https://cdn.jsdelivr.net/npm/@huggingface/transformers@；原录音仍可回听，可手动填写或准备备用 Vosk"
+          ]
+        ],
+        "review": {
+          "answer": "",
+          "text": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —11.1秒 已录音，尚未获得文字 保存本题修改将整场文字填入本题 Whisper 识别未完成：Failed to fetch dynamically imported module: https://cdn.jsdelivr.net/npm/@huggingface/transformers@；原录音仍可回听，可手动填写或准备备用 Vosk 准备Vosk并补转写"
+        },
+        "answerFilled": false,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 0,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R24-B-hosthang",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 22.07,
+      "result": "BASELINE_BUG_REPRODUCED",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "flow": {
+        "sub": "tcl-v352-asr-r24-qa",
+        "engine": "(default)",
+        "mode": "hang",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次逐题转写需联网下载 Whisper"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            7,
+            "Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写"
+          ]
+        ],
+        "review": {
+          "answer": "",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 已录音，尚未获得文字 保存本题修改将整场文字填入本题 Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写 准备Vosk并补转写"
+        },
+        "answerFilled": false,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 0,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R24-D-hang-voskready",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 26.79,
+      "result": "BASELINE_BUG_REPRODUCED",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "flow": {
+        "sub": "tcl-v352-asr-r24-qa",
+        "engine": "(default)",
+        "mode": "hang",
+        "voskPre": "ready",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "✓ Vosk 中文模型已就绪",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次逐题转写需联网下载 Whisper"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            7,
+            "Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写"
+          ]
+        ],
+        "review": {
+          "answer": "",
+          "text": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。 查看本题参考与来源 —11.1秒 已录音，尚未获得文字 保存本题修改将整场文字填入本题 Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写 补转写"
+        },
+        "answerFilled": false,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    }
+  ]
+}

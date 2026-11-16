@@ -1,0 +1,311 @@
+{
+  "executed_by": "Codex fresh independent runs",
+  "scope": "Real Vosk runtime/model; supplied espeak synthetic Mandarin audio, synthetic camera; blocked external runtime/model hosts; no real phone or human ASR accuracy test",
+  "source_commit": "followup based on 910b3a1; app2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "fixture_adaptations": [
+    "Node playwright alias uses installed Python Playwright driver package",
+    "Chromium executablePath=/usr/bin/chromium",
+    "VOICE path provided by env; original /home/user path unavailable"
+  ],
+  "started_date_utc": "2026-11-16T23:00:12.083332+00:00",
+  "runs": [
+    {
+      "name": "R25-V1-default-vosk",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows-final/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 27.79,
+      "result": "PASS",
+      "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "(default)",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "vosk",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "正在下载/校验 Vosk…",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "正在录后转写…"
+          ],
+          [
+            10,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否",
+          "text": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —11.1秒 我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {},
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WA-base-hostfail",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows-final/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 30.2,
+      "result": "PASS",
+      "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "Whisper 不可用（Failed to fetch dynamically imported module: https://cdn.jsdelivr.net/npm/@huggingface/transformers@），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答 · 备用 Vosk 准备中"
+          ],
+          [
+            3,
+            "正在录后转写…"
+          ],
+          [
+            13,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否",
+          "text": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —11.1秒 我玩所以是发掘了否之谁还有谁我们来对比枫少爷让他是否 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WB-base-hosthang",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows-final/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 34.53,
+      "result": "PASS",
+      "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "hang",
+        "voskPre": "none",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "预下载模型",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            6,
+            "Whisper 不可用（启动后台语音识别运行时超时（6秒）），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答 · 备用 Vosk 准备中"
+          ],
+          [
+            10,
+            "正在录后转写…"
+          ],
+          [
+            19,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-WD-base-hang-voskready",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows-final/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 36.53,
+      "result": "PASS",
+      "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "base",
+        "mode": "hang",
+        "voskPre": "ready",
+        "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "base",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "✓ Vosk 中文模型已就绪",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "本题自动录音中，切题后转文字"
+          ],
+          [
+            1,
+            "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+          ],
+          [
+            7,
+            "正在录后转写…"
+          ],
+          [
+            16,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+        },
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {
+          "cdn.jsdelivr.net": 1
+        },
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "R25-M3-three-questions",
+      "command": [
+        "node",
+        "/workspace/r25-codex-flows-final/runner/r25-flow.cjs"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 124.78,
+      "result": "PASS",
+      "app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+      "flow": {
+        "sub": "tcl-v352-asr-r25-qa",
+        "engine": "(default)",
+        "mode": "abort",
+        "voskPre": "none",
+        "audio": "q2pad.wav（espeak-ng 合成普通话，非真人）",
+        "selector": {
+          "value": "vosk",
+          "options": [
+            "vosk",
+            "tiny",
+            "base"
+          ]
+        },
+        "prelive": {
+          "voskBtn": "正在下载/校验 Vosk…",
+          "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+        },
+        "autoRecording": "recording",
+        "timeline": [
+          [
+            0,
+            "已转写（请核对文本）"
+          ]
+        ],
+        "review": {
+          "answer": "给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王",
+          "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.2秒 给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。 查看本题参考与来源 —13.1秒 比如饭否之的否裂缝杀人狂结束以来鬼节水湿的死于乱军之一王牌所以最好是是否还否李芒君王之路 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？ 查看本题参考与来源 —2."
+        },
+        "questions": [
+          {
+            "answer": "给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.2秒 给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？"
+          },
+          {
+            "answer": "比如饭否之的否裂缝杀人狂结束以来鬼节水湿的死于乱军之一王牌所以最好是是否还否李芒君王之路",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.2秒 给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？"
+          },
+          {
+            "answer": "保值的否雷锋王杰",
+            "card": "‹ 返回复盘 逐题复盘 3 条弹幕 · 按题校正 详情 每道弹幕逐条查看 识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。 京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —13.2秒 给盲区如很早之一瞅了瞅啥用结束以来一百岁的随之结束鱼卵就只吃一碗百岁是是否还好王 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本） 这类电视主要看哪些选择点？"
+          }
+        ],
+        "answerFilled": true,
+        "answerHasTraditional": false,
+        "externalRequests": {},
+        "voskFileRequests": 12,
+        "pageErrors": []
+      }
+    }
+  ]
+}

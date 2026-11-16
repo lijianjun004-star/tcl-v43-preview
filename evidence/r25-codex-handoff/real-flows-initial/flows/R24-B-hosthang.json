@@ -1,0 +1,44 @@
+{
+ "sub": "tcl-v352-asr-r24-qa",
+ "engine": "(default)",
+ "mode": "hang",
+ "voskPre": "none",
+ "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+ "selector": {
+  "value": "base",
+  "options": [
+   "tiny",
+   "base"
+  ]
+ },
+ "prelive": {
+  "voskBtn": "预下载模型",
+  "hint": "模拟练播 · 单场最长 8 分钟 · 首次逐题转写需联网下载 Whisper"
+ },
+ "autoRecording": "recording",
+ "timeline": [
+  [
+   0,
+   "本题自动录音中，切题后转文字"
+  ],
+  [
+   1,
+   "实验 Whisper：加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+  ],
+  [
+   7,
+   "Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写"
+  ]
+ ],
+ "review": {
+  "answer": "",
+  "text": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？ 查看本题参考与来源 —11.1秒 已录音，尚未获得文字 保存本题修改将整场文字填入本题 Whisper 识别未完成：启动后台语音识别运行时超时（6秒）；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写 准备Vosk并补转写"
+ },
+ "answerFilled": false,
+ "answerHasTraditional": false,
+ "externalRequests": {
+  "cdn.jsdelivr.net": 1
+ },
+ "voskFileRequests": 0,
+ "pageErrors": []
+}

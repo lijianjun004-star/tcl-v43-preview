@@ -1,0 +1,12 @@
+✔ Worker proxy pins model, forwards progress and transfers only a PCM copy (4.167101ms)
+✔ Worker unavailable fails explicitly, while injected Node pipelines remain supported (2.013541ms)
+✔ Worker inference timeout never starts a second inference and R2.5 terminates it instead of locking Vosk (52.755819ms)
+✔ Worker error rejects pending inference and cannot fall back to page inference (1.488897ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 113.322169

@@ -1,0 +1,49 @@
+{
+ "sub": "tcl-v352-asr-r25-qa",
+ "engine": "base",
+ "mode": "abort",
+ "voskPre": "none",
+ "audio": "q1pad.wav（espeak-ng 合成普通话，非真人）",
+ "selector": {
+  "value": "base",
+  "options": [
+   "vosk",
+   "tiny",
+   "base"
+  ]
+ },
+ "prelive": {
+  "voskBtn": "预下载模型",
+  "hint": "模拟练播 · 单场最长 8 分钟 · 首次使用需联网下载中文识别模型（约42MB，下载后存本机）"
+ },
+ "autoRecording": "recording",
+ "timeline": [
+  [
+   0,
+   "本题自动录音中，切题后转文字"
+  ],
+  [
+   1,
+   "Whisper 不可用（Failed to fetch dynamically imported module: https://cdn.jsdelivr.net/npm/@huggingface/transformers@），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答 · 备用 Vosk 准备中"
+  ],
+  [
+   3,
+   "正在录后转写…"
+  ],
+  [
+   12,
+   "已转写（请核对文本）"
+  ]
+ ],
+ "review": {
+  "answer": "来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说",
+  "text": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。 查看本题参考与来源 —11.1秒 来我玩所以一方发掘了否人谁还有谁我们来这地方烧完他就说 查看模型识别原文 保存本题修改将整场文字填入本题 已转写（请核对文本）"
+ },
+ "answerFilled": true,
+ "answerHasTraditional": false,
+ "externalRequests": {
+  "cdn.jsdelivr.net": 1
+ },
+ "voskFileRequests": 12,
+ "pageErrors": []
+}

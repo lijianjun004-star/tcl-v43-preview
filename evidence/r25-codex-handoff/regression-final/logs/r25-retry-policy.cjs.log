@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "mode": "Actual app routing/queue/preload functions; mocked failed loader and Whisper; no network/models/speech",
+  "checks": {
+    "failed_default_download_stays_failed_and_keeps_three_recordings": true,
+    "deferred_automatic_routes_do_not_retry": true,
+    "explicit_manual_retry_loads_and_enqueues_all_preserved_recordings": true,
+    "explicit_whisper_failure_keeps_recordings_without_retrying_failed_fallback": true,
+    "manual_retry_after_whisper_failure_enqueues_both_questions": true
+  }
+}

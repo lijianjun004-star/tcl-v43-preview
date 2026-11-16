@@ -1,0 +1,15 @@
+{
+  "source_commit": "910b3a1c8ff7c6e2c6452b9acaeb1e2dac1d2b08",
+  "reproduced_resources": 22,
+  "generator_differences": [],
+  "changed_from_r24": [
+    "app.js",
+    "asr-normalize.mjs",
+    "glossary-ui.mjs",
+    "index.html",
+    "r23-model-choice.js",
+    "static-manifest.json",
+    "whisper-bridge.mjs"
+  ],
+  "all_r24_runtime_files_unchanged_on_main": true
+}

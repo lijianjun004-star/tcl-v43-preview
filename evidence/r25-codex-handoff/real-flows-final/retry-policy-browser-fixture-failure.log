@@ -1,0 +1,17 @@
+node:internal/fs/promises:1345
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open '/workspace/r25-codex-flows-final/r25-media-init-realaudio.js'
+    at async open (node:internal/fs/promises:1345:25)
+    at async Object.readFile (node:internal/fs/promises:2003:14)
+    at async evaluationScript (/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/driver/package/lib/coreBundle.js:57243:20)
+    at async _BrowserContext.addInitScript (/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/driver/package/lib/coreBundle.js:62067:26)
+    at async /workspace/r25-codex-flows-final/retry-policy-browser.cjs:15:3 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/workspace/r25-codex-flows-final/r25-media-init-realaudio.js'
+}
+
+Node.js v24.22.1

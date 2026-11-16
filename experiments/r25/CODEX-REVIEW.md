@@ -1,6 +1,6 @@
 # R25 独立源码复核与最小跟进修复
 
-任务 `TCL-R25-CODEX-INDEPENDENT-REVIEW-20261116`。ChatGPT统筹，Codex本地复核与修复；基线提交 `910b3a1`，初始app SHA-256 `635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f`。本分支尚未推送、合并或部署；无付费API，没有修改R24、发行归档、工作流或发布门禁。
+任务 `TCL-R25-CODEX-INDEPENDENT-REVIEW-20261116`。ChatGPT统筹，Codex本地复核与修复；基线提交 `910b3a1`，初始app SHA-256 `635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f`。本子任务结束时尚未推送、合并或部署，后续候选归档以CODEX-HANDOFF.md为准；无付费API，没有修改R24、发行归档、工作流或发布门禁。
 
 ## 已复现并修复
 
