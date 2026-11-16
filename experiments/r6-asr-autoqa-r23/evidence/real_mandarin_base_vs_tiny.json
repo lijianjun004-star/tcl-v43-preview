@@ -1,0 +1,16 @@
+{
+  "evidence_type": "real browser model inference via GitHub Actions, no paid API, same public Mandarin WAV",
+  "run": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43903675421",
+  "recording": "public QwenAudio/SenseVoice sample BAC009S0764W0121.wav",
+  "reference": "甚至出现交易几乎停滞的情况",
+  "whisper_tiny": {
+    "transcribed": "甚至出现交易机户停止的情况",
+    "one_sample_character_error_rate": 0.2308
+  },
+  "whisper_base": {
+    "transcribed": "甚至出现交易几乎停滞的情况。",
+    "one_sample_character_error_rate": 0.0,
+    "measured_model_load_and_infer_ms": 6708
+  },
+  "note": "ONE public Mandarin sample only. Does not establish TCL model-number accuracy, iOS Safari feasibility, or general population CER."
+}
