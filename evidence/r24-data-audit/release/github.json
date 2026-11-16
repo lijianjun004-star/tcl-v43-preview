@@ -1,0 +1,57 @@
+{
+  "task": "TCL-R24-DATA-INTEGRITY-20261116",
+  "repository": "lijianjun004-star/tcl-v43-preview",
+  "initial_main": "ddfda765ab06df682acc2479c78a298d1022481d",
+  "source_commit": "3385e45c23640bbb5be240a45fa0fdd286cd1c2a",
+  "source_branch": "fix/r24-delivery-20261116",
+  "new_app_sha256": "88b3ce2a8a9cf889f1579337f6d78f83e03dbf3c9bff6fffbb41f1ca0e25e900",
+  "old_archive_b64_sha256": "1e2135de3c602c1a934fbc86f1b14999899116d035fe01d627903fd1ceb0f456",
+  "new_archive_b64_sha256": "7bb350cdb4d909ed562fe9b734bc93867f56e7c01f2735c0bb5345381a7b7925",
+  "ci_pr": {
+    "number": 110,
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/110",
+    "head": "149d3f9d23eff3437a997a3096eccc495e2d20e0",
+    "status": "MERGED",
+    "check_run": 43933651293,
+    "check_url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43933651293",
+    "check_conclusion": "success",
+    "merge_sha": "7b2d6001c541dfcb5d058f65c23806815ae2157c",
+    "pages": {
+      "run": 43933793665,
+      "head": "7b2d6001c541dfcb5d058f65c23806815ae2157c",
+      "conclusion": "success",
+      "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43933793665",
+      "archive": "original R24 b086a0c5; new repair not yet published"
+    }
+  },
+  "release_pr": {
+    "number": 111,
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/111",
+    "head": "13b217b49cf47228e5c3c8216b5b3f915a296573",
+    "base": "7b2d6001c541dfcb5d058f65c23806815ae2157c",
+    "status": "MERGED",
+    "check_run": 43934039679,
+    "check_url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43934039679",
+    "check_conclusion": "success",
+    "merge_sha": "77a219f4c29c0597a435dc72578d58394cbbf45d",
+    "pages": {
+      "run": 43934188599,
+      "head": "77a219f4c29c0597a435dc72578d58394cbbf45d",
+      "conclusion": "success",
+      "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43934188599",
+      "deploy_job": 133534305045,
+      "all_old_and_new_stages_success": true
+    }
+  },
+  "final_pages_tree": "/workspace/scratch/r24-data-final-pages-88b3ce2a8a9c",
+  "final_pages_hashes": "evidence/r24-data-audit/release/final-pages-sha256.json",
+  "merged_main_integrity": {
+    "sha": "77a219f4c29c0597a435dc72578d58394cbbf45d",
+    "site_zip_unchanged": true,
+    "pages_workflow_unchanged": true,
+    "published_archive_hash_matches_freeze": true
+  },
+  "status": "DEPLOYED_PAGES_SUCCESS",
+  "entry_url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/",
+  "public_verification": "Root independently verifies all 216 resource hashes and browser flow; this record only attests GitHub CI/deployment and local complete staging."
+}

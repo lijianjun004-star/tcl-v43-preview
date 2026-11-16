@@ -1,0 +1,89 @@
+{
+  "run": {
+    "id": 43934188599,
+    "head": "77a219f4c29c0597a435dc72578d58394cbbf45d",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43934188599"
+  },
+  "jobs": [
+    {
+      "id": 133534305045,
+      "name": "deploy",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify audited static bundle",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Extract frontend only",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stage isolated audio research preview",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stage isolated R6 original-audio AutoQA preview",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stage R2.1 isolated original-audio ASR pilot",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stage R2.3 isolated free Mandarin ASR preview",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stage R2.4 isolated practice-room delivery",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/configure-pages@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-pages-artifact@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Deploy independent test site",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v6",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

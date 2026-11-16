@@ -7,6 +7,7 @@ import io
 import json
 import pathlib
 import re
+import shutil
 import sys
 import stat
 import zipfile
@@ -779,6 +780,34 @@ R24_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bc
  'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
  'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
  'whisper-bridge.mjs': 'b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4'}
+# A second, independently reviewed snapshot for the same route. Keep the
+# original pins valid while this CI-only change deploys the existing archive.
+R24_UPDATE_ARCHIVE_B64_SHA = '7bb350cdb4d909ed562fe9b734bc93867f56e7c01f2735c0bb5345381a7b7925'
+R24_UPDATE_ARCHIVE_SHA = '621456a7a1b89a7183aa6babf00711a627f1959a3f880e086920886bf2688764'
+R24_UPDATE_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511',
+ 'app.js': '88b3ce2a8a9cf889f1579337f6d78f83e03dbf3c9bff6fffbb41f1ca0e25e900',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13',
+ 'glossary-ui.mjs': 'e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb',
+ 'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'bde9f1702b8d0975f4dc45e02eb2bf988bd318d3844a6a7d7e2467c39ec605c0',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596',
+ 'static-manifest.json': 'fb37d10358aa4a48e664efe52b72f466c90b873928f14ffb4b6cab92c4eed908',
+ 'style.css': '9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': 'b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4'}
+R24_UPDATE_CHANGED_FILES = frozenset({
+    'app.js', 'lib/parser.js', 'lib/qa-import.js', 'static-manifest.json',
+})
 R24_MAX_ENCODED_BYTES = 2_000_000
 R24_MAX_RAW_BYTES = 1_500_000
 R24_MAX_RESOURCE_BYTES = 750_000
@@ -806,19 +835,26 @@ def r24_stage_step():
 
 
 def r24_resource_bytes(encoded):
-    if not R24_ASSET_HASHES or not all(re.fullmatch('[0-9a-f]{64}', digest)
-            for digest in (R24_ARCHIVE_B64_SHA, R24_ARCHIVE_SHA, *R24_ASSET_HASHES.values())):
-        raise GateFailure('R2.4 policy has not been frozen to reviewed content')
-    if len(encoded) > R24_MAX_ENCODED_BYTES or sha256(encoded) != R24_ARCHIVE_B64_SHA:
+    encoded_sha = sha256(encoded)
+    snapshots = (
+        (R24_ARCHIVE_B64_SHA, R24_ARCHIVE_SHA, R24_ASSET_HASHES),
+        (R24_UPDATE_ARCHIVE_B64_SHA, R24_UPDATE_ARCHIVE_SHA, R24_UPDATE_ASSET_HASHES),
+    )
+    selected = [pins for pins in snapshots if pins[0] == encoded_sha]
+    if len(encoded) > R24_MAX_ENCODED_BYTES or len(selected) != 1:
         raise GateFailure('R2.4 exact encoded archive hash/size mismatch')
+    encoded_pin, zip_pin, asset_hashes = selected[0]
+    if not asset_hashes or not all(re.fullmatch('[0-9a-f]{64}', digest)
+            for digest in (encoded_pin, zip_pin, *asset_hashes.values())):
+        raise GateFailure('R2.4 policy has not been frozen to reviewed content')
     try:
         raw = base64.b64decode(encoded.strip(), validate=True)
     except (ValueError, TypeError) as err:
         raise GateFailure('R2.4 invalid base64 archive') from err
-    if len(raw) > R24_MAX_RAW_BYTES or sha256(raw) != R24_ARCHIVE_SHA:
+    if len(raw) > R24_MAX_RAW_BYTES or sha256(raw) != zip_pin:
         raise GateFailure('R2.4 exact ZIP archive hash/size mismatch')
     _, resources = inspect_zip_bytes_for_autoqa(raw)
-    allowed = {R24_DEST + '/' + name for name in R24_ASSET_HASHES}
+    allowed = {R24_DEST + '/' + name for name in asset_hashes}
     if set(resources) != allowed:
         raise GateFailure('R2.4 static resource allowlist mismatch')
     # A directory record is not a static resource; reject even harmless extras.
@@ -833,8 +869,8 @@ def r24_resource_bytes(encoded):
             raise GateFailure('R2.4 static resource size invalid')
     if sum(map(len, resources.values())) > R24_MAX_TOTAL_BYTES:
         raise GateFailure('R2.4 static resource total size exceeded')
-    data = {name: resources[R24_DEST + '/' + name] for name in R24_ASSET_HASHES}
-    for name, digest in R24_ASSET_HASHES.items():
+    data = {name: resources[R24_DEST + '/' + name] for name in asset_hashes}
+    for name, digest in asset_hashes.items():
         if sha256(data[name]) != digest:
             raise GateFailure('R2.4 resource hash mismatch: ' + name)
     manifest = json.loads(data['static-manifest.json'])
@@ -882,9 +918,43 @@ def stage_r24(site_path, archive_path):
                 raise GateFailure('R2.4 altered protected resource: ' + name)
         staged.rename(output)
     report = {'files': len(resources), 'old_assets_unchanged': len(before),
-              'app_sha': R24_ASSET_HASHES['app.js']}
+              'app_sha': sha256(resources['app.js'])}
     print('R24_STAGE_PASS', json.dumps(report, sort_keys=True))
     return report
+
+
+def r24_rebuild_previous_stages(root, zipbytes, trusted_inputs):
+    """Rebuild only immutable older routes from explicit baseline-commit bytes."""
+    if set(trusted_inputs) != set(R24_TRUSTED_INPUTS):
+        raise GateFailure('R2.4 trusted baseline input set mismatch')
+    zip_path = root / 'baseline.zip'
+    zip_path.write_bytes(zipbytes)
+    site = root / '_site'
+    extract_zip_safely(zip_path, site)
+    # These are read with git show(base, path), never from candidate paths.
+    for name, data in trusted_inputs.items():
+        target = root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    if sha256(trusted_inputs[LAB_SOURCE]) != LAB_HTML_SHA256:
+        raise GateFailure('R2.4 protected audio lab hash mismatch')
+    lab = site / LAB_TARGET
+    lab.parent.mkdir(parents=True, exist_ok=True)
+    lab.write_bytes(trusted_inputs[LAB_SOURCE])
+    commands = (
+        [sys.executable, 'experiments/r6-asr-autoqa/build_qa.py',
+         str(site), 'experiments/r6-asr-autoqa'],
+        [sys.executable, 'release-ci/stage_r21.py', '--site-dir', str(site),
+         '--archive', R21_ARCHIVE],
+        [sys.executable, 'release-ci/stage_r23.py', '--site-dir', str(site),
+         '--archive', R23_ARCHIVE],
+    )
+    for command in commands:
+        try:
+            subprocess.run(command, cwd=root, check=True, timeout=180)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
+            raise GateFailure('R2.4 protected preceding stage failed') from err
+    return site
 
 
 def verify_r24_additive_release(before, after, encoded, zipbytes, trusted_inputs):
@@ -904,37 +974,59 @@ def verify_r24_additive_release(before, after, encoded, zipbytes, trusted_inputs
     r24_resource_bytes(encoded)
     with tempfile.TemporaryDirectory() as temp:
         root = pathlib.Path(temp)
-        zip_path = root / 'baseline.zip'
-        zip_path.write_bytes(zipbytes)
-        site = root / '_site'
-        extract_zip_safely(zip_path, site)
-        # These are read with git show(base, path), never from candidate paths.
-        for name, data in trusted_inputs.items():
-            target = root / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(data)
-        if sha256(trusted_inputs[LAB_SOURCE]) != LAB_HTML_SHA256:
-            raise GateFailure('R2.4 protected audio lab hash mismatch')
-        lab = site / LAB_TARGET
-        lab.parent.mkdir(parents=True, exist_ok=True)
-        lab.write_bytes(trusted_inputs[LAB_SOURCE])
-        commands = (
-            [sys.executable, 'experiments/r6-asr-autoqa/build_qa.py',
-             str(site), 'experiments/r6-asr-autoqa'],
-            [sys.executable, 'release-ci/stage_r21.py', '--site-dir', str(site),
-             '--archive', R21_ARCHIVE],
-            [sys.executable, 'release-ci/stage_r23.py', '--site-dir', str(site),
-             '--archive', R23_ARCHIVE],
-        )
-        for command in commands:
-            try:
-                subprocess.run(command, cwd=root, check=True, timeout=180)
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
-                raise GateFailure('R2.4 protected preceding stage failed') from err
+        site = r24_rebuild_previous_stages(root, zipbytes, trusted_inputs)
         source = root / 'r24-source.zip.b64'
         source.write_bytes(encoded)
         stage_r24(site, source)
     return True
+
+
+def verify_r24_archive_update(workflow, old_encoded, new_encoded, zipbytes, trusted_inputs):
+    """Swap only the two reviewed snapshots; unchanged workflow rebuilds the route."""
+    pair = (sha256(old_encoded), sha256(new_encoded))
+    forward = (R24_ARCHIVE_B64_SHA, R24_UPDATE_ARCHIVE_B64_SHA)
+    if pair not in (forward, forward[::-1]) or pair[0] == pair[1]:
+        raise GateFailure('R2.4 update requires the exact old/new snapshot pair')
+    if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 update cannot change protected site.zip')
+    if check_workflow(workflow, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.4 update must retain the protected ZIP checksum')
+    if workflow.count(r24_stage_step()) != 1 or any(workflow.count(step) != 1
+            for step in (lab_stage_step(), AUTOQA_STEP, R21_STEP, R23_STEP)):
+        raise GateFailure('R2.4 update must retain all existing Pages stages')
+    old_data, new_data = r24_resource_bytes(old_encoded), r24_resource_bytes(new_encoded)
+    if set(old_data) != set(new_data):
+        raise GateFailure('R2.4 update cannot change the static resource set')
+    changed = {name for name in old_data if old_data[name] != new_data[name]}
+    if changed != R24_UPDATE_CHANGED_FILES:
+        raise GateFailure('R2.4 update changed resources outside the exact reviewed four files')
+    with tempfile.TemporaryDirectory() as temp:
+        root = pathlib.Path(temp)
+        old_site = r24_rebuild_previous_stages(root, zipbytes, trusted_inputs)
+        protected = {p.relative_to(old_site).as_posix(): p.read_bytes()
+                     for p in old_site.rglob('*') if p.is_file()}
+        new_site = root / '_updated_site'
+        shutil.copytree(old_site, new_site)
+        for label, encoded, site in (('old', old_encoded, old_site), ('new', new_encoded, new_site)):
+            archive = root / (label + '-r24.zip.b64')
+            archive.write_bytes(encoded)
+            stage_r24(site, archive)
+            for name, data in protected.items():
+                if (site / name).read_bytes() != data:
+                    raise GateFailure('R2.4 update modified an older Pages resource: ' + name)
+        old_files = {p.relative_to(old_site).as_posix(): p.read_bytes()
+                     for p in old_site.rglob('*') if p.is_file()}
+        new_files = {p.relative_to(new_site).as_posix(): p.read_bytes()
+                     for p in new_site.rglob('*') if p.is_file()}
+        actual_changed = {name for name in set(old_files) | set(new_files)
+                          if old_files.get(name) != new_files.get(name)}
+        if set(old_files) != set(new_files) or actual_changed != {R24_DEST + '/' + name for name in changed}:
+            raise GateFailure('R2.4 final Pages trees differ outside the exact update scope')
+    result = {'direction': 'update' if pair == forward else 'rollback',
+              'protected_assets': len(protected), 'total_assets': len(new_files),
+              'changed': sorted(actual_changed)}
+    print('R24_UPDATE_PASS', json.dumps(result, sort_keys=True))
+    return result
 
 
 def verify_r24_rollback(before, after, removed_archive, zipbytes):
@@ -964,7 +1056,14 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R24_ARCHIVE, '.github/workflows/pages.yml'}:
+    if changed == {R24_ARCHIVE}:
+        verify_r24_archive_update(
+            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, R24_ARCHIVE), show(head, R24_ARCHIVE), show(base, 'site.zip'),
+            {path: show(base, path) for path in R24_TRUSTED_INPUTS},
+        )
+        print('verify-pages-release PASS: exact R2.4 same-route update/rollback; old pages unchanged')
+    elif changed == {R24_ARCHIVE, '.github/workflows/pages.yml'}:
         archive_at_head = subprocess.check_output(
             ['git', 'ls-tree', '--name-only', head, '--', R24_ARCHIVE], text=True).strip()
         if archive_at_head == R24_ARCHIVE:

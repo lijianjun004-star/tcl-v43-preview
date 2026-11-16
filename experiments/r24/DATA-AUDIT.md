@@ -40,3 +40,11 @@
 导入模块24项针对性文件用例、既有库型号区分检查通过；正常6种格式/异常15种文件及完整Office生成器兼容回归通过。导入模块哈希在这些测试后未再变化；完整Office脚本记录当时app为25e158ca版本，不冒充最后提交守卫改动后重跑。
 
 冻结版本：`r24-data-fix-20261116`；静态ZIP SHA-256：`621456a7a1b89a7183aa6babf00711a627f1959a3f880e086920886bf2688764`。相对上一版只变更app、parser、qa-import、manifest四个资源，保持21文件布局。发布和公网验证结果另见同目录证据的release/public记录。
+
+## 已发布与公网复核
+
+CI [PR110](https://github.com/lijianjun004-star/tcl-v43-preview/pull/110) 与发布 [PR111](https://github.com/lijianjun004-star/tcl-v43-preview/pull/111) 均通过精确提交的可信检查并合并；发布提交 `77a219f4c29c0597a435dc72578d58394cbbf45d`，[Pages运行43934188599](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43934188599) 成功。
+
+入口保持 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。69项发布门禁、真实新旧版本更新及逆向回滚通过，旧195个资源逐字节保留。公网两次读取各有1项HTTP503，失败原件保留；合并两次实际HTTP200及匹配哈希证据后，216项全部核对成功，不把两次读取写成单轮全成功。随后真实上线Chromium文字练播→复盘→刷新恢复PASS，零页面错误、零模型及外部请求；不等同真实手机验收。
+
+完整源码、测试和本报告所指的证据目录在[源码分支](https://github.com/lijianjun004-star/tcl-v43-preview/tree/fix/r24-delivery-20261116)，产品修复提交 `3385e45c23640bbb5be240a45fa0fdd286cd1c2a`。main保留实际发行归档和可信发布工具；后续源码记录同步main门禁版本。旧Gemini输入对应b086a0c5，不可拿旧输入代替当前88b3ce2a源码复验。

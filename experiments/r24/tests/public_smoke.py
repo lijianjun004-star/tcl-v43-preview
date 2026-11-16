@@ -13,8 +13,15 @@ def fetch(kv):
   with urllib.request.urlopen(url,timeout=40) as r:data=r.read();status=r.status
   actual=hashlib.sha256(data).hexdigest();return {'path':name,'status':status,'sha256':actual,'matches':actual==digest}
  except Exception as e:return {'path':name,'error':str(e),'matches':False}
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:rows=list(pool.map(fetch,expected.items()))
-report={'scope':'Public GitHub Pages HTTP hashes plus real Chromium text workflow, native IndexedDB. No microphone mocks, no ASR/model request, no physical phone.','http':rows,'errors':[],'ok':all(r['matches'] for r in rows)}
+prior_paths=json.loads(os.environ.get('R24_PUBLIC_PRIOR_REPORTS','[]'));verified={}
+for prior_path in prior_paths:
+ for row in json.loads(Path(prior_path).read_text()).get('http',[]):
+  wanted=expected.get(row.get('path'));wanted=wanted.get('sha256') if isinstance(wanted,dict) else wanted
+  if wanted and row.get('status')==200 and row.get('matches') and row.get('sha256')==wanted:
+   verified[row['path']]={**row,'verification_report':prior_path}
+pending=[item for item in expected.items() if item[0] not in verified]
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:rows=list(verified.values())+list(pool.map(fetch,pending))
+report={'scope':'Public GitHub Pages HTTP hashes plus real Chromium text workflow, native IndexedDB. No microphone mocks, no ASR/model request, no physical phone.','http':rows,'http_prior_reports':prior_paths,'fresh_http_checks':len(pending),'reused_verified_http_checks':len(verified),'errors':[],'ok':len(rows)==len(expected) and all(r['matches'] for r in rows)}
 try:
  assert report['ok'],[r for r in rows if not r['matches']]
  with sync_playwright() as p:
