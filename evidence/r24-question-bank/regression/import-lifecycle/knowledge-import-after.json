@@ -1,0 +1,19 @@
+{
+  "mode": "Chromium UI handlers + real IndexedDB with synthetic CSV, delayed File read for navigation race",
+  "checks": {
+    "context_change_invalidates_preview": true,
+    "file_change_invalidates_preview": true,
+    "double_save_row_count": 1,
+    "late_parse_page_errors": [],
+    "late_parse_stays_home": true,
+    "aborted_batch_rows": 0,
+    "retry_batch_rows": 2
+  },
+  "double_save_errors": [],
+  "atomic_batch_errors": [],
+  "browser": "156.0.8078.79",
+  "status": "PASS",
+  "app_sha256": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "app_sha256_after": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "source_unchanged": true
+}

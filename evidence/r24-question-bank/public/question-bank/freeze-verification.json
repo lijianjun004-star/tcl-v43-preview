@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "expected_frozen_hashes": {
+    "app.js": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "checks": 31,
+  "all_checks_passed": true,
+  "page_errors": [],
+  "not_completed": [],
+  "source_hashes_match_frozen": true,
+  "source_hashes_after_match_frozen": true,
+  "result_sha256": "221d124105b3b094ac2eeb6996d025c9bbc684bc4350ddadba62a0d7b8f448fd",
+  "test_script_sha256": "dcf364d59a2fd03e24b761ebfb3bb723ee1c97655dee34344e90ffdbe9af2392",
+  "transport_note": "Initial attempt failed before any check because Node APIRequestContext selected unreachable IPv6. Hash fetch transport was changed to urllib using the environment HTTPS proxy; product code and hash assertions were unchanged."
+}

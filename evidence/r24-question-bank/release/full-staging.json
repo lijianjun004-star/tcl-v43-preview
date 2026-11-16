@@ -1,0 +1,32 @@
+{
+  "base": "a9ccbb235235ed2bea1e11da30a99d42b960b490",
+  "verified_at_utc": "2026-11-16T19:38:12.006796+00:00",
+  "old_archive_b64_sha256": "7bb350cdb4d909ed562fe9b734bc93867f56e7c01f2735c0bb5345381a7b7925",
+  "new_archive_b64_sha256": "5e72a5789ec67a1812827575419f8b65a4b009ba864041c934cd32fc3d3f7238",
+  "workflow_sha256": "e69778fb93e39cd241f9f7fe8c4a8e714d330b5b8d2310605f5aff98130aaf14",
+  "zip_sha256": "099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e",
+  "final_pages_tree": "/workspace/scratch/r24-question-final-pages-d090543e3bdd",
+  "final_asset_count": 216,
+  "old_asset_count": 195,
+  "update": {
+    "direction": "update",
+    "protected_assets": 195,
+    "total_assets": 216,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/lib/qa-import.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json"
+    ]
+  },
+  "rollback": {
+    "direction": "rollback",
+    "protected_assets": 195,
+    "total_assets": 216,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/lib/qa-import.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json"
+    ]
+  },
+  "status": "PASS"
+}

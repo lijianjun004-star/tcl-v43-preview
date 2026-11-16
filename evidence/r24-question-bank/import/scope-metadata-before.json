@@ -1,0 +1,121 @@
+{
+  "mode": "Node, synthetic cases against module bdab8423",
+  "cases": [
+    {
+      "name": "all-vs-jd",
+      "rows": [
+        {
+          "question": "支持什么功能？",
+          "answer": "不支持 A",
+          "reviewStatus": "needs_review"
+        }
+      ],
+      "counts": {
+        "dup": 0,
+        "conflict": 0
+      }
+    },
+    {
+      "name": "category-vs-board",
+      "rows": [
+        {
+          "question": "支持什么功能？",
+          "answer": "不支持 A",
+          "reviewStatus": "needs_review"
+        }
+      ],
+      "counts": {
+        "dup": 0,
+        "conflict": 0
+      }
+    },
+    {
+      "name": "board-vs-category",
+      "rows": [
+        {
+          "question": "支持什么功能？",
+          "answer": "不支持 A",
+          "reviewStatus": "needs_review"
+        }
+      ],
+      "counts": {
+        "dup": 0,
+        "conflict": 0
+      }
+    },
+    {
+      "name": "jd-tmall-vs-jd",
+      "rows": [
+        {
+          "question": "支持什么功能？",
+          "answer": "不支持 A",
+          "reviewStatus": "needs_review"
+        }
+      ],
+      "counts": {
+        "dup": 0,
+        "conflict": 0
+      }
+    },
+    {
+      "name": "unsafe-sku",
+      "value": [
+        {
+          "question": "支持什么功能？",
+          "answer": "以资料为准",
+          "keyPoints": [],
+          "model": "",
+          "sku": "9007199254740992",
+          "category": "",
+          "platform": "",
+          "sourceRef": "",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "name": "source-path-case",
+      "value": [
+        {
+          "question": "支持什么功能？",
+          "answer": "以资料为准",
+          "keyPoints": [],
+          "model": "",
+          "sku": "",
+          "category": "",
+          "platform": "",
+          "sourceRef": "https://example.test/A",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "name": "blank-source",
+      "value": [
+        {
+          "question": "支持什么功能？",
+          "answer": "以资料为准",
+          "keyPoints": [],
+          "model": "",
+          "sku": "",
+          "category": "",
+          "platform": "",
+          "sourceRef": "",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    }
+  ]
+}

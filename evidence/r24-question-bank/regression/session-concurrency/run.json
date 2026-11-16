@@ -1,0 +1,26 @@
+{
+  "command": [
+    "python",
+    "experiments/r24/tests/session_concurrency.py"
+  ],
+  "exit_code": 0,
+  "seconds": 22.233,
+  "app_sha256_before": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "app_sha256_after": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "source_unchanged": true,
+  "ok": true,
+  "checks": [
+    "different_question_conflict_atomic_and_unsaved_export",
+    "stale_conflicted_tab_cannot_submit_to_operator",
+    "same_question_conflict_rejected",
+    "stale_pagehide_does_not_overwrite",
+    "restore_reads_latest_metadata_not_cached_card",
+    "same_tab_rapid_saves_serialized_without_conflict",
+    "quota_aborts_records_and_checkpoint_together",
+    "retry_after_failed_transaction_uses_previous_token",
+    "old_run_cannot_replace_new_run_or_update_records",
+    "legacy_checkpoint_read_and_token_upgrade"
+  ],
+  "errors": [],
+  "exception": null
+}

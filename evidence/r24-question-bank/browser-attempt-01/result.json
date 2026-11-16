@@ -1,0 +1,33 @@
+{
+  "fixture_kind": "artificial fixtures; not TCL approved operating material",
+  "method": "real desktop Chromium UI and native IndexedDB; text-only training",
+  "checks": {
+    "json_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    }
+  },
+  "fixtures": [
+    {
+      "file": "synthetic-metadata.json",
+      "sha256": "14c6efafebbf65d666ac824ef2998c6208050cffedfbfc0c5e9b33a72759eb69",
+      "kind": "artificial test data"
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "No Gemini review",
+    "No physical mobile-device or speech-model test",
+    "Synthetic records do not validate actual product facts or private operating documents"
+  ],
+  "url": "http://127.0.0.1:39197/tcl-v352-asr-r24-qa/",
+  "browser": "156.0.8078.79",
+  "source_hashes": {
+    "app.js": "9ec4933b01f5de01f04735434a8ccd92d111f64c668236049f35d69c367ed620",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "bdab842328e276aa63d84f8acb91c8d91bac9631408471d723372f6b5fb58fff"
+  },
+  "status": "FAIL",
+  "exception": "",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank.py\", line 283, in <module>\n    open_training(anchor, '抖音', 1)\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank.py\", line 159, in open_training\n    assert page.locator('#questionCount').text_content() == str(expected_count)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+}

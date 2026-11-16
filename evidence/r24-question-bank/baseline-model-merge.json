@@ -1,0 +1,19 @@
+{
+  "source_commit": "c342525",
+  "module_sha256": "bde9f1702b8d0975f4dc45e02eb2bf988bd318d3844a6a7d7e2467c39ec605c0",
+  "scope": "Actual baseline extraction module; manually constructed two-model table, no business data",
+  "expected_rows": 2,
+  "actual_rows": 1,
+  "actual": [
+    {
+      "question": "这款怎么安装？",
+      "answer": "【话术1】人工A参考答案\n\n【话术2】人工B参考答案",
+      "keyPoints": [],
+      "intent": "",
+      "danmuType": "",
+      "locator": "CSV 第2行",
+      "reviewStatus": "needs_review"
+    }
+  ],
+  "problem_reproduced": true
+}

@@ -1,0 +1,26 @@
+{
+  "command": [
+    "python",
+    "experiments/r24/tests/session_recovery.py"
+  ],
+  "exit_code": 0,
+  "seconds": 24.42,
+  "app_sha256_before": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+  "app_sha256_after": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+  "source_unchanged": true,
+  "ok": true,
+  "checks": [
+    "two_audio_and_video_committed",
+    "other_name_does_not_offer_media",
+    "reload_same_name_restores_exact_blobs",
+    "manual_clear_and_audio_players_restored",
+    "video_player_restored",
+    "quota_failure_visible_previous_checkpoint_intact",
+    "explicit_retry_persists_new_answer",
+    "manual_clear_kept_in_record_and_submission",
+    "text_only_workflow_and_reload_without_model",
+    "interrupted_run_restores_stopped_question_not_active_video"
+  ],
+  "errors": [],
+  "exception": null
+}

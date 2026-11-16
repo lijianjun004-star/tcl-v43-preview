@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "experiments/r24/tests/manual-clear-regression.cjs"
+  ],
+  "exit_code": 0,
+  "seconds": 0.066,
+  "app_sha256_before": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "app_sha256_after": "feb88adc69674a3eca911d5e8d1bef67c503462146b9ea86f8c7ce7d8eb49a5c",
+  "source_unchanged": true
+}

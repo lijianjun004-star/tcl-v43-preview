@@ -1,0 +1,1339 @@
+{
+  "fixture_kind": "artificial fixtures; not TCL approved operating material",
+  "method": "real desktop Chromium UI and native IndexedDB; text-only training",
+  "checks": {
+    "json_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "json_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "csv_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "csv_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "docx_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "docx_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "xlsx_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "xlsx_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "download_template_explicit_example_and_metadata": {
+      "pass": true,
+      "detail": "型号,SKU,品类,平台,来源,弹幕类型,弹幕内容,消费者意图分析,案例话术1\nTCL Q10L（人工示例）,DEMO-Q10L,TCL 电视,京东,人工填写示例：请替换为已核验资料,产品咨询,这款电视的接口信息在哪里核实？,了解连接设备的兼容性,人工示例：请先核对该型号官方参数表与连接设备需求，本行未提供真实接口规格\n"
+    },
+    "same_question_models_skus_platforms_not_merged": {
+      "pass": true,
+      "detail": [
+        {
+          "question": "安装服务应该如何预约？",
+          "model": "QA-GENERIC",
+          "sku": "SKU-SERVICE",
+          "platform": "天猫",
+          "answer": "人工构造答案 有型号通用问题"
+        },
+        {
+          "question": "售后安装如何预约？",
+          "model": "",
+          "sku": "",
+          "platform": "天猫",
+          "answer": "人工构造答案 通用售后"
+        },
+        {
+          "question": "这款电视的接口如何核对？",
+          "model": "QA-A",
+          "sku": "SKU-A",
+          "platform": "抖音",
+          "answer": "人工构造答案 抖音专用"
+        },
+        {
+          "question": "这款电视的接口如何核对？",
+          "model": "QA-A",
+          "sku": "SKU-B",
+          "platform": "京东",
+          "answer": "人工构造答案 A-B"
+        },
+        {
+          "question": "这台 QA42C 的接口如何核对？",
+          "model": "",
+          "sku": "",
+          "platform": "天猫",
+          "answer": "人工构造答案 题内已有型号"
+        },
+        {
+          "question": "这款电视的接口如何核对？",
+          "model": "QA-A",
+          "sku": "SKU-A",
+          "platform": "京东",
+          "answer": "【话术1】人工构造答案 A-A 一\n\n【话术2】人工构造答案 A-A 二"
+        },
+        {
+          "question": "售后服务的入口在哪里？",
+          "model": "",
+          "sku": "SKU-GENERIC",
+          "platform": "天猫",
+          "answer": "人工构造答案 仅SKU通用问题"
+        },
+        {
+          "question": "这台电视的功能如何核对？",
+          "model": "",
+          "sku": "",
+          "platform": "京东",
+          "answer": "人工构造答案 审核补型号"
+        },
+        {
+          "question": "这款电视的接口如何核对？",
+          "model": "QA-B",
+          "sku": "SKU-A",
+          "platform": "京东",
+          "answer": "人工构造答案 B-A"
+        },
+        {
+          "question": "空调安装的要求是什么？",
+          "model": "",
+          "sku": "",
+          "platform": "京东",
+          "answer": ""
+        }
+      ]
+    },
+    "same_identity_merges_variants_and_preserves_both_locations": {
+      "pass": true,
+      "detail": {
+        "id": "810b919a-a776-4e9f-9dba-854e15632c54",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "scope": "board",
+        "platform": "京东",
+        "model": "QA-A",
+        "sku": "SKU-A",
+        "sourceRef": "人工构造来源-首行\n人工构造来源-续行",
+        "sourceLocators": [
+          "表格第2行",
+          "表格第3行"
+        ],
+        "question": "这款电视的接口如何核对？",
+        "answer": "【话术1】人工构造答案 A-A 一\n\n【话术2】人工构造答案 A-A 二",
+        "keyPoints": [],
+        "intent": "",
+        "danmuType": "人工构造",
+        "source": "导入资料 · 表格第2行",
+        "reviewStatus": "needs_review",
+        "status": "draft",
+        "kind": "uploaded",
+        "createdAt": "2026-11-16T19:49:51.522Z"
+      }
+    },
+    "drafts_do_not_replace_seed_examples": {
+      "pass": true,
+      "detail": {
+        "id": "bedd9e70-1201-450c-9b4d-9e076da67f7e",
+        "runId": "8fc7d4b1-7326-420a-b7b3-5a63f59c2845",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "questionId": "seed-01-0",
+        "question": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "referenceAnswer": "",
+        "source": "16板块研究底稿 · 教学示例（不作为正式标准答案）",
+        "kind": "seed",
+        "model": "",
+        "sku": "",
+        "sourceRef": "",
+        "sourceLocators": [],
+        "prompt": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "trainingHint": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "stage": "需求问诊",
+        "variantId": "seed-question",
+        "keyPoints": [
+          "观看用途",
+          "观看距离与空间",
+          "预算范围",
+          "安装/服务条件"
+        ],
+        "pointKeywords": [
+          [
+            "看电影",
+            "体育",
+            "游戏",
+            "观看用途",
+            "用途"
+          ],
+          [
+            "观看距离",
+            "客厅大小",
+            "空间",
+            "尺寸",
+            "墙面"
+          ],
+          [
+            "预算",
+            "价位",
+            "价格范围"
+          ],
+          [
+            "安装",
+            "挂墙",
+            "底座",
+            "送装",
+            "服务"
+          ]
+        ],
+        "responseSeconds": 0.2,
+        "durationSeconds": null,
+        "createdAt": "2026-11-16T19:49:52.176Z",
+        "shownAt": 572.0999999977648,
+        "transcript": "",
+        "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+        "autoCapture": false,
+        "asrStatus": "手动填写（草稿已存）",
+        "pointsHit": [],
+        "compliance": [],
+        "manualCleared": false,
+        "manualEdited": true
+      }
+    },
+    "seed_question_matches_original_training_point": {
+      "pass": true,
+      "detail": {
+        "id": "bedd9e70-1201-450c-9b4d-9e076da67f7e",
+        "runId": "8fc7d4b1-7326-420a-b7b3-5a63f59c2845",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "questionId": "seed-01-0",
+        "question": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "referenceAnswer": "",
+        "source": "16板块研究底稿 · 教学示例（不作为正式标准答案）",
+        "kind": "seed",
+        "model": "",
+        "sku": "",
+        "sourceRef": "",
+        "sourceLocators": [],
+        "prompt": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "trainingHint": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "stage": "需求问诊",
+        "variantId": "seed-question",
+        "keyPoints": [
+          "观看用途",
+          "观看距离与空间",
+          "预算范围",
+          "安装/服务条件"
+        ],
+        "pointKeywords": [
+          [
+            "看电影",
+            "体育",
+            "游戏",
+            "观看用途",
+            "用途"
+          ],
+          [
+            "观看距离",
+            "客厅大小",
+            "空间",
+            "尺寸",
+            "墙面"
+          ],
+          [
+            "预算",
+            "价位",
+            "价格范围"
+          ],
+          [
+            "安装",
+            "挂墙",
+            "底座",
+            "送装",
+            "服务"
+          ]
+        ],
+        "responseSeconds": 0.2,
+        "durationSeconds": null,
+        "createdAt": "2026-11-16T19:49:52.176Z",
+        "shownAt": 572.0999999977648,
+        "transcript": "",
+        "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+        "autoCapture": false,
+        "asrStatus": "手动填写（草稿已存）",
+        "pointsHit": [],
+        "compliance": [],
+        "manualCleared": false,
+        "manualEdited": true
+      }
+    },
+    "review_can_supply_ambiguous_missing_model": {
+      "pass": true,
+      "detail": {
+        "id": "c4fed3f7-e02f-4d53-9144-d307e3747396",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "scope": "board",
+        "platform": "京东",
+        "model": "QA-REVIEW",
+        "sku": "",
+        "sourceRef": "人工构造来源-主表",
+        "sourceLocators": [
+          "表格第11行"
+        ],
+        "question": "这台电视的功能如何核对？",
+        "answer": "人工构造答案 审核补型号",
+        "keyPoints": [],
+        "intent": "",
+        "danmuType": "人工构造",
+        "source": "导入资料 · 表格第11行",
+        "reviewStatus": "reviewed-demo",
+        "status": "published",
+        "kind": "uploaded",
+        "createdAt": "2026-11-16T19:49:51.522Z",
+        "publishedAt": "2026-11-16T19:49:54.686Z"
+      }
+    },
+    "generic_and_question_embedded_model_allow_blank_model": {
+      "pass": true,
+      "detail": null
+    },
+    "missing_answer_stays_unpublished": {
+      "pass": true,
+      "detail": {
+        "id": "eefb797a-98e4-4ba4-8612-a2302df705a0",
+        "boardId": "03",
+        "category": "TCL 空调",
+        "scope": "board",
+        "platform": "京东",
+        "model": "",
+        "sku": "",
+        "sourceRef": "人工构造来源-主表",
+        "sourceLocators": [
+          "表格第12行"
+        ],
+        "question": "空调安装的要求是什么？",
+        "answer": "",
+        "keyPoints": [],
+        "intent": "",
+        "danmuType": "人工构造",
+        "source": "导入资料 · 表格第12行",
+        "reviewStatus": "incomplete",
+        "status": "draft",
+        "kind": "uploaded",
+        "createdAt": "2026-11-16T19:49:51.522Z"
+      }
+    },
+    "home_uses_same_reviewed_pool_count": {
+      "pass": true,
+      "detail": null
+    },
+    "frozen_pool_full_round_has_no_repeat_or_seed": {
+      "pass": true,
+      "detail": [
+        {
+          "id": "03308c8c-50ab-4aee-bcce-94838eca96aa",
+          "runId": "b8c8b1bf-3918-461b-981d-f657908c3539",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "7841f8a8-e003-4b3c-be70-475cd3e59258",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造答案 A-B",
+          "source": "导入资料 · 表格第4行",
+          "kind": "uploaded",
+          "model": "QA-A",
+          "sku": "SKU-B",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第4行"
+          ],
+          "prompt": "关于「QA-A」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.3,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:49:55.542Z",
+          "shownAt": 526.3999999985099,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "734b2e47-1766-46e8-8239-7b529b6323b4",
+          "runId": "b8c8b1bf-3918-461b-981d-f657908c3539",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "c4fed3f7-e02f-4d53-9144-d307e3747396",
+          "question": "这台电视的功能如何核对？",
+          "referenceAnswer": "人工构造答案 审核补型号",
+          "source": "导入资料 · 表格第11行",
+          "kind": "uploaded",
+          "model": "QA-REVIEW",
+          "sku": "",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第11行"
+          ],
+          "prompt": "关于「QA-REVIEW」：这台电视的功能如何核对？",
+          "trainingHint": "这台电视的功能如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:00.356Z",
+          "shownAt": 5340.300000000745,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "7d26be0a-9699-43b9-b997-3085829487fd",
+          "runId": "b8c8b1bf-3918-461b-981d-f657908c3539",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "810b919a-a776-4e9f-9dba-854e15632c54",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "【话术1】人工构造答案 A-A 一\n\n【话术2】人工构造答案 A-A 二",
+          "source": "导入资料 · 表格第2行",
+          "kind": "uploaded",
+          "model": "QA-A",
+          "sku": "SKU-A",
+          "sourceRef": "人工构造来源-首行\n人工构造来源-续行",
+          "sourceLocators": [
+            "表格第2行",
+            "表格第3行"
+          ],
+          "prompt": "关于「QA-A」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:01.404Z",
+          "shownAt": 6388.199999999255,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "372a97fe-818f-458c-8b30-2c459178c573",
+          "runId": "b8c8b1bf-3918-461b-981d-f657908c3539",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "e15a2845-f3c8-4c11-b42a-e4e3f3535f83",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造答案 B-A",
+          "source": "导入资料 · 表格第5行",
+          "kind": "uploaded",
+          "model": "QA-B",
+          "sku": "SKU-A",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第5行"
+          ],
+          "prompt": "关于「QA-B」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:02.521Z",
+          "shownAt": 7505.300000000745,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        }
+      ]
+    },
+    "frozen_pool_does_not_grow_on_next_round": {
+      "pass": true,
+      "detail": null
+    },
+    "review_keeps_original_model_reference_source": {
+      "pass": true,
+      "detail": null
+    },
+    "restored_session_reference_snapshot_does_not_drift": {
+      "pass": true,
+      "detail": null
+    },
+    "restored_review_displays_snapshot_not_current_library": {
+      "pass": true,
+      "detail": null
+    },
+    "submission_preserves_same_question_metadata_snapshot": {
+      "pass": true,
+      "detail": null
+    },
+    "durable_records_preserve_same_reference_snapshot": {
+      "pass": true,
+      "detail": null
+    },
+    "抖音_platform_isolation_and_generic_question_text": {
+      "pass": true,
+      "detail": [
+        {
+          "id": "1e3ec8d0-b475-4c08-bada-60d65ce974be",
+          "runId": "f11d431f-4e86-415e-8bc5-d8756e714707",
+          "boardId": "02",
+          "category": "TCL 电视",
+          "platform": "抖音",
+          "questionId": "64038d6a-0b6b-4fa0-9b40-d55a0bd24815",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造答案 抖音专用",
+          "source": "导入资料 · 表格第6行",
+          "kind": "uploaded",
+          "model": "QA-A",
+          "sku": "SKU-A",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第6行"
+          ],
+          "prompt": "关于「QA-A」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.3,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:07.158Z",
+          "shownAt": 702.4000000022352,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        }
+      ]
+    },
+    "天猫_platform_isolation_and_generic_question_text": {
+      "pass": true,
+      "detail": [
+        {
+          "id": "6aac6992-b32b-4fd9-b415-84fdc9dee6b5",
+          "runId": "b5b15992-62aa-48ad-89d8-f814471c8303",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "questionId": "b62338d9-38b7-47a1-b72b-a478ef98d580",
+          "question": "售后服务的入口在哪里？",
+          "referenceAnswer": "人工构造答案 仅SKU通用问题",
+          "source": "导入资料 · 表格第8行",
+          "kind": "uploaded",
+          "model": "",
+          "sku": "SKU-GENERIC",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第8行"
+          ],
+          "prompt": "售后服务的入口在哪里？",
+          "trainingHint": "售后服务的入口在哪里？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:08.240Z",
+          "shownAt": 551.1999999992549,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "df4bd83b-e7f2-442a-978d-0356ffe997c1",
+          "runId": "b5b15992-62aa-48ad-89d8-f814471c8303",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "questionId": "32762cb2-2883-4e7a-a1cd-5cc39fb35048",
+          "question": "售后安装如何预约？",
+          "referenceAnswer": "人工构造答案 通用售后",
+          "source": "导入资料 · 表格第7行",
+          "kind": "uploaded",
+          "model": "",
+          "sku": "",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第7行"
+          ],
+          "prompt": "售后安装如何预约？",
+          "trainingHint": "售后安装如何预约？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:09.305Z",
+          "shownAt": 1616.2999999970198,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "7d0091d3-2758-46e9-92cf-f552663aa930",
+          "runId": "b5b15992-62aa-48ad-89d8-f814471c8303",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "questionId": "31ca7cb0-aae6-495c-888b-43712bd86ff7",
+          "question": "安装服务应该如何预约？",
+          "referenceAnswer": "人工构造答案 有型号通用问题",
+          "source": "导入资料 · 表格第9行",
+          "kind": "uploaded",
+          "model": "QA-GENERIC",
+          "sku": "SKU-SERVICE",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第9行"
+          ],
+          "prompt": "关于「QA-GENERIC」：安装服务应该如何预约？",
+          "trainingHint": "安装服务应该如何预约？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:10.337Z",
+          "shownAt": 2648.699999999255,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "76196347-548d-4d6c-9da6-873e33d54761",
+          "runId": "b5b15992-62aa-48ad-89d8-f814471c8303",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "questionId": "7f3e5cf2-bb8b-4f2c-a351-5b67004faac9",
+          "question": "这台 QA42C 的接口如何核对？",
+          "referenceAnswer": "人工构造答案 题内已有型号",
+          "source": "导入资料 · 表格第10行",
+          "kind": "uploaded",
+          "model": "",
+          "sku": "",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第10行"
+          ],
+          "prompt": "这台 QA42C 的接口如何核对？",
+          "trainingHint": "这台 QA42C 的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:11.371Z",
+          "shownAt": 3682,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        }
+      ]
+    },
+    "missing_answer_other_category_uses_labelled_seed": {
+      "pass": true,
+      "detail": {
+        "id": "95ff518c-ec04-4638-9d09-532a96bcc91f",
+        "runId": "177a9e72-3c4d-483f-bfb1-48032d2fc894",
+        "boardId": "03",
+        "category": "TCL 空调",
+        "platform": "京东",
+        "questionId": "seed-03-1",
+        "question": "这类空调主要看哪些选择点？请把制冷制热、能效耗电、舒适体验和参数证据讲清楚。",
+        "referenceAnswer": "",
+        "source": "16板块研究底稿 · 教学示例（不作为正式标准答案）",
+        "kind": "seed",
+        "model": "",
+        "sku": "",
+        "sourceRef": "",
+        "sourceLocators": [],
+        "prompt": "这类空调主要看哪些选择点？请把制冷制热、能效耗电、舒适体验和参数证据讲清楚。",
+        "trainingHint": "这类空调主要看哪些选择点？请把制冷制热、能效耗电、舒适体验和参数证据讲清楚。",
+        "stage": "产品讲解",
+        "variantId": "seed-question",
+        "keyPoints": [
+          "制冷/制热需求",
+          "能效与耗电说明",
+          "舒适风/噪声体验",
+          "参数以商品页为准"
+        ],
+        "pointKeywords": [
+          [
+            "制冷",
+            "制热",
+            "冷暖",
+            "使用需求"
+          ],
+          [
+            "能效",
+            "耗电",
+            "省电",
+            "电费"
+          ],
+          [
+            "舒适风",
+            "风感",
+            "噪声",
+            "静音",
+            "体验"
+          ],
+          [
+            "官方参数",
+            "商品页",
+            "页面参数",
+            "以页面为准"
+          ]
+        ],
+        "responseSeconds": 0.2,
+        "durationSeconds": null,
+        "createdAt": "2026-11-16T19:50:12.393Z",
+        "shownAt": 535.5,
+        "transcript": "",
+        "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+        "autoCapture": false,
+        "asrStatus": "手动填写（草稿已存）",
+        "pointsHit": [],
+        "compliance": [],
+        "manualCleared": false,
+        "manualEdited": true
+      }
+    },
+    "new_session_reads_latest_reviewed_pool": {
+      "pass": true,
+      "detail": [
+        {
+          "id": "49fe09af-328a-4c7e-81d8-2936de8c0a69",
+          "runId": "c4196a14-d00c-467f-a6b1-ad779b56c851",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "c4fed3f7-e02f-4d53-9144-d307e3747396",
+          "question": "这台电视的功能如何核对？",
+          "referenceAnswer": "人工构造后续修订，不得改写旧场次",
+          "source": "导入资料 · 表格第11行",
+          "kind": "uploaded",
+          "model": "QA-CHANGED",
+          "sku": "",
+          "sourceRef": "人工构造后续来源",
+          "sourceLocators": [
+            "表格第11行"
+          ],
+          "prompt": "关于「QA-CHANGED」：这台电视的功能如何核对？",
+          "trainingHint": "这台电视的功能如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:13.441Z",
+          "shownAt": 560.6999999992549,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "dd5c1a50-5587-4680-8207-b148d947e9d3",
+          "runId": "c4196a14-d00c-467f-a6b1-ad779b56c851",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "7841f8a8-e003-4b3c-be70-475cd3e59258",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造后续修订，不得改写旧场次",
+          "source": "导入资料 · 表格第4行",
+          "kind": "uploaded",
+          "model": "QA-CHANGED",
+          "sku": "SKU-B",
+          "sourceRef": "人工构造后续来源",
+          "sourceLocators": [
+            "表格第4行"
+          ],
+          "prompt": "关于「QA-CHANGED」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:14.538Z",
+          "shownAt": 1658.1000000014901,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "f28100e0-6b9b-4500-85a2-98fca3816315",
+          "runId": "c4196a14-d00c-467f-a6b1-ad779b56c851",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "8579ae91-eacc-452c-bbd9-8c55a4acea9e",
+          "question": "新增题目如何核对？",
+          "referenceAnswer": "人工构造答案 会话后新增",
+          "source": "导入资料 · 表格第2行",
+          "kind": "uploaded",
+          "model": "QA-NEW",
+          "sku": "SKU-NEW",
+          "sourceRef": "人工构造来源-主表",
+          "sourceLocators": [
+            "表格第2行"
+          ],
+          "prompt": "关于「QA-NEW」：新增题目如何核对？",
+          "trainingHint": "新增题目如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:15.587Z",
+          "shownAt": 2706.800000000745,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "fa686710-5fb1-4339-b7de-5fbfd85006ae",
+          "runId": "c4196a14-d00c-467f-a6b1-ad779b56c851",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "810b919a-a776-4e9f-9dba-854e15632c54",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造后续修订，不得改写旧场次",
+          "source": "导入资料 · 表格第2行",
+          "kind": "uploaded",
+          "model": "QA-CHANGED",
+          "sku": "SKU-A",
+          "sourceRef": "人工构造后续来源",
+          "sourceLocators": [
+            "表格第2行",
+            "表格第3行"
+          ],
+          "prompt": "关于「QA-CHANGED」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:16.622Z",
+          "shownAt": 3741.800000000745,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        },
+        {
+          "id": "0f004117-00c6-44f1-b0c8-a01f0ca0f3a3",
+          "runId": "c4196a14-d00c-467f-a6b1-ad779b56c851",
+          "boardId": "01",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "questionId": "e15a2845-f3c8-4c11-b42a-e4e3f3535f83",
+          "question": "这款电视的接口如何核对？",
+          "referenceAnswer": "人工构造后续修订，不得改写旧场次",
+          "source": "导入资料 · 表格第5行",
+          "kind": "uploaded",
+          "model": "QA-CHANGED",
+          "sku": "SKU-A",
+          "sourceRef": "人工构造后续来源",
+          "sourceLocators": [
+            "表格第5行"
+          ],
+          "prompt": "关于「QA-CHANGED」：这款电视的接口如何核对？",
+          "trainingHint": "这款电视的接口如何核对？",
+          "stage": "",
+          "variantId": "reviewed-question",
+          "keyPoints": [],
+          "pointKeywords": [],
+          "responseSeconds": 0.2,
+          "durationSeconds": null,
+          "createdAt": "2026-11-16T19:50:17.671Z",
+          "shownAt": 4790.60000000149,
+          "transcript": "",
+          "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+          "autoCapture": false,
+          "asrStatus": "手动填写（草稿已存）",
+          "pointsHit": [],
+          "compliance": [],
+          "manualCleared": false,
+          "manualEdited": true
+        }
+      ]
+    },
+    "live_sku_context_exact_or_hidden_for_empty": {
+      "pass": true,
+      "detail": null
+    },
+    "no_application_page_errors": {
+      "pass": true,
+      "detail": []
+    },
+    "source_unchanged_during_acceptance": {
+      "pass": true,
+      "detail": null
+    }
+  },
+  "fixtures": [
+    {
+      "file": "synthetic-metadata.json",
+      "sha256": "14c6efafebbf65d666ac824ef2998c6208050cffedfbfc0c5e9b33a72759eb69",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.csv",
+      "sha256": "901fd8e24d6f38d736ef99aed3c35e6aa049455f1301334221377727dbfdfe67",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.docx",
+      "sha256": "c3530bf646b8d5179c53b10a1660d27e8c4d2c57a52fcf527250fb058d8a2bce",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.xlsx",
+      "sha256": "45b6e36d8c62979efd68abd23270837d881d0acf008d6324020e0ce249852a51",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-operating.csv",
+      "sha256": "1b219d2079088815e8b859e3657789d9e411994cd716fb1f7d6cd33baa6aa84d",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-later.csv",
+      "sha256": "b6e63d96ff80ea67fef4ba68615020365cb128c39a9fe6a5319a78bd22efef92",
+      "kind": "artificial test data"
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "No Gemini review",
+    "No physical mobile-device or speech-model test",
+    "Synthetic records do not validate actual product facts or private operating documents"
+  ],
+  "script_sha256": "dcf364d59a2fd03e24b761ebfb3bb723ee1c97655dee34344e90ffdbe9af2392",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/",
+  "browser": "156.0.8078.79",
+  "source_hashes": {
+    "app.js": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "sku_context_observations": [
+    {
+      "turnId": "3d400d35-1ee7-4d31-8633-e0fcdc3118b9",
+      "sku": "SKU-JSON",
+      "text": "商品 SKU（上下文）：SKU-JSON",
+      "visible": true
+    },
+    {
+      "turnId": "3043924f-fcff-4512-b113-6211bd8f836c",
+      "sku": "SKU-CSV",
+      "text": "商品 SKU（上下文）：SKU-CSV",
+      "visible": true
+    },
+    {
+      "turnId": "b9c3d84f-3322-46e4-9d81-6250724f7509",
+      "sku": "SKU-DOCX",
+      "text": "商品 SKU（上下文）：SKU-DOCX",
+      "visible": true
+    },
+    {
+      "turnId": "3be3d8e1-51ad-49e5-be0d-4e9470ac2ccb",
+      "sku": "SKU-XLSX",
+      "text": "商品 SKU（上下文）：SKU-XLSX",
+      "visible": true
+    },
+    {
+      "turnId": "bedd9e70-1201-450c-9b4d-9e076da67f7e",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "03308c8c-50ab-4aee-bcce-94838eca96aa",
+      "sku": "SKU-B",
+      "text": "商品 SKU（上下文）：SKU-B",
+      "visible": true
+    },
+    {
+      "turnId": "734b2e47-1766-46e8-8239-7b529b6323b4",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "7d26be0a-9699-43b9-b997-3085829487fd",
+      "sku": "SKU-A",
+      "text": "商品 SKU（上下文）：SKU-A",
+      "visible": true
+    },
+    {
+      "turnId": "372a97fe-818f-458c-8b30-2c459178c573",
+      "sku": "SKU-A",
+      "text": "商品 SKU（上下文）：SKU-A",
+      "visible": true
+    },
+    {
+      "turnId": "0ef17dc4-f252-4faf-bf14-6da04aff8485",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "1e3ec8d0-b475-4c08-bada-60d65ce974be",
+      "sku": "SKU-A",
+      "text": "商品 SKU（上下文）：SKU-A",
+      "visible": true
+    },
+    {
+      "turnId": "6aac6992-b32b-4fd9-b415-84fdc9dee6b5",
+      "sku": "SKU-GENERIC",
+      "text": "商品 SKU（上下文）：SKU-GENERIC",
+      "visible": true
+    },
+    {
+      "turnId": "df4bd83b-e7f2-442a-978d-0356ffe997c1",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "7d0091d3-2758-46e9-92cf-f552663aa930",
+      "sku": "SKU-SERVICE",
+      "text": "商品 SKU（上下文）：SKU-SERVICE",
+      "visible": true
+    },
+    {
+      "turnId": "76196347-548d-4d6c-9da6-873e33d54761",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "95ff518c-ec04-4638-9d09-532a96bcc91f",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "49fe09af-328a-4c7e-81d8-2936de8c0a69",
+      "sku": "",
+      "text": "",
+      "visible": false
+    },
+    {
+      "turnId": "dd5c1a50-5587-4680-8207-b148d947e9d3",
+      "sku": "SKU-B",
+      "text": "商品 SKU（上下文）：SKU-B",
+      "visible": true
+    },
+    {
+      "turnId": "f28100e0-6b9b-4500-85a2-98fca3816315",
+      "sku": "SKU-NEW",
+      "text": "商品 SKU（上下文）：SKU-NEW",
+      "visible": true
+    },
+    {
+      "turnId": "fa686710-5fb1-4339-b7de-5fbfd85006ae",
+      "sku": "SKU-A",
+      "text": "商品 SKU（上下文）：SKU-A",
+      "visible": true
+    },
+    {
+      "turnId": "0f004117-00c6-44f1-b0c8-a01f0ca0f3a3",
+      "sku": "SKU-A",
+      "text": "商品 SKU（上下文）：SKU-A",
+      "visible": true
+    }
+  ],
+  "synthetic_injection": "Only published items were edited in native IndexedDB after review; session/records/submissions were never injected.",
+  "record_sample": [
+    {
+      "id": "03308c8c-50ab-4aee-bcce-94838eca96aa",
+      "anchorName": "人工题库主流程主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "questionId": "7841f8a8-e003-4b3c-be70-475cd3e59258",
+      "question": "这款电视的接口如何核对？",
+      "referenceAnswer": "人工构造答案 A-B",
+      "source": "导入资料 · 表格第4行",
+      "kind": "uploaded",
+      "model": "QA-A",
+      "sku": "SKU-B",
+      "sourceRef": "人工构造来源-主表",
+      "sourceLocators": [
+        "表格第4行"
+      ],
+      "prompt": "关于「QA-A」：这款电视的接口如何核对？",
+      "trainingHint": "这款电视的接口如何核对？",
+      "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+      "transcript": "",
+      "rawTranscript": "",
+      "whisperCandidate": "",
+      "manualEdited": true,
+      "manualCleared": false,
+      "responseSeconds": 0.3,
+      "durationSeconds": null,
+      "compliance": [],
+      "matchedKeywords": 0,
+      "keywordTotal": 0,
+      "keyPoints": [],
+      "pointKeywords": [],
+      "asrStatus": "手动填写（草稿已存）",
+      "result": "训练记录（仅提示，未进行正式AI评分）",
+      "createdAt": "2026-11-16T19:49:55.542Z"
+    },
+    {
+      "id": "0ef17dc4-f252-4faf-bf14-6da04aff8485",
+      "anchorName": "人工题库主流程主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "questionId": "c4fed3f7-e02f-4d53-9144-d307e3747396",
+      "question": "这台电视的功能如何核对？",
+      "referenceAnswer": "人工构造答案 审核补型号",
+      "source": "导入资料 · 表格第11行",
+      "kind": "uploaded",
+      "model": "QA-REVIEW",
+      "sku": "",
+      "sourceRef": "人工构造来源-主表",
+      "sourceLocators": [
+        "表格第11行"
+      ],
+      "prompt": "关于「QA-REVIEW」：这台电视的功能如何核对？",
+      "trainingHint": "这台电视的功能如何核对？",
+      "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+      "transcript": "",
+      "rawTranscript": "",
+      "whisperCandidate": "",
+      "manualEdited": true,
+      "manualCleared": false,
+      "responseSeconds": 0.2,
+      "durationSeconds": null,
+      "compliance": [],
+      "matchedKeywords": 0,
+      "keywordTotal": 0,
+      "keyPoints": [],
+      "pointKeywords": [],
+      "asrStatus": "手动填写（草稿已存）",
+      "result": "训练记录（仅提示，未进行正式AI评分）",
+      "createdAt": "2026-11-16T19:50:03.655Z"
+    },
+    {
+      "id": "372a97fe-818f-458c-8b30-2c459178c573",
+      "anchorName": "人工题库主流程主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "questionId": "e15a2845-f3c8-4c11-b42a-e4e3f3535f83",
+      "question": "这款电视的接口如何核对？",
+      "referenceAnswer": "人工构造答案 B-A",
+      "source": "导入资料 · 表格第5行",
+      "kind": "uploaded",
+      "model": "QA-B",
+      "sku": "SKU-A",
+      "sourceRef": "人工构造来源-主表",
+      "sourceLocators": [
+        "表格第5行"
+      ],
+      "prompt": "关于「QA-B」：这款电视的接口如何核对？",
+      "trainingHint": "这款电视的接口如何核对？",
+      "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+      "transcript": "",
+      "rawTranscript": "",
+      "whisperCandidate": "",
+      "manualEdited": true,
+      "manualCleared": false,
+      "responseSeconds": 0.2,
+      "durationSeconds": null,
+      "compliance": [],
+      "matchedKeywords": 0,
+      "keywordTotal": 0,
+      "keyPoints": [],
+      "pointKeywords": [],
+      "asrStatus": "手动填写（草稿已存）",
+      "result": "训练记录（仅提示，未进行正式AI评分）",
+      "createdAt": "2026-11-16T19:50:02.521Z"
+    },
+    {
+      "id": "734b2e47-1766-46e8-8239-7b529b6323b4",
+      "anchorName": "人工题库主流程主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "questionId": "c4fed3f7-e02f-4d53-9144-d307e3747396",
+      "question": "这台电视的功能如何核对？",
+      "referenceAnswer": "人工构造答案 审核补型号",
+      "source": "导入资料 · 表格第11行",
+      "kind": "uploaded",
+      "model": "QA-REVIEW",
+      "sku": "",
+      "sourceRef": "人工构造来源-主表",
+      "sourceLocators": [
+        "表格第11行"
+      ],
+      "prompt": "关于「QA-REVIEW」：这台电视的功能如何核对？",
+      "trainingHint": "这台电视的功能如何核对？",
+      "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+      "transcript": "",
+      "rawTranscript": "",
+      "whisperCandidate": "",
+      "manualEdited": true,
+      "manualCleared": false,
+      "responseSeconds": 0.2,
+      "durationSeconds": null,
+      "compliance": [],
+      "matchedKeywords": 0,
+      "keywordTotal": 0,
+      "keyPoints": [],
+      "pointKeywords": [],
+      "asrStatus": "手动填写（草稿已存）",
+      "result": "训练记录（仅提示，未进行正式AI评分）",
+      "createdAt": "2026-11-16T19:50:00.356Z"
+    },
+    {
+      "id": "7d26be0a-9699-43b9-b997-3085829487fd",
+      "anchorName": "人工题库主流程主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "questionId": "810b919a-a776-4e9f-9dba-854e15632c54",
+      "question": "这款电视的接口如何核对？",
+      "referenceAnswer": "【话术1】人工构造答案 A-A 一\n\n【话术2】人工构造答案 A-A 二",
+      "source": "导入资料 · 表格第2行",
+      "kind": "uploaded",
+      "model": "QA-A",
+      "sku": "SKU-A",
+      "sourceRef": "人工构造来源-首行\n人工构造来源-续行",
+      "sourceLocators": [
+        "表格第2行",
+        "表格第3行"
+      ],
+      "prompt": "关于「QA-A」：这款电视的接口如何核对？",
+      "trainingHint": "这款电视的接口如何核对？",
+      "answer": "人工构造主播回答：已核对本条题目与参考资料。",
+      "transcript": "",
+      "rawTranscript": "",
+      "whisperCandidate": "",
+      "manualEdited": true,
+      "manualCleared": false,
+      "responseSeconds": 0.2,
+      "durationSeconds": null,
+      "compliance": [],
+      "matchedKeywords": 0,
+      "keywordTotal": 0,
+      "keyPoints": [],
+      "pointKeywords": [],
+      "asrStatus": "手动填写（草稿已存）",
+      "result": "训练记录（仅提示，未进行正式AI评分）",
+      "createdAt": "2026-11-16T19:50:01.404Z"
+    }
+  ],
+  "source_hashes_after": {
+    "app.js": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "status": "PASS",
+  "not_completed": [],
+  "source_unchanged": true
+}

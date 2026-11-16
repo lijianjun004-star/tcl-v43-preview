@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "checks": 12,
+  "mode": "actual app helpers in Node VM; synthetic source rows and mocked storage/network; no model call",
+  "app_sha256": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf"
+}

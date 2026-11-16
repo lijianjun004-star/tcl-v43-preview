@@ -1,0 +1,182 @@
+{
+  "mode": "Historical independent Node observations preserved from actual tool returns; synthetic inputs only; no model/network requests",
+  "module_path": "experiments/r24/tcl-v352-asr-r24-qa/lib/qa-import.js",
+  "module_sha256": "bdab842328e276aa63d84f8acb91c8d91bac9631408471d723372f6b5fb58fff",
+  "hash_timing": "Hash read after the initial failing probes and before the owner repair; corresponding metadataNorm/questionIdentity source lines still matched the failing implementation. The after probe separately captures exact source bytes at import time.",
+  "case_count": 6,
+  "pass_count": 0,
+  "cases": [
+    {
+      "name": "existing_all_platform_vs_selected_platform",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "scope": "board",
+            "boardId": "1",
+            "platform": "全部平台",
+            "category": "电视"
+          }
+        ],
+        "context": {
+          "boardId": "1",
+          "platform": "京东",
+          "category": "电视",
+          "scope": "board"
+        }
+      },
+      "expected": "conflict",
+      "observed": {
+        "dup": 0,
+        "conflict": 0,
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": false
+    },
+    {
+      "name": "existing_category_vs_new_board",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "scope": "category",
+            "boardId": "1",
+            "platform": "京东",
+            "category": "电视"
+          }
+        ],
+        "context": {
+          "boardId": "1",
+          "platform": "京东",
+          "category": "电视",
+          "scope": "board"
+        }
+      },
+      "expected": "conflict",
+      "observed": {
+        "dup": 0,
+        "conflict": 0,
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": false
+    },
+    {
+      "name": "new_category_vs_existing_board",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "scope": "board",
+            "boardId": "1",
+            "platform": "京东",
+            "category": "电视"
+          }
+        ],
+        "context": {
+          "boardId": "1",
+          "platform": "京东",
+          "category": "电视",
+          "scope": "category"
+        }
+      },
+      "expected": "conflict",
+      "observed": {
+        "dup": 0,
+        "conflict": 0,
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": false
+    },
+    {
+      "name": "case_sensitive_source_alias_collision",
+      "input": {
+        "format": "json",
+        "jsonData": [
+          {
+            "question": "如何核对接口？",
+            "answer": "以对应文件为准",
+            "sourceRef": "https://example.com/SpecA.pdf",
+            "source_ref": "https://example.com/speca.pdf"
+          }
+        ]
+      },
+      "observed": {
+        "sourceRef": "https://example.com/SpecA.pdf",
+        "reviewStatus": "needs_review",
+        "error": null
+      },
+      "pass": false
+    },
+    {
+      "name": "blank_canonical_source_masks_alias",
+      "input": {
+        "format": "json",
+        "jsonData": [
+          {
+            "question": "如何核对接口？",
+            "answer": "以对应文件为准",
+            "sourceRef": " ",
+            "来源": "https://example.com/actual.pdf"
+          }
+        ]
+      },
+      "observed": {
+        "sourceRef": "",
+        "reviewStatus": "needs_review",
+        "error": null
+      },
+      "pass": false
+    },
+    {
+      "name": "unsafe_numeric_sku",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sku\":9007199254740993}]",
+      "observed": {
+        "sku": "9007199254740992",
+        "reviewStatus": "needs_review",
+        "error": null
+      },
+      "pass": false
+    }
+  ],
+  "corroborating_owner_run": "../import/scope-metadata-before.json",
+  "repair_scope": "Scope/platform overlap, unsafe numeric metadata, case-sensitive and whitespace source aliases. Preexisting question/answer first-alias behavior is recorded in after.json boundaries and excluded from this repair."
+}

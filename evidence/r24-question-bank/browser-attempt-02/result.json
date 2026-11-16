@@ -1,0 +1,91 @@
+{
+  "fixture_kind": "artificial fixtures; not TCL approved operating material",
+  "method": "real desktop Chromium UI and native IndexedDB; text-only training",
+  "checks": {
+    "json_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "json_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "csv_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "csv_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "docx_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "docx_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "xlsx_metadata_row_platform_overrides_ui_and_maps_board": {
+      "pass": true,
+      "detail": null
+    },
+    "xlsx_import_approve_training_reference_review_preserve_metadata": {
+      "pass": true,
+      "detail": null
+    },
+    "download_template_explicit_example_and_metadata": {
+      "pass": true,
+      "detail": "型号,SKU,品类,平台,来源,弹幕类型,弹幕内容,消费者意图分析,案例话术1\nTCL Q10L（人工示例）,DEMO-Q10L,TCL 电视,京东,人工填写示例：请替换为已核验资料,产品咨询,这款电视的接口信息在哪里核实？,了解连接设备的兼容性,人工示例：请先核对该型号官方参数表与连接设备需求，本行未提供真实接口规格\n"
+    }
+  },
+  "fixtures": [
+    {
+      "file": "synthetic-metadata.json",
+      "sha256": "14c6efafebbf65d666ac824ef2998c6208050cffedfbfc0c5e9b33a72759eb69",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.csv",
+      "sha256": "901fd8e24d6f38d736ef99aed3c35e6aa049455f1301334221377727dbfdfe67",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.docx",
+      "sha256": "6b526c05e553d2622c9e66ad9408ab178072c6bdf89d869622b87b6a8620a2c4",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-metadata.xlsx",
+      "sha256": "416afc23c3d90f9e09c3a0f9969e6290b1ddadefb91506076e9517482a908000",
+      "kind": "artificial test data"
+    },
+    {
+      "file": "synthetic-operating.csv",
+      "sha256": "81a9fdb6e86e25659b6f77fccca31762147d2e1cfb85536423f22f1c25a28183",
+      "kind": "artificial test data"
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "No Gemini review",
+    "No physical mobile-device or speech-model test",
+    "Synthetic records do not validate actual product facts or private operating documents"
+  ],
+  "url": "http://127.0.0.1:35047/tcl-v352-asr-r24-qa/",
+  "browser": "156.0.8078.79",
+  "source_hashes": {
+    "app.js": "4809d9c163273c8a88cfe020dc7a64e73204f0c56b8eddad47abbe220cc282c2",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "bdab842328e276aa63d84f8acb91c8d91bac9631408471d723372f6b5fb58fff"
+  },
+  "status": "FAIL",
+  "exception": "Locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button[data-page=\\\"import\\\"]\")\n    - locator resolved to <button class=\"active\" data-page=\"import\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is not stable\n    - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is not stable\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n  18 × retrying click action\n       - waiting 500ms\n       - waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - element is outside of the viewport\n  - retrying click action\n    - waiting 500ms\n",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank.py\", line 322, in <module>\n    rows = import_file(operator, fixture('synthetic-operating.csv', csv_bytes(op_headers, main_rows)))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank.py\", line 131, in import_file\n    nav(page, 'import')\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank.py\", line 126, in nav\n    button.click()\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 17876, in click\n    self._sync(\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_locator.py\", line 165, in click\n    return await self._frame._click(self._selector, strict=True, **params)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_frame.py\", line 593, in _click\n    await self._channel.send(\"click\", self._timeout, locals_to_params(locals()))\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button[data-page=\\\"import\\\"]\")\n    - locator resolved to <button class=\"active\" data-page=\"import\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is not stable\n    - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is not stable\n  2 × retrying click action\n      - waiting 100ms\n      - waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n  18 × retrying click action\n       - waiting 500ms\n       - waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - element is outside of the viewport\n  - retrying click action\n    - waiting 500ms\n\n",
+  "source_hashes_after": {
+    "app.js": "4809d9c163273c8a88cfe020dc7a64e73204f0c56b8eddad47abbe220cc282c2",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "bdab842328e276aa63d84f8acb91c8d91bac9631408471d723372f6b5fb58fff"
+  },
+  "source_unchanged": true
+}

@@ -1,0 +1,54 @@
+{
+  "mode": "Chromium real UI; one synthetic legacy published IndexedDB row",
+  "checks": {
+    "legacy_ambiguous_published_and_sku_token_do_not_override_seed": {
+      "pass": true,
+      "details": null
+    },
+    "legacy_ambiguous_published_not_drawn": {
+      "pass": false,
+      "details": null
+    }
+  },
+  "errors": [],
+  "no_claims": [
+    "Gemini",
+    "real operating table",
+    "physical phone",
+    "speech model"
+  ],
+  "source_hashes": {
+    "app.js": "997b018e2ae225e17960e340df967d500aba806a42d5ae45010844c0a63147cf",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "browser": "156.0.8078.79",
+  "synthetic_fixture": {
+    "id": "synthetic-legacy-published",
+    "boardId": "01",
+    "category": "TCL 电视",
+    "scope": "board",
+    "platform": "京东",
+    "question": "这台 SKU-X7 电视支持什么接口？",
+    "answer": "人工构造旧版答案：核对原资料，不代表真实商品参数。",
+    "sku": "SKU-X7",
+    "source": "人工构造旧版资料",
+    "sourceLocators": [],
+    "keyPoints": [
+      "核对原资料"
+    ],
+    "status": "published",
+    "kind": "uploaded",
+    "reviewStatus": "reviewed-demo",
+    "createdAt": "2020-01-01T00:00:00.000Z"
+  },
+  "status": "FAIL",
+  "exception": "('legacy_ambiguous_published_not_drawn', None)",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank_legacy.py\", line 98, in <module>\n    check('legacy_ambiguous_published_not_drawn',\n  File \"/workspace/tcl-v43-preview/experiments/r24/tests/question_bank_legacy.py\", line 32, in check\n    assert condition, (name, details)\n           ^^^^^^^^^\nAssertionError: ('legacy_ambiguous_published_not_drawn', None)\n",
+  "source_hashes_after": {
+    "app.js": "997b018e2ae225e17960e340df967d500aba806a42d5ae45010844c0a63147cf",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "source_unchanged": true
+}

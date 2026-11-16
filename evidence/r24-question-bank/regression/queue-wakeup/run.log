@@ -1,0 +1,10 @@
+✔ pending Whisper wakes after timed-out Vosk raw job resolves (35.670055ms)
+✔ pending Whisper wakes after timed-out Vosk raw job rejects (51.393702ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 217.353196

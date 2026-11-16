@@ -1,0 +1,8 @@
+{
+  "status": "FAIL",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/",
+  "source_hashes": null,
+  "source_unchanged": null,
+  "exception": "APIRequestContext.get: connect ENETUNREACH 2606:50c0:8000::153:443 - Local (:::0)\nCall log:\n  - → GET https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/app.js\n    - user-agent: Playwright/1.62.0 (x64; debian 13) python/3.12\n    - accept: */*\n    - accept-encoding: gzip,deflate,br\n    - Cache-Control: no-cache\n",
+  "checks": {}
+}

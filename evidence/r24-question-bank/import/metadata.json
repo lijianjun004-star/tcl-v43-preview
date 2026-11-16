@@ -1,0 +1,440 @@
+{
+  "mode": "Chromium, synthetic CSV/XLSX/DOCX/JSON; no business model parameters",
+  "module_sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86",
+  "format_checks": [
+    {
+      "file": "metadata.csv",
+      "status": "PASS",
+      "input_sha256": "28dba96464579211010e406b42560deafd4b6a0e7d27e1ef4abe6d64840fbe00",
+      "rows": [
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T7M Pro合成参考回答A",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T7M Pro",
+          "sku": "SKU-A",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "sourceRef": "合成参数表A",
+          "sourceLocators": [
+            "表格第2行"
+          ],
+          "locator": "表格第2行",
+          "reviewStatus": "needs_review"
+        },
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T8M合成参考回答B",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T8M",
+          "sku": "SKU-B",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "sourceRef": "合成参数表B",
+          "sourceLocators": [
+            "表格第3行"
+          ],
+          "locator": "表格第3行",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "file": "metadata.xlsx",
+      "status": "PASS",
+      "input_sha256": "1ef079086b775e5a0aa7915bb09b7514b9024c5ee48b7969c1577d854eeefa41",
+      "rows": [
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T7M Pro合成参考回答A",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T7M Pro",
+          "sku": "SKU-A",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "sourceRef": "合成参数表A",
+          "sourceLocators": [
+            "metadata.xlsx · 工作表「人工元数据样本」第2行"
+          ],
+          "locator": "metadata.xlsx · 工作表「人工元数据样本」第2行",
+          "reviewStatus": "needs_review"
+        },
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T8M合成参考回答B",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T8M",
+          "sku": "SKU-B",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "sourceRef": "合成参数表B",
+          "sourceLocators": [
+            "metadata.xlsx · 工作表「人工元数据样本」第3行"
+          ],
+          "locator": "metadata.xlsx · 工作表「人工元数据样本」第3行",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "file": "metadata.docx",
+      "status": "PASS",
+      "input_sha256": "cb6fd2becbbc8e3e626a17ab9661f486ed58d1ea230fecb073d00564273d823b",
+      "rows": [
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T7M Pro合成参考回答A",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T7M Pro",
+          "sku": "SKU-A",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "sourceRef": "合成参数表A",
+          "sourceLocators": [
+            "metadata.docx · 表格#1 第2行"
+          ],
+          "locator": "metadata.docx · 表格#1 第2行",
+          "reviewStatus": "needs_review"
+        },
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T8M合成参考回答B",
+          "keyPoints": [],
+          "intent": "确认兼容性",
+          "danmuType": "",
+          "model": "T8M",
+          "sku": "SKU-B",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "sourceRef": "合成参数表B",
+          "sourceLocators": [
+            "metadata.docx · 表格#1 第3行"
+          ],
+          "locator": "metadata.docx · 表格#1 第3行",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "file": "metadata.json",
+      "status": "PASS",
+      "input_sha256": "eb76582f5080df054891ceec37b52d7e269bb26b6e595c9c26f4718c2d2bc9b5",
+      "rows": [
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T7M Pro合成参考回答A",
+          "keyPoints": [],
+          "model": "T7M Pro",
+          "sku": "SKU-A",
+          "category": "TCL 电视",
+          "platform": "京东",
+          "sourceRef": "合成参数表A",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        },
+        {
+          "question": "这款支持什么接口？",
+          "answer": "T8M合成参考回答B",
+          "keyPoints": [],
+          "model": "T8M",
+          "sku": "SKU-B",
+          "category": "TCL 电视",
+          "platform": "天猫",
+          "sourceRef": "合成参数表B",
+          "sourceLocators": [
+            "JSON 2"
+          ],
+          "locator": "JSON 2",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    }
+  ],
+  "identity_checks": [
+    {
+      "name": "distinct_model",
+      "status": "PASS"
+    },
+    {
+      "name": "existing_distinct_model",
+      "status": "PASS"
+    },
+    {
+      "name": "distinct_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "existing_distinct_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "distinct_category",
+      "status": "PASS"
+    },
+    {
+      "name": "existing_distinct_category",
+      "status": "PASS"
+    },
+    {
+      "name": "distinct_platform",
+      "status": "PASS"
+    },
+    {
+      "name": "existing_distinct_platform",
+      "status": "PASS"
+    },
+    {
+      "name": "same_identity_keeps_all_sources",
+      "status": "PASS"
+    },
+    {
+      "name": "standard_headers_metadata",
+      "status": "PASS"
+    },
+    {
+      "name": "never_infer_model_from_answer_or_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "canonical_source_and_lineage_roundtrip",
+      "status": "PASS"
+    },
+    {
+      "name": "context_fills_missing_range",
+      "status": "PASS"
+    },
+    {
+      "name": "category_shared_identity_cross_board",
+      "status": "PASS"
+    },
+    {
+      "name": "board_scope_not_cross_merged",
+      "status": "PASS"
+    },
+    {
+      "name": "same_identity_conflicting_answers",
+      "status": "PASS"
+    },
+    {
+      "name": "opaque_sku_case_preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "chinese_aliases_and_zero_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting_metadata_aliases_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_model_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_model_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_model_boolean",
+      "status": "PASS"
+    },
+    {
+      "name": "limit_model",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sku_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sku_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sku_boolean",
+      "status": "PASS"
+    },
+    {
+      "name": "limit_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_category_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_category_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_category_boolean",
+      "status": "PASS"
+    },
+    {
+      "name": "limit_category",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_platform_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_platform_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_platform_boolean",
+      "status": "PASS"
+    },
+    {
+      "name": "limit_platform",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sourceRef_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sourceRef_object",
+      "status": "PASS"
+    },
+    {
+      "name": "reject_sourceRef_boolean",
+      "status": "PASS"
+    },
+    {
+      "name": "limit_sourceRef",
+      "status": "PASS"
+    },
+    {
+      "name": "invalid_or_excess_source_locations_39",
+      "status": "PASS"
+    },
+    {
+      "name": "invalid_or_excess_source_locations_40",
+      "status": "PASS"
+    },
+    {
+      "name": "invalid_or_excess_source_locations_41",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_all_platforms_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "same_answer_scope_extension_all_platforms_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_other_model_all_platforms_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_shared_vs_board",
+      "status": "PASS"
+    },
+    {
+      "name": "same_answer_scope_extension_shared_vs_board",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_other_model_shared_vs_board",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_board_vs_shared",
+      "status": "PASS"
+    },
+    {
+      "name": "same_answer_scope_extension_board_vs_shared",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_other_model_board_vs_shared",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_combined_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "same_answer_scope_extension_combined_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_other_model_combined_vs_jd",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_tmall_vs_combined",
+      "status": "PASS"
+    },
+    {
+      "name": "same_answer_scope_extension_tmall_vs_combined",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_other_model_tmall_vs_combined",
+      "status": "PASS"
+    },
+    {
+      "name": "overlap_inside_incoming_batch",
+      "status": "PASS"
+    },
+    {
+      "name": "blank_canonical_source_falls_back",
+      "status": "PASS"
+    },
+    {
+      "name": "source_url_path_case_distinct",
+      "status": "PASS"
+    },
+    {
+      "name": "unsafe_integer_model",
+      "status": "PASS"
+    },
+    {
+      "name": "unsafe_integer_sku",
+      "status": "PASS"
+    },
+    {
+      "name": "unsafe_integer_category",
+      "status": "PASS"
+    },
+    {
+      "name": "unsafe_integer_platform",
+      "status": "PASS"
+    },
+    {
+      "name": "unsafe_integer_sourceRef",
+      "status": "PASS"
+    },
+    {
+      "name": "safe_numeric_sku_preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "large_string_sku_preserved",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "browser": "156.0.8078.79",
+  "module_sha256_after": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86",
+  "source_unchanged": true
+}

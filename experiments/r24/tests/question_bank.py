@@ -275,9 +275,12 @@ try:
         def remote_hashes():
             result = {}
             for asset in ASSETS:
-                response = browser_request.get(urljoin(url, asset), headers={'Cache-Control': 'no-cache'})
-                assert response.ok, (asset, response.status)
-                result[asset] = hashlib.sha256(response.body()).hexdigest()
+                # urllib follows the execution environment's existing HTTPS
+                # proxy. Node's APIRequestContext may select unreachable IPv6.
+                request = Request(urljoin(url, asset), headers={'Cache-Control': 'no-cache'})
+                with urlopen(request, timeout=20) as response:
+                    assert response.status == 200, (asset, response.status)
+                    result[asset] = hashlib.sha256(response.read()).hexdigest()
             return result
 
         browser_request = pw.request.new_context()

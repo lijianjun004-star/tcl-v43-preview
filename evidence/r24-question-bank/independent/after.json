@@ -1,0 +1,730 @@
+{
+  "recorded_at_utc": "2026-11-16T19:34:27.249Z",
+  "mode": "Independent Node import of exact local module snapshot; synthetic data; no browser/model/network requests",
+  "module_path": "/workspace/tcl-v43-preview/experiments/r24/tcl-v352-asr-r24-qa/lib/qa-import.js",
+  "module_sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86",
+  "module_sha256_after": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86",
+  "source_unchanged_during_run": true,
+  "probe_sha256": "da2c742b75d2a396ebb0962017a59a405ec9182226a434ad8b4887080523acb8",
+  "pass_count": 17,
+  "case_count": 17,
+  "cases": [
+    {
+      "name": "existing_all_platform_vs_new_jd",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "全部平台"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "conflict",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 1
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "conflict"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "existing_category_vs_new_board",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "category",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "conflict",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 1
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "conflict"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "new_category_vs_existing_board",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "category",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "conflict",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 1
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "category",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "conflict"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "existing_joint_platform_vs_new_jd",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东/天猫"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "conflict",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 1
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "conflict"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "all_platform_category_vs_new_board",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "category",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "全部平台"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "conflict",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 1
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "conflict"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_model_T8M",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T8M",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T8M",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_sku_SKU-B",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-B",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-B",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_sku_sku-a",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "sku-a",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "sku-a",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_category_雷鸟电视",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "雷鸟电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "雷鸟电视",
+            "platform": "京东",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_platform_天猫",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "天猫"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "天猫",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "independent_boardId_2",
+      "input": {
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "existing": [
+          {
+            "question": "支持什么功能？",
+            "answer": "支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "1",
+            "category": "TCL 电视",
+            "platform": "京东"
+          }
+        ],
+        "context": {}
+      },
+      "expected_review_status": "needs_review",
+      "observed": {
+        "summary": {
+          "dup": 0,
+          "conflict": 0
+        },
+        "rows": [
+          {
+            "question": "支持什么功能？",
+            "answer": "不支持 A",
+            "model": "T7M Pro",
+            "sku": "SKU-A",
+            "scope": "board",
+            "boardId": "2",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "unsafe_numeric_sku",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sku\":9007199254740993}]",
+      "expected": "Reject unsafe numeric SKU; require source string",
+      "observed": {
+        "error": "JSON 1：sku超出安全整数范围，请在源文件中改为字符串，避免编号精度丢失"
+      },
+      "pass": true
+    },
+    {
+      "name": "case_sensitive_source_aliases",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sourceRef\":\"https://example.com/SpecA.pdf\",\"source_ref\":\"https://example.com/speca.pdf\"}]",
+      "expected": "Reject conflicting source aliases whose URL paths differ in case",
+      "observed": {
+        "error": "JSON 1：sourceRef的多个列/字段值不一致，请明确一份值后重新导入"
+      },
+      "pass": true
+    },
+    {
+      "name": "blank_canonical_source",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sourceRef\":\" \",\"来源\":\"https://example.com/actual.pdf\"}]",
+      "expected": "Whitespace-only sourceRef must not mask nonblank source alias",
+      "observed": {
+        "rows": [
+          {
+            "question": "如何核对接口？",
+            "answer": "以对应文件为准",
+            "keyPoints": [],
+            "model": "",
+            "sku": "",
+            "category": "",
+            "platform": "",
+            "sourceRef": "https://example.com/actual.pdf",
+            "sourceLocators": [
+              "JSON 1"
+            ],
+            "locator": "JSON 1",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "model_alias_conflict",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"model\":\"T7M Pro\",\"product_model\":\"T8M\"}]",
+      "expected": "Reject conflicting model aliases",
+      "observed": {
+        "error": "JSON 1：model的多个列/字段值不一致，请明确一份值后重新导入"
+      },
+      "pass": true
+    },
+    {
+      "name": "canonical_source_over_legacy_label",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sourceRef\":\"https://example.com/actual.pdf\",\"source\":\"匿名导入资料 · 第2行\"}]",
+      "expected": "Canonical sourceRef preserved over legacy source display label",
+      "observed": {
+        "rows": [
+          {
+            "question": "如何核对接口？",
+            "answer": "以对应文件为准",
+            "keyPoints": [],
+            "model": "",
+            "sku": "",
+            "category": "",
+            "platform": "",
+            "sourceRef": "https://example.com/actual.pdf",
+            "sourceLocators": [
+              "JSON 1"
+            ],
+            "locator": "JSON 1",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "large_sku_string_preserved",
+      "input_json": "[{\"question\":\"如何核对接口？\",\"answer\":\"以对应文件为准\",\"sku\":\"9007199254740993\"}]",
+      "expected": "Large SKU provided as a string remains exact",
+      "observed": {
+        "rows": [
+          {
+            "question": "如何核对接口？",
+            "answer": "以对应文件为准",
+            "keyPoints": [],
+            "model": "",
+            "sku": "9007199254740993",
+            "category": "",
+            "platform": "",
+            "sourceRef": "",
+            "sourceLocators": [
+              "JSON 1"
+            ],
+            "locator": "JSON 1",
+            "reviewStatus": "needs_review"
+          }
+        ]
+      },
+      "pass": true
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "preexisting_qa_alias_first_value_behavior",
+      "scope": "Recorded only; excluded from this repair round by task owner",
+      "input": {
+        "question": "是否支持 HDMI2.1？",
+        "问题": "是否支持 HDMI2.0？",
+        "answer": "支持"
+      },
+      "observed": [
+        {
+          "question": "是否支持 HDMI2.1？",
+          "answer": "支持",
+          "keyPoints": [],
+          "model": "",
+          "sku": "",
+          "category": "",
+          "platform": "",
+          "sourceRef": "",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "name": "preexisting_qa_alias_first_value_behavior",
+      "scope": "Recorded only; excluded from this repair round by task owner",
+      "input": {
+        "question": "是否支持 HDMI2.1？",
+        "answer": "支持",
+        "答案": "不支持"
+      },
+      "observed": [
+        {
+          "question": "是否支持 HDMI2.1？",
+          "answer": "支持",
+          "keyPoints": [],
+          "model": "",
+          "sku": "",
+          "category": "",
+          "platform": "",
+          "sourceRef": "",
+          "sourceLocators": [
+            "JSON 1"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    }
+  ]
+}
