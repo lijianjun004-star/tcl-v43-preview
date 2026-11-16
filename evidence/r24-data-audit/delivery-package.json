@@ -1,0 +1,15 @@
+{
+  "path": "/workspace/shared/downloads/TCL-R24-数据修复交付-20261116.zip",
+  "bytes": 6266253,
+  "files": 408,
+  "sha256": "9119a780893a7c63f77f9c8d5fecfccce7af98676c12a5d6c8dd07ce0d5b48b4",
+  "source_commit": "cada0570fa690b36febd089623642c7e28616f52",
+  "release_commit": "77a219f4c29c0597a435dc72578d58394cbbf45d",
+  "drive_id": "1SZmX9Fy2RGdu6Bm4EvhSk5H7pprd3l96",
+  "drive_url": "https://drive.google.com/file/d/1SZmX9Fy2RGdu6Bm4EvhSk5H7pprd3l96/view?usp=drivesdk",
+  "drive_shared": false,
+  "local_crc_and_all_manifest_hashes": "PASS",
+  "drive_size_readback": 6266253,
+  "documentation_pr": 112,
+  "documentation_merge": "a9ccbb235235ed2bea1e11da30a99d42b960b490"
+}
