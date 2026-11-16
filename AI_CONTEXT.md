@@ -601,3 +601,5 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 最终同hash15Node+4浏览器组全exit0；5组真实Vosk+合成普通话流程通过，另实际浏览器失败后3题仅1次下载、点重试升至2次且3题补转通过。初稿13Node+4浏览器+5模型流程通过，R24三种空白对照复现；均非真人准确率。原失败和适配保留。
 - 发布准备CI8bf0583仅2门禁文件，110项通过、固定SHA实际正逆构建、独立再审及越界负探针通过。旧217不变，新22=239，本地239HTTP/SHA通过；ZIP52a47cf…、B64d710574…，旧SHA白名单不变。独立CI/发行/回滚3补丁备妥，不把本地对象当上线。目标/tcl-v352-asr-r25-qa/尚未部署。
 - 权威源码候选codex/r25-followup-fixes-20261116、CI候选codex/r25-release-preparation-20261116；详见experiments/r25/CODEX-HANDOFF.md和evidence/r25-codex-handoff/。批准后先CI独立PR再基于最新main发布，确认Actions、公网239及真机；真手机/大陆网络/Whisper真实权重/真人TCL准确率均未验收，不自动调用Gemini或上传真人录音。
+
+- R25交付包已私有归档 https://drive.google.com/file/d/1-S7H6KJ5PNAzL-pWKk3CqpPJJX1w5Jmo/view?usp=drivesdk ，15932358字节、285项（284负载SHA），SHA01662c82b4adfe130299f1aa133111175b5b8766d61feb2fe0eb228064971a4b；Drive元数据及下载回读逐字节/CRC通过，未改共享权限。包冻结源码3bd0ff1（产品修复b3950ea/app284848），新增交付索引不改变该包或产品。发布仍待用户明确批准；远端main保持d277aab。详见evidence/r25-codex-handoff/DELIVERY.md。
