@@ -726,6 +726,11 @@ class RealModelOneShotGateTests(unittest.TestCase):
 
 
 class R23PinnedReleasePolicyTests(unittest.TestCase):
+    def test_r23_verifier_reconstructs_r21_first(self):
+        policy=Path(gate.__file__).read_text(encoding='utf-8')
+        self.assertIn('r21_runner=pathlib.Path',policy)
+        self.assertIn('Prerequisite R2.1 stage failed',policy)
+
     def test_only_exact_R23_stage_allowed(self):
         self.assertIn('python3 release-ci/stage_r23.py',gate.R23_STEP)
         self.assertIn('tcl-v352-asr-autoqa-r23',gate.R23_STEP)
