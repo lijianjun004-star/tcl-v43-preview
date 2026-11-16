@@ -120,7 +120,7 @@ try:
     const rows=[...document.querySelectorAll('#questionSummary tbody tr')].map(tr=>({
       answer:tr.children[3]?.innerText?.slice(0,500)||'',status:tr.children[4]?.innerText?.slice(0,500)||'',audio:!!tr.querySelector('audio')
     }));
-    const request=indexedDB.open('tcl-specialty-v352-asr-autoqa-r2');
+    const request=indexedDB.open('tcl-specialty-v352-asr-autoqa-r23-r2');
     const db=await new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});
     const tx=db.transaction(['records'],'readonly');
     const records=await new Promise(r=>{const req=tx.objectStore('records').getAll();req.onsuccess=()=>r(req.result||[])})
