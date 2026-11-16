@@ -518,3 +518,17 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 产品源码/测试提交a4a4ce443a640c5710bcc9b76010c8885cee9229在fix/r24-delivery-20261116。说明见experiments/r24/QUESTION-BANK.md，修前与修后证据在evidence/r24-question-bank/；三个版本的可信门禁及发行归档以main为准。
 - 当前验收仍是本机浏览器流程；云端旧API不支持完整新字段，导入会在归档/提交前明确停止，未扩展后端。全部资料样本是人工构造，未取得实际运营表核准商业话术；真手机、国内网络和TCL语音准确度未验收。本轮没有新的Gemini/Argon调用，不等于外部Gemini复验。
 - 回滚用独立PR将R24归档恢复为7bb350cdb4d909ed562fe9b734bc93867f56e7c01f2735c0bb5345381a7b7925（88b数据修复版）；精确三版本门禁仅允许相邻版本更新/回滚，不改其他站点或删除本机数据。
+
+## R2.4 练播卡顿与输入放大修复已发布（2026-11-16）
+
+任务 TCL-R24-SMOOTH-MOBILE-20261116。用户报告练播、切题、录音时卡顿及页面缩放；沿用同范围修复/PR/合并/Pages发布授权。当前ChatGPT/Codex实施及内部独立源码审查，无新增Gemini请求或收费服务。
+
+- 原入口不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。清单版本 r24-smooth-mobile-20261116，app SHA256 `1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80`；归档B64 SHA256 `faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1`；ZIP SHA256 `42a36a4a706ebb621fb5bc1416ea1c223076e342a98db9d259c69885ece5dbdb`。
+- 练播/录音/下载进度不再反复重建隐藏全场题表，只在逐题复盘时按需构建；移动端输入框统一16px覆盖旧14/15px高特异性规则，文字面板聚焦不滚页；取消练播中的模糊叠层和录音扩散阴影动画。保持原device-width视口与按钮防双击缩放规则，不禁用主动无障碍缩放。
+- Transformers模型加载和WASM推理迁至同源module Worker，WebAudio解码留页面。Base默认、固定Base/Tiny模型/版本、中文参数、串行推理、PCM副本、超时/取消资源锁和镜像规则保留。Worker缺失/启动失败明确报错，不悄悄回主线程。只变app/style/bridge/manifest，新增worker；题库、存储格式及历史记录不改。
+- 可信CI PR116：https://github.com/lijianjun004-star/tcl-v43-preview/pull/116 ，head64cf53a18dcc29d369b80f4c3665f3ba260c7bbd，检查43947902295成功，合并e16f619e41bbc08ab7950b947bb53a846fd4ac02。发布PR117：https://github.com/lijianjun004-star/tcl-v43-preview/pull/117 ，head0af03ec3fb0bddfea52fb524cc3ab34229ea0e31，检查43948137666成功，合并a941b8c4317b5ce9f2585dfda0eca2dcc29bb8af。Pages43948299940 completed/success。
+- 三种手机模拟宽度320/390/430px，4×CPU慢速、60题/80状态回调：原80次隐藏重建耗约1.6–2.7秒，修后零次（仅对应这项合成工作负载，不代表真机帧率）；60条复盘完整、输入均16px、scale1、无横向溢出。真实MediaRecorder+合成麦克风/视频+Worker模拟转写三题通过；媒体恢复10、跨标签并发10、原题库31、旧数据8检查通过，人工改答不被覆盖。
+- Worker真实浏览器5场景及代理/旧锁测试通过。真实固定Tiny模型在module Worker对1秒合成纯音完成推理，页面心跳持续；纯音输出“好”显示幻觉风险，不作语音准确率结论。真实Base Worker推理、iPhone/Android/内嵌浏览器、iOS键盘实际聚焦缩放、中国大陆网络与TCL语音准确度未验收；大模型首次下载时间仍存在。
+- 84项门禁及完整更新/回滚构建通过：195旧资源逐字节保留，更新217/回滚216。公网217资源单轮全部HTTP200且SHA匹配，真实公开文字练播/复盘/刷新恢复PASS，0页面错误、0外部/模型请求。内部独立源码审查无阻断P1/P2，不等于Gemini或真机验收。
+- 实施源码提交6b50517a80063ae61ea5e5de75d067fb1f3a2e13，证据与报告在分支fix/r24-smooth-mobile-20261116的experiments/r24/SMOOTH-MOBILE.md与evidence/r24-smooth-mobile/。旧模拟脚本未适配Worker导致无转写及新mock追踪DataCloneError均为测试夹具问题，适配后通过，无产品补丁掩盖；失败说明保留。此前Drive交付包仍是旧question-bank版本，勿当作本轮smooth源码包。
+- 回滚通过新PR将R24归档恢复前一question-bank版本 `5e72a5789ec67a1812827575419f8b65a4b009ba864041c934cd32fc3d3f7238`，由精确四版本门禁验证；不改其他站点、不清理浏览器题库/录像/IndexedDB。后续以实时main和Pages状态为准。
