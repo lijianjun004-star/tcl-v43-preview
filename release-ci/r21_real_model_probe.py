@@ -33,7 +33,7 @@ def download_public_mandarin_sample():
 
 
 def normalize_text(value):
-    return re.sub(r"[^a-z0-9\\u4e00-\\u9fff]", "", str(value).lower())
+    return re.sub(r"[^a-z0-9\u4e00-\u9fff]", "", str(value).lower())
 
 
 def edit_distance(a, b):
