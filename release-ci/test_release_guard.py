@@ -627,6 +627,59 @@ class ASRReleaseGateTests(unittest.TestCase):
         self.assertNotEqual(code, 0, result)
 
 
+
+class StandaloneLabPolicyTests(unittest.TestCase):
+    def setUp(self):
+        self.html = b'fixture audio lab'
+        self.old_html_pin = gate.LAB_HTML_SHA256
+        self.old_zip_pin = gate.LAB_BASELINE_ZIP_SHA256
+        gate.LAB_HTML_SHA256 = hashlib.sha256(self.html).hexdigest()
+        stream = io.BytesIO()
+        with zipfile.ZipFile(stream, 'w') as z:
+            z.writestr('index.html', 'existing')
+        self.zip = stream.getvalue()
+        gate.LAB_BASELINE_ZIP_SHA256 = hashlib.sha256(self.zip).hexdigest()
+        self.before = (
+            'name: Deploy\\n'
+            f'run: echo "{gate.LAB_BASELINE_ZIP_SHA256}  site.zip" | sha256sum --check --strict\\n'
+            '      - name: Extract frontend only\\n'
+            '        run: unzip -q site.zip -d _site\\n'
+            + gate.LAB_ANCHOR
+            + '      - uses: actions/upload-pages-artifact@v4\\n'
+        )
+        self.after = self.before.replace(gate.LAB_ANCHOR, gate.lab_stage_step()+gate.LAB_ANCHOR, 1)
+
+    def tearDown(self):
+        gate.LAB_HTML_SHA256 = self.old_html_pin
+        gate.LAB_BASELINE_ZIP_SHA256 = self.old_zip_pin
+
+    def test_valid_exact_addition(self):
+        self.assertTrue(gate.verify_lab_addition(self.before, self.after, self.html, self.zip))
+
+    def test_rejects_tampering(self):
+        for b,a,h,z in (
+            (self.before,self.after,self.html+b'bad',self.zip),
+            (self.before,self.after,self.html,b'bad'),
+            (self.before,self.after+'#bad\\n',self.html,self.zip),
+            (self.before,self.after.replace('unzip -q','unzip -o'),self.html,self.zip),
+            (self.before,self.before,self.html,self.zip),
+        ):
+            with self.assertRaises(gate.GateFailure):
+                gate.verify_lab_addition(b,a,h,z)
+
+    def test_rejects_collision(self):
+        stream=io.BytesIO()
+        with zipfile.ZipFile(stream,'w') as z:
+            z.writestr(gate.LAB_TARGET, 'existing')
+        zipped=stream.getvalue()
+        gate.LAB_BASELINE_ZIP_SHA256=hashlib.sha256(zipped).hexdigest()
+        orig=hashlib.sha256(self.zip).hexdigest()
+        before=self.before.replace(orig, gate.LAB_BASELINE_ZIP_SHA256)
+        after=before.replace(gate.LAB_ANCHOR, gate.lab_stage_step()+gate.LAB_ANCHOR,1)
+        with self.assertRaisesRegex(gate.GateFailure, 'overwrite'):
+            gate.verify_lab_addition(before,after,self.html,zipped)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 

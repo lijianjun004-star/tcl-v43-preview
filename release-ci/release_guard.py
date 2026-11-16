@@ -2,6 +2,7 @@
 """TCL Pages release gate (V2.2). Python stdlib only; does not access network or write to GitHub."""
 import argparse
 import hashlib
+import io
 import json
 import pathlib
 import re
@@ -483,6 +484,44 @@ def check_workflow(text, candidate_sha):
     return hits[0].group(2)
 
 
+
+# Strict one-time QA gate. Official Pages ZIP remains byte-for-byte unchanged.
+LAB_SOURCE = 'experiments/r6-asr-original-audio-qa/index.html'
+LAB_TARGET = 'tcl-v352-asr-lab/index.html'
+LAB_HTML_SHA256 = 'd1b8e9418b7dd811a6f995b41a6a01e2fc38a585ac16081d6b88810c3c87c9fd'
+LAB_BASELINE_ZIP_SHA256 = '099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e'
+LAB_ANCHOR = '      - uses: actions/configure-pages@v5\\n'
+
+
+def lab_stage_step():
+    return (
+        '      - name: Stage isolated audio research preview\\n'
+        '        run: |\\n'
+        '          mkdir -p _site/tcl-v352-asr-lab\\n'
+        '          cp experiments/r6-asr-original-audio-qa/index.html _site/tcl-v352-asr-lab/index.html\\n'
+        f'          echo "{LAB_HTML_SHA256}  _site/tcl-v352-asr-lab/index.html" | sha256sum --check --strict\\n'
+    )
+
+
+def verify_lab_addition(before, after, html, baseline_zip):
+    if sha256(baseline_zip) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('Lab requires exact unchanged R6 baseline site.zip')
+    if sha256(html) != LAB_HTML_SHA256:
+        raise GateFailure('Lab HTML differs from reviewed exact SHA-256')
+    if check_workflow(before, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('Original workflow must pin R6 baseline ZIP')
+    if before.count(LAB_ANCHOR) != 1 or lab_stage_step() in before:
+        raise GateFailure('Lab stage must be added exactly once')
+    if after != before.replace(LAB_ANCHOR, lab_stage_step() + LAB_ANCHOR, 1):
+        raise GateFailure('Unexpected workflow edit outside isolated QA stage')
+    if check_workflow(after, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('Staged workflow must keep original R6 checksum')
+    with zipfile.ZipFile(io.BytesIO(baseline_zip)) as archive:
+        if LAB_TARGET in archive.namelist():
+            raise GateFailure('Lab would overwrite an existing Pages ZIP file')
+    return True
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -494,7 +533,15 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed & release:
+    if changed == {LAB_SOURCE, '.github/workflows/pages.yml'}:
+        verify_lab_addition(
+            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(head, '.github/workflows/pages.yml').decode('utf-8'),
+            show(head, LAB_SOURCE),
+            show(base, 'site.zip'),
+        )
+        print('verify-pages-release PASS: R6 ZIP immutable; standalone lab exact SHA; additive workflow only')
+    elif changed & release:
         if changed != release:
             raise GateFailure('Unexpected PR paths: release must change exactly site.zip and pages.yml')
         with tempfile.TemporaryDirectory() as tmp:
