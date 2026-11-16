@@ -833,6 +833,62 @@ R24_QUESTION_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b7108
  'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
  'whisper-bridge.mjs': 'b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4'}
 R24_QUESTION_CHANGED_FILES = frozenset({'app.js', 'lib/qa-import.js', 'static-manifest.json'})
+# Exact fourth snapshot: mobile rendering and isolated ASR computation.
+# Keep earlier snapshots pinned for the CI-only rollout and exact rollback.
+R24_SMOOTH_ARCHIVE_B64_SHA = 'faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1'
+R24_SMOOTH_ARCHIVE_SHA = '42a36a4a706ebb621fb5bc1416ea1c223076e342a98db9d259c69885ece5dbdb'
+R24_SMOOTH_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511',
+ 'app.js': '1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13',
+ 'glossary-ui.mjs': 'e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb',
+ 'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596',
+ 'static-manifest.json': '365f7345d4debdc15b10197a078f8867eef6a19657d2dcde48f6eadd1413216e',
+ 'style.css': '66a6d397a963532e9ef24223dd425867439528c22e5e2f998635bb30611a4ec4',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': '01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2',
+ 'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+R24_SMOOTH_CHANGED_FILES = frozenset({
+    'app.js', 'style.css', 'whisper-bridge.mjs', 'static-manifest.json', 'whisper-worker.mjs',
+})
+R24_SMOOTH_ADDED_FILES = frozenset({'whisper-worker.mjs'})
+# Exact fifth snapshot: stable review rendering and immediate differential record writes.
+R24_REVIEW_ARCHIVE_B64_SHA = 'f31dda6f04a1b32d2e38dba9e6db6b3f0c2d9ed62c84613caef1f7e78be4c3da'
+R24_REVIEW_ARCHIVE_SHA = '8c569a3f9b2adee09cc6ca668b121ab2390321eb76ad5e12c011acc7b3778b1a'
+R24_REVIEW_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511',
+ 'app.js': '63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13',
+ 'glossary-ui.mjs': 'e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb',
+ 'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596',
+ 'static-manifest.json': 'd44808ef010d6db8498885fc9e3805256face48090aaaeb05af0401df5a2e5a7',
+ 'style.css': '35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': '01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2',
+ 'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+R24_REVIEW_CHANGED_FILES = frozenset({'app.js', 'style.css', 'static-manifest.json'})
 R24_MAX_ENCODED_BYTES = 2_000_000
 R24_MAX_RAW_BYTES = 1_500_000
 R24_MAX_RESOURCE_BYTES = 750_000
@@ -865,6 +921,8 @@ def r24_resource_bytes(encoded):
         (R24_ARCHIVE_B64_SHA, R24_ARCHIVE_SHA, R24_ASSET_HASHES),
         (R24_UPDATE_ARCHIVE_B64_SHA, R24_UPDATE_ARCHIVE_SHA, R24_UPDATE_ASSET_HASHES),
         (R24_QUESTION_ARCHIVE_B64_SHA, R24_QUESTION_ARCHIVE_SHA, R24_QUESTION_ASSET_HASHES),
+        (R24_SMOOTH_ARCHIVE_B64_SHA, R24_SMOOTH_ARCHIVE_SHA, R24_SMOOTH_ASSET_HASHES),
+        (R24_REVIEW_ARCHIVE_B64_SHA, R24_REVIEW_ARCHIVE_SHA, R24_REVIEW_ASSET_HASHES),
     )
     selected = [pins for pins in snapshots if pins[0] == encoded_sha]
     if len(encoded) > R24_MAX_ENCODED_BYTES or len(selected) != 1:
@@ -1008,17 +1066,20 @@ def verify_r24_additive_release(before, after, encoded, zipbytes, trusted_inputs
 
 
 def verify_r24_archive_update(workflow, old_encoded, new_encoded, zipbytes, trusted_inputs):
-    """Allow only the two explicit adjacent version pairs and their exact reversals."""
+    """Allow only explicit adjacent frozen version pairs and their exact reversals."""
     pair = (sha256(old_encoded), sha256(new_encoded))
     transitions = (
-        ((R24_ARCHIVE_B64_SHA, R24_UPDATE_ARCHIVE_B64_SHA), R24_UPDATE_CHANGED_FILES),
-        ((R24_UPDATE_ARCHIVE_B64_SHA, R24_QUESTION_ARCHIVE_B64_SHA), R24_QUESTION_CHANGED_FILES),
+        ((R24_ARCHIVE_B64_SHA, R24_UPDATE_ARCHIVE_B64_SHA), R24_UPDATE_CHANGED_FILES, frozenset()),
+        ((R24_UPDATE_ARCHIVE_B64_SHA, R24_QUESTION_ARCHIVE_B64_SHA), R24_QUESTION_CHANGED_FILES, frozenset()),
+        ((R24_QUESTION_ARCHIVE_B64_SHA, R24_SMOOTH_ARCHIVE_B64_SHA), R24_SMOOTH_CHANGED_FILES, R24_SMOOTH_ADDED_FILES),
+        ((R24_SMOOTH_ARCHIVE_B64_SHA, R24_REVIEW_ARCHIVE_B64_SHA), R24_REVIEW_CHANGED_FILES, frozenset()),
     )
-    matches = [(forward, changed) for forward, changed in transitions
+    matches = [(forward, changed, added) for forward, changed, added in transitions
                if pair in (forward, forward[::-1]) and pair[0] != pair[1]]
     if len(matches) != 1:
         raise GateFailure('R2.4 update requires the exact old/new snapshot pair')
-    forward, expected_changed = matches[0]
+    forward, expected_changed, added_forward = matches[0]
+    added, removed = (added_forward, frozenset()) if pair == forward else (frozenset(), added_forward)
     if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
         raise GateFailure('R2.4 update cannot change protected site.zip')
     if check_workflow(workflow, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
@@ -1027,11 +1088,12 @@ def verify_r24_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
             for step in (lab_stage_step(), AUTOQA_STEP, R21_STEP, R23_STEP)):
         raise GateFailure('R2.4 update must retain all existing Pages stages')
     old_data, new_data = r24_resource_bytes(old_encoded), r24_resource_bytes(new_encoded)
-    if set(old_data) != set(new_data):
-        raise GateFailure('R2.4 update cannot change the static resource set')
-    changed = {name for name in old_data if old_data[name] != new_data[name]}
+    if set(new_data) - set(old_data) != added or set(old_data) - set(new_data) != removed:
+        raise GateFailure('R2.4 update cannot change the static resource set outside the exact reviewed additions/removals')
+    changed = {name for name in set(old_data) | set(new_data) if old_data.get(name) != new_data.get(name)}
     if changed != expected_changed:
-        scope = 'four files' if expected_changed == R24_UPDATE_CHANGED_FILES else 'three files'
+        scope = ('four files' if expected_changed == R24_UPDATE_CHANGED_FILES else
+                 'three files' if expected_changed in (R24_QUESTION_CHANGED_FILES, R24_REVIEW_CHANGED_FILES) else 'five files')
         raise GateFailure('R2.4 update changed resources outside the exact reviewed ' + scope)
     with tempfile.TemporaryDirectory() as temp:
         root = pathlib.Path(temp)
@@ -1053,7 +1115,9 @@ def verify_r24_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
                      for p in new_site.rglob('*') if p.is_file()}
         actual_changed = {name for name in set(old_files) | set(new_files)
                           if old_files.get(name) != new_files.get(name)}
-        if set(old_files) != set(new_files) or actual_changed != {R24_DEST + '/' + name for name in changed}:
+        if (set(new_files) - set(old_files) != {R24_DEST + '/' + name for name in added}
+                or set(old_files) - set(new_files) != {R24_DEST + '/' + name for name in removed}
+                or actual_changed != {R24_DEST + '/' + name for name in changed}):
             raise GateFailure('R2.4 final Pages trees differ outside the exact update scope')
     result = {'direction': 'update' if pair == forward else 'rollback',
               'protected_assets': len(protected), 'total_assets': len(new_files),

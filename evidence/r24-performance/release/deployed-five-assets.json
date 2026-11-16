@@ -1,0 +1,42 @@
+{
+  "scope": "Fresh five changed/retained R24 resources after Pages success; full public test is separate",
+  "run": {
+    "id": 43951625263,
+    "head_sha": "f6ee029dd2b23265a5504847ab4bcdce6ce56347",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "http": [
+    {
+      "path": "app.js",
+      "status": 200,
+      "sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "matches": true
+    },
+    {
+      "path": "style.css",
+      "status": 200,
+      "sha256": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+      "matches": true
+    },
+    {
+      "path": "static-manifest.json",
+      "status": 200,
+      "sha256": "d44808ef010d6db8498885fc9e3805256face48090aaaeb05af0401df5a2e5a7",
+      "matches": true,
+      "version": "r24-review-stability-20261116"
+    },
+    {
+      "path": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2",
+      "matches": true
+    },
+    {
+      "path": "whisper-worker.mjs",
+      "status": 200,
+      "sha256": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b",
+      "matches": true
+    }
+  ]
+}

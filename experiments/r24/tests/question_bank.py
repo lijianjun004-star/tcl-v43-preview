@@ -29,6 +29,7 @@ SITE = REPO / 'experiments/r24/tcl-v352-asr-r24-qa'
 OUT = pathlib.Path(os.environ.get('OUT', str(REPO / 'evidence/r24-question-bank/browser')))
 OUT.mkdir(parents=True, exist_ok=True)
 ASSETS = ['app.js', 'lib/parser.js', 'lib/qa-import.js']
+EXPECTED_APP_SHA = os.environ.get('R24_EXPECT_APP_SHA', '').strip()
 DB = 'tcl-specialty-v352-asr-r24-qa'
 CATEGORY = 'TCL 电视'
 QUESTION = '这款电视的接口如何核对？'
@@ -62,6 +63,10 @@ EXPECTED_CHECKS = [
     'live_sku_context_exact_or_hidden_for_empty',
     'no_application_page_errors', 'source_unchanged_during_acceptance',
 ]
+if EXPECTED_APP_SHA:
+    EXPECTED_CHECKS.append('browser_app_response_matches_expected_release')
+    report['expected_app_sha256'] = EXPECTED_APP_SHA
+    report['browser_app_responses'] = []
 server = None
 
 
@@ -285,9 +290,28 @@ try:
 
         browser_request = pw.request.new_context()
         report['source_hashes'] = remote_hashes()
+        if EXPECTED_APP_SHA:
+            assert report['source_hashes']['app.js'] == EXPECTED_APP_SHA, 'Remote app does not match expected release'
+
+        def observe_app_response(request):
+            if request.url.split('?', 1)[0] != urljoin(url, 'app.js'):
+                return
+            row = {'url': request.url}
+            try:
+                response = request.response()
+                row['status'] = response.status
+                row['sha256'] = hashlib.sha256(response.body()).hexdigest()
+                row['matches_expected'] = row['status'] == 200 and row['sha256'] == EXPECTED_APP_SHA
+            except Exception as error:
+                row['error'] = str(error)
+                row['matches_expected'] = False
+            report['browser_app_responses'].append(row)
 
         def new_context():
-            return browser.new_context(viewport={'width': 390, 'height': 844}, service_workers='block')
+            context = browser.new_context(viewport={'width': 390, 'height': 844}, service_workers='block')
+            if EXPECTED_APP_SHA:
+                context.on('requestfinished', observe_app_response)
+            return context
 
         def new_page(ctx, role, name):
             page = ctx.new_page()
@@ -511,6 +535,10 @@ try:
         check('no_application_page_errors', not report['errors'], report['errors'])
         report['source_hashes_after'] = remote_hashes()
         check('source_unchanged_during_acceptance', report['source_hashes'] == report['source_hashes_after'])
+        if EXPECTED_APP_SHA:
+            check('browser_app_response_matches_expected_release', bool(report['browser_app_responses']) and
+                  all(row['matches_expected'] for row in report['browser_app_responses']),
+                  report['browser_app_responses'])
         ctx.close()
         browser_request.dispose()
         browser.close()

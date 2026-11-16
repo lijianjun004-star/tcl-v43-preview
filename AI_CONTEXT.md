@@ -543,7 +543,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 对应实施6b50517a80063ae61ea5e5de75d067fb1f3a2e13、证据d82e0ad；当前smooth发布的217资源公网校验和Codex测试保持原结论，不因本次拒绝判为产品有缺陷，也不标记Gemini验收通过。历史Pro1条无实质回复/旧Argon0条附件失败与此次Argon1条拒绝分别记录。
 - 实际请求/原文/预算记录在分支fix/r24-smooth-mobile-20261116的evidence/r24-smooth-gemini/OUTCOME.md及browser-result.json（提交c976ea6）。下次接手应读此结果，避免把“已发送”写成“已通过”。
 
-## R2.4 长资料与大场复盘稳定性候选（2026-11-16）
+## R2.4 长资料与大场复盘稳定性已发布（2026-11-16）
 
 任务 TCL-R24-REVIEW-STABILITY-20261116。承接用户“修复卡顿、不要页面缩放”，以已发布smooth-mobile源码d82e0ad为基线，保留Worker、聚焦不滚页及16px输入；本轮没有新Gemini调用。最新main已另记Argon一次无实质回复，不再沿用旧Argon0次作为当前总状态。
 
@@ -553,4 +553,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 当前基线和候选各18性能样本，14结构门槛通过；40输入仍40即时事务，记录表800/4000/8000写入降至20/100/200；100/200题首屏20行。全样本保存恢复完整，页面错误0。当前基线总览已0隐藏行，本轮不重复宣称这项旧增益。
 - UI题库31、复盘21在8dfa前一候选通过；最终仅首次指纹计算时机修正。最终CSS四种宽度68状态通过；真实手机/键盘/国内网络未测。92门禁与217资源真实正反向更新通过，195旧资源不变。
 - 034/60d延后保存方案因刷新丢字拒绝未发布；8dfa首次指纹前置计算有一次heavy失败，修正后有界隔离对照通过。全部失败、0ms限制与对应hash保留，未重跑至通过。详见experiments/r24/REVIEW-STABILITY.md及evidence/r24-performance/。
-- 本段为实施验收与候选冻结，实际PR/Pages/公网结果完成后另附；不得仅据本段声称已上线。源码分支fix/r24-review-stability-20261116，沿用既定发布授权和原URL，不覆盖此前smooth的Worker。
+- 实施源码97d343d0af910506931385b59bc547f217887d60在fix/r24-review-stability-20261116。CI PR120 head ecf7a48deb1520127175da61017fdd78d27f2fe0检查43950871877成功，合并19bf929e647a98471d96b3886d30ac8f9e70147a，旧版Pages43951110021成功；发布PR121 head66a086af6f32aa391d0a4973c7aaa7fd59c1a446检查43951449962成功，合并f6ee029dd2b23265a5504847ab4bcdce6ce56347，新Pages43951625263全部steps成功。两个PR都核对精确head再合并。
+- 原入口 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 已上线。公网217资源单轮全部HTTP200/SHA匹配，实际文字练播→复盘→刷新恢复通过，无页面错误及外部/模型请求。
+- 最终同hash完整公网题库32项通过（原31业务检查+实际加载版本检查）；16份浏览器实际app.js响应均HTTP200且正文SHA为63519c，app/parser/qa首尾hash不变，页面错误0。证据evidence/r24-performance/public-question-bank/。
+- 回滚通过独立PR恢复上一smooth-mobile归档faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1，精确五版本门禁只允许相邻版本更新/回滚；不清理本机记录、不改其他旧站点、不退回没有Worker的更旧版本。
