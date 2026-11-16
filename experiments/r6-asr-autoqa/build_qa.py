@@ -15,6 +15,8 @@ SOURCE_MARKER = 'const perQuestionAudio=new Map();'
 AUDIO_MARKER = 'perQuestionAudio.set(turnAtStart.id,blob);'
 VOSK_MARKER = 'if(voskModel)enqueueQuestionAsr(turnAtStart.id);'
 VOSK_PRELOAD_MARKER = 'if(!voskModel&&!voskLoadJob)void preloadVoskModel({silent:true});'
+NAMESPACE_BASE = 'tcl-specialty-v352-asr'
+NAMESPACE_PILOT = 'tcl-specialty-v352-asr-autoqa'
 
 INTEGRATION = r'''
 // ---------- ASR AutoQA isolation patch: SINGLE-QUESTION ORIGINAL AUDIO ----------
@@ -110,7 +112,9 @@ def patch_app(source):
         expect_one(source,marker)
     if PATCH_HEADER in source or 'r6WhisperDrain()' in source:
         raise ValueError('Already patched source')
-    source = PATCH_HEADER + source
+    if source.count(NAMESPACE_BASE) != 3:
+        raise ValueError('Unexpected R6 storage/channel/cache namespace count')
+    source = PATCH_HEADER + source.replace(NAMESPACE_BASE,NAMESPACE_PILOT)
     source = source.replace(SOURCE_MARKER, SOURCE_MARKER+'\n'+INTEGRATION, 1)
     source = source.replace(AUDIO_MARKER,AUDIO_MARKER+'\nif(turnAtStart)r6WhisperSubmit(turnAtStart.id,blob);',1)
     source = source.replace(VOSK_MARKER,'/* AutoQA-only: Vosk auto-turn queue disabled; Whisper uses original recording. */',1)

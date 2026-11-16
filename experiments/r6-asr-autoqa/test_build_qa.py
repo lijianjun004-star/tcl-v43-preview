@@ -3,6 +3,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from build_qa import patch_app,build,INTEGRATION, PATCH_HEADER
 
 FIXTURE='''import { parseDocumentFile } from './lib/parser.js';
+const STORE_NAME='tcl-specialty-v352-asr';
+new BroadcastChannel('tcl-specialty-v352-asr-workflow');
+const VOSK_CACHE_NAME='tcl-specialty-v352-asr-vosk-v1';
 const perQuestionAudio=new Map();
 function f(){
 const blob=new Blob([]);
@@ -15,6 +18,10 @@ class BuildTests(unittest.TestCase):
     def test_all_hooks_present_exactly_once(self):
         out=patch_app(FIXTURE)
         self.assertTrue(out.startswith(PATCH_HEADER))
+        self.assertNotIn("'tcl-specialty-v352-asr'",out)
+        self.assertIn("'tcl-specialty-v352-asr-autoqa'",out)
+        self.assertIn("'tcl-specialty-v352-asr-autoqa-workflow'",out)
+        self.assertIn("'tcl-specialty-v352-asr-autoqa-vosk-v1'",out)
         self.assertIn('if(turnAtStart)r6WhisperSubmit(turnAtStart.id,blob);',out)
         self.assertEqual(out.count('r6WhisperSubmit(turnAtStart.id,blob)'),1)
         self.assertIn('Whisper 本题原始录音转写完成',out)
