@@ -722,6 +722,18 @@ def verify_r23_additive_release(before, after, archive, zipbytes):
         extract_zip_safely(zip_path,site)
         if (site/'tcl-v352-asr-autoqa-r23').exists():
             raise GateFailure('R2.3 would overwrite existing test path')
+        # Recreate the R2.1 stage from the unchanged main sources, exactly as
+        # the Pages workflow does before the new R2.3 stage is reached.
+        r21_runner=pathlib.Path('release-ci/stage_r21.py').resolve()
+        r21_archive=pathlib.Path('experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64').resolve()
+        if not r21_runner.is_file() or not r21_archive.is_file():
+            raise GateFailure('Trusted preceding R2.1 stage inputs are missing')
+        try:
+            subprocess.run([sys.executable,str(r21_runner),'--site-dir',str(site),
+                            '--archive',str(r21_archive)],
+                           cwd=root,check=True,timeout=240)
+        except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as err:
+            raise GateFailure('Prerequisite R2.1 stage failed: '+str(err))
         source=root/'r23-site.tar.gz.b64'
         source.write_bytes(archive)
         runner=pathlib.Path('release-ci/stage_r23.py').resolve()
