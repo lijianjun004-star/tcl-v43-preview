@@ -2,7 +2,9 @@
 
 任务：TCL-R24-DELIVERY-20261116。用户已授权将该项目材料交给Gemini，使用现有Google AI Pro；最多1条业务请求、0次自动重试，不购买API或升级。
 
-当前实际状态：Google登录连接尚未完成，Gemini业务调用0次。以下是准备好的交接，不是Gemini返回。
+当前实际状态：已实际打开云端 Gemini，页面显示“Sign in / Sign in to save activity”，当前会话未登录。浏览器尝试 1 次已结束，附件未挂载、业务请求 0 次、未取得 Gemini 回复；状态 BLOCKED_SIGN_IN，已停止该路线且未自动重试。用户报告已保存登录，但该状态未出现在本次云端会话，不能据此判断其他浏览器是否已登录。 以下是准备好的交接，不是Gemini返回。
+
+浏览器运行记录：`6d32caf6-93f0-45e3-be04-d9488a187a64`；未登录默认显示 Flash-Lite，不是选定的复验模型。详细状态在源码分支 `fix/r24-delivery-20261116` 的 `evidence/r24-delivery/gemini-status.json`。原交付 ZIP 与冻结复验输入保持原哈希；本条是后续状态更正。
 
 请在Gemini支持附件的会话中，从Drive明确附加 `TCL-R24-Gemini-复验输入-b086a0c5.txt`，不要仅粘贴链接并假定已经读到。文件：https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk 。SHA256 d13c3e3f54cd39fce7fd32fc7ddc80f42e49962cf21c094ed64e75676fdfbc32。
 
