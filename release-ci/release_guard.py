@@ -588,6 +588,55 @@ def inspect_zip_bytes_for_autoqa(raw):
         return inspect_zip(file)
 
 
+
+# Exactly one namespace isolation correction to the newly staged AutoQA route.
+AUTOQA_NAMESPACE_PATCH = {
+    'experiments/r6-asr-autoqa/build_qa.py': 'd90831cba6f243a1975278bdea5437fb2849f33b5bc9882c250a7ca4bf3cbc9e',
+    'experiments/r6-asr-autoqa/test_build_qa.py': '780f83c1180dc58875f9312a8b0cec7380d63619d9eb3c9625246a42e596db50',
+}
+
+
+def verify_autoqa_namespace_patch(workflow, bundle, source_files):
+    if sha256(bundle) != LAB_BASELINE_ZIP_SHA256 or workflow.count(AUTOQA_STEP) != 1:
+        raise GateFailure('AutoQA namespace patch requires exactly the existing immutable R6 Pages deployment')
+    if set(source_files) != set(AUTOQA_FILES):
+        raise GateFailure('AutoQA namespace patch files invalid')
+    for name, expected in AUTOQA_FILES.items():
+        wanted = AUTOQA_NAMESPACE_PATCH.get(name, expected)
+        if sha256(source_files[name]) != wanted:
+            raise GateFailure('AutoQA namespace patch SHA differs: ' + name)
+    if check_workflow(workflow, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('AutoQA namespace patch cannot change site.zip checksum')
+    _, baseline = inspect_zip_bytes_for_autoqa(bundle)
+    if any(n.startswith(AUTOQA_PATH) for n in baseline):
+        raise GateFailure('AutoQA path collision')
+    with tempfile.TemporaryDirectory() as temp:
+        root = pathlib.Path(temp)
+        site = root / '_site'
+        for name, value in baseline.items():
+            dest = site / name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(value)
+        module_dir = root / 'experiments' / 'r6-asr-autoqa'
+        module_dir.mkdir(parents=True)
+        for name, value in source_files.items():
+            (module_dir / pathlib.Path(name).name).write_bytes(value)
+        subprocess.run([sys.executable,str(module_dir/'test_build_qa.py')],check=True,cwd=root)
+        subprocess.run([sys.executable,str(module_dir/'build_qa.py'),str(site),str(module_dir)],check=True,cwd=root)
+        js = (site / AUTOQA_PATH / 'app.js').read_text()
+        for isolated in (
+            "'tcl-specialty-v352-asr-autoqa'",
+            "'tcl-specialty-v352-asr-autoqa-workflow'",
+            "'tcl-specialty-v352-asr-autoqa-vosk-v1'",
+        ):
+            if isolated not in js:
+                raise GateFailure('AutoQA state namespace not isolated: ' + isolated)
+        for name, value in baseline.items():
+            if (site / name).read_bytes() != value:
+                raise GateFailure('AutoQA namespace patch altered released asset: ' + name)
+    return True
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -599,7 +648,15 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == set(AUTOQA_FILES) | {'.github/workflows/pages.yml'}:
+    if changed == set(AUTOQA_NAMESPACE_PATCH):
+        contents = {p: show(head, p) for p in AUTOQA_FILES}
+        verify_autoqa_namespace_patch(
+            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, 'site.zip'),
+            contents,
+        )
+        print('verify-pages-release PASS: AutoQA namespace isolation fix, R6 ZIP unchanged')
+    elif changed == set(AUTOQA_FILES) | {'.github/workflows/pages.yml'}:
         provided = {p: show(head, p) for p in AUTOQA_FILES}
         verify_autoqa_release(
             show(base, '.github/workflows/pages.yml').decode('utf-8'),
