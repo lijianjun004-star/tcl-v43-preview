@@ -637,6 +637,57 @@ def verify_autoqa_namespace_patch(workflow, bundle, source_files):
     return True
 
 
+
+# R2.1: one exact additional test route; input source is a SHA-pinned archive.
+R21_ARCHIVE = 'experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64'
+R21_ARCHIVE_B64_SHA = 'fb5cfbea6640b671c13c1c73695e872f08b7cb8bf4c22ce24679d80b44eb4b76'
+R21_APP_SHA = '7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8'
+R21_STEP = (
+    '      - name: Stage R2.1 isolated original-audio ASR pilot\n'
+    '        run: |\n'
+    '          python3 release-ci/stage_r21.py --site-dir _site --archive experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64\n'
+    '          echo "7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8  _site/tcl-v352-asr-autoqa-r2/app.js" | sha256sum --check --strict\n'
+)
+
+
+def verify_r21_release(before, after, archive_bytes, baseline_bytes):
+    if sha256(baseline_bytes) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.1 release would modify stable R6 site.zip')
+    if sha256(archive_bytes) != R21_ARCHIVE_B64_SHA:
+        raise GateFailure('R2.1 upload did not match SHA-pinned source')
+    if check_workflow(before, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.1 baseline workflow hash mismatch')
+    anchor = '      - uses: actions/configure-pages@v5\n'
+    if before.count(anchor) != 1 or R21_STEP in before:
+        raise GateFailure('R2.1 workflow insertion anchor is invalid')
+    if after != before.replace(anchor,R21_STEP+anchor,1):
+        raise GateFailure('R2.1 attempted unrelated workflow modification')
+    if check_workflow(after, LAB_BASELINE_ZIP_SHA256) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.1 cannot change site.zip checksum')
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        zip_file=root/'baseline.zip'
+        zip_file.write_bytes(baseline_bytes)
+        site=root/'_site'
+        extract_zip_safely(zip_file,site)
+        if (site/'tcl-v352-asr-autoqa-r2').exists():
+            raise GateFailure('R2.1 would overwrite an existing Pages path')
+        archive=root/'source.tar.gz.b64'
+        archive.write_bytes(archive_bytes)
+        runner=pathlib.Path(__file__).resolve().parent/'stage_r21.py'
+        if not runner.is_file():
+            raise GateFailure('Trusted R2.1 builder missing from current main')
+        try:
+            subprocess.run([sys.executable,str(runner),'--site-dir',str(site),
+                            '--archive',str(archive),'--browser'],
+                           check=True,cwd=root,timeout=540)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            raise GateFailure('R2.1 independent QA or browser E2E failed: '+str(exc))
+        if sha256((site/'tcl-v352-asr-autoqa-r2/app.js').read_bytes()) != R21_APP_SHA:
+            raise GateFailure('R2.1 built app hash mismatch')
+    return True
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -646,9 +697,17 @@ def verify_pr(base, head):
         return subprocess.check_output(['git', 'show', f'{ref}:{path}'])
     changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
     release = {'site.zip', '.github/workflows/pages.yml'}
-    ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py'}
+    ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == set(AUTOQA_NAMESPACE_PATCH):
+    if changed == {R21_ARCHIVE,'.github/workflows/pages.yml'}:
+        verify_r21_release(
+            show(base,'.github/workflows/pages.yml').decode('utf-8'),
+            show(head,'.github/workflows/pages.yml').decode('utf-8'),
+            show(head,R21_ARCHIVE),
+            show(base,'site.zip'),
+        )
+        print('verify-pages-release PASS: pinned R2.1 sources, 7+5+4 tests and real Chromium UI with mocked speech')
+    elif changed == set(AUTOQA_NAMESPACE_PATCH):
         contents = {p: show(head, p) for p in AUTOQA_FILES}
         verify_autoqa_namespace_patch(
             show(base, '.github/workflows/pages.yml').decode('utf-8'),
@@ -692,6 +751,8 @@ def verify_pr(base, head):
         # Read-only runner, no secrets; CI updates are separately reviewed changes.
         for name in ('release-ci/release_guard.py', 'release-ci/test_release_guard.py'):
             compile(show(head, name), name, 'exec')
+        if 'release-ci/stage_r21.py' in changed:
+            compile(show(head, 'release-ci/stage_r21.py'), 'release-ci/stage_r21.py', 'exec')
         subprocess.run([sys.executable, 'release-ci/test_release_guard.py'], check=True)
         print('verify-pages-release PASS: dedicated CI update and regression tests')
     elif changed <= docs:
