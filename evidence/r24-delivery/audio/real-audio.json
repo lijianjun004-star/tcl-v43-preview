@@ -1,0 +1,363 @@
+{
+  "scope": "REAL public Mandarin corpus playback; Linux Chromium, no microphone hardware or iPhone; no paid API",
+  "models": {
+    "base": {
+      "status": "PASS",
+      "samples": [
+        {
+          "file": "zh-0.wav",
+          "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 0,
+          "result": {
+            "text": "你好 我想要了解一下我的銀行賬會有多少?謝謝",
+            "duration": 7.765374149659864,
+            "rms": 0.11322461516431072,
+            "model": "onnx-community/whisper-base",
+            "normalized": "你好我想要了解一下我的银行账会有多少谢谢"
+          },
+          "status": "PASS",
+          "reference_characters": 22,
+          "character_errors": 3,
+          "cer": 0.13636363636363635,
+          "seconds": 11.075
+        },
+        {
+          "file": "zh-1.wav",
+          "reference": "我想查询我目前的账户余额",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 1,
+          "result": {
+            "text": "莫向查詢:我目前的張婦宇兒",
+            "duration": 4.778616780045351,
+            "rms": 0.09646346630214116,
+            "model": "onnx-community/whisper-base",
+            "normalized": "莫向查询我目前的张妇宇儿"
+          },
+          "status": "PASS",
+          "reference_characters": 12,
+          "character_errors": 6,
+          "cer": 0.5,
+          "seconds": 3.858
+        },
+        {
+          "file": "zh-2.wav",
+          "reference": "我的账户还有多少钱呢",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 2,
+          "result": {
+            "text": "我在账目好多少钱呢",
+            "duration": 4.266621315192744,
+            "rms": 0.08693354842888233,
+            "model": "onnx-community/whisper-base",
+            "normalized": "我在账目好多少钱呢"
+          },
+          "status": "PASS",
+          "reference_characters": 10,
+          "character_errors": 4,
+          "cer": 0.4,
+          "seconds": 3.674
+        }
+      ],
+      "diagnostics": [
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "bytes": 62182,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "duration": 7.765374149659864,
+          "rms": 0.11322461516431072,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "source": "https://huggingface.co/"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "bytes": 38288,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "duration": 4.778616780045351,
+          "rms": 0.09646346630214116,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "bytes": 34192,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "duration": 4.266621315192744,
+          "rms": 0.08693354842888233,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        }
+      ],
+      "progress_events": 990,
+      "aggregate_cer": 0.29545454545454547,
+      "accuracy_acceptance": "NOT ACCEPTED: only three telephone-banking samples, no authorized TCL speech corpus"
+    },
+    "tiny": {
+      "status": "PASS",
+      "samples": [
+        {
+          "file": "zh-0.wav",
+          "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 0,
+          "result": {
+            "text": "那好想要聊天下我的影響上会有多少谢谢",
+            "duration": 7.765374149659864,
+            "rms": 0.11322461516431072,
+            "model": "onnx-community/whisper-tiny",
+            "normalized": "那好想要聊天下我的影响上会有多少谢谢"
+          },
+          "status": "PASS",
+          "reference_characters": 22,
+          "character_errors": 11,
+          "cer": 0.5,
+          "seconds": 7.48
+        },
+        {
+          "file": "zh-1.wav",
+          "reference": "我想查询我目前的账户余额",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 1,
+          "result": {
+            "text": "我想他先用我目前的张云语",
+            "duration": 4.778616780045351,
+            "rms": 0.09646346630214116,
+            "model": "onnx-community/whisper-tiny",
+            "normalized": "我想他先用我目前的张云语"
+          },
+          "status": "PASS",
+          "reference_characters": 12,
+          "character_errors": 7,
+          "cer": 0.5833333333333334,
+          "seconds": 2.111
+        },
+        {
+          "file": "zh-2.wav",
+          "reference": "我的账户还有多少钱呢",
+          "source": "PolyAI/minds14 zh-CN train",
+          "row_idx": 2,
+          "result": {
+            "text": "我在这儿看到多少钱呢",
+            "duration": 4.266621315192744,
+            "rms": 0.08693354842888233,
+            "model": "onnx-community/whisper-tiny",
+            "normalized": "我在这儿看到多少钱呢"
+          },
+          "status": "PASS",
+          "reference_characters": 10,
+          "character_errors": 5,
+          "cer": 0.5,
+          "seconds": 1.99
+        }
+      ],
+      "diagnostics": [
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "bytes": 62182,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "duration": 7.765374149659864,
+          "rms": 0.11322461516431072,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "source": "https://huggingface.co/"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "bytes": 38288,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "duration": 4.778616780045351,
+          "rms": 0.09646346630214116,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "decode-start",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "bytes": 34192,
+          "mime": "audio/x-wav"
+        },
+        {
+          "stage": "decoded",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "duration": 4.266621315192744,
+          "rms": 0.08693354842888233,
+          "sampleRate": 16000
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        }
+      ],
+      "progress_events": 440,
+      "aggregate_cer": 0.5227272727272727,
+      "accuracy_acceptance": "NOT ACCEPTED: only three telephone-banking samples, no authorized TCL speech corpus"
+    }
+  },
+  "decode": [
+    {
+      "file": "evidence/r24/zh-1.wav",
+      "sampleRate": 16000,
+      "duration": 4.778616780045351,
+      "samples": 76458,
+      "rms": 0.09646346630214116,
+      "bytes": 38288,
+      "mime": "audio/x-wav",
+      "status": "PASS"
+    },
+    {
+      "file": "qa-audio/zh-1-stereo.m4a",
+      "sampleRate": 16000,
+      "duration": 4.77798185941043,
+      "samples": 76448,
+      "rms": 0.06816983633526177,
+      "bytes": 75470,
+      "mime": "audio/mp4",
+      "status": "PASS"
+    },
+    {
+      "file": "qa-audio/zh-1-stereo.webm",
+      "sampleRate": 16000,
+      "duration": 4.778117913832199,
+      "samples": 76450,
+      "rms": 0.06799684024687565,
+      "bytes": 48638,
+      "mime": "video/webm",
+      "status": "PASS"
+    },
+    {
+      "file": "qa-audio/zh-1-stereo.wav",
+      "sampleRate": 16000,
+      "duration": 4.778639455782313,
+      "samples": 76459,
+      "rms": 0.06821598447485455,
+      "bytes": 843030,
+      "mime": "audio/x-wav",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "bridge_sha256": "b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4",
+  "sources": [
+    {
+      "file": "zh-0.wav",
+      "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 0,
+      "sha256": "caa5e4bf631c4a1d474d82c701eabde15dd5b5e2a3fc43e8c8b3dcb1506e2151"
+    },
+    {
+      "file": "zh-1.wav",
+      "reference": "我想查询我目前的账户余额",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 1,
+      "sha256": "c8bd31c7f283c47b392f8fc8ca8ba8a9bf7d5efc3a516f8aa17a81cfb567bd77"
+    },
+    {
+      "file": "zh-2.wav",
+      "reference": "我的账户还有多少钱呢",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 2,
+      "sha256": "d01cbaa2178447c98b9849ee43b041a01e29f5502c36f5e60fe7ef4c1bd7265d"
+    }
+  ],
+  "browser": "156.0.8078.79"
+}

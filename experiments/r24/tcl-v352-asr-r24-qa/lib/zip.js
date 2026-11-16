@@ -9,6 +9,17 @@ export const ZIP_LIMITS = {
   maxCompressionRatio: 120                // Guard against zip bombs
 };
 
+const CRC_TABLE = Uint32Array.from({length:256}, (_, index) => {
+  let value=index;
+  for(let bit=0;bit<8;bit++) value=(value&1)?0xedb88320^(value>>>1):value>>>1;
+  return value>>>0;
+});
+function crc32(bytes) {
+  let crc=0xffffffff;
+  for(const byte of bytes) crc=CRC_TABLE[(crc^byte)&255]^(crc>>>8);
+  return (crc^0xffffffff)>>>0;
+}
+
 // Pure-JS RFC 1951 raw INFLATE fallback for environments where DecompressionStream('deflate-raw') is absent.
 export function inflateRawSync(src, maxOutputBytes = ZIP_LIMITS.maxSingleEntryBytes) {
   let bitBuf = 0, bitCnt = 0, pos = 0;
@@ -184,10 +195,16 @@ export async function readZipEntries(buffer, limits = ZIP_LIMITS) {
   const cdSize = view.getUint32(eocdOffset + 12, true);
   const cdOffset = view.getUint32(eocdOffset + 16, true);
 
+  if (view.getUint16(eocdOffset + 4, true) !== 0 || view.getUint16(eocdOffset + 6, true) !== 0 ||
+      view.getUint16(eocdOffset + 8, true) !== totalEntries ||
+      eocdOffset + 22 + view.getUint16(eocdOffset + 20, true) !== bytes.byteLength) {
+    throw new Error('不支持分卷 ZIP 或损坏的目录尾部');
+  }
+
   if (totalEntries > limits.maxEntries) {
     throw new Error(`文档内包含子文件过多（${totalEntries} > ${limits.maxEntries}），拒绝解析以防止资源耗尽`);
   }
-  if (cdOffset + cdSize > bytes.byteLength) {
+  if (cdOffset + cdSize !== eocdOffset) {
     throw new Error('文件结构损坏：ZIP 中央目录超出文件边界');
   }
 
@@ -197,16 +214,21 @@ export async function readZipEntries(buffer, limits = ZIP_LIMITS) {
   const decoder = new TextDecoder('utf-8');
 
   for (let i = 0; i < totalEntries; i++) {
-    if (ptr + 46 > bytes.byteLength || view.getUint32(ptr, true) !== 0x02014b50) {
+    if (ptr + 46 > eocdOffset || view.getUint32(ptr, true) !== 0x02014b50) {
       throw new Error('文件结构损坏：ZIP 中央目录项签名无效');
     }
     const compressionMethod = view.getUint16(ptr + 10, true);
+    const flags = view.getUint16(ptr + 8, true);
+    const checksum = view.getUint32(ptr + 16, true);
     const compressedSize = view.getUint32(ptr + 20, true);
     const uncompressedSize = view.getUint32(ptr + 24, true);
     const nameLen = view.getUint16(ptr + 28, true);
     const extraLen = view.getUint16(ptr + 30, true);
     const commentLen = view.getUint16(ptr + 32, true);
     const localHeaderOffset = view.getUint32(ptr + 42, true);
+
+    if ((flags & 1) || ![0,8].includes(compressionMethod)) throw new Error('不支持加密或特殊压缩格式的文档');
+    if (ptr + 46 + nameLen + extraLen + commentLen > eocdOffset) throw new Error('ZIP 目录项超出边界');
 
     if (uncompressedSize > limits.maxSingleEntryBytes) {
       throw new Error('文档内部单文件体积过大，已触发安全阻断');
@@ -221,38 +243,42 @@ export async function readZipEntries(buffer, limits = ZIP_LIMITS) {
 
     const name = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + nameLen));
     ptr += 46 + nameLen + extraLen + commentLen;
+    if (entries.has(name)) throw new Error('ZIP 包含重复文件名');
 
     entries.set(name, {
       name,
+      flags,
+      checksum,
       compressionMethod,
       compressedSize,
       uncompressedSize,
       localHeaderOffset
     });
   }
+  if (ptr !== eocdOffset) throw new Error('ZIP 中央目录大小不匹配');
 
   async function extractEntry(entryName) {
     const meta = entries.get(entryName);
     if (!meta) return null;
     const lh = meta.localHeaderOffset;
-    if (lh + 30 > bytes.byteLength || view.getUint32(lh, true) !== 0x04034b50) {
+    if (lh + 30 > cdOffset || view.getUint32(lh, true) !== 0x04034b50) {
       throw new Error(`ZIP 局部文件头损坏：${entryName}`);
     }
     const localNameLen = view.getUint16(lh + 26, true);
     const localExtraLen = view.getUint16(lh + 28, true);
     const dataStart = lh + 30 + localNameLen + localExtraLen;
     const dataEnd = dataStart + meta.compressedSize;
-    if (dataEnd > bytes.byteLength) {
+    if (dataEnd > cdOffset || dataStart > cdOffset) {
       throw new Error(`ZIP 数据段超出文件范围：${entryName}`);
     }
+    if (view.getUint16(lh + 6, true) !== meta.flags || view.getUint16(lh + 8, true) !== meta.compressionMethod ||
+        decoder.decode(bytes.subarray(lh + 30, lh + 30 + localNameLen)) !== meta.name) throw new Error('ZIP 局部文件头与目录不一致');
+    if (!(meta.flags & 8) && (view.getUint32(lh + 14, true) !== meta.checksum ||
+        view.getUint32(lh + 18, true) !== meta.compressedSize || view.getUint32(lh + 22, true) !== meta.uncompressedSize)) throw new Error('ZIP 文件长度或校验信息不一致');
     const slice = bytes.subarray(dataStart, dataEnd);
-    if (meta.compressionMethod === 0) {
-      return slice;
-    }
-    if (meta.compressionMethod === 8) {
-      return inflateRawSync(slice, limits.maxSingleEntryBytes);
-    }
-    throw new Error(`不支持的 ZIP 压缩算法 (${meta.compressionMethod})：${entryName}`);
+    const output = meta.compressionMethod === 0 ? slice : inflateRawSync(slice, meta.uncompressedSize);
+    if (output.byteLength !== meta.uncompressedSize || crc32(output) !== meta.checksum) throw new Error('ZIP 内容长度或 CRC 校验失败，文件可能已损坏');
+    return output;
   }
 
   async function extractText(entryName) {

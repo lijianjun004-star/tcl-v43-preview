@@ -1,0 +1,11 @@
+{
+  "mode": "Chromium real UI and IndexedDB; synthetic persisted pagehide/pageshow events; text-only, no model/hardware",
+  "source_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "checks": {
+    "stale_review_replaced_by_recovery_home": true,
+    "restored_review_edits_commit": true
+  },
+  "errors": [],
+  "source_unchanged": true,
+  "ok": true
+}

@@ -1,0 +1,19 @@
+{
+  "scope": "config-only cloud network check; not complete mirror weights nor mainland network acceptance",
+  "results": [
+    {
+      "url": "https://hf-mirror.com/onnx-community/whisper-base/resolve/27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c/config.json",
+      "status": 200,
+      "bytes": 2243,
+      "model_type": "whisper",
+      "seconds": 0.55
+    },
+    {
+      "url": "https://hf-mirror.com/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/config.json",
+      "status": 200,
+      "bytes": 2243,
+      "model_type": "whisper",
+      "seconds": 0.28
+    }
+  ]
+}

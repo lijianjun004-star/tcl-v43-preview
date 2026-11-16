@@ -1,0 +1,12 @@
+[
+  {
+    "fixture": "column-outside-excel.xlsx",
+    "accepted": true,
+    "cells": 16385
+  },
+  {
+    "fixture": "bad-crc.docx",
+    "accepted": true,
+    "cells": null
+  }
+]

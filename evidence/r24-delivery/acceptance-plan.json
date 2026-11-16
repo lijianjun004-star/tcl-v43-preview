@@ -1,0 +1,29 @@
+{
+  "task_id": "TCL-R24-DELIVERY-20261116",
+  "source_main": "b672281725392a2e23e656dd5ff410531f660175",
+  "source_candidate": "d4d8057f74d93be897b1bb034b3e1d348c9e7562",
+  "input_zip_sha256": "1c4768ca06577fb12e9c1d1397fdb9e4c3b5aa7e66aa034c1658c2b736873030",
+  "scope": "R24 local practice room; preserve previous deployments and browser data; no new backend or paid API",
+  "gemini_budget": {
+    "business_requests": 1,
+    "automatic_retries": 0,
+    "status": "awaiting user Google sign-in"
+  },
+  "acceptance": [
+    "Prior regression tests pass",
+    "Three question record/transcribe/manual edit/review maps to correct immutable turn",
+    "Completed local session text/audio/video survives reload and failures are visible",
+    "Single Whisper runtime/model with bounded decoding and no concurrent inference",
+    "TXT CSV DOCX XLSX terms import works and malformed input rejected safely",
+    "Mobile-size layouts usable; no new application errors",
+    "Trusted baseline release gate passes before merge",
+    "GitHub Pages deployed version and old routes checked",
+    "Gemini review requested via existing subscription when login available"
+  ],
+  "not_equivalent": [
+    "Chromium or WebKit emulation is not iPhone/Android hardware",
+    "Public phone corpus is not business-domain speech accuracy",
+    "Rules are not AI grading",
+    "Local name profiles are not authentication or cloud sync"
+  ]
+}

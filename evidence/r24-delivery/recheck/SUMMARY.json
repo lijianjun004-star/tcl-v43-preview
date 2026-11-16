@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "completed_at": "2026-11-16T17:48:15.370111+00:00",
+  "app_sha256": "609fded562c0f854ec805e12cbbed1a7ed36f694c56d17e359cc0b2dbf1b5d88",
+  "tests": [
+    {
+      "report": "browser-mock.json",
+      "result": "PASS",
+      "sha256": "9391c8359b48e0cf304d814d1114b700fe5906385ae86d0e1ef808d5ffbd9291"
+    },
+    {
+      "report": "glossary-flow.json",
+      "result": "PASS",
+      "sha256": "358d4b46cb3828bffeb91581eab79f762f83e1747246271194aa94190350e852"
+    },
+    {
+      "report": "glossary-browser.json",
+      "result": "PASS",
+      "sha256": "9f5df0c6c9b95c2adb646408ed20bd0a8c9d59283c68682a8bcd8b71407b8303"
+    },
+    {
+      "report": "imports.json",
+      "result": "PASS",
+      "sha256": "8e78d831b7ccd40ba825c7a9f7011913f5f101a2124a766db1638d603e9be589"
+    },
+    {
+      "report": "knowledge-import-after.json",
+      "result": "PASS",
+      "sha256": "9f44b1035d4cde1f2d583fb1bbb8eb3fa0aae3dd99412e42738f4f6c3ace9bc2"
+    },
+    {
+      "report": "office-compatibility.json",
+      "result": "PASS",
+      "sha256": "ce36ca5945fe178c53047100589a4c8ccc495ca413e6e940d6ce09327e3e6624"
+    }
+  ],
+  "scope": "Desktop Chromium; synthetic documents, mock model and synthetic microphone. No phone hardware/TCL accuracy/cloud-import claims."
+}

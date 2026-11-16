@@ -25,11 +25,13 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const r6WhisperPageAlive=()=>alive;
  const r6WhisperEngine=blob=>new Promise((resolve,reject)=>pending.push({blob,resolve,reject}));
  const renderTurnStatus=()=>{},ELEM=()=>null,complianceHints=()=>[],readR23ModelPreference=()=> 'tiny';
- let activeTurn=null; const saveTurn=async t=>saved.push({...t});
+ let activeTurn=null,transcriptBusy=false,oneShotAsrJob=null,asrInferJob=null,voskLoadJob=null; const drainQuestionAsrQueue=()=>{}; const saveTurn=async t=>saved.push({...t});
  const normalizeInterfaceDecimals=text=>({text,changes:0});
  function add(id){const t={id,runId,boardId:'b',platform:'p',answer:'',transcript:'',keyPoints:[]};sessionTurns.push(t);perQuestionAudio.set(id,{size:10,id});return t;}
  `+valid+normalize+body,context);
  const run=s=>vm.runInContext(s,context);
+ run(source.slice(source.indexOf('function r6WhisperCancelAll('),source.indexOf('function r6WhisperSubmit(')));
+ assert.equal(run(`normalizeWhisperChinese('感谢观看，这款电视支持HDMI。')`),'感谢观看，这款电视支持HDMI。');assert.equal(run(`normalizeWhisperChinese('谢谢观看！')`),'');count++;
  // First result becomes stale during inference; successor must still be processed.
  run(`add('one');add('two');add('three');for(const t of sessionTurns)r6WhisperSubmit(t.id,perQuestionAudio.get(t.id));sessionTurns[0].audioRevision=1;pending[0].resolve({text:'旧结果'});`);
  await tick();assert.equal(run('pending.length'),2);count++;
@@ -49,5 +51,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
  // Cancellation leaves audio available and blocks late writes.
  run(`add('six');r6WhisperSubmit('six',perQuestionAudio.get('six'));r6WhisperCancelSeq++;pending[5].resolve({text:'不得写入'});`);await tick();
  assert.equal(run('sessionTurns[5].answer'),'');assert.equal(run('perQuestionAudio.has("six")'),true);count++;
+ run(`add('old-run');r6WhisperSubmit('old-run',perQuestionAudio.get('old-run'));r6WhisperCancelAll();runId='new-run';add('new-question');r6WhisperSubmit('new-question',perQuestionAudio.get('new-question'));pending[6].resolve({text:'旧场不得回写'});`);await tick();
+ assert.equal(run('pending.length'),8);run(`pending[7].resolve({text:'新场回答'});`);await tick();assert.equal(run('sessionTurns.at(-1).answer'),'新场回答');count++;
  console.log(JSON.stringify({status:'PASS',checks:count,mode:'actual app functions in Node VM; mocked inference, not real speech'},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,22 @@
+{
+  "scope": "Actual exported bridge and 3 simultaneous callers; model/decode are deterministic mocks, no real speech accuracy claim",
+  "baseline_commit": "d4d8057f74d93be897b1bb034b3e1d348c9e7562",
+  "results": [
+    {
+      "version": "baseline",
+      "source_sha256": "a1c2024d47853e85558cffba28772e95e4b02336d351a9684fcaa3dbc9c5d59e",
+      "loads": 1,
+      "calls": 3,
+      "max_concurrent_inferences": 2,
+      "status": "FAIL_REPRODUCED"
+    },
+    {
+      "version": "candidate",
+      "source_sha256": "b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4",
+      "loads": 1,
+      "calls": 3,
+      "max_concurrent_inferences": 1,
+      "status": "PASS"
+    }
+  ]
+}

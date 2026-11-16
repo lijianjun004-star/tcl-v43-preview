@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "scope": "REAL Tiny fresh pipeline using browser model cache with runtime already imported; not offline page startup, not device/mainland",
+  "browser": "156.0.8078.79",
+  "online": {
+    "result": {
+      "text": "我在这儿看到多少钱呢",
+      "duration": 4.266621315192744,
+      "rms": 0.08693354842888233,
+      "model": "onnx-community/whisper-tiny"
+    },
+    "cacheFiles": [
+      {
+        "key": "transformers-cache",
+        "urls": [
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/preprocessor_config.json",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/config.json",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/tokenizer_config.json",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/tokenizer.json",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/generation_config.json",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/onnx/encoder_model_quantized.onnx",
+          "https://huggingface.co/onnx-community/whisper-tiny/resolve/ff4177021cc41f7db950912b73ea4fdf7d01d8e7/onnx/decoder_model_merged_quantized.onnx"
+        ]
+      }
+    ]
+  },
+  "offline_fresh_pipeline": {
+    "text": "我在这儿看到多少钱呢",
+    "duration": 4.266621315192744,
+    "rms": 0.08693354842888233,
+    "model": "onnx-community/whisper-tiny"
+  }
+}

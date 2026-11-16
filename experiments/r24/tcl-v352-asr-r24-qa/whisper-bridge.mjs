@@ -12,7 +12,12 @@ export function resolveWhisperModel(preset) {
   if (preset !== 'base' && preset !== 'tiny') throw new Error('unsupported offline model preset');
   return SUPPORTED_WHISPER_MODELS[preset];
 }
-// Enhanced is enabled by default in this ISOLATED R2.3 experiment; Tiny is the safe low-memory fallback.
+// Freeze the actual model artifacts; a mutable 'main' revision would make QA irreproducible.
+export const WHISPER_REVISIONS = Object.freeze({
+  base: '27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c',
+  tiny: 'ff4177021cc41f7db950912b73ea4fdf7d01d8e7',
+});
+// Base is the default; Tiny trades recognition capacity for lower memory use.
 const DEFAULT_PRESET = 'base';
 const CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const PRIMARY_HF_HOST = 'https://huggingface.co/';
@@ -68,7 +73,9 @@ function decodeAudioBufferCompat(ctx, arrayBuffer) {
   });
 }
 
-export async function prepareAudio(blob, { maxSeconds = 120, decodeTimeoutMs } = {}) {
+export async function prepareAudio(blob, { maxSeconds = 120, decodeTimeoutMs, signal } = {}) {
+  if (!Number.isFinite(maxSeconds) || maxSeconds <= 0 || maxSeconds > 180) throw new Error('invalid audio duration limit');
+  if (signal?.aborted) throw new Error('cancelled');
   const Context = globalThis.AudioContext || globalThis.webkitAudioContext;
   const Offline = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
   if (!Context || !Offline) throw new Error('AudioContext unavailable');
@@ -79,8 +86,8 @@ export async function prepareAudio(blob, { maxSeconds = 120, decodeTimeoutMs } =
   const timeoutMs = Number(decodeTimeoutMs) || Number(globalThis.__ASR_DECODE_TIMEOUT_MS) || 30000;
   const ctx = new Context();
   try {
-    const rawBytes = await withBoundedTimeout(blob.arrayBuffer(), timeoutMs, '读取音频字节');
-    const pcm = await withBoundedTimeout(decodeAudioBufferCompat(ctx, rawBytes), timeoutMs, '音频解码');
+    const rawBytes = await withBoundedTimeout(blob.arrayBuffer(), timeoutMs, '读取音频字节', signal);
+    const pcm = await withBoundedTimeout(decodeAudioBufferCompat(ctx, rawBytes), timeoutMs, '音频解码', signal);
     if (!pcm || !Number.isFinite(pcm.duration) || pcm.duration <= 0 || pcm.duration > maxSeconds) {
       throw new Error('invalid or overlong audio');
     }
@@ -104,11 +111,12 @@ export async function prepareAudio(blob, { maxSeconds = 120, decodeTimeoutMs } =
     }
     source.connect(offline.destination);
     source.start();
-    const rendered = await withBoundedTimeout(offline.startRendering(), timeoutMs, '音频重采样');
+    const rendered = await withBoundedTimeout(offline.startRendering(), timeoutMs, '音频重采样', signal);
     const data = rendered.getChannelData(0);
     let sumSq = 0;
     for (let i = 0; i < data.length; i++) sumSq += data[i] * data[i];
     const rms = data.length ? Math.sqrt(sumSq / data.length) : 0;
+    if (!Number.isFinite(rms)) throw new Error('audio contains invalid PCM samples');
     return { data: new Float32Array(data), sampleRate: 16000, duration: pcm.duration, rms };
   } finally {
     await ctx.close?.().catch?.(() => {});
@@ -124,7 +132,8 @@ export function createLocalWhisper({
   modelPreset = DEFAULT_PRESET,
 } = {}) {
   const MODEL_ID = resolveWhisperModel(modelPreset);
-  const emit = (stage, fields = {}) => { try { onDiagnostic({stage, model: MODEL_ID, ...fields}); } catch {} };
+  const revision = WHISPER_REVISIONS[modelPreset];
+  const emit = (stage, fields = {}) => { try { onDiagnostic({stage, model: MODEL_ID, revision, ...fields}); } catch {} };
   const progress_callback = info => {
     if (info.status === 'progress') onProgress('下载模型：' + Math.round(Number(info.loaded)||0) + '/' + Math.round(Number(info.total)||0) + ' 字节 · ' + Math.round(Number(info.progress)||0) + '%');
   };
@@ -153,7 +162,7 @@ export function createLocalWhisper({
         if (env) env.remoteHost = globalThis.__WHISPER_FORCE_MIRROR ? MIRROR_HF_HOST : PRIMARY_HF_HOST;
         emit('model-download', {source: globalThis.__WHISPER_FORCE_MIRROR ? MIRROR_HF_HOST : PRIMARY_HF_HOST});
         cachedPipe = await withBoundedTimeout(
-          pipeline('automatic-speech-recognition', MODEL_ID, { device: 'wasm', dtype: 'q8', progress_callback }),
+          pipeline('automatic-speech-recognition', MODEL_ID, { device: 'wasm', dtype: 'q8', revision, progress_callback }),
           perAttemptMs,
           '下载/初始化 Whisper 模型',
           signal
@@ -166,10 +175,12 @@ export function createLocalWhisper({
           unhealthyReason = 'Whisper 模型加载已超时/取消，已停用本页 Whisper 以防资源重入；请改用 Vosk 或重新打开测试页';
           throw primaryErr;
         }
+        if (globalThis.__WHISPER_FORCE_MIRROR) throw primaryErr; // already on mirror: no identical second attempt
         onProgress('主源连接失败，正在切换备用镜像加载 Whisper 模型…');
+        emit('model-download', {source: MIRROR_HF_HOST});
         if (env) env.remoteHost = MIRROR_HF_HOST;
         cachedPipe = await withBoundedTimeout(
-          pipeline('automatic-speech-recognition', MODEL_ID, { device: 'wasm', dtype: 'q8', progress_callback }),
+          pipeline('automatic-speech-recognition', MODEL_ID, { device: 'wasm', dtype: 'q8', revision, progress_callback }),
           perAttemptMs,
           '镜像源下载/初始化 Whisper 模型',
           signal
@@ -190,13 +201,19 @@ export function createLocalWhisper({
     }
   }
 
-  return async (blob, { signal } = {}) => {
+  async function transcribePreparedAudio(audio, { signal } = {}) {
     if (unhealthyReason) throw new Error(unhealthyReason);
-    if (signal?.aborted) throw new Error('cancelled');
-    onProgress('解码并提取本题录音');
-    emit('decode-start', {bytes: blob?.size||0, mime: blob?.type||''});
-    const audio = await prepareAudio(blob);
-    emit('decoded', {duration: audio.duration, rms: audio.rms, sampleRate: audio.sampleRate});
+    if (!audio || !(audio.data instanceof Float32Array) || audio.sampleRate !== 16000 ||
+        !Number.isFinite(audio.duration) || audio.duration <= 0 || audio.duration > 180 ||
+        !audio.data.length || audio.data.length > 180 * 16000) {
+      throw new Error('invalid prepared 16 kHz audio');
+    }
+    // Validate and measure the supplied PCM too: whole-session transcription uses
+    // this entry point, sharing the exact same model and inference lock.
+    let sumSq = 0;
+    for (const sample of audio.data) sumSq += sample * sample;
+    audio = { ...audio, rms: Math.sqrt(sumSq / audio.data.length) };
+    if (!Number.isFinite(audio.rms)) throw new Error('audio contains invalid PCM samples');
     if (signal?.aborted) throw new Error('cancelled');
     if (audio.rms < 0.001) return { text: '', duration: audio.duration, rms: audio.rms, model: MODEL_ID }; // do not invent speech
     onProgress('加载多语言 Whisper ' + (modelPreset === 'base' ? 'Base 增强' : 'Tiny 轻量') + ' 模型（首次需下载；支持镜像自动切换）');
@@ -205,9 +222,10 @@ export function createLocalWhisper({
     emit('model-ready');
     onProgress('模型就绪，正在当前浏览器执行中文语音识别');
     const maxInferMs = Number(inferTimeoutMs) || Number(globalThis.__WHISPER_INFER_TIMEOUT_MS) || 120000;
-    if (currentInference) {
+    while (currentInference) {
       await withBoundedTimeout(currentInference.catch(() => {}), maxInferMs, '等待上一段 Whisper 推理', signal);
       if (unhealthyReason) throw new Error(unhealthyReason);
+      if (signal?.aborted) throw new Error('cancelled');
     }
     try {
       const rawInference = Promise.resolve().then(() => pipe(audio.data, {
@@ -229,5 +247,20 @@ export function createLocalWhisper({
       }
       throw error;
     }
+  }
+
+  const transcribe = async (blob, { signal } = {}) => {
+    if (unhealthyReason) throw new Error(unhealthyReason);
+    if (signal?.aborted) throw new Error('cancelled');
+    onProgress('解码并提取本题录音');
+    emit('decode-start', {bytes: blob?.size||0, mime: blob?.type||''});
+    const audio = await prepareAudio(blob, { signal });
+    emit('decoded', {duration: audio.duration, rms: audio.rms, sampleRate: audio.sampleRate});
+    return transcribePreparedAudio(audio, { signal });
   };
+  transcribe.transcribePreparedAudio = transcribePreparedAudio;
+  // Timeout cannot terminate WASM. Callers must not start another engine while
+  // this page still owns potentially active work; preserve media and reload.
+  transcribe.isResourceBusy = () => !!(unhealthyReason || loadingPipePromise || currentInference);
+  return transcribe;
 }

@@ -1,10 +1,11 @@
 """Actual local file UI/persistence + ASR glossary flow; model and mic are MOCKED."""
-import functools, json, pathlib, threading, subprocess, os
+import functools, json, pathlib, threading, subprocess, os, hashlib
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 
 repo=pathlib.Path(__file__).resolve().parents[3]
-out=repo/'evidence/r24-domain';out.mkdir(exist_ok=True)
+out=pathlib.Path(os.environ.get('R24_UI_OUTPUT',str(repo/'evidence/r24-delivery/recheck')));out.mkdir(parents=True,exist_ok=True)
+app=repo/'experiments/r24/tcl-v352-asr-r24-qa/app.js';app_sha=hashlib.sha256(app.read_bytes()).hexdigest()
 class Quiet(SimpleHTTPRequestHandler):
     def log_message(self,*args): pass
 server=ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=str(repo/'experiments/r24')))
@@ -50,6 +51,10 @@ try:
   result.update(status='PASS',browser=browser.version,errors=errors,external_requests=external)
   browser.close()
 finally:
+ result['app_sha256']=app_sha;result['app_sha256_after']=hashlib.sha256(app.read_bytes()).hexdigest();result['source_unchanged']=result['app_sha256_after']==app_sha
+ if not result['source_unchanged']:result['status']='FAIL'
  server.shutdown()
  (out/'glossary-browser.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
 print(json.dumps(result,ensure_ascii=False,indent=2))
+
+assert result.get('status')=='PASS' and result.get('source_unchanged')

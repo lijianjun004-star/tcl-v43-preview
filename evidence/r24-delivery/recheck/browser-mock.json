@@ -1,0 +1,111 @@
+{
+  "test_mode": "Chromium real MediaRecorder + synthetic sine-wave mic; Whisper return text MOCKED",
+  "url": "http://127.0.0.1:38687/tcl-v352-asr-r24-qa/",
+  "steps": {
+    "choose_anchor": 0.54,
+    "name": 0.07,
+    "login": 0.22,
+    "freePractice": 0.22,
+    "device_recheck": 0.27,
+    "startScene": 0.5,
+    "next_Q1": 0.4,
+    "stop_Q2": 0.28,
+    "open_tools": 0.18,
+    "open_text_answer": 0.13,
+    "save_manual": 0.12,
+    "next_Q2": 0.19,
+    "finish_menu": 0.11,
+    "finish_confirm": 0.45,
+    "reviewDetails": 0.07
+  },
+  "errors": [],
+  "preset_before_run": "base",
+  "finish_transition_ms": 550,
+  "inspect": {
+    "title": "TCL 智能练播房｜R2.4 本机练播版",
+    "rows": [
+      {
+        "answer": "2024年新款Q10M Pro85寸售价2500块钱\n查看模型识别原文\n保存本题修改将整场文字填入本题",
+        "status": "已写入本题答案 · Whisper Base 增强 本题转写完成（型号数字需人工核对）",
+        "audio": true
+      },
+      {
+        "answer": "人工修改测试：T7M Pro 75英寸\n查看模型识别原文\n查看 Whisper 识别候选（未覆盖当前回答）\n保存本题修改将整场文字填入本题",
+        "status": "Whisper 已识别但人工回答已编辑，原文字保留（试验结果不覆盖）\n准备Vosk并补转写",
+        "audio": true
+      },
+      {
+        "answer": "支持4K144赫兹高刷，连接PS5玩游戏\n查看模型识别原文\n保存本题修改将整场文字填入本题",
+        "status": "已写入本题答案 · Whisper Base 增强 本题转写完成（型号数字需人工核对）",
+        "audio": true
+      }
+    ],
+    "recordCount": 3,
+    "records": [
+      {
+        "answer": "支持4K144赫兹高刷，连接PS5玩游戏",
+        "transcript": "支持4K144赫兹高刷，连接PS5玩游戏",
+        "whisperCandidate": "",
+        "asrStatus": "已写入本题答案 · Whisper Base 增强 本题转写完成（型号数字需人工核对）"
+      },
+      {
+        "answer": "人工修改测试：T7M Pro 75英寸",
+        "transcript": "",
+        "whisperCandidate": "C11K75英寸支持HDMI2.1",
+        "asrStatus": "Whisper 已识别但人工回答已编辑，原文字保留（试验结果不覆盖）"
+      },
+      {
+        "answer": "2024年新款Q10M Pro85寸售价2500块钱",
+        "transcript": "2024年新款Q10M Pro85寸售价2500块钱",
+        "whisperCandidate": "",
+        "asrStatus": "已写入本题答案 · Whisper Base 增强 本题转写完成（型号数字需人工核对）"
+      }
+    ],
+    "calls": [
+      {
+        "count": 1,
+        "samples": 20800,
+        "options": {
+          "language": "chinese",
+          "task": "transcribe",
+          "chunk_length_s": 30,
+          "stride_length_s": 5
+        }
+      },
+      {
+        "count": 2,
+        "samples": 20800,
+        "options": {
+          "language": "chinese",
+          "task": "transcribe",
+          "chunk_length_s": 30,
+          "stride_length_s": 5
+        }
+      },
+      {
+        "count": 3,
+        "samples": 22720,
+        "options": {
+          "language": "chinese",
+          "task": "transcribe",
+          "chunk_length_s": 30,
+          "stride_length_s": 5
+        }
+      }
+    ],
+    "modelLoaded": {
+      "task": "automatic-speech-recognition",
+      "modelId": "onnx-community/whisper-base",
+      "opts": {
+        "device": "wasm",
+        "dtype": "q8",
+        "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+        "progress_callback": null
+      }
+    }
+  },
+  "ok": true,
+  "app_sha256": "609fded562c0f854ec805e12cbbed1a7ed36f694c56d17e359cc0b2dbf1b5d88",
+  "app_sha256_after": "609fded562c0f854ec805e12cbbed1a7ed36f694c56d17e359cc0b2dbf1b5d88",
+  "source_unchanged": true
+}

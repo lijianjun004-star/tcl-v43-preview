@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "app_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "completed_at": "2026-11-16T17:50:16.733468+00:00",
+  "tests": [
+    {
+      "report": "browser-mock.json",
+      "status": "PASS",
+      "sha256": "22d2bbdafc04f00a0b0746f70950d038e0c0441bb9fc3db2f2dd2fd7ecdf82f5",
+      "rows": 3,
+      "model_calls": 3,
+      "records": 3
+    },
+    {
+      "report": "glossary-flow.json",
+      "status": "PASS",
+      "sha256": "3ea45ca01601d8ae402cf057bfcd3486f7d6fa3f86b26660afc770a42819eb2a",
+      "rows": 3,
+      "model_calls": 3,
+      "records": 3
+    }
+  ],
+  "scope": "Final BFCache candidate full UI rerun; synthetic microphone and mock model. Earlier parser/import checks remain source-stamped to609f in recheck."
+}

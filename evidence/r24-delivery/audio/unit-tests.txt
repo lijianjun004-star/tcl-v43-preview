@@ -1,0 +1,16 @@
+✔ decoder timeout keeps actual resource locked until native promise resolves (31.265263ms)
+✔ Vosk initialization timeout retains worker job and its blob URL; no duplicate initialization (105.472092ms)
+✔ three callers share one pipeline and never overlap actual inference (58.675148ms)
+✔ timed-out raw inference remains locked; waiting and future callers cannot enter (56.292493ms)
+✔ cancelled waiter does not start inference or cancel owner (11.119431ms)
+✔ silence avoids model download; malformed and overlong PCM fail before loading (4.901702ms)
+✔ valid 180-second prepared audio is supported and models have immutable revisions (75.585635ms)
+✔ pre-aborted audio decode does not allocate AudioContext (0.998698ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 513.429561

@@ -1,0 +1,19 @@
+{
+  "rendered": {
+    "userRole": "anchor",
+    "userName": "anchor-B",
+    "page": "home"
+  },
+  "localAssignments": [
+    {
+      "id": "id1",
+      "title": "Assignment",
+      "operatorName": "operator-A",
+      "boardId": "01",
+      "platform": "京东",
+      "deadline": "",
+      "createdAt": "2026-11-16T17:39:37.472Z"
+    }
+  ],
+  "operatorActiveTab": "tracking"
+}

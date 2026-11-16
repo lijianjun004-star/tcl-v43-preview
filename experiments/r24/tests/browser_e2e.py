@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """R2 independent three-turn desktop Chromium smoke test; model is MOCKED. Not speech-accuracy evidence."""
-import json, pathlib, threading, functools, time, sys, traceback, os
+import json, pathlib, threading, functools, time, sys, traceback, os, hashlib
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 
-ROOT=pathlib.Path(os.environ.get('R23_SITE_ROOT', str(pathlib.Path(__file__).resolve().parents[1] / 'site')))
-REPORT=pathlib.Path(os.environ.get('R23_BROWSER_REPORT',str(pathlib.Path(__file__).resolve().parents[1] / 'evidence/browser_r23_result.json')))
+REPO=pathlib.Path(__file__).resolve().parents[3]
+ROOT=pathlib.Path(os.environ.get('R23_SITE_ROOT', str(pathlib.Path(__file__).resolve().parents[1]))).resolve()
+if not (ROOT/'tcl-v352-asr-r24-qa').is_dir() and (ROOT/'experiments/r24/tcl-v352-asr-r24-qa').is_dir():
+ ROOT=ROOT/'experiments/r24'
+REPORT=pathlib.Path(os.environ.get('R23_BROWSER_REPORT',str(REPO/'evidence/r24-delivery/recheck/browser-mock.json')))
+REPORT.parent.mkdir(parents=True,exist_ok=True)
+APP=ROOT/'tcl-v352-asr-r24-qa/app.js'
+APP_SHA=hashlib.sha256(APP.read_bytes()).hexdigest()
 MOCK_MODULE='''
 export const env={remoteHost:'https://huggingface.co/'};
 let count=0;
@@ -128,12 +134,14 @@ try:
     db.close();
     return {title:document.title,rows,recordCount:records.length,records:records.map(x=>({answer:x.answer,transcript:x.transcript,whisperCandidate:x.whisperCandidate,asrStatus:x.asrStatus})),calls:window.__inferCalls||[],modelLoaded:window.__mockPipeline};
   }''')
-  result['ok']=len(result['inspect']['rows'])>=3 and len(result['inspect']['calls'])>=3 and any('人工修改测试' in r['answer'] for r in result['inspect']['records'])
-  page.screenshot(path=str(REPORT.with_name('r23_review.png')),full_page=True)
+  result['ok']=not result['errors'] and len(result['inspect']['rows'])>=3 and len(result['inspect']['calls'])>=3 and any('人工修改测试' in r['answer'] for r in result['inspect']['records'])
+  page.screenshot(path=str(REPORT.with_suffix('.png')),full_page=True)
   browser.close()
 except Exception as e:
  result['ok']=False;result['exception']=str(e);result['traceback']=traceback.format_exc()[-3000:]
 finally:
+ result['app_sha256']=APP_SHA;result['app_sha256_after']=hashlib.sha256(APP.read_bytes()).hexdigest();result['source_unchanged']=result['app_sha256_after']==APP_SHA
+ if not result['source_unchanged']:result['ok']=False
  REPORT.parent.mkdir(parents=True,exist_ok=True)
  server.shutdown();REPORT.write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False,indent=2)[:8000])
 

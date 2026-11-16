@@ -134,6 +134,11 @@ function colLettersToIndex(letters) {
   return Math.max(0, idx - 1);
 }
 
+// Excel supports A:XFD and 1:1048576. Check before allocating sparse cells.
+const XLSX_MAX_COLUMNS = 16384;
+const XLSX_MAX_ROWS = 1048576;
+const XLSX_MAX_PARSED_CELLS = 250000;
+
 export async function parseXlsxBuffer(buffer, fileName) {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   const zip = await readZipEntries(bytes);
@@ -178,6 +183,7 @@ export async function parseXlsxBuffer(buffer, fileName) {
   }
 
   const blocks = [];
+  let allocatedCells = 0;
   for (let sIdx = 0; sIdx < worksheetEntries.length; sIdx++) {
     const entryName = worksheetEntries[sIdx];
     const sheetName = sheetNames[sIdx] || `Sheet${sIdx + 1}`;
@@ -189,14 +195,18 @@ export async function parseXlsxBuffer(buffer, fileName) {
       fallbackRow++;
       const rAttr = rm[1].match(/\br="(\d+)"/);
       const rowNo = rAttr ? parseInt(rAttr[1], 10) : fallbackRow;
+      if (!Number.isSafeInteger(rowNo) || rowNo < 1 || rowNo > XLSX_MAX_ROWS) throw new Error('XLSX 行号超出有效范围');
       const cells = [];
       const cellRegex = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
       let cm, nextCol = 0;
       while ((cm = cellRegex.exec(rm[2])) !== null) {
         const cAttrs = cm[1] || '';
         const cBody = cm[2] || '';
-        const refMatch = cAttrs.match(/\br="([A-Z]+)\d+"/);
+        const rawRef = cAttrs.match(/\br="([^"]*)"/);
+        const refMatch = rawRef?.[1].match(/^([A-Z]{1,3})([1-9]\d{0,6})$/);
+        if (rawRef && (!refMatch || Number(refMatch[2]) > XLSX_MAX_ROWS || Number(refMatch[2]) !== rowNo)) throw new Error('XLSX 单元格坐标无效');
         const colIdx = refMatch ? colLettersToIndex(refMatch[1]) : nextCol;
+        if (colIdx >= XLSX_MAX_COLUMNS) throw new Error('XLSX 列号超出有效范围');
         nextCol = colIdx + 1;
         const typeMatch = cAttrs.match(/\bt="([^"]+)"/);
         const cType = typeMatch ? typeMatch[1] : '';
@@ -215,6 +225,9 @@ export async function parseXlsxBuffer(buffer, fileName) {
             }
           }
         }
+        const growth = Math.max(0, colIdx + 1 - cells.length);
+        if (allocatedCells + growth > XLSX_MAX_PARSED_CELLS) throw new Error('表格过大，请拆分后导入');
+        allocatedCells += growth;
         while (cells.length <= colIdx) cells.push('');
         cells[colIdx] = String(val ?? '').trim();
       }

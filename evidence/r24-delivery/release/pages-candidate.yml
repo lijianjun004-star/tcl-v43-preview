@@ -1,0 +1,52 @@
+name: Deploy isolated R7 FIX02 preview
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify audited static bundle
+        run: echo "099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e  site.zip" | sha256sum --check --strict
+      - name: Extract frontend only
+        run: unzip -q site.zip -d _site
+      - name: Stage isolated audio research preview
+        run: |
+          mkdir -p _site/tcl-v352-asr-lab
+          cp experiments/r6-asr-original-audio-qa/index.html _site/tcl-v352-asr-lab/index.html
+          echo "d1b8e9418b7dd811a6f995b41a6a01e2fc38a585ac16081d6b88810c3c87c9fd  _site/tcl-v352-asr-lab/index.html" | sha256sum --check --strict
+      - name: Stage isolated R6 original-audio AutoQA preview
+        run: |
+          python3 experiments/r6-asr-autoqa/build_qa.py _site experiments/r6-asr-autoqa
+          test -s _site/tcl-v352-asr-autoqa/index.html
+      - name: Stage R2.1 isolated original-audio ASR pilot
+        run: |
+          python3 release-ci/stage_r21.py --site-dir _site --archive experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64
+          echo "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4  _site/tcl-v352-asr-autoqa-r2/app.js" | sha256sum --check --strict
+      - name: Stage R2.3 isolated free Mandarin ASR preview
+        run: |
+          python3 release-ci/stage_r23.py --site-dir _site --archive experiments/r6-asr-autoqa-r23/site-only.tar.gz.b64
+          echo "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add  _site/tcl-v352-asr-autoqa-r23/app.js" | sha256sum --check --strict
+      - name: Stage R2.4 isolated practice-room delivery
+        run: |
+          python3 release-ci/release_guard.py --stage-r24 _site experiments/r24-release/site-only.zip.b64
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy independent test site
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,150 @@
+{
+  "mode": "Desktop Chromium, 320/390 CSS-pixel mobile viewports, synthetic input documents; no device or speech-accuracy claim",
+  "imports": [
+    {
+      "fixture": "synthetic.txt",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "synthetic.csv",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "synthetic.docx",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "synthetic.xlsx",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "streaming.docx",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "stored.docx",
+      "expected": "preview",
+      "status": "提取 3 个候选术语，请核对后点击保存。只读取前10万字符；未提取价格或完整句子。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "empty.txt",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：上传的文件为空（0 字节）",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "utf8-invalid.txt",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：TXT/JSON 文件不是有效的 UTF-8 编码，请另存为 UTF-8 编码后重试",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "broken.csv",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：CSV 引号没有正确闭合",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "broken.docx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：不是有效的 ZIP/Office (DOCX/XLSX) 容器文件",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "no-workbook.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：无效的 XLSX 文件：缺少 xl/workbook.xml",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "bad-crc.docx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：ZIP 内容长度或 CRC 校验失败，文件可能已损坏",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "forged-size.docx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：文件解压后体积超过安全上限",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "duplicate.docx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：ZIP 包含重复文件名",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "over-column.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：XLSX 列号超出有效范围",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "huge-column.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：XLSX 单元格坐标无效",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "zero-row.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：XLSX 行号超出有效范围",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "mismatched-row.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：XLSX 单元格坐标无效",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "over-row.xlsx",
+      "expected": "rejected",
+      "status": "提取失败，原词表保持不变：XLSX 行号超出有效范围",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "oversize.txt",
+      "expected": "rejected",
+      "status": "请选择不超过5MB的 TXT、XLSX、DOCX 或 CSV 文件。",
+      "saved_terms_unchanged": true
+    },
+    {
+      "fixture": "wrong-extension.html",
+      "expected": "rejected",
+      "status": "请选择不超过5MB的 TXT、XLSX、DOCX 或 CSV 文件。",
+      "saved_terms_unchanged": true
+    }
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "horizontal_overflow": false,
+      "scrollable_tools": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "horizontal_overflow": false,
+      "scrollable_tools": true
+    }
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "markup_inert": true,
+  "status": "PASS",
+  "browser": "156.0.8078.79"
+}

@@ -1,0 +1,40 @@
+{
+  "mode": "MOCK Transformers module; actual bridge URL/source/options behavior only",
+  "cases": [
+    {
+      "mode": "fallback",
+      "result": {
+        "text": "网络路径模拟",
+        "duration": 1,
+        "rms": 0.10000000149010757,
+        "model": "onnx-community/whisper-base"
+      },
+      "calls": [
+        {
+          "host": "https://huggingface.co/",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "host": "https://hf-mirror.com/",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "mode": "forced-failure",
+      "error": "Error: mock source unavailable",
+      "calls": [
+        {
+          "host": "https://hf-mirror.com/",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

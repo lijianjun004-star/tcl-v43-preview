@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
-"""R2 independent three-turn desktop Chromium smoke test; model is MOCKED. Not speech-accuracy evidence."""
-import json, pathlib, threading, functools, time, sys, traceback, os
+"""Real Whisper with public recording replay; reused stream, not three distinct speakers or live mic."""
+import json, pathlib, threading, functools, time, sys, traceback, os, hashlib
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 
-ROOT=pathlib.Path(os.environ.get('R23_SITE_ROOT', str(pathlib.Path(__file__).resolve().parents[1] / 'site')))
-REPORT=pathlib.Path(os.environ.get('R23_BROWSER_REPORT',str(pathlib.Path(__file__).resolve().parents[1] / 'evidence/browser_r23_result.json')))
-MOCK_MODULE='''
-export const env={remoteHost:'https://huggingface.co/'};
-let count=0;
-export async function pipeline(task, modelId, opts){
- window.__mockPipeline={task,modelId,opts};
- return async function(pcm, inferOpts){
-  count++;
-  window.__inferCalls=window.__inferCalls||[];
-  window.__inferCalls.push({count,samples:pcm.length,options:inferOpts});
-  if(window.__mockWhisperFail) throw new Error('SIMULATED MODEL ERROR');
-  await new Promise(r=>setTimeout(r,count===2?600:count===3?400:120));
-  if(count===1)return {text:'二零二四年新款Q十M Pro八十五吋售價兩千五百塊錢'};
-  if(count===2)return {text:'C十一K七十五英寸支持HDMI二点一'};
-  return {text:'支持四K一百四十四赫茲高刷，連接PS五玩遊戲'};
- };
-}
-'''
+REPO=pathlib.Path(__file__).resolve().parents[3]
+ROOT=pathlib.Path(os.environ.get('R23_SITE_ROOT', str(pathlib.Path(__file__).resolve().parents[1]))).resolve()
+if not (ROOT/'tcl-v352-asr-r24-qa').is_dir() and (ROOT/'experiments/r24/tcl-v352-asr-r24-qa').is_dir():
+ ROOT=ROOT/'experiments/r24'
+REPORT=pathlib.Path(os.environ.get('R23_BROWSER_REPORT',str(REPO/'evidence/r24-delivery/recheck/real-flow.json')))
+REPORT.parent.mkdir(parents=True,exist_ok=True)
+APP=ROOT/'tcl-v352-asr-r24-qa/app.js'
+APP_SHA=hashlib.sha256(APP.read_bytes()).hexdigest()
 class ServerHandler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(ROOT),**kwargs)
     def log_message(self,*args):pass
+    def do_GET(self):
+        # Serve only the three known public test samples, separately from the site root.
+        name=self.path.split('?',1)[0]
+        allowed={f'/evidence/r24/zh-{i}.wav':f'zh-{i}.wav' for i in range(3)}
+        if name in allowed:
+            samples=pathlib.Path(os.environ.get('R24_SAMPLE_DIR',str(REPO/'evidence/r24')))
+            source=samples/allowed[name]
+            if not source.is_file():self.send_error(404, 'Run download_samples.py first');return
+            data=source.read_bytes();self.send_response(200);self.send_header('Content-Type','audio/wav');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
+        return super().do_GET()
 
 INIT_JS=r'''(() => {
  if(!navigator.mediaDevices)navigator.mediaDevices={};
@@ -56,8 +55,8 @@ INIT_JS=r'''(() => {
 
 server=ThreadingHTTPServer(('127.0.0.1',0),ServerHandler)
 threading.Thread(target=server.serve_forever,daemon=True).start()
-URL=f'http://127.0.0.1:{server.server_port}/experiments/r24/tcl-v352-asr-r24-qa/'
-result={'test_mode':'REAL Whisper Tiny + MediaRecorder + public human Mandarin replay (desktop, not live human mic)','url':URL,'steps':{},'errors':[]}
+URL=f'http://127.0.0.1:{server.server_port}/tcl-v352-asr-r24-qa/'
+result={'test_mode':'REAL Whisper Tiny + MediaRecorder + public Mandarin replay; microphone stream may be reused across turns (desktop, not live human mic)','url':URL,'steps':{},'errors':[]}
 
 def step(name,fn):
     t=time.perf_counter();fn();result['steps'][name]=round(time.perf_counter()-t,2)
@@ -121,12 +120,14 @@ try:
     db.close();
     return {title:document.title,rows,recordCount:records.length,records:records.map(x=>({rawTranscript:x.rawTranscript,answer:x.answer,transcript:x.transcript,whisperCandidate:x.whisperCandidate,asrStatus:x.asrStatus})),calls:JSON.parse(exportAsrDiagnostics()).events.filter(x=>x.stage==='inference-complete'),modelLoaded:window.__mockPipeline};
   }''')
-  result['ok']=len(result['inspect']['rows'])>=3 and len(result['inspect']['calls'])>=3 and any('人工修改测试' in r['answer'] for r in result['inspect']['records'])
-  page.screenshot(path=str(REPORT.with_name('real-flow-review.png')),full_page=True)
+  result['ok']=not result['errors'] and len(result['inspect']['rows'])>=3 and len(result['inspect']['calls'])>=3 and any('人工修改测试' in r['answer'] for r in result['inspect']['records'])
+  page.screenshot(path=str(REPORT.with_suffix('.png')),full_page=True)
   browser.close()
 except Exception as e:
  result['ok']=False;result['exception']=str(e);result['traceback']=traceback.format_exc()[-3000:]
 finally:
+ result['app_sha256']=APP_SHA;result['app_sha256_after']=hashlib.sha256(APP.read_bytes()).hexdigest();result['source_unchanged']=result['app_sha256_after']==APP_SHA
+ if not result['source_unchanged']:result['ok']=False
  REPORT.parent.mkdir(parents=True,exist_ok=True)
  server.shutdown();REPORT.write_text(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps(result,ensure_ascii=False,indent=2)[:8000])
 

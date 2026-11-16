@@ -1,0 +1,8 @@
+{
+  "webkit": {
+    "download": "PASS Playwright WebKit 26.5 v2336",
+    "launch": "NOT RUN",
+    "reason": "Host lacks libgtk-4, graphene, harfbuzz-icu, manette, hyphen, GLES. Playwright install-deps requires unavailable root credentials; stopped. No iOS or WebKit result claimed."
+  },
+  "hardware": "No physical phone or microphone available; synthetic media and cloud browser results labeled separately."
+}

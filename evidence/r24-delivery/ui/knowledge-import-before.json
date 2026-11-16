@@ -1,0 +1,14 @@
+{
+  "mode": "Chromium UI handlers + real IndexedDB with synthetic CSV, delayed File read for navigation race",
+  "checks": {
+    "context_change_invalidates_preview": false,
+    "double_save_row_count": 2,
+    "late_parse_page_errors": [
+      "Cannot set properties of null (setting 'disabled')"
+    ],
+    "late_parse_stays_home": true
+  },
+  "double_save_errors": [],
+  "browser": "156.0.8078.79",
+  "status": "FAIL"
+}

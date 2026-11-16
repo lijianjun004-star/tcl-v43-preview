@@ -1,0 +1,183 @@
+{
+  "status": "PASS",
+  "scope": "REAL loader/hash verification/worker/model inference on public Mandarin; extracted actual functions, not full UI or actual phone",
+  "loader_sha256": "245f04485e33bd2c5b6ad76a242eb30eaf842c15c0ed59cdcdacfbdfb3d41073",
+  "progress": [],
+  "samples": [
+    {
+      "file": "zh-0.wav",
+      "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 0,
+      "result": {
+        "text": "美好想要了解一下我的银行账户余额有多少啊谢谢",
+        "pieces": [
+          "美好 想要 了解 一下 我 的 银行 账户 余额 有 多少 啊 谢谢"
+        ]
+      },
+      "status": "PASS",
+      "seconds": 4.134
+    },
+    {
+      "file": "zh-1.wav",
+      "reference": "我想查询我目前的账户余额",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 1,
+      "result": {
+        "text": "没想查询我面前的账户与",
+        "pieces": [
+          "没 想 查询 我 面前 的 账户 与"
+        ]
+      },
+      "status": "PASS",
+      "seconds": 4.996
+    },
+    {
+      "file": "zh-2.wav",
+      "reference": "我的账户还有多少钱呢",
+      "source": "PolyAI/minds14 zh-CN train",
+      "row_idx": 2,
+      "result": {
+        "text": "我的战后着多少钱呢",
+        "pieces": [
+          "我 的 战后 着 多少 钱 呢"
+        ]
+      },
+      "status": "PASS",
+      "seconds": 4.332
+    }
+  ],
+  "browser": "156.0.8078.79",
+  "load": {
+    "ready": true,
+    "progress": [
+      {
+        "file": "vosk.js",
+        "cached": false,
+        "bytes": 5804777
+      },
+      {
+        "stage": "download",
+        "index": 1,
+        "total": 11,
+        "file": "cn.part1.bin"
+      },
+      {
+        "file": "cn.part1.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 2,
+        "total": 11,
+        "file": "cn.part2.bin"
+      },
+      {
+        "file": "cn.part2.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 3,
+        "total": 11,
+        "file": "cn.part3.bin"
+      },
+      {
+        "file": "cn.part3.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 4,
+        "total": 11,
+        "file": "cn.part4.bin"
+      },
+      {
+        "file": "cn.part4.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 5,
+        "total": 11,
+        "file": "cn.part5.bin"
+      },
+      {
+        "file": "cn.part5.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 6,
+        "total": 11,
+        "file": "cn.part6.bin"
+      },
+      {
+        "file": "cn.part6.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 7,
+        "total": 11,
+        "file": "cn.part7.bin"
+      },
+      {
+        "file": "cn.part7.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 8,
+        "total": 11,
+        "file": "cn.part8.bin"
+      },
+      {
+        "file": "cn.part8.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 9,
+        "total": 11,
+        "file": "cn.part9.bin"
+      },
+      {
+        "file": "cn.part9.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 10,
+        "total": 11,
+        "file": "cn.part10.bin"
+      },
+      {
+        "file": "cn.part10.bin",
+        "cached": false,
+        "bytes": 4194304
+      },
+      {
+        "stage": "download",
+        "index": 11,
+        "total": 11,
+        "file": "cn.part11.bin"
+      },
+      {
+        "file": "cn.part11.bin",
+        "cached": false,
+        "bytes": 1903978
+      }
+    ]
+  },
+  "load_seconds": 4.946
+}

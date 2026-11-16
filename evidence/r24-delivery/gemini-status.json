@@ -1,0 +1,11 @@
+{
+  "status": "PENDING_LOGIN",
+  "actual_gemini_business_requests": 0,
+  "request_budget": 1,
+  "automatic_retries": 0,
+  "input_file_id": "18WS9o63pvNx6PbX594vJdzrmWyF0dmBg",
+  "input_url": "https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk",
+  "input_sha256": "d13c3e3f54cd39fce7fd32fc7ddc80f42e49962cf21c094ed64e75676fdfbc32",
+  "reviewed_app_target_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "reason": "No confirmed signed-in Gemini browser; user authorized secure sign-in setup, connection completion not yet received. Internal Codex agents are not Gemini."
+}

@@ -1,0 +1,17 @@
+{
+  "mode": "browser UI and local storage; no real ASR accuracy claim",
+  "checks": [
+    "file preview is local, excludes price, does not save automatically",
+    "explicit save survives reload",
+    "case/spacing corrected; Chinese prose, number and version preserved",
+    "invalid source does not overwrite saved terms",
+    "training locks glossary edits"
+  ],
+  "status": "PASS",
+  "browser": "156.0.8078.79",
+  "errors": [],
+  "external_requests": [],
+  "app_sha256": "609fded562c0f854ec805e12cbbed1a7ed36f694c56d17e359cc0b2dbf1b5d88",
+  "app_sha256_after": "609fded562c0f854ec805e12cbbed1a7ed36f694c56d17e359cc0b2dbf1b5d88",
+  "source_unchanged": true
+}

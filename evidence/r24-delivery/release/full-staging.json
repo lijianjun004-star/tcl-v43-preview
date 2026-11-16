@@ -1,0 +1,21 @@
+{
+  "base": "b672281725392a2e23e656dd5ff410531f660175",
+  "verified_at_utc": "2026-11-16T17:49:47.917597+00:00",
+  "archive_b64_sha256": "1e2135de3c602c1a934fbc86f1b14999899116d035fe01d627903fd1ceb0f456",
+  "old_zip_sha256": "099a57016c1ae24eab6b30cecfdc9ddaf3160571c6c500853f81bf5a654b924e",
+  "checks": {
+    "real_release_verifier": true,
+    "all_old_bytes_preserved": true,
+    "exact_final_assets": true,
+    "exact_rollback": true
+  },
+  "old_asset_count": 195,
+  "new_asset_count": 21,
+  "final_asset_count": 216,
+  "final_pages_tree": "/workspace/scratch/r24-final-pages-b086a0c5c961",
+  "stage_result": {
+    "files": 21,
+    "old_assets_unchanged": 195,
+    "app_sha": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb"
+  }
+}

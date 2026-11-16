@@ -1,0 +1,39 @@
+{
+  "source": "current R24 app functions executed in Node VM; mocked I/O, no browser/model",
+  "queueCancellation": {
+    "calls": [
+      "old-q"
+    ],
+    "queue": [],
+    "running": false,
+    "turns": [
+      {
+        "id": "new-q",
+        "runId": "new",
+        "boardId": "b",
+        "platform": "p",
+        "answer": "",
+        "transcript": "",
+        "keyPoints": [],
+        "asrStatus": "原始录音已保存，等待实验 Whisper 转写（首次下载模型可能较慢）"
+      }
+    ]
+  },
+  "manualClear": {
+    "submittedTurn": {
+      "id": "t",
+      "prompt": "Q",
+      "trainingHint": "",
+      "answer": "",
+      "transcript": "WRONG_OLD_ASR",
+      "rawTranscript": "WRONG_OLD_ASR",
+      "responseSeconds": null,
+      "durationSeconds": null,
+      "pointsHit": [],
+      "keyPoints": [],
+      "compliance": [],
+      "asrStatus": ""
+    },
+    "operatorRenderedText": "WRONG_OLD_ASR"
+  }
+}
