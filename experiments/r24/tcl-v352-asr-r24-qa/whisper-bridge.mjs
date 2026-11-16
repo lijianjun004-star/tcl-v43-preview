@@ -19,9 +19,61 @@ export const WHISPER_REVISIONS = Object.freeze({
 });
 // Base is the default; Tiny trades recognition capacity for lower memory use.
 const DEFAULT_PRESET = 'base';
-const CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const PRIMARY_HF_HOST = 'https://huggingface.co/';
 const MIRROR_HF_HOST = 'https://hf-mirror.com/';
+
+// Only model loading/inference runs in this Worker. Keep WebAudio on the page:
+// AudioContext/OfflineAudioContext are not available in every Worker runtime.
+// Requests deliberately outlive caller timeouts; the engine below retains its
+// unhealthy/resource lock until the page reloads, just as for local WASM work.
+function createWorkerPipelineModule(progress_callback) {
+  if (typeof globalThis.Worker !== 'function') {
+    throw new Error('当前浏览器不支持后台语音识别 Worker，请使用新版 Safari/Chrome 或手动填写回答');
+  }
+  let worker;
+  try { worker = new Worker(new URL('./whisper-worker.mjs', import.meta.url), { type: 'module', name: 'tcl-whisper' }); }
+  catch (error) { throw new Error('后台语音识别 Worker 无法启动：' + String(error?.message || error)); }
+  let nextId = 0, failed = null;
+  const pending = new Map();
+  const fail = error => {
+    if (failed) return;
+    failed = new Error('后台语音识别 Worker 已停止：' + String(error?.message || error));
+    worker.terminate();
+    for (const request of pending.values()) request.reject(failed);
+    pending.clear();
+  };
+  worker.addEventListener('error', event => { event.preventDefault?.(); fail(event.message || '脚本无法加载'); });
+  worker.addEventListener('messageerror', () => fail('无法读取识别响应'));
+  worker.addEventListener('message', event => {
+    const message = event.data;
+    const request = message && pending.get(message.id);
+    if (!request) return;
+    if (message.type === 'progress') { try { progress_callback(message.info || {}); } catch {} return; }
+    pending.delete(message.id);
+    if (message.type === 'result') request.resolve(message.result);
+    else request.reject(new Error(String(message.error || '后台语音识别失败')));
+  });
+  const request = (type, fields = {}, transfer = []) => new Promise((resolve, reject) => {
+    if (failed) return reject(failed);
+    const id = ++nextId;
+    pending.set(id, { resolve, reject });
+    try { worker.postMessage({ id, type, ...fields }, transfer); }
+    catch (error) { pending.delete(id); fail(error); reject(failed); }
+  });
+  const env = { remoteHost: PRIMARY_HF_HOST };
+  return request('init').then(() => ({
+    env,
+    pipeline: async (_task, model, options) => {
+      await request('load', { model, revision: options.revision, host: env.remoteHost });
+      return (data, inferenceOptions) => {
+        // Transfer a copy so a caller's prepared PCM remains reusable and the
+        // Worker cannot detach audio held by the page or another waiting job.
+        const pcm = new Float32Array(data);
+        return request('infer', { data: pcm, options: inferenceOptions }, [pcm.buffer]);
+      };
+    },
+  }));
+}
 
 function withBoundedTimeout(promise, ms, label, signal) {
   let timer = null;
@@ -139,6 +191,7 @@ export function createLocalWhisper({
   };
   let cachedPipe = null;
   let loadingPipePromise = null;
+  let workerModule = null;
   // A timeout does not terminate WASM inference or an in-flight model load.
   // Once timed out, fail closed: no further jobs may re-enter this singleton.
   // The caller will use the Vosk fallback or report a recoverable error.
@@ -156,7 +209,8 @@ export function createLocalWhisper({
         cachedPipe = await withBoundedTimeout(pipelineFactory(MODEL_ID), perAttemptMs, '加载 Whisper 模型', signal);
         return cachedPipe;
       }
-      const mod = await withBoundedTimeout(import(CDN), perAttemptMs, '加载 Transformers.js 运行时', signal);
+      if (!workerModule) workerModule = createWorkerPipelineModule(progress_callback);
+      const mod = await withBoundedTimeout(workerModule, perAttemptMs, '启动后台语音识别运行时', signal);
       const { pipeline, env } = mod;
       try {
         if (env) env.remoteHost = globalThis.__WHISPER_FORCE_MIRROR ? MIRROR_HF_HOST : PRIMARY_HF_HOST;

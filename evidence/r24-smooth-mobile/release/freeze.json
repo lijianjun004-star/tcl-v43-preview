@@ -1,0 +1,39 @@
+{
+  "manifest_version": "r24-smooth-mobile-20261116",
+  "archive_b64_sha256": "faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1",
+  "archive_b64_bytes": 335205,
+  "zip_sha256": "42a36a4a706ebb621fb5bc1416ea1c223076e342a98db9d259c69885ece5dbdb",
+  "zip_bytes": 251401,
+  "files": {
+    "app-config.json": "52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511",
+    "app.js": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+    "asr-glossary.mjs": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
+    "asr-normalize.mjs": "9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13",
+    "glossary-ui.mjs": "e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e",
+    "legacy-65.json": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/pdf.js": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86",
+    "lib/xls.js": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c",
+    "lib/zip.js": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4",
+    "r23-model-choice.js": "c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596",
+    "static-manifest.json": "365f7345d4debdc15b10197a078f8867eef6a19657d2dcde48f6eadd1413216e",
+    "style.css": "66a6d397a963532e9ef24223dd425867439528c22e5e2f998635bb30611a4ec4",
+    "training-boards.json": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11",
+    "vendor/opencc/LICENSE": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e",
+    "vendor/opencc/LICENSES/Apache-2.0.txt": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308",
+    "vendor/opencc/THIRD_PARTY_LICENSES.md": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806",
+    "vendor/opencc/t2cn.mjs": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6",
+    "whisper-bridge.mjs": "01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2",
+    "whisper-worker.mjs": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b"
+  },
+  "changed_files": [
+    "app.js",
+    "static-manifest.json",
+    "style.css",
+    "whisper-bridge.mjs",
+    "whisper-worker.mjs"
+  ],
+  "previous_freeze": "evidence/r24-question-bank/release/freeze.json"
+}

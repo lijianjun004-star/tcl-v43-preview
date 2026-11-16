@@ -1,0 +1,50 @@
+{
+  "mode": "Chromium touch/mobile emulation; 4x CPU slowdown; synthetic 60-question/80-progress stress",
+  "app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+  "checks": {
+    "320": {
+      "turns": 60,
+      "hiddenSummaryRebuilds": 0,
+      "elapsedMs": 0.19999999995343387,
+      "liveInputFont": "16px",
+      "viewport": {
+        "scale": 1,
+        "width": 320,
+        "scroll": 320
+      },
+      "reviewInputFont": "16px",
+      "rows": 60,
+      "pass": true
+    },
+    "390": {
+      "turns": 60,
+      "hiddenSummaryRebuilds": 0,
+      "elapsedMs": 0,
+      "liveInputFont": "16px",
+      "viewport": {
+        "scale": 1,
+        "width": 390,
+        "scroll": 390
+      },
+      "reviewInputFont": "16px",
+      "rows": 60,
+      "pass": true
+    },
+    "430": {
+      "turns": 60,
+      "hiddenSummaryRebuilds": 0,
+      "elapsedMs": 0,
+      "liveInputFont": "16px",
+      "viewport": {
+        "scale": 1,
+        "width": 430,
+        "scroll": 430
+      },
+      "reviewInputFont": "16px",
+      "rows": 60,
+      "pass": true
+    }
+  },
+  "errors": [],
+  "ok": true
+}

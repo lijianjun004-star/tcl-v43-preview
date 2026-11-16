@@ -1,0 +1,116 @@
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.011s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (20.187647ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (67.142543ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (12.129575ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (193.436573ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (48.250165ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 445.024639
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (378.934721ms)
+✔ hardened R2: late inference is not re-entered after timeout (306.317419ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (285.894812ms)
+✔ hardened R2: clean sequential recognitions still work (65.450868ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1146.88767
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.013s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (22.96968ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (71.644257ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (16.071817ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (283.692691ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (50.32277ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 582.070952
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (370.058296ms)
+✔ hardened R2: late inference is not re-entered after timeout (306.45591ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (283.730722ms)
+✔ hardened R2: clean sequential recognitions still work (64.406737ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1121.117202
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+R24_STAGE_PASS {"app_sha": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf", "files": 21, "old_assets_unchanged": 195}
+R24_STAGE_PASS {"app_sha": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80", "files": 22, "old_assets_unchanged": 195}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "update", "protected_assets": 195, "total_assets": 217}
+R24_STAGE_PASS {"app_sha": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80", "files": 22, "old_assets_unchanged": 195}
+R24_STAGE_PASS {"app_sha": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf", "files": 21, "old_assets_unchanged": 195}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "rollback", "protected_assets": 195, "total_assets": 216}
+{
+  "source_base": "3e4198afa9c7aecbbbff4c8bbc9d01b3efd8e15c",
+  "old_archive_sha": "5e72a5789ec67a1812827575419f8b65a4b009ba864041c934cd32fc3d3f7238",
+  "new_archive_sha": "faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1",
+  "update": {
+    "direction": "update",
+    "protected_assets": 195,
+    "total_assets": 217,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css",
+      "tcl-v352-asr-r24-qa/whisper-bridge.mjs",
+      "tcl-v352-asr-r24-qa/whisper-worker.mjs"
+    ]
+  },
+  "rollback": {
+    "direction": "rollback",
+    "protected_assets": 195,
+    "total_assets": 216,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css",
+      "tcl-v352-asr-r24-qa/whisper-bridge.mjs",
+      "tcl-v352-asr-r24-qa/whisper-worker.mjs"
+    ]
+  },
+  "pass": true
+}

@@ -1,0 +1,241 @@
+{
+  "scope": "Actual module Worker + current bridge, intercepted Transformers/model; busy-loop inference measures page responsiveness only, not real model performance or handset acceptance",
+  "hashes": {
+    "whisper-bridge.mjs": "01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2",
+    "whisper-worker.mjs": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b"
+  },
+  "cases": [
+    {
+      "mode": "base-fallback",
+      "results": [
+        {
+          "calls": [
+            {
+              "host": "https://huggingface.co/",
+              "model": "onnx-community/whisper-base",
+              "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+              "device": "wasm",
+              "dtype": "q8"
+            },
+            {
+              "host": "https://hf-mirror.com/",
+              "model": "onnx-community/whisper-base",
+              "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+              "device": "wasm",
+              "dtype": "q8"
+            }
+          ],
+          "inWorker": true,
+          "samples": 16000,
+          "params": {
+            "language": "chinese",
+            "task": "transcribe",
+            "chunk_length_s": 30,
+            "stride_length_s": 5
+          },
+          "maxActive": 1
+        },
+        {
+          "calls": [
+            {
+              "host": "https://huggingface.co/",
+              "model": "onnx-community/whisper-base",
+              "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+              "device": "wasm",
+              "dtype": "q8"
+            },
+            {
+              "host": "https://hf-mirror.com/",
+              "model": "onnx-community/whisper-base",
+              "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+              "device": "wasm",
+              "dtype": "q8"
+            }
+          ],
+          "inWorker": true,
+          "samples": 16000,
+          "params": {
+            "language": "chinese",
+            "task": "transcribe",
+            "chunk_length_s": 30,
+            "stride_length_s": 5
+          },
+          "maxActive": 1
+        }
+      ],
+      "ticks": 65,
+      "notes": [
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "下载模型：12/24 字节 · 50%",
+        "主源连接失败，正在切换备用镜像加载 Whisper 模型…",
+        "下载模型：12/24 字节 · 50%",
+        "模型就绪，正在当前浏览器执行中文语音识别",
+        "模型就绪，正在当前浏览器执行中文语音识别"
+      ],
+      "events": [
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "source": "https://huggingface.co/"
+        },
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "source": "https://hf-mirror.com/"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c"
+        }
+      ],
+      "pcmLength": 16000,
+      "busy": false,
+      "status": "PASS"
+    },
+    {
+      "mode": "tiny-forced-mirror",
+      "results": [
+        {
+          "calls": [
+            {
+              "host": "https://hf-mirror.com/",
+              "model": "onnx-community/whisper-tiny",
+              "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+              "device": "wasm",
+              "dtype": "q8"
+            }
+          ],
+          "inWorker": true,
+          "samples": 16000,
+          "params": {
+            "language": "chinese",
+            "task": "transcribe",
+            "chunk_length_s": 30,
+            "stride_length_s": 5
+          },
+          "maxActive": 1
+        },
+        {
+          "calls": [
+            {
+              "host": "https://hf-mirror.com/",
+              "model": "onnx-community/whisper-tiny",
+              "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+              "device": "wasm",
+              "dtype": "q8"
+            }
+          ],
+          "inWorker": true,
+          "samples": 16000,
+          "params": {
+            "language": "chinese",
+            "task": "transcribe",
+            "chunk_length_s": 30,
+            "stride_length_s": 5
+          },
+          "maxActive": 1
+        }
+      ],
+      "ticks": 58,
+      "notes": [
+        "加载多语言 Whisper Tiny 轻量 模型（首次需下载；支持镜像自动切换）",
+        "加载多语言 Whisper Tiny 轻量 模型（首次需下载；支持镜像自动切换）",
+        "下载模型：12/24 字节 · 50%",
+        "模型就绪，正在当前浏览器执行中文语音识别",
+        "模型就绪，正在当前浏览器执行中文语音识别"
+      ],
+      "events": [
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+          "source": "https://hf-mirror.com/"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "model-ready",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        },
+        {
+          "stage": "inference-complete",
+          "model": "onnx-community/whisper-tiny",
+          "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+        }
+      ],
+      "pcmLength": 16000,
+      "busy": false,
+      "status": "PASS"
+    },
+    {
+      "mode": "forced-mirror-failure",
+      "error": "Error: mock source unavailable",
+      "notes": [
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "下载模型：12/24 字节 · 50%"
+      ],
+      "events": [
+        {
+          "stage": "model-download",
+          "model": "onnx-community/whisper-base",
+          "revision": "27a07b4b52b3a4c5886134bb4320e93e1a4bbc7c",
+          "source": "https://hf-mirror.com/"
+        }
+      ],
+      "busy": false,
+      "status": "PASS"
+    },
+    {
+      "mode": "worker-unavailable",
+      "error": "Error: 当前浏览器不支持后台语音识别 Worker，请使用新版 Safari/Chrome 或手动填写回答",
+      "notes": [
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+      ],
+      "events": [],
+      "busy": false,
+      "status": "PASS"
+    },
+    {
+      "mode": "worker-script-failure",
+      "error": "Error: 后台语音识别 Worker 已停止：脚本无法加载",
+      "notes": [
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）",
+        "加载多语言 Whisper Base 增强 模型（首次需下载；支持镜像自动切换）"
+      ],
+      "events": [],
+      "busy": false,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

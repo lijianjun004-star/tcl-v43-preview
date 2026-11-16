@@ -1,0 +1,98 @@
+{
+  "mode": "Chromium real UI; one synthetic legacy published IndexedDB row",
+  "checks": {
+    "legacy_ambiguous_published_and_sku_token_do_not_override_seed": {
+      "pass": true,
+      "details": null
+    },
+    "legacy_ambiguous_published_not_drawn": {
+      "pass": true,
+      "details": {
+        "prompt": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+        "index": "第 1 题 · 本场 3 道示例"
+      }
+    },
+    "legacy_published_is_offered_for_review": {
+      "pass": true,
+      "details": null
+    },
+    "saving_model_returns_legacy_to_draft_and_preserves_source_text": {
+      "pass": true,
+      "details": {
+        "id": "synthetic-legacy-published",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "scope": "board",
+        "platform": "京东",
+        "question": "这台 SKU-X7 电视支持什么接口？",
+        "answer": "人工构造旧版答案：核对原资料，不代表真实商品参数。",
+        "sku": "SKU-X7",
+        "source": "人工构造旧版资料",
+        "sourceLocators": [],
+        "keyPoints": [
+          "核对原资料"
+        ],
+        "status": "draft",
+        "kind": "uploaded",
+        "reviewStatus": "needs_review",
+        "createdAt": "2020-01-01T00:00:00.000Z",
+        "model": "QA-LEGACY42"
+      }
+    },
+    "manual_approval_required_after_repair": {
+      "pass": true,
+      "details": null
+    },
+    "repaired_record_replaces_seed_only_after_manual_approval": {
+      "pass": true,
+      "details": null
+    },
+    "repaired_legacy_question_model_and_original_reference_used": {
+      "pass": true,
+      "details": null
+    },
+    "no_application_page_errors": {
+      "pass": true,
+      "details": []
+    }
+  },
+  "errors": [],
+  "no_claims": [
+    "Gemini",
+    "real operating table",
+    "physical phone",
+    "speech model"
+  ],
+  "source_hashes": {
+    "app.js": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "browser": "156.0.8078.79",
+  "synthetic_fixture": {
+    "id": "synthetic-legacy-published",
+    "boardId": "01",
+    "category": "TCL 电视",
+    "scope": "board",
+    "platform": "京东",
+    "question": "这台 SKU-X7 电视支持什么接口？",
+    "answer": "人工构造旧版答案：核对原资料，不代表真实商品参数。",
+    "sku": "SKU-X7",
+    "source": "人工构造旧版资料",
+    "sourceLocators": [],
+    "keyPoints": [
+      "核对原资料"
+    ],
+    "status": "published",
+    "kind": "uploaded",
+    "reviewStatus": "reviewed-demo",
+    "createdAt": "2020-01-01T00:00:00.000Z"
+  },
+  "status": "PASS",
+  "source_hashes_after": {
+    "app.js": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+  },
+  "source_unchanged": true
+}

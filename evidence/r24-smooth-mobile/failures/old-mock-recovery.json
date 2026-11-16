@@ -1,0 +1,17 @@
+{
+  "app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+  "mode": "real Chromium IndexedDB + MediaRecorder; synthetic mic/video, MOCK model",
+  "checks": {
+    "two_audio_and_video_committed": true,
+    "other_name_does_not_offer_media": true,
+    "reload_same_name_restores_exact_blobs": true,
+    "manual_clear_and_audio_players_restored": true,
+    "video_player_restored": true,
+    "quota_failure_visible_previous_checkpoint_intact": true,
+    "explicit_retry_persists_new_answer": true
+  },
+  "errors": [],
+  "ok": false,
+  "exception": "",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/tcl-r24/experiments/r24/tests/session_recovery.py\", line 69, in <module>\n    cleared=flags['subs']['value'][0]['turns'][0];assert cleared['manualCleared'] is True and cleared['answer']=='' and cleared['transcript']\n                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+}

@@ -1,0 +1,43 @@
+{
+  "scope": "REAL pinned Tiny model in actual module Worker; synthetic non-silent 1-second PCM. Checks runtime/inference only, no speech-accuracy or phone acceptance.",
+  "hashes": {
+    "whisper-bridge.mjs": "01c07b050daacfdd94f6da6c50821d0645286dd956d1999bed2993e1240b97c2",
+    "whisper-worker.mjs": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b"
+  },
+  "browser": "156.0.8078.79",
+  "worker_urls": [
+    "http://127.0.0.1:41823/experiments/r24/tcl-v352-asr-r24-qa/whisper-worker.mjs"
+  ],
+  "result": {
+    "result": {
+      "text": "好",
+      "duration": 1,
+      "rms": 0.07071067840877507,
+      "model": "onnx-community/whisper-tiny"
+    },
+    "events": [
+      {
+        "stage": "model-download",
+        "model": "onnx-community/whisper-tiny",
+        "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7",
+        "source": "https://huggingface.co/"
+      },
+      {
+        "stage": "model-ready",
+        "model": "onnx-community/whisper-tiny",
+        "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+      },
+      {
+        "stage": "inference-complete",
+        "model": "onnx-community/whisper-tiny",
+        "revision": "ff4177021cc41f7db950912b73ea4fdf7d01d8e7"
+      }
+    ],
+    "progressCount": 516,
+    "ticks": 473,
+    "busy": false,
+    "pcmLength": 16000
+  },
+  "seconds": 9.619,
+  "status": "PASS"
+}

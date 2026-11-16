@@ -1,0 +1,7 @@
+{
+  "command": "python release-ci/test_release_guard.py",
+  "tests": 84,
+  "result": "PASS",
+  "script_sha256": "89a424ebd71b4ab9fe3cdf4f6a0ef8b2a25c23cf586d26425044daef917117e1",
+  "policy_sha256": "4b9061591c9df99d144ed396ea564b1616ba563b491ac003ef997626e7494c24"
+}

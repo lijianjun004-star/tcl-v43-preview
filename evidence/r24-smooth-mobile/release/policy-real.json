@@ -1,0 +1,30 @@
+{
+  "source_base": "3e4198afa9c7aecbbbff4c8bbc9d01b3efd8e15c",
+  "old_archive_sha": "5e72a5789ec67a1812827575419f8b65a4b009ba864041c934cd32fc3d3f7238",
+  "new_archive_sha": "faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1",
+  "update": {
+    "direction": "update",
+    "protected_assets": 195,
+    "total_assets": 217,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css",
+      "tcl-v352-asr-r24-qa/whisper-bridge.mjs",
+      "tcl-v352-asr-r24-qa/whisper-worker.mjs"
+    ]
+  },
+  "rollback": {
+    "direction": "rollback",
+    "protected_assets": 195,
+    "total_assets": 216,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css",
+      "tcl-v352-asr-r24-qa/whisper-bridge.mjs",
+      "tcl-v352-asr-r24-qa/whisper-worker.mjs"
+    ]
+  },
+  "pass": true
+}

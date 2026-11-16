@@ -850,6 +850,9 @@ function clearReviewQuestionAudioUrls(){
  reviewQuestionAudioUrls=[];
 }
 function renderQuestionSummary(){
+ // Live training only needs the current card. Build the full table on demand
+ // in review details, never for hidden controls or download progress.
+ if(page!=='sessionReview'||reviewStage!=='details')return;
  const el=ELEM('questionSummary');if(!el)return;
  if(el.querySelector('textarea[data-dirty="true"]')||el.contains(document.activeElement)&&document.activeElement?.tagName==='TEXTAREA')return;
  clearReviewQuestionAudioUrls();el.replaceChildren();
@@ -1760,7 +1763,7 @@ let liveTickTimer=null;
 function tickLiveClock(){const el=ELEM('liveQTimer');if(roomPhase!=='live'||!el||!activeTurn){if(liveTickTimer){clearInterval(liveTickTimer);liveTickTimer=null}return;}const done=activeTurn.responseSeconds!=null,s=Math.max(0,Math.floor((performance.now()-(activeTurn.shownAt||performance.now()))/1000));el.textContent=done?`已响应 · ${activeTurn.responseSeconds}秒`:`${activeTurn.autoCapture?'本题用时':'等待回答'} ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;el.dataset.state=done?'done':s>=10?'late':'wait';}
 function updateLiveQuestionCard(text,stage){const card=ELEM('liveQuestionCard');if(!card)return;card.hidden=false;const context=ELEM('liveQContext');if(context){context.textContent=activeTurn?.sku?`商品 SKU（上下文）：${activeTurn.sku}`:'';context.hidden=!activeTurn?.sku;}const node=ELEM('liveQText'),more=ELEM('liveQExpand');node.classList.remove('r3-expanded');node.removeAttribute('tabindex');node.textContent=text;more.hidden=true;more.setAttribute('aria-expanded','false');more.textContent='查看完整问题 ↓';requestAnimationFrame(()=>{if(node.isConnected&&node.textContent===text)more.hidden=node.scrollHeight<=node.clientHeight+1;});ELEM('liveQIndex').textContent=`第 ${sessionTurns.length||1} 题 · 本场 ${questions.length} 道${activeTurn?.kind==='seed'?'示例':'资料题'}`;tickLiveClock();if(!liveTickTimer)liveTickTimer=setInterval(tickLiveClock,1000);}
 // V3.4.9：文字模拟模式没有录音，直播中用“文字回答”小面板作答；内容写入当前这条弹幕，并记录响应用时。
-function toggleTextAnswer(force){const sheet=ELEM('textAnswerSheet'),input=ELEM('liveTextAnswer');if(!sheet||!input)return;const open=typeof force==='boolean'?force:sheet.hidden;if(open){if(roomPhase!=='live'||!activeTurn)return toast('请先开始直播，等弹幕出现后再回答');input.value=ELEM('answerText')?.value||'';sheet.hidden=false;input.focus();}else sheet.hidden=true;}
+function toggleTextAnswer(force){const sheet=ELEM('textAnswerSheet'),input=ELEM('liveTextAnswer');if(!sheet||!input)return;const open=typeof force==='boolean'?force:sheet.hidden;if(open){if(roomPhase!=='live'||!activeTurn)return toast('请先开始直播，等弹幕出现后再回答');input.value=ELEM('answerText')?.value||'';sheet.hidden=false;input.focus({preventScroll:true});}else sheet.hidden=true;}
 function syncTextAnswer(){const input=ELEM('liveTextAnswer'),field=ELEM('answerText');if(!input||!field||!activeTurn||roomPhase!=='live')return;if(activeTurn.responseSeconds==null&&input.value.trim())activeTurn.responseSeconds=Math.round(Math.max(0,performance.now()-(activeTurn.shownAt||performance.now()))/100)/10;field.value=input.value;saveCurrentTypedAnswer({asDraft:true});tickLiveClock();}
 async function startRecord({automatic=false}={}){
  if(roomPhase!=='live'||!liveStarted)return toast('请先进入模拟直播间，再开始录音');
