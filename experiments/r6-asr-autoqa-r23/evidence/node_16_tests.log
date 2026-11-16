@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: R23-01 only multilingual open-source tiny/base allowlisted
+ok 1 - R23-01 only multilingual open-source tiny/base allowlisted
+  ---
+  duration_ms: 3.015711
+  type: 'test'
+  ...
+# Subtest: R23-02 enhanced mode really selects Whisper Base engine
+ok 2 - R23-02 enhanced mode really selects Whisper Base engine
+  ---
+  duration_ms: 5.483247
+  type: 'test'
+  ...
+# Subtest: R23-03 lightweight mode still works independently
+ok 3 - R23-03 lightweight mode still works independently
+  ---
+  duration_ms: 1.208987
+  type: 'test'
+  ...
+# Subtest: R23-04 invalid mode fails before model or any network access
+ok 4 - R23-04 invalid mode fails before model or any network access
+  ---
+  duration_ms: 0.146993
+  type: 'test'
+  ...
+# Subtest: R23-05 Base load timeout blocks a second attempt (no concurrent mobile WASM)
+ok 5 - R23-05 Base load timeout blocks a second attempt (no concurrent mobile WASM)
+  ---
+  duration_ms: 227.787266
+  type: 'test'
+  ...
+# Subtest: R23-06 no paid API or audio network upload in deliverable
+ok 6 - R23-06 no paid API or audio network upload in deliverable
+  ---
+  duration_ms: 7.284859
+  type: 'test'
+  ...
+# Subtest: R23-07 default model is Base for the experimental upgrade
+ok 7 - R23-07 default model is Base for the experimental upgrade
+  ---
+  duration_ms: 2.367701
+  type: 'test'
+  ...
+# Subtest: original Gemini R2 reproduced: timeout permits overlapping inference
+ok 8 - original Gemini R2 reproduced: timeout permits overlapping inference
+  ---
+  duration_ms: 383.108997
+  type: 'test'
+  ...
+# Subtest: hardened R2: late inference is not re-entered after timeout
+ok 9 - hardened R2: late inference is not re-entered after timeout
+  ---
+  duration_ms: 305.029822
+  type: 'test'
+  ...
+# Subtest: hardened R2: timed-out model loader fails closed, no second load
+ok 10 - hardened R2: timed-out model loader fails closed, no second load
+  ---
+  duration_ms: 283.283105
+  type: 'test'
+  ...
+# Subtest: hardened R2: clean sequential recognitions still work
+ok 11 - hardened R2: clean sequential recognitions still work
+  ---
+  duration_ms: 63.617425
+  type: 'test'
+  ...
+# Subtest: WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS
+ok 12 - WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS
+  ---
+  duration_ms: 16.599159
+  type: 'test'
+  ...
+# Subtest: WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs
+ok 13 - WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs
+  ---
+  duration_ms: 65.461033
+  type: 'test'
+  ...
+# Subtest: WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline
+ok 14 - WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline
+  ---
+  duration_ms: 18.372681
+  type: 'test'
+  ...
+# Subtest: WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio
+ok 15 - WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio
+  ---
+  duration_ms: 143.621832
+  type: 'test'
+  ...
+# Subtest: WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads
+ok 16 - WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads
+  ---
+  duration_ms: 46.950611
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1134.212145
