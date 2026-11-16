@@ -697,7 +697,7 @@ def verify_pr(base, head):
         return subprocess.check_output(['git', 'show', f'{ref}:{path}'])
     changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
     release = {'site.zip', '.github/workflows/pages.yml'}
-    ci = {'.github/workflows/verify-pages-pr.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py'}
+    ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
     if changed == {R21_ARCHIVE,'.github/workflows/pages.yml'}:
         verify_r21_release(
@@ -753,6 +753,12 @@ def verify_pr(base, head):
             compile(show(head, name), name, 'exec')
         if 'release-ci/stage_r21.py' in changed:
             compile(show(head, 'release-ci/stage_r21.py'), 'release-ci/stage_r21.py', 'exec')
+        if 'release-ci/r21_real_model_probe.py' in changed:
+            compile(show(head,'release-ci/r21_real_model_probe.py'),'release-ci/r21_real_model_probe.py','exec')
+        if '.github/workflows/r21-real-model-smoke.yml' in changed:
+            model_yaml=show(head,'.github/workflows/r21-real-model-smoke.yml').decode('utf-8')
+            if "workflow_dispatch:" not in model_yaml or "release-ci/r21_real_model_probe.py" not in model_yaml or "permissions:\n  contents: read" not in model_yaml:
+                raise GateFailure('Model smoke workflow must be read-only, explicit, and manually repeatable')
         subprocess.run([sys.executable, 'release-ci/test_release_guard.py'], check=True)
         print('verify-pages-release PASS: dedicated CI update and regression tests')
     elif changed <= docs:
