@@ -80,15 +80,16 @@ try:
   context.add_init_script(INIT_JS)
   page=context.new_page();page.on('pageerror',lambda err:result['errors'].append(str(err)))
   page.goto(URL,wait_until='domcontentloaded',timeout=15000)
-  # Model control: visible in header tools; reload while idle only.
-  page.locator('details.header-tools summary').click()
-  pref=page.locator('#r23ModelChoice')
-  assert pref.input_value() in ('tiny','base')
-  # Keep Tiny for the existing three-turn mocked workflow test.
-  result['preset_before_run']=pref.input_value()
+  # The guest gateway intentionally hides the topbar. Model selection is
+  # available on the anchor home screen after entering a name, not before.
   step('choose_anchor',lambda:page.locator('[data-role-pick="anchor"]').click(timeout=7000))
   step('name',lambda:page.locator('#simpleName').fill('AutoQA-R2-独立核验'))
   step('login',lambda:page.locator('#simpleLogin').click())
+  page.wait_for_function("document.body.dataset.role==='anchor'",timeout=8000)
+  page.locator('details.header-tools summary').click(timeout=7000)
+  pref=page.locator('#r23ModelChoice')
+  assert pref.input_value() in ('tiny','base')
+  result['preset_before_run']=pref.input_value()
   step('freePractice',lambda:page.locator('#freePractice').click())
   page.wait_for_function("document.body.dataset.page==='training'",timeout=7000)
   step('device_recheck',lambda:page.locator('#prepQuickRecheck').click())
