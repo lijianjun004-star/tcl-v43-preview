@@ -569,3 +569,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 输入仍489478 bytes、SHA256 bdd93ef0fbd7c10346994cd3b4b2d28a434cdb83270933947ac56f2123728314。本轮未修改产品，Gemini实质复验仍未完成；远端最新版本另见下段。完整证据见源码分支fix/r24-smooth-mobile-20261116提交a28312b的evidence/r24-smooth-gemini/WORK-ARGON-OUTCOME.md、ui-diagnosis-result.json、verified-argon-result.json及各task/start记录。
 
 收尾重新读取实时main为6cb913b（PR122），已另有review-stability发布（app63519c50…）；本轮489478字节/bdd93ef0…附件仍是此前smooth（app1af53554…）。本轮无产品改动不等于远端未更新；Gemini仍未复验当前review-stability。后续恢复审查须按实时main重新冻结，不能复用旧附件当最新。
+
+## R24 当前版手动 Gemini 复验 ZIP 交付（2026-11-16）
+
+任务 TCL-R24-MANUAL-GEMINI-ZIP-20261116。用户要求ZIP供手动发给Gemini；本轮仅打包与校验，Gemini业务调用0，不重启已阻塞浏览器、不改产品或共享权限。当前ChatGPT/Codex负责制作，内部独立包校验完成。
+
+- 交付：https://drive.google.com/file/d/1fEEhIN8r-7Hq0ccj-hxbi2THt2OfnEdv/view?usp=drivesdk 。文件TCL-R24-review-stability-Gemini-Review-20261116.zip；8163529 bytes，429项；SHA256 635c8795c2a8cb0312e0e67f39b40b7fd764f0a8855f5bf20be40c3af0896f81；Drive元数据/大小/父目录/私有shared=false核对，下载回读字节及SHA完全一致、CRC通过。
+- 固定版本r24-review-stability-20261116，main93584fa34e4e05906cca5241dd92aa900f7a900d，源证据分支9963a554b3eedae0635826a73ce1e1813ca70bdc（实施97d343d0af910506931385b59bc547f217887d60），app63519c50…/CSS35a869c9…。22产品文件逐字节等于main发行归档和源证据分支；打包时另外实际HTTP读取app/style/manifest/bridge/worker五项，全部200且正文一致。这替代旧489478字节smooth文本附件用于手动复验。
+- ZIP含当前22文件完整产品源码、r24全部测试/阶段报告、关键成功/失败/性能/存储/题库证据、main可信门禁及旧站staging输入，00-先读说明.md、01-复制给Gemini的复验任务.txt、核心源码合并阅读、release identity/读取核验字段及逐文件manifest。用户上传ZIP并复制01内任务即可。无.git、模型、node_modules、浏览器凭据、原始用户录音/未提供的244条私有话术或旧浏览器自动化原始日志。
+- 包含验证脚本verify_package.py；独立临时解压执行退出0，426负载文件SHA/大小通过，ZIP429项CRC/路径/唯一性/非加密/非链接通过。对外层和解码staging共627项有限凭据/签名钱包URL模式扫描无命中，不保证任意隐蔽敏感值均可检测。
+- 本轮没有重跑产品全suite，也未取得Gemini新报告或真实手机验收。旧证据仍带各自版本及失败边界；缺依赖/不能解压或执行时必须明确未运行，不把旧记录当Gemini新实跑。92门禁和此前217公网验证沿用对应历史来源，不冒充本轮新结果。交付元数据与独立核验见evidence/r24-manual-review-zip/。
