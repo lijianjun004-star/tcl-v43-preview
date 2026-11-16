@@ -1,0 +1,44 @@
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.003s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (11.272694ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (64.562396ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (5.810683ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (131.134911ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (43.687937ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 336.493994
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (366.610752ms)
+✔ hardened R2: late inference is not re-entered after timeout (302.812486ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (285.30761ms)
+✔ hardened R2: clean sequential recognitions still work (63.878819ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1070.593367
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+R24_STAGE_PASS {"app_sha": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816", "files": 22, "old_assets_unchanged": 195}
+R25_STAGE_PASS {"app_sha": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc", "files": 22, "old_assets_unchanged": 217, "total_assets": 239}
+R25_RELEASE_PASS {"app_sha": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc", "files": 22, "old_assets_unchanged": 217, "total_assets": 239}
+verify-pages-release PASS: exact R2.5 additive route; all 217 older assets preserved

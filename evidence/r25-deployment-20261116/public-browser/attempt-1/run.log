@@ -1,0 +1,112 @@
+{
+  "scope": "Public R25 pure-text Chromium workflow; no hardware, model loading or inference.",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "expected_app_sha256": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
+  "test_name": "Codex-R25公网文字验收-1794870980",
+  "checks": {
+    "new_context_defaults_to_vosk": {
+      "pass": true,
+      "detail": {
+        "selected": "vosk",
+        "stored": null
+      }
+    },
+    "text_context_tiny_selected": {
+      "pass": true,
+      "detail": null
+    },
+    "two_answers_in_original_question_order": {
+      "pass": true,
+      "detail": [
+        "公网验收第一题：请核对官方产品参数。",
+        "公网验收第二题：型号与数字以资料为准。"
+      ]
+    },
+    "pure_text_has_no_audio_players": {
+      "pass": true,
+      "detail": null
+    },
+    "native_checkpoint_has_two_exact_answers": {
+      "pass": true,
+      "detail": {
+        "runId": "df20c0c8-b4f2-4566-a9fe-2973c08627c0",
+        "turnIds": [
+          "7aaaf0e3-325f-4229-95eb-25a7978b72f1",
+          "a076c67c-4c74-4ed5-8ec9-f183f663bb57"
+        ],
+        "answers": [
+          "公网验收第一题：请核对官方产品参数。",
+          "公网验收第二题：型号与数字以资料为准。"
+        ],
+        "mediaCount": 0,
+        "revision": 3
+      }
+    },
+    "reload_same_name_restores_two_exact_answers": {
+      "pass": true,
+      "detail": [
+        "公网验收第一题：请核对官方产品参数。",
+        "公网验收第二题：型号与数字以资料为准。"
+      ]
+    },
+    "restored_same_run_and_turn_ids": {
+      "pass": true,
+      "detail": {
+        "runId": "df20c0c8-b4f2-4566-a9fe-2973c08627c0",
+        "turnIds": [
+          "7aaaf0e3-325f-4229-95eb-25a7978b72f1",
+          "a076c67c-4c74-4ed5-8ec9-f183f663bb57"
+        ],
+        "answers": [
+          "公网验收第一题：请核对官方产品参数。",
+          "公网验收第二题：型号与数字以资料为准。"
+        ],
+        "mediaCount": 0,
+        "revision": 3
+      }
+    },
+    "pure_text_has_no_recorded_media": {
+      "pass": true,
+      "detail": 0
+    }
+  },
+  "page_errors": [],
+  "model_requests": [],
+  "request_failures": [],
+  "app_responses": [],
+  "status": "FAIL",
+  "checkpoint_before_reload": {
+    "runId": "df20c0c8-b4f2-4566-a9fe-2973c08627c0",
+    "turnIds": [
+      "7aaaf0e3-325f-4229-95eb-25a7978b72f1",
+      "a076c67c-4c74-4ed5-8ec9-f183f663bb57"
+    ],
+    "answers": [
+      "公网验收第一题：请核对官方产品参数。",
+      "公网验收第二题：型号与数字以资料为准。"
+    ],
+    "mediaCount": 0,
+    "revision": 3
+  },
+  "checkpoint_after_reload": {
+    "runId": "df20c0c8-b4f2-4566-a9fe-2973c08627c0",
+    "turnIds": [
+      "7aaaf0e3-325f-4229-95eb-25a7978b72f1",
+      "a076c67c-4c74-4ed5-8ec9-f183f663bb57"
+    ],
+    "answers": [
+      "公网验收第一题：请核对官方产品参数。",
+      "公网验收第二题：型号与数字以资料为准。"
+    ],
+    "mediaCount": 0,
+    "revision": 3
+  },
+  "mobile_layout": {
+    "width": 390,
+    "documentWidth": 390,
+    "scale": 1,
+    "firstEditorFont": "16px"
+  },
+  "exception": "Response.body: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/r25-deployment/public-browser/run_public_smoke.py\", line 73, in <module>\n    b=r.body();report['app_responses'].append({'url':r.url,'status':r.status,'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()})\n      ^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 660, in body\n    return mapping.from_maybe_impl(self._sync(self._impl_obj.body()))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_network.py\", line 882, in body\n    binary = await self._channel.send(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.Error: Response.body: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.\n"
+}

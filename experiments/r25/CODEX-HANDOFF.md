@@ -1,5 +1,7 @@
 # R25 Codex接手复核与待批准发布候选
 
+> **后续已获用户明确批准并发布R25**：发布PR128合并`b24abea1be778024edf493c01418fec22ae4e8ea`，Pages43977679324 success；当前入口 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/ 。以下待批准文字是发布前历史快照，最新状态以main/AI_CONTEXT.md及evidence/r25-deployment-20261116为准。
+
 任务：TCL-R25-ASR-FALLBACK-20261116；总负责人ChatGPT，当前执行Codex，初稿实施Claude。状态：**独立复核与发布准备完成，等待独立测试部署批准；未合并、未部署**。Gemini新增请求0、付费模型API调用0。代码权威源为指定GitHub仓库的候选分支与精确提交，Drive交付包是冻结备份和证据索引，不是第二套代码主库。
 
 ## 版本、接收与实际修改

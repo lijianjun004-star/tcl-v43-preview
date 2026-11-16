@@ -603,3 +603,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 权威源码候选codex/r25-followup-fixes-20261116、CI候选codex/r25-release-preparation-20261116；详见experiments/r25/CODEX-HANDOFF.md和evidence/r25-codex-handoff/。批准后先CI独立PR再基于最新main发布，确认Actions、公网239及真机；真手机/大陆网络/Whisper真实权重/真人TCL准确率均未验收，不自动调用Gemini或上传真人录音。
 
 - R25交付包已私有归档 https://drive.google.com/file/d/1-S7H6KJ5PNAzL-pWKk3CqpPJJX1w5Jmo/view?usp=drivesdk ，15932358字节、285项（284负载SHA），SHA01662c82b4adfe130299f1aa133111175b5b8766d61feb2fe0eb228064971a4b；Drive元数据及下载回读逐字节/CRC通过，未改共享权限。包冻结源码3bd0ff1（产品修复b3950ea/app284848），新增交付索引不改变该包或产品。发布仍待用户明确批准；远端main保持d277aab。详见evidence/r25-codex-handoff/DELIVERY.md。
+
+
+> **后续已获用户明确批准并发布R25**：发布PR128合并`b24abea1be778024edf493c01418fec22ae4e8ea`，Pages43977679324 success；当前入口 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/ 。以下待批准文字是发布前历史快照，最新状态以main/AI_CONTEXT.md及evidence/r25-deployment-20261116为准。
+
