@@ -25,7 +25,7 @@ SOURCE_SHA = {
     "reference/gemini-r2-original-whisper-bridge.mjs": "84270d95cca431c2e4b0517efc176fca34f33b55b008711475ebba61bfc24a6c",
 }
 PILOT = "tcl-v352-asr-autoqa-r2"
-APP_SHA = "7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8"
+APP_SHA = "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4"
 BASE_ASR_SHA = "37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298"
 PILOT_FILES = {"index.html","app.js","style.css","training-boards.json","legacy-65.json",
     "app-config.json","static-manifest.json","whisper-bridge.mjs",
@@ -78,6 +78,21 @@ def stage(site_dir, archive_path, browser=False):
         if not result["source_preserved"] or result["pilot_files"] != 13:
             raise ValueError("R2.1 isolation test did not preserve source")
         app = dest / "app.js"
+        # Production R6 uses a module; Gemini R2.1 also emitted a var with the
+        # same name as its top-level function. Classic-script syntax checks miss
+        # this SyntaxError, so fix only the isolated build and test in ESM mode.
+        old_app_sha = "7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8"
+        old_source = app.read_text(encoding="utf-8")
+        duplicate = "var r6WhisperSubmit=globalThis.r6WhisperSubmit||function(id){if(typeof voskModel!=='undefined'&&voskModel&&typeof enqueueQuestionAsr==='function')enqueueQuestionAsr(id);};\n"
+        if sha(app.read_bytes()) != old_app_sha or old_source.count(duplicate) != 1:
+            raise ValueError("Original Gemini R2.1 ESM collision anchor changed")
+        app.write_text(old_source.replace(duplicate,"",1), encoding="utf-8")
+        manifest_path=dest/"static-manifest.json"
+        manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["files"]["app.js"]=sha(app.read_bytes())
+        manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+        subprocess.run(["node","--input-type=module","--check"],
+            input=app.read_text(encoding="utf-8"),text=True,check=True,timeout=35)
         if sha(app.read_bytes()) != APP_SHA:
             raise ValueError("R2.1 generated app differs from independently reviewed package")
         if {p.relative_to(dest).as_posix() for p in dest.rglob("*") if p.is_file()} != PILOT_FILES:
