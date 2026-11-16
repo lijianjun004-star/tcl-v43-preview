@@ -1,0 +1,908 @@
+{
+  "status": "PASS",
+  "method": "Three independent contexts per 20/100/200-turn group at CPU 1x/4x, same Chromium 390x844 touch viewport, each with 500 synthetic library rows. Input uses 40 ASCII characters separated by 20ms (800ms deliberate pacing included). No inference, real phone, or business data. Latencies include UI scheduling and are observational, structural counts are acceptance gates.",
+  "before_report": "/workspace/tcl-v43-preview/evidence/r24-performance/baseline/result.json",
+  "after_report": "/workspace/tcl-v43-preview/evidence/r24-performance/candidate/result.json",
+  "source_hashes_before": {
+    "app.js": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+    "style.css": "9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "source_hashes_after": {
+    "app.js": "034597b149d7150bfd04e184c3f94b97ccbe09ed22d5480d5245a35abb6d87de",
+    "style.css": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "checks": {
+    "same_browser_and_configuration": true,
+    "all_18_samples_each": true,
+    "source_stable_each": true,
+    "baseline_and_candidate_keep_text": true,
+    "candidate_no_page_errors": true,
+    "candidate_no_hidden_summary_rows": true,
+    "candidate_initial_rows_at_most20": true,
+    "candidate_40_char_writes_at_most8": true,
+    "candidate_input_fonts16": true,
+    "candidate_viewport_stable": true,
+    "candidate_500_library_search": true,
+    "candidate_30_nav_no_interval_growth": true
+  },
+  "groups": [
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          119.1,
+          91.8,
+          108.3
+        ],
+        "restore_median_ms": 108.3,
+        "details_ms": [
+          337.7,
+          307.5,
+          330.6
+        ],
+        "details_median_ms": 330.6,
+        "overview_dom_nodes": [
+          741,
+          741,
+          741
+        ],
+        "overview_hidden_rows": [
+          20,
+          20,
+          20
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          1023,
+          982,
+          1011.9
+        ],
+        "typing_median_ms": 1011.9,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          800,
+          800,
+          800
+        ],
+        "input_next_frame_p50_ms": [
+          7.3,
+          7,
+          6.9
+        ],
+        "input_next_frame_p95_ms": [
+          13.3,
+          14.6,
+          13.7
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          151.8,
+          121.2,
+          107.2
+        ],
+        "restore_median_ms": 121.2,
+        "details_ms": [
+          360.2,
+          310.7,
+          306.8
+        ],
+        "details_median_ms": 310.7,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          950.8,
+          980.9,
+          953
+        ],
+        "typing_median_ms": 953,
+        "write_transactions": [
+          1,
+          1,
+          1
+        ],
+        "record_puts": [
+          20,
+          20,
+          20
+        ],
+        "input_next_frame_p50_ms": [
+          2.3,
+          0.6,
+          0.7
+        ],
+        "input_next_frame_p95_ms": [
+          15.4,
+          15.7,
+          14.6
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          156.9,
+          98.4,
+          122.7
+        ],
+        "restore_median_ms": 122.7,
+        "details_ms": [
+          406.3,
+          407.2,
+          455.3
+        ],
+        "details_median_ms": 407.2,
+        "overview_dom_nodes": [
+          2741,
+          2741,
+          2741
+        ],
+        "overview_hidden_rows": [
+          100,
+          100,
+          100
+        ],
+        "initial_detail_rows": [
+          100,
+          100,
+          100
+        ],
+        "typing_ms": [
+          1012.9,
+          1074.6,
+          1093.5
+        ],
+        "typing_median_ms": 1074.6,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          4000,
+          4000,
+          4000
+        ],
+        "input_next_frame_p50_ms": [
+          7.4,
+          6.3,
+          7.8
+        ],
+        "input_next_frame_p95_ms": [
+          12.4,
+          14.6,
+          14.4
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          104.4,
+          96.5,
+          110.7
+        ],
+        "restore_median_ms": 104.4,
+        "details_ms": [
+          322.8,
+          322.1,
+          292.1
+        ],
+        "details_median_ms": 322.1,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          933.7,
+          938.4,
+          923.8
+        ],
+        "typing_median_ms": 933.7,
+        "write_transactions": [
+          1,
+          1,
+          1
+        ],
+        "record_puts": [
+          100,
+          100,
+          100
+        ],
+        "input_next_frame_p50_ms": [
+          0.6,
+          0.7,
+          0.5
+        ],
+        "input_next_frame_p95_ms": [
+          15.4,
+          16.1,
+          14.3
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          125.5,
+          131.6,
+          155.2
+        ],
+        "restore_median_ms": 131.6,
+        "details_ms": [
+          470.2,
+          498,
+          518
+        ],
+        "details_median_ms": 498,
+        "overview_dom_nodes": [
+          5241,
+          5241,
+          5241
+        ],
+        "overview_hidden_rows": [
+          200,
+          200,
+          200
+        ],
+        "initial_detail_rows": [
+          200,
+          200,
+          200
+        ],
+        "typing_ms": [
+          1124.8,
+          1149.2,
+          1076.2
+        ],
+        "typing_median_ms": 1124.8,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          8000,
+          8000,
+          8000
+        ],
+        "input_next_frame_p50_ms": [
+          3.8,
+          4.2,
+          7.1
+        ],
+        "input_next_frame_p95_ms": [
+          15.9,
+          14.7,
+          15
+        ],
+        "longtask_count": [
+          0,
+          1,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          70,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          20,
+          0
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          100.8,
+          112.5,
+          109.2
+        ],
+        "restore_median_ms": 109.2,
+        "details_ms": [
+          324.8,
+          318.8,
+          316
+        ],
+        "details_median_ms": 318.8,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          940.4,
+          928.9,
+          939.9
+        ],
+        "typing_median_ms": 939.9,
+        "write_transactions": [
+          1,
+          1,
+          1
+        ],
+        "record_puts": [
+          200,
+          200,
+          200
+        ],
+        "input_next_frame_p50_ms": [
+          0.6,
+          0.5,
+          0.6
+        ],
+        "input_next_frame_p95_ms": [
+          16.3,
+          13,
+          15.6
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          250.4,
+          268.5,
+          250.8
+        ],
+        "restore_median_ms": 250.8,
+        "details_ms": [
+          368.4,
+          443.1,
+          523.8
+        ],
+        "details_median_ms": 443.1,
+        "overview_dom_nodes": [
+          741,
+          741,
+          741
+        ],
+        "overview_hidden_rows": [
+          20,
+          20,
+          20
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          1458,
+          1525.5,
+          1591.9
+        ],
+        "typing_median_ms": 1525.5,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          800,
+          800,
+          800
+        ],
+        "input_next_frame_p50_ms": [
+          7.8,
+          7.7,
+          6.7
+        ],
+        "input_next_frame_p95_ms": [
+          13,
+          12.1,
+          13.3
+        ],
+        "longtask_count": [
+          0,
+          1,
+          1
+        ],
+        "longtask_max_ms": [
+          0,
+          57,
+          59
+        ],
+        "total_blocking_ms": [
+          0,
+          7,
+          9
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          215.5,
+          251.3,
+          209.5
+        ],
+        "restore_median_ms": 215.5,
+        "details_ms": [
+          460.5,
+          336.4,
+          466
+        ],
+        "details_median_ms": 460.5,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          1146.6,
+          1205.8,
+          1217
+        ],
+        "typing_median_ms": 1205.8,
+        "write_transactions": [
+          2,
+          2,
+          2
+        ],
+        "record_puts": [
+          40,
+          40,
+          40
+        ],
+        "input_next_frame_p50_ms": [
+          2.3,
+          2.8,
+          2.6
+        ],
+        "input_next_frame_p95_ms": [
+          14.1,
+          15,
+          10.8
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          387.1,
+          317.5,
+          780.3
+        ],
+        "restore_median_ms": 387.1,
+        "details_ms": [
+          1033,
+          950.3,
+          932.7
+        ],
+        "details_median_ms": 950.3,
+        "overview_dom_nodes": [
+          2741,
+          2741,
+          2741
+        ],
+        "overview_hidden_rows": [
+          100,
+          100,
+          100
+        ],
+        "initial_detail_rows": [
+          100,
+          100,
+          100
+        ],
+        "typing_ms": [
+          2680.1,
+          2249.6,
+          2280.6
+        ],
+        "typing_median_ms": 2280.6,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          4000,
+          4000,
+          4000
+        ],
+        "input_next_frame_p50_ms": [
+          12.3,
+          9.8,
+          10
+        ],
+        "input_next_frame_p95_ms": [
+          32.2,
+          20.1,
+          15.2
+        ],
+        "longtask_count": [
+          9,
+          0,
+          2
+        ],
+        "longtask_max_ms": [
+          100,
+          0,
+          164
+        ],
+        "total_blocking_ms": [
+          205,
+          0,
+          114
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          245.6,
+          295.5,
+          193.6
+        ],
+        "restore_median_ms": 245.6,
+        "details_ms": [
+          355.5,
+          401.5,
+          457.9
+        ],
+        "details_median_ms": 401.5,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          1196.8,
+          1218.5,
+          1139
+        ],
+        "typing_median_ms": 1196.8,
+        "write_transactions": [
+          2,
+          2,
+          2
+        ],
+        "record_puts": [
+          200,
+          200,
+          200
+        ],
+        "input_next_frame_p50_ms": [
+          2.6,
+          3.3,
+          2.4
+        ],
+        "input_next_frame_p95_ms": [
+          12.3,
+          16,
+          13.4
+        ],
+        "longtask_count": [
+          0,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          0,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "before": {
+        "samples": 3,
+        "restore_ms": [
+          365.2,
+          394.3,
+          451.2
+        ],
+        "restore_median_ms": 394.3,
+        "details_ms": [
+          1958,
+          1690.2,
+          1744.2
+        ],
+        "details_median_ms": 1744.2,
+        "overview_dom_nodes": [
+          5241,
+          5241,
+          5241
+        ],
+        "overview_hidden_rows": [
+          200,
+          200,
+          200
+        ],
+        "initial_detail_rows": [
+          200,
+          200,
+          200
+        ],
+        "typing_ms": [
+          2985.7,
+          2819.2,
+          2737.3
+        ],
+        "typing_median_ms": 2819.2,
+        "write_transactions": [
+          40,
+          40,
+          40
+        ],
+        "record_puts": [
+          8000,
+          8000,
+          8000
+        ],
+        "input_next_frame_p50_ms": [
+          12,
+          13.6,
+          12.5
+        ],
+        "input_next_frame_p95_ms": [
+          19.2,
+          22.6,
+          25.4
+        ],
+        "longtask_count": [
+          8,
+          8,
+          11
+        ],
+        "longtask_max_ms": [
+          68,
+          90,
+          62
+        ],
+        "total_blocking_ms": [
+          83,
+          128,
+          76
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "restore_ms": [
+          215.1,
+          523.3,
+          210.1
+        ],
+        "restore_median_ms": 215.1,
+        "details_ms": [
+          429.4,
+          459.6,
+          387
+        ],
+        "details_median_ms": 429.4,
+        "overview_dom_nodes": [
+          232,
+          232,
+          232
+        ],
+        "overview_hidden_rows": [
+          0,
+          0,
+          0
+        ],
+        "initial_detail_rows": [
+          20,
+          20,
+          20
+        ],
+        "typing_ms": [
+          1184.7,
+          1334.8,
+          1121.3
+        ],
+        "typing_median_ms": 1184.7,
+        "write_transactions": [
+          2,
+          2,
+          2
+        ],
+        "record_puts": [
+          400,
+          400,
+          400
+        ],
+        "input_next_frame_p50_ms": [
+          2.5,
+          2.4,
+          2.4
+        ],
+        "input_next_frame_p95_ms": [
+          15,
+          14.8,
+          14.9
+        ],
+        "longtask_count": [
+          1,
+          0,
+          0
+        ],
+        "longtask_max_ms": [
+          80,
+          0,
+          0
+        ],
+        "total_blocking_ms": [
+          30,
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}

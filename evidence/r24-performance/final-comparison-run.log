@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": {
+    "same_browser_and_configuration": true,
+    "all_18_samples_each": true,
+    "source_stable_each": true,
+    "baseline_and_candidate_keep_text": true,
+    "candidate_no_page_errors": true,
+    "candidate_no_hidden_summary_rows": true,
+    "candidate_initial_rows_at_most20": true,
+    "candidate_40_char_writes_at_most8": true,
+    "candidate_input_fonts16": true,
+    "candidate_viewport_stable": true,
+    "candidate_500_library_search": true,
+    "candidate_30_nav_no_interval_growth": true
+  }
+}

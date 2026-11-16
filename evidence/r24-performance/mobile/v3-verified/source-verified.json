@@ -1,0 +1,10 @@
+{
+  "source_hashes_after": {
+    "app.js": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+    "style.css": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "matches_probe_start": true,
+  "observations": 68,
+  "strict_probe_exit_code": 0
+}

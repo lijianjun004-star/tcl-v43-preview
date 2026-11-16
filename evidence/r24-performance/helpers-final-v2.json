@@ -1,0 +1,35 @@
+{
+  "app_sha256": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6",
+  "mode": "Node VM actual app helper functions; mocked model/storage, synthetic source rows",
+  "results": [
+    {
+      "test": "manual-clear-regression",
+      "exit_code": 0,
+      "status": "PASS",
+      "checks": 3,
+      "mode": "actual app live-clear/Vosk/browser-result functions in Node VM; mocked model, decoder and persistence"
+    },
+    {
+      "test": "regression",
+      "exit_code": 0,
+      "status": "PASS",
+      "checks": 14,
+      "mode": "actual app functions in Node VM; mocked inference, not real speech"
+    },
+    {
+      "test": "assignment-regression",
+      "exit_code": 0,
+      "status": "PASS",
+      "checks": 8,
+      "mode": "Node VM real app assignment functions; deferred mock IDB"
+    },
+    {
+      "test": "question-pool",
+      "exit_code": 0,
+      "status": "PASS",
+      "checks": 12,
+      "mode": "actual app helpers in Node VM; synthetic source rows and mocked storage/network; no model call",
+      "app_sha256": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6"
+    }
+  ]
+}

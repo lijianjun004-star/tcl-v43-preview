@@ -1,0 +1,7214 @@
+{
+  "fixture_kind": "artificial, 500 library rows and 20/100/200 historical text turns, no speech/media",
+  "mode": "desktop Chromium, 390x844 mobile viewport, native IndexedDB; CDP CPU throttling is not a physical phone",
+  "script_sha256": "939c6cfb10cddf6d3026e04243d8b8052ac17f88aaf1df7424c0db23ba9731e2",
+  "source_hashes": {
+    "app.js": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6",
+    "style.css": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "configuration": {
+    "rates": [
+      1,
+      4
+    ],
+    "repeats": 3,
+    "counts": [
+      20,
+      100,
+      200
+    ],
+    "input_chars": 40,
+    "input_delay_ms": 20
+  },
+  "samples": [
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "repeat": 1,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 337.6000000014901,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 180.09999999776483,
+        "tx": [],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1013.8000000007451,
+      "typing": {
+        "elapsedMs": 2174.199999999255,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 20,
+          "prefs": 1
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 2.2999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 18.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.199999999254942
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 2,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "repeat": 2,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 94.60000000149012,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 307.69999999925494,
+        "tx": [],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1038.4000000022352,
+      "typing": {
+        "elapsedMs": 2159.2000000029802,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 20,
+          "prefs": 1
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 11.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8999999985098839
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 2,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "repeat": 3,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 121.40000000223517,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 294.6000000014901,
+        "tx": [],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1038.699999999255,
+      "typing": {
+        "elapsedMs": 2242.699999999255,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 20,
+          "prefs": 1
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 3.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.7999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 2,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "repeat": 1,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 291.4000000022352,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 332.69999999925494,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 86,
+            "startTime": 1339.3999999985099
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1075.300000000745,
+      "typing": {
+        "elapsedMs": 2451.699999999255,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 2
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 5.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.0999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.799999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 17.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 17.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 18.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.599999997764826
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "repeat": 2,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 132.19999999925494,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 331.19999999925494,
+        "tx": [],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1241.300000000745,
+      "typing": {
+        "elapsedMs": 2599.5,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 2
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 4.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 22.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "repeat": 3,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 437.79999999701977,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 63,
+            "startTime": 1400.9000000022352
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 454.8999999985099,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 151,
+            "startTime": 1852.1000000014901
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1369.1000000014901,
+      "typing": {
+        "elapsedMs": 2736.10000000149,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 2
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 3.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.2999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "repeat": 1,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 211.30000000074506,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 305.1000000014901,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 62,
+            "startTime": 1257.300000000745
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1642.0999999977648,
+      "typing": {
+        "elapsedMs": 2984.099999997765,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 400,
+          "prefs": 2
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.799999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 18.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.399999998509884
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "repeat": 2,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 105.30000000074506,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 478,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 116,
+            "startTime": 788.7999999970198
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 953.1999999992549,
+      "typing": {
+        "elapsedMs": 2161.10000000149,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 1
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 12.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.7999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.799999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.7999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 2,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "repeat": 3,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 91,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 311.30000000074506,
+        "tx": [],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 990,
+      "typing": {
+        "elapsedMs": 2151.800000000745,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 1
+        },
+        "longtasks": [],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 4.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 17
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5999999977648258
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 2,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "repeat": 1,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 380,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 75,
+            "startTime": 1388
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 565.0999999977648,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 56,
+            "startTime": 1879.699999999255
+          },
+          {
+            "duration": 245,
+            "startTime": 1936.3999999985099
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 2610.300000000745,
+      "typing": {
+        "elapsedMs": 3998.800000000745,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 60,
+          "prefs": 3
+        },
+        "longtasks": [
+          {
+            "duration": 55,
+            "startTime": 3389.300000000745
+          },
+          {
+            "duration": 66,
+            "startTime": 3563.699999999255
+          },
+          {
+            "duration": 55,
+            "startTime": 3875.39999999851
+          },
+          {
+            "duration": 54,
+            "startTime": 3999.89999999851
+          },
+          {
+            "duration": 52,
+            "startTime": 4381.699999999255
+          },
+          {
+            "duration": 53,
+            "startTime": 4685.800000000745
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 8.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 36.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 53.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 39
+          },
+          {
+            "target": "postTranscript",
+            "ms": 20.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 50.69999999925494
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 17.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 37.19999999925494
+          },
+          {
+            "target": "postTranscript",
+            "ms": 19
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 38.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.29999999701976776
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.400000002235174
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 4,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "repeat": 2,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 619.3000000007451,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 81,
+            "startTime": 1907.4000000022352
+          },
+          {
+            "duration": 100,
+            "startTime": 2076.7000000029802
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 648.3000000007451,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 281,
+            "startTime": 2770
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 2065.599999997765,
+      "typing": {
+        "elapsedMs": 3296.5,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 40,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 58,
+            "startTime": 5501.400000002235
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 2.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 28.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 27.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 18.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.300000000745058
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "repeat": 3,
+      "fixture": {
+        "turns": 20,
+        "items": 500,
+        "checkpointBytes": 21484
+      },
+      "restore_overview": {
+        "elapsedMs": 610.6000000014901,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 57,
+            "startTime": 1601
+          },
+          {
+            "duration": 211,
+            "startTime": 1658.199999999255
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 718.1000000014901,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 115,
+            "startTime": 2206.300000000745
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n20 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1849.5999999977648,
+      "typing": {
+        "elapsedMs": 3147.39999999851,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 40,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 189,
+            "startTime": 4659.400000002235
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 6.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.0999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 37.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.1000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "repeat": 1,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 353.6000000014901,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 52,
+            "startTime": 1545.1000000014901
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 663.5999999977648,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 220,
+            "startTime": 2128.699999999255
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1870.300000000745,
+      "typing": {
+        "elapsedMs": 3304.89999999851,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 156,
+            "startTime": 4047.60000000149
+          },
+          {
+            "duration": 65,
+            "startTime": 5230.199999999255
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 6.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 18.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 31.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.7999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 34.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 29.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9.100000001490116
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "repeat": 2,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 762.4000000022352,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 387.6000000014901,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 136,
+            "startTime": 2233.10000000149
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1707.800000000745,
+      "typing": {
+        "elapsedMs": 3048,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 200,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 71,
+            "startTime": 3940.300000000745
+          },
+          {
+            "duration": 329,
+            "startTime": 4011.900000002235
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 8.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.599999997764826
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "repeat": 3,
+      "fixture": {
+        "turns": 100,
+        "items": 500,
+        "checkpointBytes": 105530
+      },
+      "restore_overview": {
+        "elapsedMs": 241.10000000149012,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 652,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 176,
+            "startTime": 1551.300000000745
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n100 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1443.199999999255,
+      "typing": {
+        "elapsedMs": 2851.10000000149,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 300,
+          "prefs": 3
+        },
+        "longtasks": [
+          {
+            "duration": 213,
+            "startTime": 3444.10000000149
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 6.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.900000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.2000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.200000002980232
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 4,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "repeat": 1,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 301,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 923.8000000007451,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 219,
+            "startTime": 2070
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1669.199999999255,
+      "typing": {
+        "elapsedMs": 3080.800000000745,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 400,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 73,
+            "startTime": 4808.89999999851
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 5.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.0999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 6.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.599999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 30.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.30000000074505806
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.8999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 8.400000002235174
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.5999999977648258
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "repeat": 2,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 277.19999999925494,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 695.6000000014901,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 236,
+            "startTime": 1844.8999999985099
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1665.0999999977648,
+      "typing": {
+        "elapsedMs": 3042.300000000745,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 400,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 241,
+            "startTime": 3198.89999999851
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 15
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 195.80000000074506
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 31.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.899999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 10.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.700000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 11.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.6999999992549419
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 5.200000002980232
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 16
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.699999999254942
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "repeat": 3,
+      "fixture": {
+        "turns": 200,
+        "items": 500,
+        "checkpointBytes": 211230
+      },
+      "restore_overview": {
+        "elapsedMs": 337.19999999925494,
+        "tx": [
+          {
+            "stores": [
+              "prefs"
+            ],
+            "mode": "readonly"
+          }
+        ],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 151,
+            "startTime": 1046.300000000745
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 232,
+        "summaryRows": 0,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "overview_fields": [
+        {
+          "id": "submitOperator",
+          "fontPx": 16,
+          "width": 334
+        }
+      ],
+      "open_details": {
+        "elapsedMs": 426.4000000022352,
+        "tx": [],
+        "puts": {},
+        "longtasks": [
+          {
+            "duration": 106,
+            "startTime": 1573.5
+          }
+        ],
+        "inputFrames": [],
+        "summaryMutations": 3,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "detail_fields": [
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        },
+        {
+          "id": "编辑本题回答",
+          "fontPx": 16,
+          "width": 340
+        }
+      ],
+      "details_initial_rows": 20,
+      "details_total_text": "‹\n返回复盘\n逐题复盘\n200 条弹幕 · 按题校正\n详情\n每道弹幕逐条查看\n\n识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。\n\n人工构造第0题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。\n保存本题修改将整场文字填入本题\n人工填写\n人工构造第1题：如何核对型号与接口？\n查看本题参考与来源\n2秒20秒\n人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回",
+      "post_fields": [
+        {
+          "id": "postTranscript",
+          "fontPx": 16,
+          "width": 328
+        }
+      ],
+      "typing_events_end_ms": 1232,
+      "typing": {
+        "elapsedMs": 2599.10000000149,
+        "tx": [
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          },
+          {
+            "stores": [
+              "prefs",
+              "records"
+            ],
+            "mode": "readwrite"
+          }
+        ],
+        "puts": {
+          "records": 400,
+          "prefs": 2
+        },
+        "longtasks": [
+          {
+            "duration": 93,
+            "startTime": 3166.10000000149
+          }
+        ],
+        "inputFrames": [
+          {
+            "target": "postTranscript",
+            "ms": 4.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 9
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.399999998509884
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.9000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.7999999970197678
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.7000000029802322
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.300000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 13.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 0.8000000007450581
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2
+          },
+          {
+            "target": "postTranscript",
+            "ms": 15.299999997019768
+          },
+          {
+            "target": "postTranscript",
+            "ms": 7.099999997764826
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.6000000014901161
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 2.199999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 14.800000000745058
+          },
+          {
+            "target": "postTranscript",
+            "ms": 4.100000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.5
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.3999999985098839
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.699999999254942
+          },
+          {
+            "target": "postTranscript",
+            "ms": 1.4000000022351742
+          },
+          {
+            "target": "postTranscript",
+            "ms": 12.600000001490116
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3
+          },
+          {
+            "target": "postTranscript",
+            "ms": 3.599999997764826
+          }
+        ],
+        "summaryMutations": 0,
+        "activeIntervals": [],
+        "intervalFires": 0,
+        "domNodes": 923,
+        "summaryRows": 20,
+        "viewport": {
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "scale": 1
+        }
+      },
+      "saved_full_text": true,
+      "saved_revision": 3,
+      "reload_full_text": true
+    }
+  ],
+  "errors": [],
+  "checks": {
+    "navigation_no_interval_growth": true,
+    "library_500_search_correct": true,
+    "all_saved_and_reloaded": true,
+    "no_page_errors": true
+  },
+  "limits": [
+    "No real iPhone/Android keyboard or gesture zoom measurement",
+    "Synthetic workload, no real user business data",
+    "Wall times include scheduling and UI waits; report raw samples and medians rather than a global speed claim"
+  ],
+  "browser": "156.0.8078.79",
+  "navigation30": {
+    "before_intervals": [],
+    "elapsedMs": 591.9000000022352,
+    "tx": [],
+    "puts": {},
+    "longtasks": [],
+    "inputFrames": [],
+    "summaryMutations": 0,
+    "activeIntervals": [],
+    "intervalFires": 0,
+    "domNodes": 177,
+    "summaryRows": 0,
+    "viewport": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1
+    }
+  },
+  "library_search": {
+    "text": "TCL 电视\n京东\n已审核回答\n人工资料第499条如何核对？\n\n型号：PERF-M499\n\nSKU（上下文）：SKU499\n\n人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。人工构造资料回答，只验证页面功能。\n\n型号",
+    "viewport": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1
+    },
+    "fields": [
+      {
+        "id": "r23ModelChoice",
+        "fontPx": 16,
+        "width": 34.828125
+      },
+      {
+        "id": "asrGlossaryTerms",
+        "fontPx": 16,
+        "width": 44
+      },
+      {
+        "id": "asrGlossaryFile",
+        "fontPx": 16,
+        "width": 44
+      },
+      {
+        "id": "librarySearch",
+        "fontPx": 16,
+        "width": 262
+      },
+      {
+        "id": "libraryBoard",
+        "fontPx": 16,
+        "width": 324
+      }
+    ]
+  },
+  "status": "MEASURED",
+  "source_hashes_after": {
+    "app.js": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6",
+    "style.css": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "source_unchanged": true,
+  "summary": [
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "restore_ms": {
+        "median": 121.40000000223517,
+        "min": 94.60000000149012,
+        "max": 337.6000000014901,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 294.6000000014901,
+        "min": 180.09999999776483,
+        "max": 307.69999999925494,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1038.4000000022352,
+        "min": 1013.8000000007451,
+        "max": 1038.699999999255,
+        "n": 3
+      },
+      "write_transactions": [
+        1,
+        1,
+        1
+      ],
+      "record_puts": [
+        20,
+        20,
+        20
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "restore_ms": {
+        "median": 291.4000000022352,
+        "min": 132.19999999925494,
+        "max": 437.79999999701977,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 332.69999999925494,
+        "min": 331.19999999925494,
+        "max": 454.8999999985099,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1241.300000000745,
+        "min": 1075.300000000745,
+        "max": 1369.1000000014901,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        2
+      ],
+      "record_puts": [
+        200,
+        200,
+        200
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "restore_ms": {
+        "median": 105.30000000074506,
+        "min": 91,
+        "max": 211.30000000074506,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 311.30000000074506,
+        "min": 305.1000000014901,
+        "max": 478,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 990,
+        "min": 953.1999999992549,
+        "max": 1642.0999999977648,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        1,
+        1
+      ],
+      "record_puts": [
+        400,
+        200,
+        200
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "restore_ms": {
+        "median": 610.6000000014901,
+        "min": 380,
+        "max": 619.3000000007451,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 648.3000000007451,
+        "min": 565.0999999977648,
+        "max": 718.1000000014901,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 2065.599999997765,
+        "min": 1849.5999999977648,
+        "max": 2610.300000000745,
+        "n": 3
+      },
+      "write_transactions": [
+        3,
+        2,
+        2
+      ],
+      "record_puts": [
+        60,
+        40,
+        40
+      ],
+      "longtasks_total_ms": [
+        335,
+        58,
+        189
+      ],
+      "longtasks_max_ms": [
+        66,
+        58,
+        189
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "restore_ms": {
+        "median": 353.6000000014901,
+        "min": 241.10000000149012,
+        "max": 762.4000000022352,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 652,
+        "min": 387.6000000014901,
+        "max": 663.5999999977648,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1707.800000000745,
+        "min": 1443.199999999255,
+        "max": 1870.300000000745,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        3
+      ],
+      "record_puts": [
+        200,
+        200,
+        300
+      ],
+      "longtasks_total_ms": [
+        221,
+        400,
+        213
+      ],
+      "longtasks_max_ms": [
+        156,
+        329,
+        213
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "restore_ms": {
+        "median": 301,
+        "min": 277.19999999925494,
+        "max": 337.19999999925494,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 695.6000000014901,
+        "min": 426.4000000022352,
+        "max": 923.8000000007451,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1665.0999999977648,
+        "min": 1232,
+        "max": 1669.199999999255,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        2
+      ],
+      "record_puts": [
+        400,
+        400,
+        400
+      ],
+      "longtasks_total_ms": [
+        73,
+        241,
+        93
+      ],
+      "longtasks_max_ms": [
+        73,
+        241,
+        93
+      ]
+    }
+  ]
+}

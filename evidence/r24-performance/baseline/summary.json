@@ -1,0 +1,330 @@
+{
+  "status": "MEASURED",
+  "source_hashes": {
+    "app.js": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+    "style.css": "9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "source_unchanged": true,
+  "summary": [
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "restore_ms": {
+        "median": 108.29999999701977,
+        "min": 91.80000000074506,
+        "max": 119.10000000149012,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 330.5999999977648,
+        "min": 307.5,
+        "max": 337.70000000298023,
+        "n": 3
+      },
+      "hidden_rows": [
+        20,
+        20,
+        20
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1011.8999999985099,
+        "min": 982,
+        "max": 1023,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        800,
+        800,
+        800
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "restore_ms": {
+        "median": 122.69999999925494,
+        "min": 98.40000000223517,
+        "max": 156.90000000223517,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 407.20000000298023,
+        "min": 406.29999999701977,
+        "max": 455.30000000074506,
+        "n": 3
+      },
+      "hidden_rows": [
+        100,
+        100,
+        100
+      ],
+      "detail_rows": [
+        100,
+        100,
+        100
+      ],
+      "typing_event_loop_ms": {
+        "median": 1074.5999999977648,
+        "min": 1012.9000000022352,
+        "max": 1093.5,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        4000,
+        4000,
+        4000
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "restore_ms": {
+        "median": 131.60000000149012,
+        "min": 125.5,
+        "max": 155.19999999925494,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 498,
+        "min": 470.19999999925494,
+        "max": 518,
+        "n": 3
+      },
+      "hidden_rows": [
+        200,
+        200,
+        200
+      ],
+      "detail_rows": [
+        200,
+        200,
+        200
+      ],
+      "typing_event_loop_ms": {
+        "median": 1124.800000000745,
+        "min": 1076.2000000029802,
+        "max": 1149.199999999255,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        8000,
+        8000,
+        8000
+      ],
+      "longtasks_total_ms": [
+        0,
+        70,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        70,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "restore_ms": {
+        "median": 250.80000000074506,
+        "min": 250.39999999850988,
+        "max": 268.5,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 443.0999999977648,
+        "min": 368.4000000022352,
+        "max": 523.8000000007451,
+        "n": 3
+      },
+      "hidden_rows": [
+        20,
+        20,
+        20
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1525.5,
+        "min": 1458,
+        "max": 1591.9000000022352,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        800,
+        800,
+        800
+      ],
+      "longtasks_total_ms": [
+        0,
+        57,
+        59
+      ],
+      "longtasks_max_ms": [
+        0,
+        57,
+        59
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "restore_ms": {
+        "median": 387.0999999977648,
+        "min": 317.5,
+        "max": 780.3000000007451,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 950.3000000007451,
+        "min": 932.6999999992549,
+        "max": 1033,
+        "n": 3
+      },
+      "hidden_rows": [
+        100,
+        100,
+        100
+      ],
+      "detail_rows": [
+        100,
+        100,
+        100
+      ],
+      "typing_event_loop_ms": {
+        "median": 2280.60000000149,
+        "min": 2249.599999997765,
+        "max": 2680.10000000149,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        4000,
+        4000,
+        4000
+      ],
+      "longtasks_total_ms": [
+        655,
+        0,
+        214
+      ],
+      "longtasks_max_ms": [
+        100,
+        0,
+        164
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "restore_ms": {
+        "median": 394.30000000074506,
+        "min": 365.19999999925494,
+        "max": 451.19999999925494,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 1744.199999999255,
+        "min": 1690.199999999255,
+        "max": 1958,
+        "n": 3
+      },
+      "hidden_rows": [
+        200,
+        200,
+        200
+      ],
+      "detail_rows": [
+        200,
+        200,
+        200
+      ],
+      "typing_event_loop_ms": {
+        "median": 2819.199999999255,
+        "min": 2737.300000000745,
+        "max": 2985.699999999255,
+        "n": 3
+      },
+      "write_transactions": [
+        40,
+        40,
+        40
+      ],
+      "record_puts": [
+        8000,
+        8000,
+        8000
+      ],
+      "longtasks_total_ms": [
+        483,
+        528,
+        626
+      ],
+      "longtasks_max_ms": [
+        68,
+        90,
+        62
+      ]
+    }
+  ],
+  "checks": {
+    "navigation_no_interval_growth": true,
+    "library_500_search_correct": true,
+    "all_saved_and_reloaded": true,
+    "no_page_errors": true
+  },
+  "exception": null
+}

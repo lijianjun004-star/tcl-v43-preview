@@ -1,0 +1,19 @@
+{"rate": 1, "turns": 20, "rep": 1, "restore_ms": 119.1, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 1023, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 20, "rep": 2, "restore_ms": 91.8, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 982, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 20, "rep": 3, "restore_ms": 108.3, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 1011.9, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 100, "rep": 1, "restore_ms": 156.9, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 1012.9, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 100, "rep": 2, "restore_ms": 98.4, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 1074.6, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 100, "rep": 3, "restore_ms": 122.7, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 1093.5, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 200, "rep": 1, "restore_ms": 125.5, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 1124.8, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 200, "rep": 2, "restore_ms": 131.6, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 1149.2, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+{"rate": 1, "turns": 200, "rep": 3, "restore_ms": 155.2, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 1076.2, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 20, "rep": 1, "restore_ms": 250.4, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 1458, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 20, "rep": 2, "restore_ms": 268.5, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 1525.5, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 20, "rep": 3, "restore_ms": 250.8, "hidden_rows": 20, "detail_rows": 20, "typing_ms": 1591.9, "write_tx": 40, "record_puts": 800, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 100, "rep": 1, "restore_ms": 387.1, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 2680.1, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 100, "rep": 2, "restore_ms": 317.5, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 2249.6, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 100, "rep": 3, "restore_ms": 780.3, "hidden_rows": 100, "detail_rows": 100, "typing_ms": 2280.6, "write_tx": 40, "record_puts": 4000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 200, "rep": 1, "restore_ms": 365.2, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 2985.7, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 200, "rep": 2, "restore_ms": 394.3, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 2819.2, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+{"rate": 4, "turns": 200, "rep": 3, "restore_ms": 451.2, "hidden_rows": 200, "detail_rows": 200, "typing_ms": 2737.3, "write_tx": 40, "record_puts": 8000, "input_frames": 40, "saved": true}
+RESULT MEASURED 18

@@ -464,6 +464,9 @@ const draftKey=name=>'draft-session:'+encodeURIComponent(name);
 const draftMediaKey=(id,part)=>'draft-media:'+id+':'+part;
 let savedSessionCandidate=null,sessionStorageState={run:'',status:'idle',message:''},restoreSessionEpoch=0,sessionStorageSeq=0;
 const storedSessionMedia=new Map();
+// Only successful commits populate this run's record cache. Replace the map on
+// reset so already queued work cannot populate the next run's cache.
+let storedSessionRecords=new Map();
 // Each tab advances its own observed token only after a committed transaction.
 // A stale tab must never overwrite a newer checkpoint, including during pagehide.
 let checkpointCursor={key:'',token:null,known:false,ready:Promise.resolve()},checkpointWriteChain=Promise.resolve();
@@ -503,7 +506,7 @@ function sessionTurnRecord(turn,owner){
 }
 async function persistSessionCheckpoint(){
  const data=currentSessionCheckpoint();if(!data)return false;
- const owner=data.runId,writeSeq=++sessionStorageSeq,cursor=checkpointCursor;
+ const owner=data.runId,writeSeq=++sessionStorageSeq,cursor=checkpointCursor,recordCache=storedSessionRecords;
  if(memoryFallback||!localDB){localSessionFailure(owner,new Error('浏览器数据库不可用，仅保留本页内存'));return false;}
  const media=data.snapshot.turns.filter(t=>perQuestionAudio.has(t.id)).map(t=>({id:draftMediaKey(owner,t.id),turnId:t.id,blob:perQuestionAudio.get(t.id),owner:data.owner,runId:owner}));
  if(sessionVideoBlob)media.push({id:draftMediaKey(owner,'video'),turnId:'video',blob:sessionVideoBlob,owner:data.owner,runId:owner});
@@ -516,6 +519,9 @@ async function persistSessionCheckpoint(){
    await cursor.ready;
    if(cursor.key!==data.id||!cursor.known)throw new Error('尚未读取本机恢复版本，请刷新后重新进入');
    const changed=media.filter(x=>storedSessionMedia.get(x.id)!==x.blob);
+   // Compare after the preceding save has committed. A cold cache writes the
+   // original rows immediately and computes fingerprints only after success.
+   const changedRecords=recordCache.size?records.map(row=>({row,fingerprint:JSON.stringify(row)})).filter(x=>recordCache.get(x.row.id)!==x.fingerprint):null;
    await new Promise((resolve,reject)=>{
     let tx,settled=false,timer,writeError;
     const done=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
@@ -528,7 +534,7 @@ async function persistSessionCheckpoint(){
       if(old?.owner===data.owner)for(const item of old.media||[]){if(!data.media.some(x=>x.id===item.id)&&item.id.startsWith('draft-media:'+old.runId+':'))store.delete(item.id);}
       for(const item of old?.runId===data.runId?changed:media)store.put(item);
       data.revision=(Number.isSafeInteger(old?.revision)?old.revision:0)+1;data.writeToken=uid();
-      const recordStore=tx.objectStore('records');for(const row of records)recordStore.put(row);
+      const recordStore=tx.objectStore('records');for(const row of old?.runId===data.runId&&changedRecords?changedRecords.map(x=>x.row):records)recordStore.put(row);
       store.put(data);
      }catch(e){writeError=e;try{tx.abort()}catch{}done(reject,e);}};
      tx.oncomplete=()=>done(resolve);
@@ -538,6 +544,7 @@ async function persistSessionCheckpoint(){
     }catch(e){try{tx?.abort()}catch{}done(reject,e);}
    });
    cursor.token=data.writeToken;
+   for(const item of changedRecords||records.map(row=>({row,fingerprint:JSON.stringify(row)})))recordCache.set(item.row.id,item.fingerprint);
    if(runId===owner&&userName===data.owner)for(const row of records){const pos=localRecords.findIndex(x=>x.id===row.id);if(pos>=0)localRecords[pos]=row;else localRecords.unshift(row);}
    if(runId===owner)for(const item of changed)storedSessionMedia.set(item.id,item.blob);
    if(runId===owner&&userName===data.owner&&writeSeq===sessionStorageSeq){
@@ -631,6 +638,7 @@ function readR23ModelPreference(){
   catch { return 'base'; }
 }
 const asrDiagnostics=[];
+let whisperProgressTimer=null,whisperProgressKey='',whisperProgressLastAt=0;
 globalThis.exportAsrDiagnostics=()=>JSON.stringify({version:'r24-qa',events:asrDiagnostics},null,2);
 ELEM('asrDiagnosticsBtn')?.addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([exportAsrDiagnostics()],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='tcl-r24-asr-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 const r6WhisperEngine=createLocalWhisper({onDiagnostic:event=>{asrDiagnostics.push({...event,time:Date.now(),question:sessionTurns.findIndex(t=>t.id===r6WhisperQueue[0]?.turnId)+1});if(asrDiagnostics.length>200)asrDiagnostics.shift();},modelPreset: readR23ModelPreference(),onProgress:note=>{
@@ -638,7 +646,12 @@ const r6WhisperEngine=createLocalWhisper({onDiagnostic:event=>{asrDiagnostics.pu
   const target=cur&&sessionTurns.find(t=>t.id===cur.turnId);
   if(target&&r6WhisperValid(cur,target)){
     target.asrStatus='实验 Whisper：'+note+(target.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
-    renderTurnStatus(target);
+    if(!note.startsWith('下载模型：')){if(whisperProgressTimer!==null)clearTimeout(whisperProgressTimer);whisperProgressTimer=null;whisperProgressKey='';renderTurnStatus(target);return;}
+    const key=target.id+':'+(note.match(/(\d+)%/)?.[1]||note);
+    if(key===whisperProgressKey)return;whisperProgressKey=key;
+    if(whisperProgressTimer!==null)return;
+    const show=()=>{whisperProgressTimer=null;if(r6WhisperValid(cur,target)){whisperProgressLastAt=performance.now();renderTurnStatus(target);}};
+    const wait=150-(performance.now()-whisperProgressLastAt);if(wait<=0)show();else whisperProgressTimer=setTimeout(show,wait);
   }
 }});
 const r6WhisperQueue=[];
@@ -776,7 +789,8 @@ const formatPracticeDuration=(sec)=>{const s=Math.max(0,Math.round(Number(sec)||
 let chatExtraTimers=[];
 function cancelVoskPreload(){voskPreloadSeq++;}
 function resetRunState({cancelPreload=true}={}){
-  storedSessionMedia.clear();clearReviewQuestionAudioUrls();clearQuestionStopWatchdog();reviewParked=false;reviewStage='overview';runId='';sessionStartedAt=0;sessionStartedMono=0;activeTurn=null;sessionTurns=[];recordingTurn=null;questionAsrQueue=[];perQuestionAudio.clear();activeQuestionIndex=-1;questionBag=[];
+
+  storedSessionRecords=new Map();storedSessionMedia.clear();clearReviewQuestionAudioUrls();clearQuestionStopWatchdog();reviewParked=false;reviewStage='overview';runId='';sessionStartedAt=0;sessionStartedMono=0;activeTurn=null;sessionTurns=[];recordingTurn=null;questionAsrQueue=[];perQuestionAudio.clear();activeQuestionIndex=-1;questionBag=[];
  if(cancelPreload)cancelVoskPreload();
 }
 function setVoskPreloadUi(message,busy=false){
@@ -806,7 +820,7 @@ function saveCurrentTypedAnswer({asDraft=true}={}){
  turn.manualEdited=(entered!==(turn.transcript||''));
  turn.compliance=complianceHints(entered,turn.platform);
  turn.pointsHit=(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,entered,turn.pointKeywords?.[i]||[]));
- if(asDraft&&!asrPending)turn.asrStatus=turn.transcript?(turn.manualEdited?'已编辑识别文字（草稿已存）':'已转写（请核对文本）'):'手动填写（草稿已存）';
+ if(asDraft&&!asrPending)turn.asrStatus=turn.transcript?(turn.manualEdited?'已编辑识别文字（自动保存）':'已转写（请核对文本）'):'手动填写（自动保存）';
  void saveTurn(turn);renderTurnStatus(turn,{preserveInput:true});
 }
 function enqueueRecordedQuestions(){
@@ -844,71 +858,77 @@ function renderTurnStatus(turn,opts={}){
  }
  const summary=ELEM('questionSummary');if(summary)renderQuestionSummary();if(page==='sessionReview')refreshReviewMetrics();
 }
+const REVIEW_PAGE_SIZE=20;
+let questionSummaryState={el:null,run:'',limit:REVIEW_PAGE_SIZE,rows:new Map()};
 let reviewQuestionAudioUrls=[];
 function clearReviewQuestionAudioUrls(){
- for(const item of reviewQuestionAudioUrls){try{item.player?.pause?.()}catch{}try{URL.revokeObjectURL(item.url)}catch{}}
+ for(const item of reviewQuestionAudioUrls){try{item.player?.pause?.();item.player?.removeAttribute?.('src');item.player?.load?.()}catch{}try{URL.revokeObjectURL(item.url)}catch{}}
  reviewQuestionAudioUrls=[];
+ questionSummaryState={el:null,run:'',limit:REVIEW_PAGE_SIZE,rows:new Map()};
+}
+const setNodeText=(node,text)=>{const value=String(text??'');if(node.textContent!==value)node.textContent=value;};
+function removeQuestionAudio(item){
+ if(!item)return;try{item.player.pause()}catch{}try{URL.revokeObjectURL(item.url)}catch{}
+ item.player.remove();reviewQuestionAudioUrls=reviewQuestionAudioUrls.filter(x=>x!==item);
+}
+function createQuestionSummaryRow(turn){
+ const entry={turn,tr:document.createElement('tr'),audio:null};
+ const cell=label=>{const td=document.createElement('td');td.dataset.label=label;entry.tr.append(td);return td;};
+ const question=cell('弹幕问题');question.append(document.createTextNode(turn.prompt));
+ const reference=document.createElement('div');reference.innerHTML=referenceDetailsHtml(turn);question.append(reference);
+ entry.response=cell('响应用时');entry.duration=cell('回答时长');entry.answerCell=cell('回答文字');
+ entry.answerText=document.createElement('div');entry.answerCell.append(entry.answerText);
+ const detail=(title)=>{const box=document.createElement('details'),summary=document.createElement('summary'),text=document.createElement('div');summary.textContent=title;box.append(summary,text);entry.answerCell.append(box);return {box,text};};
+ entry.raw=detail('查看模型识别原文');entry.candidate=detail('查看 Whisper 识别候选（未覆盖当前回答）');
+ const use=document.createElement('button');use.type='button';use.className='btn soft';use.textContent='采用此候选回答';entry.candidate.box.append(use);
+ use.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=toSimplified(t.whisperCandidate);t.transcript=t.answer;t.manualEdited=true;t.manualCleared=false;t.compliance=complianceHints(t.answer,t.platform);t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='已采用 Whisper 识别候选（请核对）';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};
+ const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true'};entry.editor=editor;entry.answerCell.append(editor);
+ const save=document.createElement('button');save.type='button';save.className='btn soft';save.textContent='保存本题修改';
+ save.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=editor.value.trim();t.manualEdited=true;t.manualCleared=!t.answer;t.compliance=t.answer?complianceHints(t.answer,t.platform):[];t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};entry.answerCell.append(save);
+ const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
+ copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
+ entry.actions=cell('状态');entry.status=document.createElement('div');entry.actions.append(entry.status);
+ const retry=document.createElement('button');retry.type='button';retry.className='btn soft';retry.onclick=()=>voskModel?transcribeQuestion(entry.turn.id):preloadVoskModel();entry.retry=retry;entry.actions.append(retry);
+ return entry;
+}
+function updateQuestionSummaryRow(entry,turn){
+ entry.turn=turn;
+ setNodeText(entry.response,turn.responseSeconds==null?'—':turn.responseSeconds+'秒');
+ setNodeText(entry.duration,turn.durationSeconds==null?'—':turn.durationSeconds+'秒');
+ setNodeText(entry.answerText,turn.manualCleared?'已清空回答（识别原文仍保留）':turn.answer||turn.transcript||(perQuestionAudio.has(turn.id)?'已录音，尚未获得文字':'尚无文字，请填写回答或录音'));
+ entry.raw.box.hidden=!turn.rawTranscript;setNodeText(entry.raw.text,turn.rawTranscript||'');
+ entry.candidate.box.hidden=!(turn.whisperCandidate&&turn.whisperCandidate!==turn.answer);setNodeText(entry.candidate.text,turn.whisperCandidate||'');
+ if(entry.editor.dataset.dirty!=='true'&&document.activeElement!==entry.editor){const value=turn.manualCleared?'':turn.answer||turn.transcript||'';if(entry.editor.value!==value)entry.editor.value=value;}
+ setNodeText(entry.status,turn.asrStatus||'待录音');
+ const blob=perQuestionAudio.get(turn.id);
+ if(entry.audio?.blob!==blob){
+  removeQuestionAudio(entry.audio);entry.audio=null;
+  if(blob){const player=document.createElement('audio');player.controls=true;player.preload='none';player.className='audio-player';player.setAttribute('aria-label','回听本题录音：'+turn.prompt);const url=URL.createObjectURL(blob);player.src=url;entry.audio={url,player,blob};reviewQuestionAudioUrls.push(entry.audio);entry.actions.insertBefore(player,entry.retry);}
+ }
+ entry.retry.hidden=!blob||!!turn.transcript;
+ setNodeText(entry.retry,voskModel?'补转写':'准备Vosk并补转写');
+ entry.retry.disabled=!!oneShotAsrJob||!!transcriptBusy||!!voskLoadJob||!!r6WhisperRunning;
 }
 function renderQuestionSummary(){
- // Live training only needs the current card. Build the full table on demand
- // in review details, never for hidden controls or download progress.
- if(page!=='sessionReview'||reviewStage!=='details')return;
- const el=ELEM('questionSummary');if(!el)return;
- if(el.querySelector('textarea[data-dirty="true"]')||el.contains(document.activeElement)&&document.activeElement?.tagName==='TEXTAREA')return;
- clearReviewQuestionAudioUrls();el.replaceChildren();
- const turns=page==='sessionReview'&&lastSessionSnapshot?lastSessionSnapshot.turns:sessionTurns;
- if(!turns.length){el.textContent='本场尚无逐题回答。';return;}
- const table=document.createElement('table');table.className='question-summary-table';
- const head=document.createElement('thead');head.innerHTML='<tr><th>弹幕问题</th><th>响应用时</th><th>回答时长</th><th>回答文字（可人工校正）</th><th>转写状态 / 操作</th></tr>';
- table.append(head);
- const body=document.createElement('tbody');
- for(const turn of turns){
-  const tr=document.createElement('tr');
-  const labels=['弹幕问题','响应用时','回答时长'];
-  [turn.prompt,turn.responseSeconds==null?'—':turn.responseSeconds+'秒',turn.durationSeconds==null?'—':turn.durationSeconds+'秒'].forEach((value,i)=>{
-   const td=document.createElement('td');td.dataset.label=labels[i];td.textContent=value;if(i===0){const reference=document.createElement('div');reference.innerHTML=referenceDetailsHtml(turn);td.append(reference);}tr.append(td);
-  });
-  const answerCell=document.createElement('td');answerCell.dataset.label='回答文字';
-  answerCell.textContent=turn.manualCleared?'已清空回答（识别原文仍保留）':turn.answer||turn.transcript||(perQuestionAudio.has(turn.id)?'已录音，尚未获得文字':'尚无文字，请填写回答或录音');
-  if(turn.rawTranscript){
-   const details=document.createElement('details'),summary=document.createElement('summary'),raw=document.createElement('div');
-   summary.textContent='查看模型识别原文';raw.textContent=turn.rawTranscript;
-   details.append(summary,raw);answerCell.append(details);
-  }
-  if(turn.whisperCandidate&&turn.whisperCandidate!==turn.answer){
-   const candDetails=document.createElement('details'),candSum=document.createElement('summary'),candBox=document.createElement('div');
-   candSum.textContent='查看 Whisper 识别候选（未覆盖当前回答）';candBox.textContent=turn.whisperCandidate;
-   if(page==='sessionReview'){
-    const useBtn=document.createElement('button');useBtn.type='button';useBtn.className='btn soft';useBtn.textContent='采用此候选回答';
-    useBtn.onclick=()=>{if(!isRunPage()||turn.runId!==runId)return;turn.answer=toSimplified(turn.whisperCandidate);turn.transcript=turn.answer;turn.manualEdited=true;turn.manualCleared=false;turn.compliance=complianceHints(turn.answer,turn.platform);turn.pointsHit=(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,turn.answer,turn.pointKeywords?.[i]||[]));turn.asrStatus='已采用 Whisper 识别候选（请核对）';void saveTurn(turn);renderQuestionSummary();refreshReviewMetrics();};
-    candBox.append(document.createTextNode(' '),useBtn);
-   }
-   candDetails.append(candSum,candBox);answerCell.append(candDetails);
-  }
-  if(page==='sessionReview'){
-   const editor=document.createElement('textarea');editor.rows=3;editor.value=turn.manualCleared?'':(turn.answer||turn.transcript||'');editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true'};answerCell.append(editor);
-   const save=document.createElement('button');save.type='button';save.className='btn soft';save.textContent='保存本题修改';
-   save.onclick=()=>{if(!isRunPage()||turn.runId!==runId)return;turn.answer=editor.value.trim();turn.manualEdited=true;turn.manualCleared=!turn.answer;turn.compliance=turn.answer?complianceHints(turn.answer,turn.platform):[];turn.pointsHit=(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,turn.answer,turn.pointKeywords?.[i]||[]));turn.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(turn);renderQuestionSummary();refreshReviewMetrics();};answerCell.append(save);
-   const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
-   copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};answerCell.append(copy);
-  }
-  tr.append(answerCell);
-  const actions=document.createElement('td');actions.dataset.label='状态';
-  const status=document.createElement('div');status.textContent=turn.asrStatus||'待录音';actions.append(status);
-   if(page==='sessionReview'&&perQuestionAudio.has(turn.id)){
-    const player=document.createElement('audio');player.controls=true;player.preload='none';player.className='audio-player';
-    player.setAttribute('aria-label','回听本题录音：'+turn.prompt);
-    const url=URL.createObjectURL(perQuestionAudio.get(turn.id));player.src=url;reviewQuestionAudioUrls.push({url,player});actions.append(player);
-   }
-  if(perQuestionAudio.has(turn.id)&&!turn.transcript){
-   const btn=document.createElement('button');btn.type='button';btn.className='btn soft';
-   btn.textContent=voskModel?'补转写':'准备Vosk并补转写';
-   btn.disabled=!!oneShotAsrJob||!!transcriptBusy||!!voskLoadJob||!!r6WhisperRunning;
-   btn.onclick=()=>voskModel?transcribeQuestion(turn.id):preloadVoskModel();actions.append(btn);
-  }
-  tr.append(actions);body.append(tr);
+ const el=ELEM('questionSummary');
+ // The detail screen is mounted but hidden in overview/replay/live. Rendering it
+ // there used to rebuild hundreds of editors and audio players for each status.
+ if(!el||page!=='sessionReview'||reviewStage!=='details')return;
+ const turns=lastSessionSnapshot?.turns||sessionTurns;
+ if(questionSummaryState.el!==el||questionSummaryState.run!==runId){
+  clearReviewQuestionAudioUrls();el.replaceChildren();
+  questionSummaryState={el,run:runId,limit:REVIEW_PAGE_SIZE,rows:new Map()};
+  const table=document.createElement('table');table.className='question-summary-table';
+  const head=document.createElement('thead');head.innerHTML='<tr><th>弹幕问题</th><th>响应用时</th><th>回答时长</th><th>回答文字（可人工校正）</th><th>转写状态 / 操作</th></tr>';
+  const body=document.createElement('tbody');table.append(head,body);el.append(table);questionSummaryState.body=body;
+  const more=document.createElement('button');more.type='button';more.className='btn soft wide';more.id='reviewQuestionsMore';more.onclick=()=>{questionSummaryState.limit+=REVIEW_PAGE_SIZE;renderQuestionSummary();};el.append(more);questionSummaryState.more=more;
+  const count=document.createElement('p');count.className='muted';count.id='reviewQuestionsCount';count.setAttribute('role','status');el.append(count);questionSummaryState.count=count;
  }
- table.append(body);el.append(table);
+ const state=questionSummaryState,visible=turns.slice(0,state.limit),ids=new Set(visible.map(t=>t.id));
+ for(const [id,entry]of state.rows)if(!ids.has(id)){removeQuestionAudio(entry.audio);entry.tr.remove();state.rows.delete(id);}
+ for(const turn of visible){let entry=state.rows.get(turn.id);if(!entry){entry=createQuestionSummaryRow(turn);state.rows.set(turn.id,entry);state.body.append(entry.tr);}updateQuestionSummaryRow(entry,turn);}
+ state.more.hidden=visible.length>=turns.length;setNodeText(state.more,`再显示 ${Math.min(REVIEW_PAGE_SIZE,turns.length-visible.length)} 题`);
+ state.count.hidden=turns.length<=REVIEW_PAGE_SIZE;setNodeText(state.count,turns.length?`已显示 ${visible.length} / ${turns.length} 题；未显示的题目仍完整保存，可继续展开。`:'本场尚无逐题回答。');
 }
 
 function enqueueQuestionAsr(turnId){
@@ -2535,6 +2555,8 @@ function showReviewStage(target,{recordHistory=true}={}){
  const title=stage==='replay'?'本场录像回放':stage==='details'?'逐题复盘':'练播复盘';
  if(ELEM('pageTitle'))ELEM('pageTitle').textContent=title;
  if(stage!==old){
+
+  if(old==='details')for(const item of reviewQuestionAudioUrls){try{item.player.pause()}catch{}}
   const focusId=stage==='overview'?(old==='details'?'reviewDetails':'reviewReplay'):stage==='details'?'reviewDetailsBack':'reviewReplayBack';
   ELEM(focusId)?.focus?.({preventScroll:true});
   const currentVideo=ELEM('sessionArchiveHolder')?.querySelector('video');

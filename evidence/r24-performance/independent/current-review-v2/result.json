@@ -1,0 +1,184 @@
+{
+  "mode": "Independent native Chromium/IndexedDB probes with synthetic 61-turn checkpoint and silent WAV.\nThe HTTP handler appends only temporary internal test accessors; no product file is edited.\n",
+  "app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "checks": {
+    "overview_keeps_summary_unmounted": {
+      "pass": true,
+      "detail": null
+    },
+    "first_page_is_20_rows": {
+      "pass": true,
+      "detail": null
+    },
+    "all_61_rows_reachable": {
+      "pass": true,
+      "detail": null
+    },
+    "dirty_editor_survives_append_and_status_updates": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.357061,
+        "status": "人工构造第1题：如何核对型号与接口？查看本题参考与来源原问题：人工构造第1题：如何核对型号与接口？本题参考回答（开场资料快照）人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。应覆盖的重点型号接口型号：PERF-M1SKU（上下文）：PERF-SKU1资料来源：人工性能样本行定位：人工第1行来源：人工性能夹具2秒20秒人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。查看模型识别原文查看 Whisper 识别候选（未覆盖当前回答）采用此候选回答保存本题修改将整场文字填入本题人工状态更新14准备Vosk并补转写"
+      }
+    },
+    "playing_audio_keeps_node_url_and_playback": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.357061,
+        "status": "人工构造第1题：如何核对型号与接口？查看本题参考与来源原问题：人工构造第1题：如何核对型号与接口？本题参考回答（开场资料快照）人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。应覆盖的重点型号接口型号：PERF-M1SKU（上下文）：PERF-SKU1资料来源：人工性能样本行定位：人工第1行来源：人工性能夹具2秒20秒人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。查看模型识别原文查看 Whisper 识别候选（未覆盖当前回答）采用此候选回答保存本题修改将整场文字填入本题人工状态更新14准备Vosk并补转写"
+      }
+    },
+    "other_row_updates_while_first_editor_dirty": {
+      "pass": true,
+      "detail": null
+    },
+    "unsaved_editor_does_not_change_snapshot": {
+      "pass": true,
+      "detail": null
+    },
+    "other_question_save_preserves_dirty_editor_and_playback": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.656624
+      }
+    },
+    "leaving_details_pauses_audio": {
+      "pass": true,
+      "detail": null
+    },
+    "return_details_preserves_dirty_draft": {
+      "pass": true,
+      "detail": null
+    },
+    "save_dirty_editor_persists_latest_text": {
+      "pass": true,
+      "detail": null
+    },
+    "post_text_stage_switch_keeps_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "replay_to_details_keeps_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "pagehide_immediate_reload_keeps_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "submission_contains_all_61_saved_turns": {
+      "pass": true,
+      "detail": null
+    },
+    "immediate_submit_keeps_checkpoint_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "immediate_next_preserves_previous_answer": {
+      "pass": true,
+      "detail": null
+    },
+    "clear_preserves_intentional_empty_answer": {
+      "pass": true,
+      "detail": {
+        "id": "9bb2cb56-1f74-41b7-ad92-a6ac66a25a47",
+        "runId": "905d2e00-d294-40be-bc83-60ff609de663",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "questionId": "seed-01-1",
+        "question": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。",
+        "referenceAnswer": "",
+        "source": "16板块研究底稿 · 教学示例（不作为正式标准答案）",
+        "kind": "seed",
+        "model": "",
+        "sku": "",
+        "sourceRef": "",
+        "sourceLocators": [],
+        "prompt": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。",
+        "trainingHint": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。",
+        "stage": "产品讲解",
+        "variantId": "seed-question",
+        "keyPoints": [
+          "屏幕尺寸",
+          "画质/控光",
+          "刷新率",
+          "接口与证据边界"
+        ],
+        "pointKeywords": [
+          [
+            "尺寸",
+            "屏幕大小",
+            "观看距离"
+          ],
+          [
+            "画质",
+            "控光",
+            "亮度",
+            "对比度",
+            "显示效果"
+          ],
+          [
+            "刷新率",
+            "高刷",
+            "运动画面"
+          ],
+          [
+            "接口",
+            "HDMI",
+            "官方参数",
+            "商品页",
+            "以页面为准"
+          ]
+        ],
+        "responseSeconds": 0.5,
+        "durationSeconds": null,
+        "createdAt": "2026-11-16T20:27:03.873Z",
+        "shownAt": 1381.800000000745,
+        "transcript": "",
+        "answer": "",
+        "autoCapture": false,
+        "asrStatus": "已清空回答（识别原文仍保留）",
+        "pointsHit": [],
+        "compliance": [],
+        "manualCleared": true,
+        "manualEdited": false
+      }
+    },
+    "immediate_finish_keeps_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "new_practice_preserves_old_owner_checkpoint": {
+      "pass": true,
+      "detail": null
+    },
+    "old_pending_write_does_not_pollute_new_run": {
+      "pass": true,
+      "detail": null
+    }
+  },
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "status": "PASS",
+  "app_sha256_after": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "source_unchanged": true
+}

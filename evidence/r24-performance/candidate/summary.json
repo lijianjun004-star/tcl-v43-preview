@@ -1,0 +1,330 @@
+{
+  "status": "MEASURED",
+  "source_hashes": {
+    "app.js": "034597b149d7150bfd04e184c3f94b97ccbe09ed22d5480d5245a35abb6d87de",
+    "style.css": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+    "index.html": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e"
+  },
+  "source_unchanged": true,
+  "summary": [
+    {
+      "cpu_rate": 1,
+      "turns": 20,
+      "restore_ms": {
+        "median": 121.19999999925494,
+        "min": 107.20000000298023,
+        "max": 151.79999999701977,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 310.70000000298023,
+        "min": 306.79999999701977,
+        "max": 360.20000000298023,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 953,
+        "min": 950.7999999970198,
+        "max": 980.8999999985099,
+        "n": 3
+      },
+      "write_transactions": [
+        1,
+        1,
+        1
+      ],
+      "record_puts": [
+        20,
+        20,
+        20
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 100,
+      "restore_ms": {
+        "median": 104.39999999850988,
+        "min": 96.5,
+        "max": 110.69999999925494,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 322.0999999977648,
+        "min": 292.1000000014901,
+        "max": 322.79999999701977,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 933.6999999992549,
+        "min": 923.8000000007451,
+        "max": 938.4000000022352,
+        "n": 3
+      },
+      "write_transactions": [
+        1,
+        1,
+        1
+      ],
+      "record_puts": [
+        100,
+        100,
+        100
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 1,
+      "turns": 200,
+      "restore_ms": {
+        "median": 109.19999999925494,
+        "min": 100.80000000074506,
+        "max": 112.5,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 318.80000000074506,
+        "min": 316,
+        "max": 324.79999999701977,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 939.9000000022352,
+        "min": 928.9000000022352,
+        "max": 940.3999999985099,
+        "n": 3
+      },
+      "write_transactions": [
+        1,
+        1,
+        1
+      ],
+      "record_puts": [
+        200,
+        200,
+        200
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 20,
+      "restore_ms": {
+        "median": 215.5,
+        "min": 209.5,
+        "max": 251.30000000074506,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 460.5,
+        "min": 336.4000000022352,
+        "max": 466,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1205.800000000745,
+        "min": 1146.6000000014901,
+        "max": 1217,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        2
+      ],
+      "record_puts": [
+        40,
+        40,
+        40
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 100,
+      "restore_ms": {
+        "median": 245.59999999776483,
+        "min": 193.59999999776483,
+        "max": 295.5,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 401.5,
+        "min": 355.5,
+        "max": 457.9000000022352,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1196.800000000745,
+        "min": 1139,
+        "max": 1218.5,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        2
+      ],
+      "record_puts": [
+        200,
+        200,
+        200
+      ],
+      "longtasks_total_ms": [
+        0,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "cpu_rate": 4,
+      "turns": 200,
+      "restore_ms": {
+        "median": 215.10000000149012,
+        "min": 210.10000000149012,
+        "max": 523.3000000007451,
+        "n": 3
+      },
+      "details_ms": {
+        "median": 429.4000000022352,
+        "min": 387,
+        "max": 459.5999999977648,
+        "n": 3
+      },
+      "hidden_rows": [
+        0,
+        0,
+        0
+      ],
+      "detail_rows": [
+        20,
+        20,
+        20
+      ],
+      "typing_event_loop_ms": {
+        "median": 1184.699999999255,
+        "min": 1121.300000000745,
+        "max": 1334.800000000745,
+        "n": 3
+      },
+      "write_transactions": [
+        2,
+        2,
+        2
+      ],
+      "record_puts": [
+        400,
+        400,
+        400
+      ],
+      "longtasks_total_ms": [
+        80,
+        0,
+        0
+      ],
+      "longtasks_max_ms": [
+        80,
+        0,
+        0
+      ]
+    }
+  ],
+  "checks": {
+    "navigation_no_interval_growth": true,
+    "library_500_search_correct": true,
+    "all_saved_and_reloaded": true,
+    "no_page_errors": true
+  },
+  "exception": null
+}

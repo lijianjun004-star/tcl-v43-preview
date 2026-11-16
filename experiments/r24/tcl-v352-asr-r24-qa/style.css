@@ -937,3 +937,14 @@ body.room-live .room-flow .danmu-phone.is-focused .focus-mic[data-state="recordi
 }
 body.room-live .chat-line{animation:none}
 body.room-live .r2-qcard-top{font-variant-numeric:tabular-nums}
+
+/* Keep long imported sources inside the page, with local table scrolling. */
+button,a,summary,input,select,textarea,[contenteditable="true"]{touch-action:manipulation}
+#view,.content,.panel,.question-list,.q-card,.table-wrap,.r23-model-box{min-width:0}
+.question-list{grid-template-columns:minmax(0,1fr)}
+.q-card,.notice,.phone-reference,.submission-turn,.log-row{overflow-wrap:anywhere}
+.table-wrap{max-width:100%;overscroll-behavior-x:contain}
+.upload-drop input{width:100%;max-width:100%;min-width:0}
+@media(max-width:900px),(pointer:coarse){
+ [contenteditable="true"]{font-size:16px!important}
+}

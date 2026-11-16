@@ -1,0 +1,47 @@
+{
+  "synthetic_runtime_status": "PASS",
+  "cases": [
+    {
+      "proxy": false,
+      "workers": 0,
+      "sample_run_ms": [
+        90.69999999925494,
+        86.60000000149012,
+        84.90000000223517
+      ],
+      "heartbeat_counts": [
+        0,
+        0,
+        0
+      ],
+      "max_heartbeat_gap_ms": 91.39999999850988,
+      "measurement_long_task_durations_ms": [
+        90,
+        86,
+        85
+      ]
+    },
+    {
+      "proxy": true,
+      "workers": 1,
+      "sample_run_ms": [
+        90,
+        101,
+        88.60000000149012
+      ],
+      "heartbeat_counts": [
+        8,
+        9,
+        8
+      ],
+      "max_heartbeat_gap_ms": 26.300000000745058,
+      "measurement_long_task_durations_ms": []
+    }
+  ],
+  "tiny_proxy_status": "FAIL",
+  "tiny_completed_inferences": 0,
+  "tiny_failure": "Fixed-revision hf-mirror config/tokenizer/preprocessor fetches failed with browser net::ERR_FAILED before model/worker initialization. No second host or retry.",
+  "recommendation": "Do not enable proxy flag in production in this change without actual Whisper compatibility acceptance. Keep proven UI progress and app rendering fixes; architecture limitation remains.",
+  "product_bridge_changed": false,
+  "paid_api_calls": 0
+}

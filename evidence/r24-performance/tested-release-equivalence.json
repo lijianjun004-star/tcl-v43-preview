@@ -1,0 +1,9 @@
+{
+  "created_utc": "2026-11-16T20:34:24.206321+00:00",
+  "after_all18_samples": true,
+  "frozen22_unchanged": true,
+  "all22_match_release": true,
+  "frozen_manifest_sha256": "d44808ef010d6db8498885fc9e3805256face48090aaaeb05af0401df5a2e5a7",
+  "release_manifest_sha256": "d44808ef010d6db8498885fc9e3805256face48090aaaeb05af0401df5a2e5a7",
+  "differences": []
+}

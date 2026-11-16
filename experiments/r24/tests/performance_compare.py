@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Derive transparent count/latency summaries from frozen raw browser samples."""
+import json, math, pathlib, statistics, sys
+ROOT=pathlib.Path(__file__).resolve().parents[3]
+OUT=ROOT/'evidence/r24-performance'
+paths=[pathlib.Path(sys.argv[i]) if len(sys.argv)>i else OUT/name/'result.json' for i,name in [(1,'baseline'),(2,'final-candidate' if (OUT/'final-candidate/result.json').exists() else 'candidate')]]
+before,after=[json.loads(p.read_text()) for p in paths]
+def med(values):return statistics.median(values)
+def quantile(values,q):
+ values=sorted(values)
+ return values[max(0,math.ceil(q*len(values))-1)] if values else None
+def derived(rows):
+ return {'samples':len(rows),
+  'restore_ms':[round(x['restore_overview']['elapsedMs'],1) for x in rows],
+  'restore_median_ms':round(med([x['restore_overview']['elapsedMs'] for x in rows]),1),
+  'details_ms':[round(x['open_details']['elapsedMs'],1) for x in rows],
+  'details_median_ms':round(med([x['open_details']['elapsedMs'] for x in rows]),1),
+  'overview_dom_nodes':[x['restore_overview']['domNodes'] for x in rows],
+  'overview_hidden_rows':[x['restore_overview']['summaryRows'] for x in rows],
+  'initial_detail_rows':[x['details_initial_rows'] for x in rows],
+  'typing_ms':[round(x['typing_events_end_ms'],1) for x in rows],
+  'typing_median_ms':round(med([x['typing_events_end_ms'] for x in rows]),1),
+  'write_transactions':[sum(t['mode']=='readwrite' for t in x['typing']['tx']) for x in rows],
+  'record_puts':[x['typing']['puts'].get('records',0) for x in rows],
+  'input_next_frame_p50_ms':[round(quantile([a['ms'] for a in x['typing']['inputFrames']],.5),1) for x in rows],
+  'input_next_frame_p95_ms':[round(quantile([a['ms'] for a in x['typing']['inputFrames']],.95),1) for x in rows],
+  'longtask_count':[len(x['typing']['longtasks']) for x in rows],
+  'longtask_max_ms':[max([a['duration'] for a in x['typing']['longtasks']] or [0]) for x in rows],
+  'total_blocking_ms':[sum(max(0,a['duration']-50) for a in x['typing']['longtasks']) for x in rows]}
+checks={
+ 'same_browser_and_configuration':before['browser']==after['browser'] and before['configuration']==after['configuration'],
+ 'all_18_samples_each':len(before['samples'])==len(after['samples'])==18,
+ 'source_stable_each':before['source_unchanged'] and after['source_unchanged'],
+ 'baseline_and_candidate_keep_text':before['checks']['all_saved_and_reloaded'] and after['checks']['all_saved_and_reloaded'],
+ 'candidate_no_page_errors':not after['errors'],
+ 'candidate_no_hidden_summary_rows':all(x['restore_overview']['summaryRows']==0 for x in after['samples']),
+ 'candidate_initial_rows_at_most20':all(0<x['details_initial_rows']<=20 for x in after['samples']),
+ 'candidate_40_char_writes_at_most8':all(sum(t['mode']=='readwrite' for t in x['typing']['tx'])<=8 for x in after['samples']),
+ 'candidate_input_fonts16':all(f['fontPx']>=16 for x in after['samples'] for k in ['overview_fields','detail_fields','post_fields'] for f in x[k]),
+ 'candidate_viewport_stable':all(x[k]['viewport']['scale']==1 and x[k]['viewport']['scrollWidth']<=390 and x[k]['viewport']['innerWidth']==390 for x in after['samples'] for k in ['restore_overview','open_details','typing']),
+ 'candidate_500_library_search':after['checks']['library_500_search_correct'],
+ 'candidate_30_nav_no_interval_growth':after['checks']['navigation_no_interval_growth']}
+report={'status':'PASS' if all(checks.values()) else 'FAIL','method':'Three independent contexts per 20/100/200-turn group at CPU 1x/4x, same Chromium 390x844 touch viewport, each with 500 synthetic library rows. Input uses 40 ASCII characters separated by 20ms (800ms deliberate pacing included). No inference, real phone, or business data. The shared worker was not exclusive; final sampling overlapped other independent browser validations. Latencies include UI scheduling and are observational, structural counts are acceptance gates.','before_report':str(paths[0]),'after_report':str(paths[1]),'source_hashes_before':before['source_hashes'],'source_hashes_after':after['source_hashes'],'checks':checks,'groups':[]}
+rejected_hashes={'034597b149d7150bfd04e184c3f94b97ccbe09ed22d5480d5245a35abb6d87de','60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6'}
+if after['source_hashes'].get('app.js') in rejected_hashes:
+ report['measurement_status']=report['status'];report['status']='REJECTED_DURABILITY_REGRESSION'
+ report['rejection_reason']='Independent immediate-reload tests detected lost final input. These performance counts and save-then-reload checks cannot approve a rejected candidate.'
+for rate in [1,4]:
+ for n in [20,100,200]:
+  sel=lambda d:[x for x in d['samples'] if x['cpu_rate']==rate and x['turns']==n]
+  report['groups'].append({'cpu_rate':rate,'turns':n,'before':derived(sel(before)),'after':derived(sel(after))})
+(OUT/'comparison-v1.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+lines=['# 页面卡顿性能对照\n',report['method']+'\n','## 实测与边界\n','基线与候选各18个独立上下文，全部保留输入末尾并刷新恢复。数据均为人工500条资料及20/100/200题历史文字快照，没有录音、模型或真实业务内容。CPU4×是桌面模拟减速，不代表某款手机性能。字号与viewport检查只能定位缩放风险，不能代替iOS键盘真机测试。\n','| CPU | 题数 | 隐藏行（前→后） | 首屏逐题行（前→后） | 40字事务（前→后，各3次） | records.put（前→后，各3次） | 逐题打开中位[范围]ms（前→后） | 输入40字中位[范围]ms（前→后） |','| --- | --- | --- | --- | --- | --- | --- | --- |']
+for g in report['groups']:
+ a,b=g['before'],g['after'];lines.append(f"| {g['cpu_rate']}× | {g['turns']} | {a['overview_hidden_rows'][0]}→{b['overview_hidden_rows'][0]} | {a['initial_detail_rows'][0]}→{b['initial_detail_rows'][0]} | {a['write_transactions']}→{b['write_transactions']} | {a['record_puts']}→{b['record_puts']} | {a['details_median_ms']} [{min(a['details_ms'])},{max(a['details_ms'])}]→{b['details_median_ms']} [{min(b['details_ms'])},{max(b['details_ms'])}] | {a['typing_median_ms']} [{min(a['typing_ms'])},{max(a['typing_ms'])}]→{b['typing_median_ms']} [{min(b['typing_ms'])},{max(b['typing_ms'])}] |")
+if report.get('rejection_reason'):lines.insert(1,'**总判定：REJECTED_DURABILITY_REGRESSION，不可发布。** '+report['rejection_reason']+'\n')
+lines+=['\n输入总耗时含40次×20ms的固定发送间隔；不把该差值说成整个产品或真实手机提速比例。Long Task、下一帧延迟分位数、每次样本和范围保存在JSON中。本次环境非独占，最终样本与其他独立浏览器验收并行；共享机器负载会影响时间，不能把034候选更低的耗时替换到最终60d结果。采用不预建隐藏逐题表、首屏最多20行、40字最多8事务、末尾数据完整等结构条件验收。\n','原始fixture中的checkpointBytes字段实际记录JSON字符串UTF-16代码单元数，并非字节数，本对照不使用该值作体积结论。\n','## 验收\n']
+lines += [f"- {'PASS' if ok else 'FAIL'}：{name}" for name,ok in checks.items()]
+(OUT/'PERFORMANCE-RESULTS-v1.md').write_text('\n'.join(lines)+'\n')
+print(json.dumps({'status':report['status'],'checks':checks},ensure_ascii=False,indent=2))
+if report['status']!='PASS':raise SystemExit(1)

@@ -1,0 +1,126 @@
+test_asr_addition_preserves_existing_files (__main__.ASRReleaseGateTests.test_asr_addition_preserves_existing_files) ... ok
+test_asr_after_release_is_immutable (__main__.ASRReleaseGateTests.test_asr_after_release_is_immutable) ... ok
+test_asr_manifest_and_allowlist_enforced (__main__.ASRReleaseGateTests.test_asr_manifest_and_allowlist_enforced) ... ok
+test_asr_namespace_is_distinct_from_r4 (__main__.ASRReleaseGateTests.test_asr_namespace_is_distinct_from_r4) ... ok
+test_each_baseline_file_cannot_change_or_disappear (__main__.ASRReleaseGateTests.test_each_baseline_file_cannot_change_or_disappear) ... ok
+test_pinned_sources_and_workflow_are_restrictive (__main__.AutoqaGateTests.test_pinned_sources_and_workflow_are_restrictive) ... ok
+test_patch_is_two_source_files_only (__main__.AutoqaNamespaceFixGateTests.test_patch_is_two_source_files_only) ... ok
+test_actual_output_bound (__main__.GateTests.test_actual_output_bound) ... ok
+test_crc_mismatch (__main__.GateTests.test_crc_mismatch) ... ok
+test_exact_asr_accessible_end_dialog_release (__main__.GateTests.test_exact_asr_accessible_end_dialog_release) ... ok
+test_exact_asr_restart_device_preview_and_digit_release (__main__.GateTests.test_exact_asr_restart_device_preview_and_digit_release) ... ok
+test_exact_asr_round2_one_time_release (__main__.GateTests.test_exact_asr_round2_one_time_release)
+A second strict release cannot modify other 152 entries or evade exact pins. ... ok
+test_exact_asr_stopfix_one_time_release (__main__.GateTests.test_exact_asr_stopfix_one_time_release) ... ok
+test_exact_r6_model_and_speech_gate (__main__.GateTests.test_exact_r6_model_and_speech_gate)
+Only an independently reviewed app.js + manifest can upgrade R5 QA. ... ok
+test_isolated_mobile_qa_validation_and_browser_namespaces (__main__.GateTests.test_isolated_mobile_qa_validation_and_browser_namespaces) ... ok
+test_known_baseline_filename_repair_is_exact_and_byte_preserving (__main__.GateTests.test_known_baseline_filename_repair_is_exact_and_byte_preserving) ... ok
+test_limit (__main__.GateTests.test_limit) ... ok
+test_local_header_mismatch (__main__.GateTests.test_local_header_mismatch) ... ok
+test_pr_policy (__main__.GateTests.test_pr_policy) ... ok
+test_traversal (__main__.GateTests.test_traversal) ... ok
+test_ui_r4_namespace_and_allowlist_gate (__main__.GateTests.test_ui_r4_namespace_and_allowlist_gate) ... ok
+test_valid_deflate (__main__.GateTests.test_valid_deflate) ... ok
+test_valid_stored (__main__.GateTests.test_valid_stored) ... ok
+test_r21_one_time_release_exact_workflow_addition (__main__.R21TrustedStageTests.test_r21_one_time_release_exact_workflow_addition) ... ok
+test_only_exact_R23_stage_allowed (__main__.R23PinnedReleasePolicyTests.test_only_exact_R23_stage_allowed) ... ok
+test_r23_verifier_reconstructs_r21_first (__main__.R23PinnedReleasePolicyTests.test_r23_verifier_reconstructs_r21_first) ... ok
+test_archive_traversal_and_symlink_are_rejected (__main__.R24FrozenStaticReleaseTests.test_archive_traversal_and_symlink_are_rejected) ... ok
+test_duplicate_archive_member_is_rejected (__main__.R24FrozenStaticReleaseTests.test_duplicate_archive_member_is_rejected) ... ok
+test_encoded_and_decoded_container_hashes_are_both_pinned (__main__.R24FrozenStaticReleaseTests.test_encoded_and_decoded_container_hashes_are_both_pinned) ... ok
+test_exact_reverse_release_is_rollbackable_without_touching_old_stages (__main__.R24FrozenStaticReleaseTests.test_exact_reverse_release_is_rollbackable_without_touching_old_stages) ... ok
+test_exact_workflow_only_and_protected_zip (__main__.R24FrozenStaticReleaseTests.test_exact_workflow_only_and_protected_zip) ... ok
+test_existing_target_is_never_overwritten (__main__.R24FrozenStaticReleaseTests.test_existing_target_is_never_overwritten) ... ok
+test_extra_resource_and_directory_entry_are_rejected (__main__.R24FrozenStaticReleaseTests.test_extra_resource_and_directory_entry_are_rejected) ... ok
+test_failed_syntax_does_not_publish_partial_directory (__main__.R24FrozenStaticReleaseTests.test_failed_syntax_does_not_publish_partial_directory) ... ok
+test_manifest_must_cover_exact_files_and_hashes (__main__.R24FrozenStaticReleaseTests.test_manifest_must_cover_exact_files_and_hashes) ... ok
+test_missing_or_changed_preceding_route_fails (__main__.R24FrozenStaticReleaseTests.test_missing_or_changed_preceding_route_fails) ... ok
+test_mixed_ci_and_release_changes_remain_rejected (__main__.R24FrozenStaticReleaseTests.test_mixed_ci_and_release_changes_remain_rejected) ... ok
+test_release_classifier_reads_old_builders_from_base_commit (__main__.R24FrozenStaticReleaseTests.test_release_classifier_reads_old_builders_from_base_commit) ... ok
+test_resource_changes_fail_even_with_new_outer_container_pins (__main__.R24FrozenStaticReleaseTests.test_resource_changes_fail_even_with_new_outer_container_pins) ... ok
+test_success_stages_exact_resources_and_preserves_old_routes (__main__.R24FrozenStaticReleaseTests.test_success_stages_exact_resources_and_preserves_old_routes) ... ok
+test_symlink_in_existing_tree_is_rejected (__main__.R24FrozenStaticReleaseTests.test_symlink_in_existing_tree_is_rejected) ... ok
+test_unfrozen_policy_and_oversized_container_fail_closed (__main__.R24FrozenStaticReleaseTests.test_unfrozen_policy_and_oversized_container_fail_closed) ... ok
+test_archive_only_pr_reads_every_protected_input_from_base (__main__.R24InPlaceUpdateTests.test_archive_only_pr_reads_every_protected_input_from_base) ... ok
+test_changed_unreviewed_resource_is_rejected_even_if_both_archives_are_pinned (__main__.R24InPlaceUpdateTests.test_changed_unreviewed_resource_is_rejected_even_if_both_archives_are_pinned) ... ok
+test_existing_stage_and_protected_zip_cannot_be_removed_or_changed (__main__.R24InPlaceUpdateTests.test_existing_stage_and_protected_zip_cannot_be_removed_or_changed) ... ok
+test_missing_resource_is_rejected_even_with_consistent_new_manifest (__main__.R24InPlaceUpdateTests.test_missing_resource_is_rejected_even_with_consistent_new_manifest) ... ok
+test_old_and_new_snapshots_remain_independently_readable (__main__.R24InPlaceUpdateTests.test_old_and_new_snapshots_remain_independently_readable) ... ok
+test_omitting_a_required_repair_does_not_match_the_frozen_scope (__main__.R24InPlaceUpdateTests.test_omitting_a_required_repair_does_not_match_the_frozen_scope) ... ok
+test_same_version_or_third_snapshot_is_rejected (__main__.R24InPlaceUpdateTests.test_same_version_or_third_snapshot_is_rejected) ... ok
+test_update_and_exact_reverse_rebuild_only_the_four_reviewed_resources (__main__.R24InPlaceUpdateTests.test_update_and_exact_reverse_rebuild_only_the_four_reviewed_resources) ... ok
+test_update_cannot_be_mixed_with_ci_or_documentation_edits (__main__.R24InPlaceUpdateTests.test_update_cannot_be_mixed_with_ci_or_documentation_edits) ... ok
+test_all_three_fixed_snapshots_are_readable (__main__.R24QuestionBankUpdateTests.test_all_three_fixed_snapshots_are_readable) ... ok
+test_question_update_and_reverse_preserve_all_other_files (__main__.R24QuestionBankUpdateTests.test_question_update_and_reverse_preserve_all_other_files) ... ok
+test_question_update_cannot_rewrite_parser_even_with_pinned_outer_bytes (__main__.R24QuestionBankUpdateTests.test_question_update_cannot_rewrite_parser_even_with_pinned_outer_bytes) ... ok
+test_skipping_the_data_integrity_version_is_rejected (__main__.R24QuestionBankUpdateTests.test_skipping_the_data_integrity_version_is_rejected) ... ok
+test_unfrozen_third_snapshot_does_not_break_live_second_snapshot (__main__.R24QuestionBankUpdateTests.test_unfrozen_third_snapshot_does_not_break_live_second_snapshot) ... ok
+test_all_five_frozen_snapshots_remain_readable (__main__.R24ReviewStabilityUpdateTests.test_all_five_frozen_snapshots_remain_readable) ... ok
+test_review_cannot_add_an_unreviewed_resource_even_when_repinned (__main__.R24ReviewStabilityUpdateTests.test_review_cannot_add_an_unreviewed_resource_even_when_repinned) ... ok
+test_review_cannot_change_worker_or_bridge_even_when_repinned (__main__.R24ReviewStabilityUpdateTests.test_review_cannot_change_worker_or_bridge_even_when_repinned) ... ok
+test_review_cannot_remove_worker_even_when_repinned (__main__.R24ReviewStabilityUpdateTests.test_review_cannot_remove_worker_even_when_repinned) ... ok
+test_review_cannot_skip_or_repeat_versions (__main__.R24ReviewStabilityUpdateTests.test_review_cannot_skip_or_repeat_versions) ... ok
+test_review_omitting_an_expected_change_is_rejected (__main__.R24ReviewStabilityUpdateTests.test_review_omitting_an_expected_change_is_rejected) ... ok
+test_review_update_and_reverse_keep_worker_and_every_older_asset (__main__.R24ReviewStabilityUpdateTests.test_review_update_and_reverse_keep_worker_and_every_older_asset) ... ok
+test_unfrozen_review_does_not_block_existing_four_snapshots (__main__.R24ReviewStabilityUpdateTests.test_unfrozen_review_does_not_block_existing_four_snapshots) ... ok
+test_all_four_frozen_snapshots_remain_readable (__main__.R24SmoothMobileUpdateTests.test_all_four_frozen_snapshots_remain_readable) ... ok
+test_exact_worker_addition_and_reverse_preserve_every_older_asset (__main__.R24SmoothMobileUpdateTests.test_exact_worker_addition_and_reverse_preserve_every_older_asset) ... ok
+test_no_existing_resource_may_be_deleted_in_update (__main__.R24SmoothMobileUpdateTests.test_no_existing_resource_may_be_deleted_in_update) ... ok
+test_omitting_any_expected_change_is_rejected (__main__.R24SmoothMobileUpdateTests.test_omitting_any_expected_change_is_rejected) ... ok
+test_only_the_one_worker_may_be_added_even_with_fully_repinned_archives (__main__.R24SmoothMobileUpdateTests.test_only_the_one_worker_may_be_added_even_with_fully_repinned_archives) ... ok
+test_reviewed_worker_addition_cannot_be_omitted (__main__.R24SmoothMobileUpdateTests.test_reviewed_worker_addition_cannot_be_omitted) ... ok
+test_rollback_cannot_delete_anything_but_the_worker (__main__.R24SmoothMobileUpdateTests.test_rollback_cannot_delete_anything_but_the_worker) ... ok
+test_smooth_cannot_rewrite_unrelated_resources_even_when_repinned (__main__.R24SmoothMobileUpdateTests.test_smooth_cannot_rewrite_unrelated_resources_even_when_repinned) ... ok
+test_smooth_cannot_skip_or_repeat_versions (__main__.R24SmoothMobileUpdateTests.test_smooth_cannot_skip_or_repeat_versions) ... ok
+test_unfrozen_smooth_does_not_block_existing_live_snapshot (__main__.R24SmoothMobileUpdateTests.test_unfrozen_smooth_does_not_block_existing_live_snapshot) ... ok
+test_manual_asr_probe_is_separate_from_pages_release (__main__.RealModelOneShotGateTests.test_manual_asr_probe_is_separate_from_pages_release) ... ok
+test_rejects_collision (__main__.StandaloneLabPolicyTests.test_rejects_collision) ... ok
+test_rejects_tampering (__main__.StandaloneLabPolicyTests.test_rejects_tampering) ... ok
+test_valid_exact_addition (__main__.StandaloneLabPolicyTests.test_valid_exact_addition) ... ok
+test_all_three_browser_namespaces_are_enforced (__main__.UIR3GateTests.test_all_three_browser_namespaces_are_enforced) ... ok
+test_existing_118_file_baseline_is_valid (__main__.UIR3GateTests.test_existing_118_file_baseline_is_valid) ... ok
+test_existing_browser_namespaces_cannot_be_reused (__main__.UIR3GateTests.test_existing_browser_namespaces_cannot_be_reused) ... ok
+test_existing_ui_directory_cannot_be_removed (__main__.UIR3GateTests.test_existing_ui_directory_cannot_be_removed) ... ok
+test_first_ui_addition_preserves_118_files (__main__.UIR3GateTests.test_first_ui_addition_preserves_118_files) ... ok
+test_manifest_hash_and_coverage_are_enforced (__main__.UIR3GateTests.test_manifest_hash_and_coverage_are_enforced) ... ok
+test_matching_pinned_archive_with_unchanged_non_ui_can_rollback (__main__.UIR3GateTests.test_matching_pinned_archive_with_unchanged_non_ui_can_rollback) ... ok
+test_modified_or_deleted_existing_files_are_rejected (__main__.UIR3GateTests.test_modified_or_deleted_existing_files_are_rejected) ... ok
+test_nonmatching_archive_cannot_remove_ui (__main__.UIR3GateTests.test_nonmatching_archive_cannot_remove_ui) ... ok
+test_pinned_rollback_refuses_any_non_ui_change (__main__.UIR3GateTests.test_pinned_rollback_refuses_any_non_ui_change) ... ok
+test_production_rollback_pin_is_exact (__main__.UIR3GateTests.test_production_rollback_pin_is_exact) ... ok
+test_qa_directory_remains_immutable (__main__.UIR3GateTests.test_qa_directory_remains_immutable) ... ok
+test_ui_update_allows_only_ui_changes (__main__.UIR3GateTests.test_ui_update_allows_only_ui_changes) ... ok
+test_unexpected_file_and_missing_ui_file_rejected (__main__.UIR3GateTests.test_unexpected_file_and_missing_ui_file_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 92 tests in 29.764s
+
+OK
+verify-pages-release PASS: exact R2.4 static bundle; all preceding stages preserved
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 3, "old_assets_unchanged": 4}
+verify-pages-release PASS: exact R2.4 same-route update/rollback; old pages unchanged
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/parser.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "update", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/parser.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "update", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "1245f954c74f45507f32fb0d53c1b91e19a53fcea9ddec6369cc99ce41c5fb8e", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css"], "direction": "update", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "1245f954c74f45507f32fb0d53c1b91e19a53fcea9ddec6369cc99ce41c5fb8e", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css"], "direction": "rollback", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 7, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "update", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 7, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "rollback", "protected_assets": 4, "total_assets": 11}

@@ -1,0 +1,334 @@
+{
+  "mode": "Synthetic checkpoints (turn count and CPU rate are recorded); unchanged app bytes; actual reload and native IndexedDB.",
+  "baseline_ref": "d82e0ad",
+  "app_sha256": {
+    "candidate": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816"
+  },
+  "sample_order": "delay, repeat, baseline/candidate alternating",
+  "turns": 1,
+  "cpu_rate": 1.0,
+  "input_mode": "keyboard",
+  "samples": [
+    {
+      "version": "candidate",
+      "delay_ms": 0,
+      "repeat": 0,
+      "before": "",
+      "expected": "刷新前末字庚-0-0",
+      "after": "刷新前末字",
+      "pass": false,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-0"
+        }
+      ]
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 0,
+      "repeat": 1,
+      "before": "",
+      "expected": "刷新前末字庚-0-1",
+      "after": "刷新前末字庚-0-1",
+      "pass": true,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-1"
+        }
+      ]
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 0,
+      "repeat": 2,
+      "before": "",
+      "expected": "刷新前末字庚-0-2",
+      "after": "刷新前末字庚-0",
+      "pass": false,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-0-2"
+        }
+      ]
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 0,
+      "before": "",
+      "expected": "刷新前末字庚-50-0",
+      "after": "刷新前末字庚-50-0",
+      "pass": true,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-5"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-0"
+        }
+      ]
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 1,
+      "before": "",
+      "expected": "刷新前末字庚-50-1",
+      "after": "刷新前末字庚-50-1",
+      "pass": true,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-5"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-1"
+        }
+      ]
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 2,
+      "before": "",
+      "expected": "刷新前末字庚-50-2",
+      "after": "刷新前末字庚-50-2",
+      "pass": true,
+      "events": [
+        {
+          "trusted": true,
+          "value": "刷"
+        },
+        {
+          "trusted": true,
+          "value": "刷新"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-5"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-"
+        },
+        {
+          "trusted": true,
+          "value": "刷新前末字庚-50-2"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "status": "FAIL"
+}

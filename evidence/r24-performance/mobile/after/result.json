@@ -1,0 +1,2819 @@
+{
+  "mode": "Real Chromium layout/computed-style probe; synthetic rows and resized viewports, not physical iOS keyboard tests.",
+  "style_sha256": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+  "index_sha256": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e",
+  "app_sha256": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+  "observations": [
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 234
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 198
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 260
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 124
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 124
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 124
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 124
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2214.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2245.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2286.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2317.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2352.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2214.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 226
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 238
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 262
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 262
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 234
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 284
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "prep-tools"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 274
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 274
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height"
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 270
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 298
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 262
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 324
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 156
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 156
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 156
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 156
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2248.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2289.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2320.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 290
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 298
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 354
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "prep-tools"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 344
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 344
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height"
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 340
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 640
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 702
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 345
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 345
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 345
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 345
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2248.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2289.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2320.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 668
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 732
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "prep-tools"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 722
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 722
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height"
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 215
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 259
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 321
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 326.75
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 157.375
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 157.375
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 326.75
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 157.375
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 157.375
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2324.234375,
+          "width": 1976.421875
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.046875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2396.65625,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2427.46875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2462.625,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2324.234375,
+          "width": 1976.421875
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 620
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "login"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 988
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "prep-tools"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 978
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 978
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height"
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44
+        },
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 215
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-answer"
+    }
+  ],
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "style_sha256_after": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+  "style_unchanged": true,
+  "small_controls": [],
+  "page_overflow": []
+}

@@ -1,0 +1,16 @@
+{
+  "ci_pr": 120,
+  "ci_head": "ecf7a48deb1520127175da61017fdd78d27f2fe0",
+  "ci_base": "8b60fa155faaf60a98d6710be5107d60c920374f",
+  "previous_build_base": "ce128d32e7ef93759e69646006bb4585b23e9fd5",
+  "base_delta": [
+    "AI_CONTEXT.md"
+  ],
+  "gate_tests": 92,
+  "gate_test_result": "PASS",
+  "independent_review": "PASS: original 71 module constants unchanged, four old snapshots and three adjacent pairs preserved; archive/freeze/all 22 file hashes match; only new smooth\u2194review three-file pair; Worker/bridge unchanged.",
+  "stage": "/workspace/scratch/r24-review-final-pages-63519c50a532",
+  "state": "CI_PR_OPEN_PENDING_FINAL_ACCEPTANCE",
+  "gate_sha256": "d73ff1ff29ef75527436259b4bd87de29ebf56e1e4ba0be412a01549bf8b22bd",
+  "test_sha256": "50a5023a426eac21c8aa6203d03058efa134a8f945cd74ff96ca0d610e965dcf"
+}

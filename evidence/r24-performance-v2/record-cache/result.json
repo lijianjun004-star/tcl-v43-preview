@@ -1,0 +1,176 @@
+{
+  "mode": "Native IndexedDB record-write cache regression, synthetic text fixtures and real UI.\n\nNo application test hooks or model calls. Instrument native put/transaction calls,\nthen compare stored checkpoints and records across aborts, restores and stale tabs.\n",
+  "app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "fixture_turns": 25,
+  "checks": {
+    "restore_first_commit_writes_all_records": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 1,
+        "aborted": 0,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "synthetic-perf-25-0",
+          "synthetic-perf-25-1",
+          "synthetic-perf-25-2",
+          "synthetic-perf-25-3",
+          "synthetic-perf-25-4",
+          "synthetic-perf-25-5",
+          "synthetic-perf-25-6",
+          "synthetic-perf-25-7",
+          "synthetic-perf-25-8",
+          "synthetic-perf-25-9",
+          "synthetic-perf-25-10",
+          "synthetic-perf-25-11",
+          "synthetic-perf-25-12",
+          "synthetic-perf-25-13",
+          "synthetic-perf-25-14",
+          "synthetic-perf-25-15",
+          "synthetic-perf-25-16",
+          "synthetic-perf-25-17",
+          "synthetic-perf-25-18",
+          "synthetic-perf-25-19",
+          "synthetic-perf-25-20",
+          "synthetic-perf-25-21",
+          "synthetic-perf-25-22",
+          "synthetic-perf-25-23",
+          "synthetic-perf-25-24"
+        ]
+      }
+    },
+    "one_edited_turn_writes_one_record": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 1,
+        "aborted": 0,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "synthetic-perf-25-1"
+        ]
+      }
+    },
+    "forty_inputs_keep_forty_immediate_checkpoints": {
+      "pass": true,
+      "detail": {
+        "transactions": 40,
+        "complete": 40,
+        "aborted": 0,
+        "checkpointPuts": 40,
+        "recordIds": []
+      }
+    },
+    "unchanged_turns_are_not_rewritten_for_post_text": {
+      "pass": true,
+      "detail": {
+        "transactions": 40,
+        "complete": 40,
+        "aborted": 0,
+        "checkpointPuts": 40,
+        "recordIds": []
+      }
+    },
+    "quota_aborts_changed_record_and_checkpoint": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 0,
+        "aborted": 1,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "synthetic-perf-25-0"
+        ]
+      }
+    },
+    "failed_transaction_does_not_advance_record_fingerprints": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 1,
+        "aborted": 0,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "synthetic-perf-25-0",
+          "synthetic-perf-25-1"
+        ]
+      }
+    },
+    "queued_saves_compare_after_previous_commit": {
+      "pass": true,
+      "detail": {
+        "transactions": 2,
+        "complete": 2,
+        "aborted": 0,
+        "checkpointPuts": 2,
+        "recordIds": [
+          "synthetic-perf-25-0",
+          "synthetic-perf-25-1"
+        ]
+      }
+    },
+    "fresh_page_restore_does_not_trust_previous_tab_cache": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 1,
+        "aborted": 0,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "synthetic-perf-25-0",
+          "synthetic-perf-25-1",
+          "synthetic-perf-25-2",
+          "synthetic-perf-25-3",
+          "synthetic-perf-25-4",
+          "synthetic-perf-25-5",
+          "synthetic-perf-25-6",
+          "synthetic-perf-25-7",
+          "synthetic-perf-25-8",
+          "synthetic-perf-25-9",
+          "synthetic-perf-25-10",
+          "synthetic-perf-25-11",
+          "synthetic-perf-25-12",
+          "synthetic-perf-25-13",
+          "synthetic-perf-25-14",
+          "synthetic-perf-25-15",
+          "synthetic-perf-25-16",
+          "synthetic-perf-25-17",
+          "synthetic-perf-25-18",
+          "synthetic-perf-25-19",
+          "synthetic-perf-25-20",
+          "synthetic-perf-25-21",
+          "synthetic-perf-25-22",
+          "synthetic-perf-25-23",
+          "synthetic-perf-25-24"
+        ]
+      }
+    },
+    "cache_hit_still_checks_cross_tab_checkpoint_token": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 0,
+        "aborted": 1,
+        "checkpointPuts": 0,
+        "recordIds": []
+      }
+    },
+    "same_page_new_run_writes_new_turn_without_old_cache": {
+      "pass": true,
+      "detail": {
+        "transactions": 1,
+        "complete": 1,
+        "aborted": 0,
+        "checkpointPuts": 1,
+        "recordIds": [
+          "14686d70-7596-48bf-a586-eb6236ee0c8b"
+        ]
+      }
+    }
+  },
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "status": "PASS",
+  "app_sha256_after": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "source_unchanged": true
+}

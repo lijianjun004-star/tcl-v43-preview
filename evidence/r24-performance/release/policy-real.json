@@ -1,0 +1,28 @@
+{
+  "source_base": "ce128d32e7ef93759e69646006bb4585b23e9fd5",
+  "old_archive_sha": "faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1",
+  "new_archive_sha": "f31dda6f04a1b32d2e38dba9e6db6b3f0c2d9ed62c84613caef1f7e78be4c3da",
+  "gate_sha": "d73ff1ff29ef75527436259b4bd87de29ebf56e1e4ba0be412a01549bf8b22bd",
+  "update": {
+    "direction": "update",
+    "protected_assets": 195,
+    "total_assets": 217,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css"
+    ]
+  },
+  "rollback": {
+    "direction": "rollback",
+    "protected_assets": 195,
+    "total_assets": 217,
+    "changed": [
+      "tcl-v352-asr-r24-qa/app.js",
+      "tcl-v352-asr-r24-qa/static-manifest.json",
+      "tcl-v352-asr-r24-qa/style.css"
+    ]
+  },
+  "stage": "/workspace/scratch/r24-review-final-pages-63519c50a532",
+  "pass": true
+}

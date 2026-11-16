@@ -1,0 +1,3210 @@
+{
+  "mode": "Real Chromium layout/computed-style probe; synthetic rows and resized viewports, not physical iOS keyboard tests.",
+  "style_sha256": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+  "index_sha256": "39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e",
+  "app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "observations": [
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 234,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 198,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 124,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 124,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 124,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 124,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 260,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 208,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2214.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2245.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2286.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2317.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2352.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2383.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2214.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 226,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 238,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 262,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 262,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 256,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 234,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 284,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "live-profile",
+          "blur": "blur(5px)"
+        },
+        {
+          "id": "prepMore",
+          "cls": "prep-more-toggle",
+          "blur": "blur(12px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "prep-tools",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 274,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 274,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "scrollWidth": 320,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 270,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer",
+      "configured_width": 320
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 298,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 262,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 156,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 156,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 156,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 156,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 324,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 272,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2248.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2289.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2320.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 290,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 320,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 298,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 354,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "live-profile",
+          "blur": "blur(5px)"
+        },
+        {
+          "id": "prepMore",
+          "cls": "prep-more-toggle",
+          "blur": "blur(12px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "prep-tools",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 344,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 344,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "scrollWidth": 390,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 340,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer",
+      "configured_width": 390
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 640,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 345,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 345,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 345,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 345,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 702,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2248.265625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2289.875,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2320.6875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.84375,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2386.65625,
+          "width": 2353.65625
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2217.453125,
+          "width": 2144.640625
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 668,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 698,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 732,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "live-profile",
+          "blur": "blur(5px)"
+        },
+        {
+          "id": "prepMore",
+          "cls": "prep-more-toggle",
+          "blur": "blur(12px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "prep-tools",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 722,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 722,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "scrollWidth": 768,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 215,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "review-answer",
+      "configured_width": 768
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "operator-home",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "librarySearch",
+          "font": 16,
+          "width": 259,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "libraryBoard",
+          "font": 16,
+          "width": 321,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "library",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 326.75,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 157.375,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 157.375,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "settings",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "apiBase",
+          "font": 16,
+          "width": 326.75,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginName",
+          "font": 16,
+          "width": 157.375,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "loginPassword",
+          "font": 16,
+          "width": 157.375,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "legacy",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importBoard",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importScope",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "importPlatform",
+          "font": 16,
+          "width": 210,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "fileInput",
+          "font": 16,
+          "width": 602,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [
+        {
+          "tag": "TABLE",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "THEAD",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2324.234375,
+          "width": 1976.421875
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2355.046875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2396.65625,
+          "width": 41.609375
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2427.46875,
+          "width": 30.8125
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2462.625,
+          "width": 35.15625
+        },
+        {
+          "tag": "TH",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 30.8125
+        },
+        {
+          "tag": "TBODY",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TR",
+          "id": "",
+          "cls": "",
+          "right": 2493.4375,
+          "width": 2183.4375
+        },
+        {
+          "tag": "TD",
+          "id": "",
+          "cls": "",
+          "right": 2324.234375,
+          "width": 1976.421875
+        }
+      ],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "import-long-source",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "INPUT",
+          "font": 16,
+          "width": 620,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-model",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "home",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 286,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 326,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 312,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentTitle",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentBoard",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentPlatform",
+          "font": 16,
+          "width": 319,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "assignmentDeadline",
+          "font": 16,
+          "width": 650,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "header-tools",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "simpleName",
+          "font": 16,
+          "width": 458,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "login",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "prepBarrageInterval",
+          "font": 16,
+          "width": 988,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "live-profile",
+          "blur": "blur(5px)"
+        },
+        {
+          "id": "prepMore",
+          "cls": "prep-more-toggle",
+          "blur": "blur(12px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "prep-tools",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 978,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "liveTextAnswer",
+          "font": 16,
+          "width": 978,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [],
+      "tapAction": "auto",
+      "page": "live-text-small-height",
+      "configured_width": 1024
+    },
+    {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "scrollWidth": 1024,
+      "scale": 1,
+      "controls": [
+        {
+          "id": "r23ModelChoice",
+          "font": 16,
+          "width": 34.828125,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryTerms",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "asrGlossaryFile",
+          "font": 16,
+          "width": 44,
+          "touchAction": "manipulation"
+        },
+        {
+          "id": "编辑本题回答",
+          "font": 16,
+          "width": 215,
+          "touchAction": "manipulation"
+        }
+      ],
+      "outside": [],
+      "blurLayers": [
+        {
+          "id": "",
+          "cls": "topbar",
+          "blur": "blur(16px)"
+        }
+      ],
+      "tapAction": "auto",
+      "page": "review-answer",
+      "configured_width": 1024
+    }
+  ],
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "style_sha256_after": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+  "style_unchanged": true,
+  "small_controls": [],
+  "page_overflow": []
+}

@@ -1,0 +1,77 @@
+{
+  "mode": "Synthetic checkpoints (turn count and CPU rate are recorded); unchanged app bytes; actual reload and native IndexedDB.",
+  "baseline_ref": "d82e0ad",
+  "app_sha256": {
+    "baseline": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+    "candidate": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816"
+  },
+  "sample_order": "delay, repeat, baseline/candidate alternating",
+  "turns": 200,
+  "cpu_rate": 4.0,
+  "input_mode": "single",
+  "samples": [
+    {
+      "version": "baseline",
+      "delay_ms": 50,
+      "repeat": 0,
+      "before": "",
+      "expected": "刷新前末字庚-50-0",
+      "after": "刷新前末字庚-50-0",
+      "pass": true,
+      "events": []
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 0,
+      "before": "",
+      "expected": "刷新前末字庚-50-0",
+      "after": "刷新前末字庚-50-0",
+      "pass": true,
+      "events": []
+    },
+    {
+      "version": "baseline",
+      "delay_ms": 50,
+      "repeat": 1,
+      "before": "",
+      "expected": "刷新前末字庚-50-1",
+      "after": "刷新前末字庚-50-1",
+      "pass": true,
+      "events": []
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 1,
+      "before": "",
+      "expected": "刷新前末字庚-50-1",
+      "after": "刷新前末字庚-50-1",
+      "pass": true,
+      "events": []
+    },
+    {
+      "version": "baseline",
+      "delay_ms": 50,
+      "repeat": 2,
+      "before": "",
+      "expected": "刷新前末字庚-50-2",
+      "after": "刷新前末字庚-50-2",
+      "pass": true,
+      "events": []
+    },
+    {
+      "version": "candidate",
+      "delay_ms": 50,
+      "repeat": 2,
+      "before": "",
+      "expected": "刷新前末字庚-50-2",
+      "after": "刷新前末字庚-50-2",
+      "pass": true,
+      "events": []
+    }
+  ],
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "status": "PASS"
+}

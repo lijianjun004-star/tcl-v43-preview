@@ -1,0 +1,36 @@
+{
+  "app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "ok": true,
+  "results": [
+    {
+      "test": "manual-clear-regression.cjs",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"checks\": 3,\n  \"mode\": \"actual app live-clear/Vosk/browser-result functions in Node VM; mocked model, decoder and persistence\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "test": "regression.cjs",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"checks\": 14,\n  \"mode\": \"actual app functions in Node VM; mocked inference, not real speech\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "test": "assignment-regression.cjs",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"checks\": 8,\n  \"mode\": \"Node VM real app assignment functions; deferred mock IDB\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "test": "question-pool.mjs",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"checks\": 12,\n  \"mode\": \"actual app helpers in Node VM; synthetic source rows and mocked storage/network; no model call\",\n  \"app_sha256\": \"8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "test": "performance-progress.mjs",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"mode\": \"Actual app createLocalWhisper onProgress and r6WhisperValid evaluated in Node VM; synthetic notifications and fake clock; no model/network call\",\n  \"app_sha256\": \"8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332\",\n  \"source_unchanged\": true,\n  \"input_download_events\": 1195,\n  \"rendered_download_updates\": 9,\n  \"checks\": {\n    \"load_message_immediate\": true,\n    \"download_1195_events_coalesced\": true,\n    \"ready_message_immediate\": true,\n    \"stale_owner_does_not_render\": true,\n    \"non_download_error_message_immediate\": true\n  }\n}\n",
+      "stderr": ""
+    }
+  ]
+}

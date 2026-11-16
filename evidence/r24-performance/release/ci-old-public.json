@@ -1,0 +1,14 @@
+{
+  "app.js": {
+    "status": 200,
+    "sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80"
+  },
+  "static-manifest.json": {
+    "status": 200,
+    "sha256": "365f7345d4debdc15b10197a078f8867eef6a19657d2dcde48f6eadd1413216e"
+  },
+  "version": "r24-smooth-mobile-20261116",
+  "ci_merge": "19bf929e647a98471d96b3886d30ac8f9e70147a",
+  "pages_run": 43951110021,
+  "pages_conclusion": "success"
+}

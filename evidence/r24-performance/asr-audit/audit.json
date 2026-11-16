@@ -1,0 +1,84 @@
+{
+  "created_at": "2026-11-16T19:59:38.190042+00:00",
+  "scope": "Read-only audit of app/runtime architecture and preserved real audio evidence; no new model load/inference or paid API",
+  "baseline_commit": "36727086164a0885e69e52470d1df7c3f6f75470",
+  "baseline_app_sha256": "d090543e3bdd010dfa95580c4f6a5dcd7185f116225ff02674120954c10cbecf",
+  "bridge_sha256": "b93887710d61766d01396f9eb6da357c3460519877fca595b08e793d9a1b41c4",
+  "historical_runs": [
+    {
+      "path": "evidence/r24/real-model.json",
+      "sha256": "130ee3c709f386a7c1e463224d39c8a42c27cd8ced62a097f9635faaccc77fdf",
+      "scope": "REAL Whisper Tiny q8 / public human Mandarin / desktop Chromium",
+      "progress_callbacks": 574,
+      "download_callbacks": 565,
+      "audio_seconds": [
+        7.765374149659864,
+        4.778616780045351,
+        4.266621315192744
+      ],
+      "elapsed_seconds": [
+        6.14,
+        2.16,
+        2.15
+      ],
+      "elapsed_limitation": "These are historical full transcribe wall-clock times, including first model load; not UI main-thread task timings."
+    },
+    {
+      "path": "evidence/r24/real-model-base.json",
+      "sha256": "42943dcae7e9132f92ffb4250eb6547995b8b5f4247e4666bde37cb2880eba27",
+      "scope": "REAL Whisper base q8 / public human Mandarin / desktop Chromium",
+      "progress_callbacks": 1195,
+      "download_callbacks": 1186,
+      "audio_seconds": [
+        7.765374149659864,
+        4.778616780045351,
+        4.266621315192744
+      ],
+      "elapsed_seconds": [
+        12.56,
+        4.14,
+        3.99
+      ],
+      "elapsed_limitation": "These are historical full transcribe wall-clock times, including first model load; not UI main-thread task timings."
+    },
+    {
+      "path": "evidence/r24-delivery/audio/real-vosk.json",
+      "sha256": "74227879504a3f5ef8065a86ad3d97f31a9618da03e5d6499ea620648894c60e",
+      "scope": "REAL loader/hash verification/worker/model inference on public Mandarin; extracted actual functions, not full UI or actual phone",
+      "loader_callbacks": 23,
+      "completed_file_callbacks": 12,
+      "ignored_stage_callbacks": 11,
+      "note": "preloadVoskModel ignores stage:download and only repaints each completed file."
+    }
+  ],
+  "findings": [
+    {
+      "id": "whisper-progress-dom",
+      "certainty": "source chain plus historical actual callback counts",
+      "trigger": "Whisper onProgress -> renderTurnStatus -> renderQuestionSummary, on every download chunk",
+      "suggestion": "App owner may coalesce download UI rendering to one update per 100–200ms, keeping final/error/owner handling immediate; visible/incremental summary separately removes full reconstruction."
+    },
+    {
+      "id": "whisper-main-context-wasm",
+      "certainty": "architecture verified; current long-task magnitude unmeasured",
+      "facts": "Bridge imports Transformers.js 3.8.1 in window, explicitly selects wasm, sets no proxy/Worker. Upstream 3.8.1 ONNX backend defaults wasm.proxy=false and exposes env.backends.onnx. Promise/await does not move execution off the page context.",
+      "candidate": "A future minimal candidate can enable env.backends.onnx.wasm.proxy before pipeline initialization, with real browser engine/model tests. Do not blindly switch this in a release without regression."
+    },
+    {
+      "id": "vosk-progress",
+      "certainty": "source plus historical actual loader records",
+      "facts": "Only 12 completed-file callbacks repaint; 11 stage callbacks are ignored. This is bounded and not comparable to Whisper per-download-chunk storm."
+    },
+    {
+      "id": "audio-preparation",
+      "certainty": "source inspection only",
+      "facts": "Native AudioBuffer path uses one OfflineAudioContext downmix/resample. Main JS still scans/copies PCM; fallback JS downmix is only for non-native test buffers. No measured proof this dominates current lag."
+    }
+  ],
+  "not_measured": [
+    "Actual physical iPhone/Android CPU and keyboard behavior",
+    "Current model main-thread long-task timing",
+    "Current recognition accuracy or model/proxy compatibility"
+  ],
+  "product_files_changed": []
+}

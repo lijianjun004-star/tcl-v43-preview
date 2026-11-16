@@ -1,0 +1,28 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/huggingface/transformers.js/3.8.1/src/backends/onnx.js",
+    "status": 200,
+    "file": "transformers-onnx-v3.8.1.js",
+    "sha256": "3265edafb24d321eb4b214f45684fa1d498407e2e0eca5fea9e720958f1635f3",
+    "bytes": 9150,
+    "fetched_at": "2026-11-16T19:57:34.645158+00:00"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/huggingface/transformers.js/3.8.1/src/env.js",
+    "status": 200,
+    "file": "transformers-env-v3.8.1.js",
+    "sha256": "2869b297d7531df8216be0bfc53f46bfccb514f7ddc06caa444c8de749f1e3d3",
+    "bytes": 6925,
+    "fetched_at": "2026-11-16T19:57:34.835022+00:00"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/package.json",
+    "status": 200,
+    "file": "transformers-package-3.8.1.json",
+    "sha256": "00c02ca357bf03c801f33c9a431c0169b99c1de1e14f2134cabc902cce53d4f3",
+    "bytes": 2694,
+    "saved_at": "2026-11-16T19:59:54.232520+00:00",
+    "package_version": "3.8.1",
+    "onnxruntime_web_dependency": "1.22.0-dev.20250409-89f8206ba4"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "created_utc": "2026-11-16T20:22:21.588159+00:00",
+  "plan_sha256": "34ac86a677d8d77b538b2970dea8926f09477d81404847f836229270cf194929",
+  "sampler_sha256": "939c6cfb10cddf6d3026e04243d8b8052ac17f88aaf1df7424c0db23ba9731e2",
+  "candidate_app_sha256": null,
+  "status": "PLAN_FROZEN_BEFORE_NEW_CANDIDATE_MEASUREMENT"
+}

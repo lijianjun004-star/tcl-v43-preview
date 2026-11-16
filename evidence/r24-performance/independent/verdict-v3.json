@@ -1,0 +1,112 @@
+{
+  "status": "PASS_WITH_EXISTING_0MS_LIMIT",
+  "candidate_app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+  "baseline_app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+  "unconditional_immediate_reload_safety": false,
+  "limits": [
+    "Synthetic fixtures in desktop Chromium, not physical phone or real business data",
+    "3 trials are bounded regression checks, not reliability estimates",
+    "Both candidate and current baseline lose tail characters in 2/3 trusted burst tests with navigation inside final input handler",
+    "Raw FAIL reports retained; no repeated candidate attempts until PASS"
+  ],
+  "samples": [
+    {
+      "evidence": "current-heavy-v3/result.json",
+      "version": "baseline",
+      "app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+      "turns": 200,
+      "cpu_rate": 4.0,
+      "input_mode": "single",
+      "delay_ms": 50,
+      "saved_full_text": 3,
+      "samples": 3
+    },
+    {
+      "evidence": "current-heavy-v3/result.json",
+      "version": "candidate",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "turns": 200,
+      "cpu_rate": 4.0,
+      "input_mode": "single",
+      "delay_ms": 50,
+      "saved_full_text": 3,
+      "samples": 3
+    },
+    {
+      "evidence": "current-keyboard-v3/result.json",
+      "version": "candidate",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "turns": 1,
+      "cpu_rate": 1.0,
+      "input_mode": "keyboard",
+      "delay_ms": 0,
+      "saved_full_text": 1,
+      "samples": 3
+    },
+    {
+      "evidence": "current-keyboard-v3/result.json",
+      "version": "candidate",
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "turns": 1,
+      "cpu_rate": 1.0,
+      "input_mode": "keyboard",
+      "delay_ms": 50,
+      "saved_full_text": 3,
+      "samples": 3
+    },
+    {
+      "evidence": "current-keyboard-baseline-v3/result.json",
+      "version": "baseline",
+      "app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+      "turns": 1,
+      "cpu_rate": 1.0,
+      "input_mode": "keyboard",
+      "delay_ms": 0,
+      "saved_full_text": 1,
+      "samples": 3
+    },
+    {
+      "evidence": "current-keyboard-baseline-v3/result.json",
+      "version": "baseline",
+      "app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+      "turns": 1,
+      "cpu_rate": 1.0,
+      "input_mode": "keyboard",
+      "delay_ms": 50,
+      "saved_full_text": 3,
+      "samples": 3
+    }
+  ],
+  "record_cache_external_review": {
+    "path": "evidence/r24-review-stability/final635/record-cache/result.json",
+    "checks": 10,
+    "status": "PASS",
+    "source_unchanged": true,
+    "errors": []
+  },
+  "review_dom_check": {
+    "evidence": "current-review-v2/result.json",
+    "app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+    "checks": 21,
+    "note": "DOM behavior unchanged between this tested version and final635; not claimed as final-hash rerun"
+  },
+  "interpretation": "No new durability regression observed in the bounded current-baseline comparison; not unconditional immediate reload safety.",
+  "other_external_reviews": [
+    {
+      "path": "evidence/r24-review-stability/final635/session/result.json",
+      "checks": 10,
+      "ok": true,
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "source_unchanged": true,
+      "errors": []
+    },
+    {
+      "path": "evidence/r24-review-stability/final635/concurrency/result.json",
+      "checks": 10,
+      "ok": true,
+      "app_sha256": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
+      "source_unchanged": true,
+      "errors": []
+    }
+  ]
+}

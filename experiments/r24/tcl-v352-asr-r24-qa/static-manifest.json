@@ -1,8 +1,8 @@
 {
-  "version": "r24-smooth-mobile-20261116",
+  "version": "r24-review-stability-20261116",
   "files": {
     "app-config.json": "52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511",
-    "app.js": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+    "app.js": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
     "asr-glossary.mjs": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
     "asr-normalize.mjs": "9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13",
     "glossary-ui.mjs": "e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb",
@@ -14,7 +14,7 @@
     "lib/xls.js": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c",
     "lib/zip.js": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4",
     "r23-model-choice.js": "c8dad8eb7a9e9a564e8013329f69c671f724ea38a15b1ee17299ac36b9e07596",
-    "style.css": "66a6d397a963532e9ef24223dd425867439528c22e5e2f998635bb30611a4ec4",
+    "style.css": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
     "training-boards.json": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11",
     "vendor/opencc/LICENSE": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e",
     "vendor/opencc/LICENSES/Apache-2.0.txt": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308",

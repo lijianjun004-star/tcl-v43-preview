@@ -1,0 +1,192 @@
+{
+  "mode": "Independent native Chromium/IndexedDB probes with synthetic 61-turn checkpoint and silent WAV.\nThe HTTP handler appends only temporary internal test accessors; no product file is edited.\n",
+  "app_sha256": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6",
+  "checks": {
+    "overview_keeps_summary_unmounted": {
+      "pass": true,
+      "detail": null
+    },
+    "first_page_is_20_rows": {
+      "pass": true,
+      "detail": null
+    },
+    "all_61_rows_reachable": {
+      "pass": true,
+      "detail": null
+    },
+    "dirty_editor_survives_append_and_status_updates": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.256582,
+        "status": "人工构造第1题：如何核对型号与接口？查看本题参考与来源原问题：人工构造第1题：如何核对型号与接口？本题参考回答（开场资料快照）人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。应覆盖的重点型号接口型号：PERF-M1SKU（上下文）：PERF-SKU1资料来源：人工性能样本行定位：人工第1行来源：人工性能夹具2秒20秒人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。查看模型识别原文查看 Whisper 识别候选（未覆盖当前回答）采用此候选回答保存本题修改将整场文字填入本题人工状态更新14准备Vosk并补转写"
+      }
+    },
+    "playing_audio_keeps_node_url_and_playback": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.256582,
+        "status": "人工构造第1题：如何核对型号与接口？查看本题参考与来源原问题：人工构造第1题：如何核对型号与接口？本题参考回答（开场资料快照）人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。人工构造参考答案，仅作性能测量；核对型号和接口。应覆盖的重点型号接口型号：PERF-M1SKU（上下文）：PERF-SKU1资料来源：人工性能样本行定位：人工第1行来源：人工性能夹具2秒20秒人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。人工构造主播回答：依据资料核对型号和接口。查看模型识别原文查看 Whisper 识别候选（未覆盖当前回答）采用此候选回答保存本题修改将整场文字填入本题人工状态更新14准备Vosk并补转写"
+      }
+    },
+    "other_row_updates_while_first_editor_dirty": {
+      "pass": true,
+      "detail": null
+    },
+    "unsaved_editor_does_not_change_snapshot": {
+      "pass": true,
+      "detail": null
+    },
+    "other_question_save_preserves_dirty_editor_and_playback": {
+      "pass": true,
+      "detail": {
+        "sameEditor": true,
+        "draft": "尚未保存的人工草稿末字甲",
+        "dirty": "true",
+        "sameAudio": true,
+        "sameSrc": true,
+        "playing": true,
+        "time": 0.450463
+      }
+    },
+    "leaving_details_pauses_audio": {
+      "pass": true,
+      "detail": null
+    },
+    "return_details_preserves_dirty_draft": {
+      "pass": true,
+      "detail": null
+    },
+    "save_dirty_editor_persists_latest_text": {
+      "pass": true,
+      "detail": null
+    },
+    "post_text_stage_switch_flushes_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "replay_to_details_flushes_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "pagehide_immediate_reload_flushes_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "submission_contains_all_61_saved_turns": {
+      "pass": true,
+      "detail": null
+    },
+    "immediate_submit_keeps_checkpoint_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "immediate_next_flushes_previous_answer": {
+      "pass": true,
+      "detail": null
+    },
+    "clear_cancels_earlier_debounced_text": {
+      "pass": true,
+      "detail": {
+        "id": "e56fc110-27c3-4844-b68a-90d991e632c7",
+        "runId": "41753d78-272a-429e-918f-2ecf87757f5c",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "questionId": "seed-01-2",
+        "question": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？",
+        "referenceAnswer": "",
+        "source": "16板块研究底稿 · 教学示例（不作为正式标准答案）",
+        "kind": "seed",
+        "model": "",
+        "sku": "",
+        "sourceRef": "",
+        "sourceLocators": [],
+        "prompt": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？",
+        "trainingHint": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？",
+        "stage": "价格及成交",
+        "variantId": "seed-question",
+        "keyPoints": [
+          "实时售价与活动条件",
+          "平台优惠与品牌承诺边界",
+          "送装/售后/退改范围",
+          "不承诺最低价/补贴/库存"
+        ],
+        "pointKeywords": [
+          [
+            "实时售价",
+            "当前价格",
+            "页面价格",
+            "结算价格",
+            "活动条件",
+            "优惠门槛",
+            "券使用条件"
+          ],
+          [
+            "平台券",
+            "店铺券",
+            "品牌承诺",
+            "活动叠加",
+            "平台活动"
+          ],
+          [
+            "送装",
+            "安装",
+            "售后",
+            "退换",
+            "退改",
+            "物流"
+          ],
+          [
+            "最低价",
+            "国家补贴",
+            "补贴",
+            "库存倒计时",
+            "库存紧张",
+            "最后名额"
+          ]
+        ],
+        "responseSeconds": 0.4,
+        "durationSeconds": null,
+        "createdAt": "2026-11-16T20:10:31.119Z",
+        "shownAt": 854.1999999992549,
+        "transcript": "",
+        "answer": "",
+        "autoCapture": false,
+        "asrStatus": "已清空回答（识别原文仍保留）",
+        "pointsHit": [],
+        "compliance": [],
+        "manualCleared": true,
+        "manualEdited": false
+      }
+    },
+    "immediate_finish_keeps_last_character": {
+      "pass": true,
+      "detail": null
+    },
+    "new_practice_reset_flushes_old_owner": {
+      "pass": true,
+      "detail": null
+    },
+    "old_timer_does_not_write_into_new_run": {
+      "pass": true,
+      "detail": null
+    }
+  },
+  "errors": [],
+  "browser": "156.0.8078.79",
+  "status": "PASS",
+  "app_sha256_after": "60d06449fdcff6e9ff8831f27508e17c3837cc37c6c24002a493c34772f3d1f6",
+  "source_unchanged": true
+}

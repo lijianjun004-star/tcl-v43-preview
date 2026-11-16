@@ -1,0 +1,31 @@
+{
+  "mode": "Actual Chromium with touch and mobile viewport emulation; synthetic long URL/QA; 460px height resize is not a physical keyboard",
+  "widths": [
+    320,
+    390,
+    768,
+    1024
+  ],
+  "observations_each": 68,
+  "before": {
+    "style_sha256": "9fd8d441e2e81bb6ab0cfa2e4d1d1120a60155dfc6ac12d748187b067f4400ed",
+    "states_with_sub16_controls": 61,
+    "page_overflow_states": 7,
+    "live_blur_layers": 6
+  },
+  "after": {
+    "style_sha256": "bab5d63331e487b77636249078a8231db534210ef9cd8773d03c8adb0e0a1263",
+    "states_with_sub16_controls": 0,
+    "page_overflow_states": 0,
+    "live_blur_layers": 0,
+    "all_viewport_widths_and_scale_stable": true,
+    "errors": [],
+    "style_unchanged_during_test": true
+  },
+  "limits": [
+    "No physical iPhone or Android keyboard test",
+    "Sub-16px fonts were directly measured; iOS focus autozoom itself was not reproduced in Chromium",
+    "Reduced live backdrop layers are measured; no independent FPS improvement claim",
+    "Pinch/browser accessibility zoom remains available"
+  ]
+}

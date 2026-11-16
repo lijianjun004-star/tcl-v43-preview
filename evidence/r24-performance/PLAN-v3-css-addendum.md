@@ -1,0 +1,3 @@
+# v3 候选采样前补记
+
+候选采样尚未启动时，根代理提供最终CSS 35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2：在当前smooth-mobile CSS上增补长来源URL、min-width和touch规则。冻结候选目录已同步此CSS；此前66a6 CSS的预拷贝从未测量。app仍8dfa7598，bridge/Worker不变。当前基线1af535原22文件采样不变；v3评分条件、样本数与采样脚本不变。最终冻结全文件哈希见candidate-8dfa7598-freeze.json。

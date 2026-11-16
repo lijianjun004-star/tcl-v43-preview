@@ -1,0 +1,128 @@
+{
+  "status": "PASS",
+  "scope": "Actual Chromium + exact Transformers.js 3.8.1 / fixed ORT dependency, manually generated 1024x1024 MatMul. No real Whisper model, speech, mobile hardware or accuracy claim.",
+  "synthetic_onnx_bytes": 223,
+  "synthetic_onnx_sha256": "a9df901d23aa939d6d74ac693db05ac8812a42093b41618e8f71df8d59f2cfc0",
+  "matrix_size": 1024,
+  "repeats": 3,
+  "cases": [
+    {
+      "proxy": false,
+      "status": "PASS",
+      "result": {
+        "loadMs": 1129.1000000014901,
+        "runs": [
+          {
+            "ms": 115.40000000223517,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 105.89999999850988,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 95.19999999925494,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          }
+        ],
+        "heartbeatCount": 45,
+        "maxHeartbeatGapMs": 115.89999999850988,
+        "longTasks": [
+          {
+            "start": 1021,
+            "duration": 817
+          },
+          {
+            "start": 1906,
+            "duration": 115
+          },
+          {
+            "start": 2156,
+            "duration": 106
+          },
+          {
+            "start": 2396,
+            "duration": 95
+          }
+        ],
+        "envProxy": false,
+        "envNumThreads": 1,
+        "crossOriginIsolated": false
+      },
+      "seconds": 2.58,
+      "workers": [],
+      "page_errors": [],
+      "requests": [
+        "http://127.0.0.1:34815/",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "http://127.0.0.1:34815/synthetic/config.json",
+        "http://127.0.0.1:34815/synthetic/onnx/model.onnx",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ],
+      "unexpected_external_requests": []
+    },
+    {
+      "proxy": true,
+      "status": "PASS",
+      "result": {
+        "loadMs": 1096.5,
+        "runs": [
+          {
+            "ms": 124,
+            "heartbeatTicksDuringRun": 11,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 135.59999999776483,
+            "heartbeatTicksDuringRun": 12,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 95.59999999776483,
+            "heartbeatTicksDuringRun": 9,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          }
+        ],
+        "heartbeatCount": 76,
+        "maxHeartbeatGapMs": 27.800000000745058,
+        "longTasks": [],
+        "envProxy": true,
+        "envNumThreads": 1,
+        "crossOriginIsolated": false
+      },
+      "seconds": 2.437,
+      "workers": [
+        "blob:http://127.0.0.1:34815/7aeb6992-850a-463f-ba0d-d32e2b14b749"
+      ],
+      "page_errors": [],
+      "requests": [
+        "http://127.0.0.1:34815/",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "http://127.0.0.1:34815/synthetic/config.json",
+        "http://127.0.0.1:34815/synthetic/onnx/model.onnx",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "blob:http://127.0.0.1:34815/7aeb6992-850a-463f-ba0d-d32e2b14b749",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ],
+      "unexpected_external_requests": []
+    }
+  ],
+  "browser": "156.0.8078.79"
+}

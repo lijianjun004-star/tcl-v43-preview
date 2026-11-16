@@ -1,0 +1,8 @@
+{
+  "created_utc": "2026-11-16T20:25:23.650457+00:00",
+  "plan_sha256": "1fc230eb1ecc40bd682f158e4d738853e7ac47bf060f5d10167fa596ff6b220e",
+  "sampler_sha256": "939c6cfb10cddf6d3026e04243d8b8052ac17f88aaf1df7424c0db23ba9731e2",
+  "baseline_app_sha256": "1af535545457ba38a0ecd162020ee47ae43340f1855a6945a27fade10e461e80",
+  "candidate_app_sha256": "8dfa75983e44ce04d6e3620a2080fef51354a71a89c56c4ef935f281605dc332",
+  "status": "PLAN_FROZEN_BEFORE_V3_BASELINE_AND_CANDIDATE_MEASUREMENT"
+}

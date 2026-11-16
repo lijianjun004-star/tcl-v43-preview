@@ -1,0 +1,127 @@
+{
+  "status": "PASS",
+  "scope": "Actual Chromium + exact Transformers.js 3.8.1 / fixed ORT dependency, manually generated 1024x1024 MatMul. No real Whisper model, speech, mobile hardware or accuracy claim.",
+  "synthetic_onnx_bytes": 223,
+  "synthetic_onnx_sha256": "a9df901d23aa939d6d74ac693db05ac8812a42093b41618e8f71df8d59f2cfc0",
+  "matrix_size": 1024,
+  "repeats": 3,
+  "script_sha256": "4ab1fea2b5f1875de4b4f769b11fb5899f11b6543470a5a78b197f18b6fb2b65",
+  "cases": [
+    {
+      "proxy": false,
+      "status": "PASS",
+      "result": {
+        "loadMs": 981.1999999992549,
+        "measurementStart": 1599.9000000022352,
+        "runs": [
+          {
+            "ms": 90.69999999925494,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 86.60000000149012,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 84.90000000223517,
+            "heartbeatTicksDuringRun": 0,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          }
+        ],
+        "heartbeatCount": 46,
+        "maxHeartbeatGapMs": 91.39999999850988,
+        "longTasks": [
+          {
+            "start": 1690.7000000029802,
+            "duration": 90
+          },
+          {
+            "start": 1930.2000000029802,
+            "duration": 86
+          },
+          {
+            "start": 2150.300000000745,
+            "duration": 85
+          }
+        ],
+        "envProxy": false,
+        "envNumThreads": 1,
+        "crossOriginIsolated": false
+      },
+      "seconds": 2.319,
+      "workers": [],
+      "page_errors": [],
+      "requests": [
+        "http://127.0.0.1:39371/",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "http://127.0.0.1:39371/synthetic/config.json",
+        "http://127.0.0.1:39371/synthetic/onnx/model.onnx",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ],
+      "unexpected_external_requests": []
+    },
+    {
+      "proxy": true,
+      "status": "PASS",
+      "result": {
+        "loadMs": 1206.699999999255,
+        "measurementStart": 1721,
+        "runs": [
+          {
+            "ms": 90,
+            "heartbeatTicksDuringRun": 8,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 101,
+            "heartbeatTicksDuringRun": 9,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          },
+          {
+            "ms": 88.60000000149012,
+            "heartbeatTicksDuringRun": 8,
+            "first": 128,
+            "last": 128,
+            "length": 1048576
+          }
+        ],
+        "heartbeatCount": 68,
+        "maxHeartbeatGapMs": 26.300000000745058,
+        "longTasks": [],
+        "envProxy": true,
+        "envNumThreads": 1,
+        "crossOriginIsolated": false
+      },
+      "seconds": 2.423,
+      "workers": [
+        "blob:http://127.0.0.1:39371/3ddbdaef-43dd-4072-84d2-d8dbc52f3cee"
+      ],
+      "page_errors": [],
+      "requests": [
+        "http://127.0.0.1:39371/",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "http://127.0.0.1:39371/synthetic/config.json",
+        "http://127.0.0.1:39371/synthetic/onnx/model.onnx",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1",
+        "blob:http://127.0.0.1:39371/3ddbdaef-43dd-4072-84d2-d8dbc52f3cee",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ],
+      "unexpected_external_requests": []
+    }
+  ],
+  "browser": "156.0.8078.79"
+}

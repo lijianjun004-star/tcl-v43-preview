@@ -1,0 +1,1 @@
+Initial local --verify-pr invocation used literal HEAD and was rejected with Expected pinned Git commit SHA before inspecting product. Corrected to the full resolved 40-character head below; policy was not changed.
