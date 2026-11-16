@@ -715,6 +715,15 @@ class R21TrustedStageTests(unittest.TestCase):
         self.assertNotIn('unzip -o',gate.R21_STEP)
         self.assertEqual(old.count('      - uses: actions/configure-pages@v5\n'),1)
 
+
+class RealModelOneShotGateTests(unittest.TestCase):
+    def test_manual_asr_probe_is_separate_from_pages_release(self):
+        policy=Path(gate.__file__).read_text(encoding='utf-8')
+        self.assertIn('.github/workflows/r21-real-model-smoke.yml', policy)
+        self.assertIn('release-ci/r21_real_model_probe.py', policy)
+        self.assertIn("permissions:\\n  contents: read",policy)
+        self.assertNotIn("r21-real-model-smoke.yml' |",policy)
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
