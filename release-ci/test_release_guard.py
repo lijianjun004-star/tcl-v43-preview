@@ -1383,6 +1383,216 @@ class R24ReviewStabilityUpdateTests(unittest.TestCase):
                 gate.r24_resource_bytes(self.review_encoded)
 
 
+class R25AdditiveReleaseTests(unittest.TestCase):
+    """R2.5 archive validation and isolation, with no network or real model execution."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        names = tuple(gate.R25_ASSET_HASHES)
+        self.resources = {name: (b'export const fixture = true;' if name.endswith(('.js', '.mjs'))
+                                else b'fixture') for name in names}
+        self.before = 'name: Protected fixture\n' + gate.LAB_ANCHOR
+        self.baseline = {'index.html': b'old root',
+                         'tcl-v352-asr-r24-qa/app.js': b'old R24'}
+        self.site = self.root / 'site'
+        self.make_site(self.site)
+        patches = dict(R25_ARCHIVE_B64_SHA='', R25_ARCHIVE_SHA='', R25_ASSET_HASHES={},
+                       R25_BASELINE_WORKFLOW_SHA=gate.sha256(self.before.encode()),
+                       R25_BASELINE_FILES=len(self.baseline), R25_BASELINE_TREE_SHA='')
+        patcher = mock.patch.multiple(gate, **patches)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.set_baseline_pin(self.site)
+        self.freeze()
+
+    def make_site(self, site):
+        for name, data in self.baseline.items():
+            target = site / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        return site
+
+    def set_baseline_pin(self, site):
+        hashes = gate.r25_tree_hashes(site)
+        gate.R25_BASELINE_TREE_SHA = gate.sha256(json.dumps(
+            hashes, sort_keys=True, separators=(',', ':')).encode())
+
+    def freeze(self, resources=None, update_assets=True, version=None, entry_type=None):
+        source = dict(self.resources if resources is None else resources)
+        source['static-manifest.json'] = json.dumps({
+            'version': version or gate.R25_VERSION,
+            'files': {n: gate.sha256(v) for n, v in source.items() if n != 'static-manifest.json'},
+        }, sort_keys=True).encode()
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in source.items():
+                info = zipfile.ZipInfo(gate.R25_DEST + '/' + name)
+                info.external_attr = (entry_type if entry_type is not None else 0o100644) << 16
+                archive.writestr(info, data)
+        self.raw = buf.getvalue()
+        self.encoded = base64.b64encode(self.raw) + b'\n'
+        gate.R25_ARCHIVE_SHA = gate.sha256(self.raw)
+        gate.R25_ARCHIVE_B64_SHA = gate.sha256(self.encoded)
+        if update_assets:
+            gate.R25_ASSET_HASHES = {n: gate.sha256(v) for n, v in source.items()}
+        self.frozen_resources = source
+        self.archive = self.root / 'r25.zip.b64'
+        self.archive.write_bytes(self.encoded)
+
+    def test_exact_static_bundle_stages_and_preserves_all_older_bytes(self):
+        self.assertEqual(gate.r25_resource_bytes(self.encoded), self.frozen_resources)
+        report = gate.stage_r25(self.site, self.archive)
+        self.assertEqual(report['files'], 22)
+        self.assertEqual(report['old_assets_unchanged'], len(self.baseline))
+        self.assertEqual(report['total_assets'], len(self.baseline) + 22)
+        for name, data in self.baseline.items():
+            self.assertEqual((self.site / name).read_bytes(), data)
+
+    def test_encoded_hash_or_size_mutation_rejected(self):
+        for data in (self.encoded + b'\n', b'x' * (gate.R25_MAX_ENCODED_BYTES + 1)):
+            with self.assertRaisesRegex(gate.GateFailure, 'encoded archive'):
+                gate.r25_resource_bytes(data)
+
+    def test_zip_hash_mismatch_rejected(self):
+        with mock.patch.object(gate, 'R25_ARCHIVE_SHA', '0' * 64):
+            with self.assertRaisesRegex(gate.GateFailure, 'ZIP archive'):
+                gate.r25_resource_bytes(self.encoded)
+
+    def test_unfrozen_policy_rejected(self):
+        with mock.patch.object(gate, 'R25_ARCHIVE_SHA', 'PENDING'):
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.encoded)
+
+    def test_repacked_resource_mutation_still_rejected_by_asset_pin(self):
+        changed = dict(self.resources, **{'app.js': b'export const changed = 1;'})
+        self.freeze(changed, update_assets=False)
+        with self.assertRaisesRegex(gate.GateFailure, 'resource hash'):
+            gate.r25_resource_bytes(self.encoded)
+
+    def test_added_or_missing_resources_rejected_even_if_repinned(self):
+        for add in (True, False):
+            changed = dict(self.resources)
+            if add:
+                changed['extra.js'] = b'export const surprise = 1;'
+            else:
+                del changed['app.js']
+            self.freeze(changed)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.encoded)
+
+    def test_wrong_destination_is_rejected(self):
+        raw = self.raw.replace(gate.R25_DEST.encode(), b'tcl-v352-asr-r24-qa')
+        encoded = base64.b64encode(raw) + b'\n'
+        with mock.patch.multiple(gate, R25_ARCHIVE_SHA=gate.sha256(raw),
+                                 R25_ARCHIVE_B64_SHA=gate.sha256(encoded)):
+            with self.assertRaises(gate.GateFailure):
+                gate.r25_resource_bytes(encoded)
+
+    def test_symlink_and_empty_members_rejected(self):
+        self.freeze(entry_type=0o120777)
+        with self.assertRaises(gate.GateFailure):
+            gate.r25_resource_bytes(self.encoded)
+        changed = dict(self.resources, **{'app.js': b''})
+        self.freeze(changed)
+        with self.assertRaisesRegex(gate.GateFailure, 'size invalid'):
+            gate.r25_resource_bytes(self.encoded)
+
+    def test_manifest_version_is_not_accepted_by_repinned_hash_alone(self):
+        self.freeze(version='unreviewed-version')
+        with self.assertRaisesRegex(gate.GateFailure, 'manifest version'):
+            gate.r25_resource_bytes(self.encoded)
+
+    def test_existing_route_is_never_overwritten(self):
+        output = self.site / gate.R25_DEST
+        output.mkdir()
+        (output / 'index.html').write_bytes(b'keep')
+        with self.assertRaisesRegex(gate.GateFailure, 'refuse overwrite'):
+            gate.stage_r25(self.site, self.archive)
+        self.assertEqual((output / 'index.html').read_bytes(), b'keep')
+
+    def test_missing_extra_or_mutated_old_assets_fail_closed(self):
+        for mode in ('missing', 'extra', 'changed'):
+            site = self.make_site(self.root / mode)
+            root = site / 'index.html'
+            if mode == 'missing':
+                root.unlink()
+            elif mode == 'extra':
+                (site / 'extra.html').write_bytes(b'extra')
+            else:
+                root.write_bytes(b'changed root')
+            with self.assertRaisesRegex(gate.GateFailure, 'protected Pages tree'):
+                gate.stage_r25(site, self.archive)
+            self.assertFalse((site / gate.R25_DEST).exists())
+
+    def test_existing_symlink_is_rejected(self):
+        (self.site / 'outside').symlink_to(self.root, target_is_directory=True)
+        with self.assertRaisesRegex(gate.GateFailure, 'symlinks'):
+            gate.stage_r25(self.site, self.archive)
+        self.assertFalse((self.site / gate.R25_DEST).exists())
+
+    def test_old_asset_change_during_final_rename_is_detected(self):
+        original = Path.rename
+        old = self.site / 'index.html'
+        def concurrent_change(path, target):
+            result = original(path, target)
+            if Path(target) == self.site / gate.R25_DEST:
+                old.write_bytes(b'changed during final rename')
+            return result
+        with mock.patch.object(Path, 'rename', concurrent_change):
+            with self.assertRaisesRegex(gate.GateFailure, 'during staging'):
+                gate.stage_r25(self.site, self.archive)
+
+    def test_invalid_javascript_never_publishes_partial_route(self):
+        changed = dict(self.resources, **{'app.js': b'function { invalid'})
+        self.freeze(changed)
+        with self.assertRaisesRegex(gate.GateFailure, 'syntax check'):
+            gate.stage_r25(self.site, self.archive)
+        self.assertFalse((self.site / gate.R25_DEST).exists())
+        self.assertEqual((self.site / 'index.html').read_bytes(), self.baseline['index.html'])
+
+    def rebuild_fixture(self, root, zipbytes, trusted):
+        return self.make_site(root / '_site')
+
+    def test_exact_addition_and_reverse_only_rollback(self):
+        after = self.before.replace(gate.LAB_ANCHOR, gate.r25_stage_step() + gate.LAB_ANCHOR)
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            result = gate.verify_r25_additive_release(self.before, after, self.encoded, b'fixture', {})
+            self.assertEqual(result['total_assets'], len(self.baseline) + 22)
+            result = gate.verify_r25_rollback(after, self.before, self.encoded, b'fixture', {})
+            self.assertEqual(result['protected_assets'], len(self.baseline))
+
+    def test_workflow_changes_outside_single_insertion_or_removal_fail(self):
+        after = self.before.replace(gate.LAB_ANCHOR, gate.r25_stage_step() + gate.LAB_ANCHOR)
+        for before, newer in ((self.before + '# extra\n', after),
+                              (self.before, after + '# extra\n'),
+                              (self.before, self.before),
+                              (self.before, after.replace('python3', 'python3 -I', 1))):
+            with self.assertRaises(gate.GateFailure):
+                gate.verify_r25_additive_release(before, newer, self.encoded, b'fixture', {})
+        for current, rolled in ((after, self.before + '# extra\n'),
+                                (after + '# extra\n', self.before), (after, after)):
+            with self.assertRaises(gate.GateFailure):
+                gate.verify_r25_rollback(current, rolled, self.encoded, b'fixture', {})
+
+    def test_rebuild_requires_exact_trusted_set_zip_and_current_r24(self):
+        trusted = {n: b'fixture' for n in gate.R25_TRUSTED_INPUTS}
+        with self.assertRaisesRegex(gate.GateFailure, 'input set'):
+            gate.r25_rebuild_previous_stages(self.root, b'', {})
+        with self.assertRaisesRegex(gate.GateFailure, 'site.zip'):
+            gate.r25_rebuild_previous_stages(self.root, b'', trusted)
+        with mock.patch.object(gate, 'LAB_BASELINE_ZIP_SHA256', gate.sha256(b'fixture')):
+            with self.assertRaisesRegex(gate.GateFailure, 'current R2.4'):
+                gate.r25_rebuild_previous_stages(self.root, b'fixture', trusted)
+
+    def test_source_or_archive_only_changes_do_not_match_release_class(self):
+        for paths in (gate.R25_ARCHIVE + '\n',
+                gate.R25_ARCHIVE + '\n.github/workflows/pages.yml\nexperiments/r25/app.js\n'):
+            with mock.patch.object(gate.subprocess, 'check_output', return_value=paths):
+                with self.assertRaises(gate.GateFailure):
+                    gate.verify_pr('a' * 40, 'b' * 40)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
