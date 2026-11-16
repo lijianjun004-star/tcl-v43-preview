@@ -557,3 +557,15 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 原入口 https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 已上线。公网217资源单轮全部HTTP200/SHA匹配，实际文字练播→复盘→刷新恢复通过，无页面错误及外部/模型请求。
 - 最终同hash完整公网题库32项通过（原31业务检查+实际加载版本检查）；16份浏览器实际app.js响应均HTTP200且正文SHA为63519c，app/parser/qa首尾hash不变，页面错误0。证据evidence/r24-performance/public-question-bank/。
 - 回滚通过独立PR恢复上一smooth-mobile归档faf17c031db0dc12f6bd962c72bef2bc80891fcdb189841d7eb6de7b994ab3a1，精确五版本门禁只允许相邻版本更新/回滚；不清理本机记录、不改其他旧站点、不退回没有Worker的更旧版本。
+
+## R24 smooth Gemini 路由核对最终结果（2026-11-16）
+
+用户纠正“先工作再Argon”后，运行 f5347a75-f89a-4a43-a05f-2b6b41ec1892 未找到工作入口、未证实最终 Argon 状态，却违反明确停发条件发送1条；仅返回“我只是一个语言模型，不具备这方面的信息或能力，因此无法帮到你。”，最终 Flash-Lite 标签也仅据工具报告，实际推理模型未证实。连同首次 smooth 请求 b5c0f550…，最终实际业务计数2、自动重试0，均无附件读取校验或实质复验。安全过滤、附件格式等原因均未证实。
+
+用户随后说“都可以交给你”。只读诊断 ec57bba1-9b38-4cfe-b684-e589e82dcb6b 已完成，工具报告业务消息0条：composer Argon、重开菜单 aria-checked=true/selected/勾选、关菜单后仍Argon三处一致。当前检查界面未找到工作入口。此为UI选择状态观察，不证明后端模型执行；工具“可能是timing”的解释仅为推测，先前失配原因未知。
+
+据后续授权另派的 c4115e63-7d52-4a23-926c-d67155d35208 已结束，新增业务消息0条、状态 BLOCKED_COMPOSER_INPUT。返回报告重新核对Argon label/menu勾选，旧对话可见原冻结文件；但输入动作虽报Success，placeholder始终未变，未写入/发送新提示词、未产生新回复。再次看见的拒绝属于既有对话，不是新的Argon拒绝。输入失败原因未知，不把富文本/页面状态推测当事实。额外1条业务预算未使用，总预算3不等于已发3；smooth最终实际仍2。已停止进一步浏览器路线，不新增尝试或自动重试。
+
+输入仍489478 bytes、SHA256 bdd93ef0fbd7c10346994cd3b4b2d28a434cdb83270933947ac56f2123728314。本轮未修改产品，Gemini实质复验仍未完成；远端最新版本另见下段。完整证据见源码分支fix/r24-smooth-mobile-20261116提交a28312b的evidence/r24-smooth-gemini/WORK-ARGON-OUTCOME.md、ui-diagnosis-result.json、verified-argon-result.json及各task/start记录。
+
+收尾重新读取实时main为6cb913b（PR122），已另有review-stability发布（app63519c50…）；本轮489478字节/bdd93ef0…附件仍是此前smooth（app1af53554…）。本轮无产品改动不等于远端未更新；Gemini仍未复验当前review-stability。后续恢复审查须按实时main重新冻结，不能复用旧附件当最新。
