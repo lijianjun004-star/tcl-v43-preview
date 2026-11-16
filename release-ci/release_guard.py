@@ -640,7 +640,7 @@ def verify_autoqa_namespace_patch(workflow, bundle, source_files):
 
 # R2.1: one exact additional test route; input source is a SHA-pinned archive.
 R21_ARCHIVE = 'experiments/r6-asr-autoqa-r2/audited-source.tar.gz.b64'
-R21_ARCHIVE_B64_SHA = 'fb5cfbea6640b671c13c1c73695e872f08b7cb8bf4c22ce24679d80b44eb4b76'
+R21_ARCHIVE_B64_SHA = 'c5c4488a2590f71416714bcd08efdc46b6fcb9653359cda435b18edd9d8ede10'
 R21_APP_SHA = '7496a246552636f7d22d23826b520254bf41e1c500102bd3e5d268a8cabc83e8'
 R21_STEP = (
     '      - name: Stage R2.1 isolated original-audio ASR pilot\n'
