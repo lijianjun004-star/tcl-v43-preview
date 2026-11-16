@@ -1,0 +1,16 @@
+{
+  "app_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "board_count": 16,
+  "exercise_count": 48,
+  "legacy_card_count": 65,
+  "policy_source_count": 13,
+  "checked_static_resources": 20,
+  "hash_mismatches": [],
+  "structure_issues": [],
+  "approved_for_live": false,
+  "legacy_not_authoritative_claims": true,
+  "notes": [
+    "Built-in teaching and legacy content, not actual user browser records or the private 244-entry TCL corpus.",
+    "Structural/source-key validation only; not independent external validation of product/policy facts."
+  ]
+}

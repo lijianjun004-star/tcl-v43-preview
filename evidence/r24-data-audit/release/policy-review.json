@@ -1,0 +1,9 @@
+{
+  "reviewer": "independent Codex subagent /root/release_audit/update_gate_review",
+  "findings": [],
+  "scope": "Same-route archive-only frozen old/new update and exact rollback; code review plus 25 focused tests and real old archive parse",
+  "gate_code_sha_before_new_pins": "f6a395f24eee38c6c3a179bc1e10be06fd26988f105be182f20308131b247b32",
+  "tests_sha256": "839c2c970a9fb5f071be50f051523b96d3a64c7ba5f19c19a92738be1af5caa5",
+  "pending_at_review": "New production archive and pins not yet frozen; final full two-version staging still required",
+  "gemini_review": false
+}

@@ -1,14 +1,14 @@
 from pathlib import Path
 import json,hashlib,urllib.request,urllib.parse,concurrent.futures,time,traceback,os
 from playwright.sync_api import sync_playwright
-repo=Path(__file__).resolve().parents[3];out=repo/'evidence/r24-delivery/public';out.mkdir(exist_ok=True)
+repo=Path(__file__).resolve().parents[3];out=Path(os.environ.get('R24_PUBLIC_OUT',str(repo/'evidence/r24-delivery/public')));out.mkdir(parents=True,exist_ok=True)
 base='https://lijianjun004-star.github.io/tcl-v43-preview/'
-expected=json.loads((repo/'evidence/r24-delivery/release/final-pages-sha256.json').read_text())
+expected=json.loads(Path(os.environ.get('R24_PUBLIC_EXPECTED',str(repo/'evidence/r24-delivery/release/final-pages-sha256.json'))).read_text())
 if 'files' in expected:expected=expected['files']
 def fetch(kv):
  name,digest=kv
  if isinstance(digest,dict):digest=digest['sha256']
- url=base+urllib.parse.quote(name,safe='/')+'?r24=b086a0c5'
+ url=base+urllib.parse.quote(name,safe='/')+'?r24='+str(digest)[:12]
  try:
   with urllib.request.urlopen(url,timeout=40) as r:data=r.read();status=r.status
   actual=hashlib.sha256(data).hexdigest();return {'path':name,'status':status,'sha256':actual,'matches':actual==digest}

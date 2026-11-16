@@ -1,0 +1,72 @@
+{
+  "mode": "actual Chromium UI + native IndexedDB; synthetic text-only fixtures, no model/network services",
+  "app_sha256": "077a26f83c5e7035c4ec0ebe1c773c07af5760a4547d2a058d9347bdef833534",
+  "checks": {
+    "different_question_conflict_atomic": true,
+    "stale_submission_reproduced": true
+  },
+  "errors": [],
+  "stale_submission": [
+    {
+      "id": "61214c4d-c152-4b6b-83e5-f1aa4105711a",
+      "sessionId": "5d5aba03-4421-4a5a-bf69-a09e991a3ffe",
+      "assignmentId": "",
+      "operatorName": "合成运营",
+      "anchorName": "并发回归主播",
+      "boardId": "01",
+      "category": "TCL 电视",
+      "platform": "京东",
+      "submittedAt": "2026-11-16T18:49:55.372Z",
+      "durationSeconds": 0,
+      "turns": [
+        {
+          "id": "bf77252e-9986-45ae-8775-998c18962cef",
+          "prompt": "刚装修完，电视怎么挑??",
+          "trainingHint": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+          "answer": "原始第一题",
+          "transcript": "",
+          "rawTranscript": "",
+          "manualEdited": true,
+          "manualCleared": false,
+          "responseSeconds": 0.1,
+          "durationSeconds": null,
+          "pointsHit": [],
+          "keyPoints": [
+            "观看用途",
+            "观看距离与空间",
+            "预算范围",
+            "安装/服务条件"
+          ],
+          "compliance": [],
+          "asrStatus": "手动填写（草稿已存）"
+        },
+        {
+          "id": "87490368-45b7-4123-a814-730ea98d95bc",
+          "prompt": "能分期吗？",
+          "trainingHint": "京东/天猫上的价格、优惠、送装和售后怎么合规确认？",
+          "answer": "B第二题尚未保存",
+          "transcript": "",
+          "rawTranscript": "",
+          "manualEdited": true,
+          "manualCleared": false,
+          "responseSeconds": 0.1,
+          "durationSeconds": null,
+          "pointsHit": [],
+          "keyPoints": [
+            "实时售价与活动条件",
+            "平台优惠与品牌承诺边界",
+            "送装/售后/退改范围",
+            "不承诺最低价/补贴/库存"
+          ],
+          "compliance": [],
+          "asrStatus": "人工修改（请核对）"
+        }
+      ],
+      "videoRecorded": false,
+      "late": false
+    }
+  ],
+  "source_unchanged": true,
+  "ok": true,
+  "note": "This narrowed probe omitted the prior export-download step; no export claim."
+}

@@ -2,11 +2,11 @@
 """Real Chromium IndexedDB/media persistence; synthetic camera/audio, MOCK Whisper.
 No hardware or speech-accuracy claim. Runs actual production app, no app test hooks.
 """
-import ast,json,pathlib,threading,time,traceback,hashlib
+import ast,json,pathlib,threading,time,traceback,hashlib,os
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from playwright.sync_api import sync_playwright
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT.parents[1]/'evidence/r24-delivery/session';OUT.mkdir(parents=True,exist_ok=True)
+OUT=pathlib.Path(os.environ.get('R24_SESSION_OUT',str(ROOT.parents[1]/'evidence/r24-delivery/session')));OUT.mkdir(parents=True,exist_ok=True)
 tree=ast.parse((ROOT/'tests/browser_e2e.py').read_text()); values={}
 for n in tree.body:
  if isinstance(n,ast.Assign):

@@ -1,0 +1,323 @@
+{
+  "mode": "actual Chromium UI + native IndexedDB, two same-origin tabs; synthetic text-only user data; no model calls",
+  "app_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "errors": [],
+  "after_a": {
+    "checkpoint": {
+      "id": "draft-session:%E5%8F%8C%E6%A0%87%E7%AD%BE%E6%95%B0%E6%8D%AE%E5%AE%A1%E6%9F%A5",
+      "version": 1,
+      "owner": "双标签数据审查",
+      "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+      "snapshot": {
+        "id": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+        "anchorName": "双标签数据审查",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "assignmentId": "",
+        "operatorName": "",
+        "assignmentTitle": "",
+        "startedAt": "2026-11-16T18:43:09.084Z",
+        "endedAt": "2026-11-16T18:43:09.537Z",
+        "durationSeconds": 0,
+        "turns": [
+          {
+            "id": "7d49611f-f9f3-40fd-9242-c041632f5d73",
+            "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+            "boardId": "01",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "prompt": "家里看电影多，选电视看什么？",
+            "trainingHint": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+            "stage": "需求问诊",
+            "variantId": "qv008",
+            "keyPoints": [
+              "观看用途",
+              "观看距离与空间",
+              "预算范围",
+              "安装/服务条件"
+            ],
+            "pointKeywords": [
+              [
+                "看电影",
+                "体育",
+                "游戏",
+                "观看用途",
+                "用途"
+              ],
+              [
+                "观看距离",
+                "客厅大小",
+                "空间",
+                "尺寸",
+                "墙面"
+              ],
+              [
+                "预算",
+                "价位",
+                "价格范围"
+              ],
+              [
+                "安装",
+                "挂墙",
+                "底座",
+                "送装",
+                "服务"
+              ]
+            ],
+            "responseSeconds": 0.1,
+            "durationSeconds": null,
+            "createdAt": "2026-11-16T18:43:09.086Z",
+            "shownAt": 955,
+            "transcript": "",
+            "answer": "第一题A标签已更新",
+            "autoCapture": false,
+            "asrStatus": "人工修改（请核对）",
+            "pointsHit": [],
+            "compliance": [],
+            "manualCleared": false,
+            "manualEdited": true
+          },
+          {
+            "id": "d1a08782-e8db-4dc1-8d4d-aea6544227f4",
+            "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+            "boardId": "01",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "prompt": "分区是什么意思？Q9M Art有吗",
+            "trainingHint": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。",
+            "stage": "产品讲解",
+            "variantId": "qv094",
+            "keyPoints": [
+              "屏幕尺寸",
+              "画质/控光",
+              "刷新率",
+              "接口与证据边界"
+            ],
+            "pointKeywords": [
+              [
+                "尺寸",
+                "屏幕大小",
+                "观看距离"
+              ],
+              [
+                "画质",
+                "控光",
+                "亮度",
+                "对比度",
+                "显示效果"
+              ],
+              [
+                "刷新率",
+                "高刷",
+                "运动画面"
+              ],
+              [
+                "接口",
+                "HDMI",
+                "官方参数",
+                "商品页",
+                "以页面为准"
+              ]
+            ],
+            "responseSeconds": 0.1,
+            "durationSeconds": null,
+            "createdAt": "2026-11-16T18:43:09.317Z",
+            "shownAt": 1186.300000000745,
+            "transcript": "",
+            "answer": "第二题原始答案",
+            "autoCapture": false,
+            "asrStatus": "手动填写（草稿已存）",
+            "pointsHit": [],
+            "compliance": [],
+            "manualCleared": false,
+            "manualEdited": true
+          }
+        ]
+      },
+      "trainingLogId": "dda7a89a-0075-49d9-8b7d-0d1f85c340b4",
+      "videoMeta": null,
+      "mode": "text",
+      "updatedAt": "2026-11-16T18:43:12.138Z",
+      "media": []
+    },
+    "records": [
+      {
+        "id": "7d49611f-f9f3-40fd-9242-c041632f5d73",
+        "answer": "第一题A标签已更新",
+        "question": "家里看电影多，选电视看什么？"
+      },
+      {
+        "id": "d1a08782-e8db-4dc1-8d4d-aea6544227f4",
+        "answer": "第二题原始答案",
+        "question": "分区是什么意思？Q9M Art有吗"
+      }
+    ]
+  },
+  "after_b": {
+    "checkpoint": {
+      "id": "draft-session:%E5%8F%8C%E6%A0%87%E7%AD%BE%E6%95%B0%E6%8D%AE%E5%AE%A1%E6%9F%A5",
+      "version": 1,
+      "owner": "双标签数据审查",
+      "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+      "snapshot": {
+        "id": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+        "anchorName": "双标签数据审查",
+        "boardId": "01",
+        "category": "TCL 电视",
+        "platform": "京东",
+        "assignmentId": "",
+        "operatorName": "",
+        "assignmentTitle": "",
+        "startedAt": "2026-11-16T18:43:09.084Z",
+        "endedAt": "2026-11-16T18:43:09.537Z",
+        "durationSeconds": 0,
+        "turns": [
+          {
+            "id": "7d49611f-f9f3-40fd-9242-c041632f5d73",
+            "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+            "boardId": "01",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "prompt": "家里看电影多，选电视看什么？",
+            "trainingHint": "我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？",
+            "stage": "需求问诊",
+            "variantId": "qv008",
+            "keyPoints": [
+              "观看用途",
+              "观看距离与空间",
+              "预算范围",
+              "安装/服务条件"
+            ],
+            "pointKeywords": [
+              [
+                "看电影",
+                "体育",
+                "游戏",
+                "观看用途",
+                "用途"
+              ],
+              [
+                "观看距离",
+                "客厅大小",
+                "空间",
+                "尺寸",
+                "墙面"
+              ],
+              [
+                "预算",
+                "价位",
+                "价格范围"
+              ],
+              [
+                "安装",
+                "挂墙",
+                "底座",
+                "送装",
+                "服务"
+              ]
+            ],
+            "responseSeconds": 0.1,
+            "durationSeconds": null,
+            "createdAt": "2026-11-16T18:43:09.086Z",
+            "shownAt": 955,
+            "transcript": "",
+            "answer": "第一题原始答案",
+            "autoCapture": false,
+            "asrStatus": "手动填写（草稿已存）",
+            "pointsHit": [],
+            "compliance": [],
+            "manualCleared": false,
+            "manualEdited": true
+          },
+          {
+            "id": "d1a08782-e8db-4dc1-8d4d-aea6544227f4",
+            "runId": "7f9f3a07-e324-4623-b0d9-4dcfa8f66de5",
+            "boardId": "01",
+            "category": "TCL 电视",
+            "platform": "京东",
+            "prompt": "分区是什么意思？Q9M Art有吗",
+            "trainingHint": "这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。",
+            "stage": "产品讲解",
+            "variantId": "qv094",
+            "keyPoints": [
+              "屏幕尺寸",
+              "画质/控光",
+              "刷新率",
+              "接口与证据边界"
+            ],
+            "pointKeywords": [
+              [
+                "尺寸",
+                "屏幕大小",
+                "观看距离"
+              ],
+              [
+                "画质",
+                "控光",
+                "亮度",
+                "对比度",
+                "显示效果"
+              ],
+              [
+                "刷新率",
+                "高刷",
+                "运动画面"
+              ],
+              [
+                "接口",
+                "HDMI",
+                "官方参数",
+                "商品页",
+                "以页面为准"
+              ]
+            ],
+            "responseSeconds": 0.1,
+            "durationSeconds": null,
+            "createdAt": "2026-11-16T18:43:09.317Z",
+            "shownAt": 1186.300000000745,
+            "transcript": "",
+            "answer": "第二题B标签已更新",
+            "autoCapture": false,
+            "asrStatus": "人工修改（请核对）",
+            "pointsHit": [],
+            "compliance": [],
+            "manualCleared": false,
+            "manualEdited": true
+          }
+        ]
+      },
+      "trainingLogId": "dda7a89a-0075-49d9-8b7d-0d1f85c340b4",
+      "videoMeta": null,
+      "mode": "text",
+      "updatedAt": "2026-11-16T18:43:12.264Z",
+      "media": []
+    },
+    "records": [
+      {
+        "id": "7d49611f-f9f3-40fd-9242-c041632f5d73",
+        "answer": "第一题A标签已更新",
+        "question": "家里看电影多，选电视看什么？"
+      },
+      {
+        "id": "d1a08782-e8db-4dc1-8d4d-aea6544227f4",
+        "answer": "第二题B标签已更新",
+        "question": "分区是什么意思？Q9M Art有吗"
+      }
+    ]
+  },
+  "expected_answers": [
+    "第一题A标签已更新",
+    "第二题B标签已更新"
+  ],
+  "checkpoint_answers": [
+    "第一题原始答案",
+    "第二题B标签已更新"
+  ],
+  "lost_update_reproduced": true,
+  "actual_restored_answers": [
+    "第一题原始答案",
+    "第二题B标签已更新"
+  ],
+  "confirmed": true
+}

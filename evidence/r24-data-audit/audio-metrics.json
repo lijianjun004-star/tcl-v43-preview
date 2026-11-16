@@ -1,0 +1,96 @@
+{
+  "scope": "Recompute stored ASR result metrics only; no new inference, audio capture or independent transcript annotation. Same 3 public bank-phone samples for all engines, not TCL business corpus.",
+  "models": {
+    "base": {
+      "samples": [
+        {
+          "source_row": 0,
+          "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+          "hypothesis": "你好我想要了解一下我的银行账会有多少谢谢",
+          "errors": 3,
+          "reference_characters": 22
+        },
+        {
+          "source_row": 1,
+          "reference": "我想查询我目前的账户余额",
+          "hypothesis": "莫向查询我目前的张妇宇儿",
+          "errors": 6,
+          "reference_characters": 12
+        },
+        {
+          "source_row": 2,
+          "reference": "我的账户还有多少钱呢",
+          "hypothesis": "我在账目好多少钱呢",
+          "errors": 4,
+          "reference_characters": 10
+        }
+      ],
+      "errors": 13,
+      "reference_characters": 44,
+      "cer": 0.29545454545454547,
+      "whole_sentence_correct": 0
+    },
+    "tiny": {
+      "samples": [
+        {
+          "source_row": 0,
+          "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+          "hypothesis": "那好想要聊天下我的影响上会有多少谢谢",
+          "errors": 11,
+          "reference_characters": 22
+        },
+        {
+          "source_row": 1,
+          "reference": "我想查询我目前的账户余额",
+          "hypothesis": "我想他先用我目前的张云语",
+          "errors": 7,
+          "reference_characters": 12
+        },
+        {
+          "source_row": 2,
+          "reference": "我的账户还有多少钱呢",
+          "hypothesis": "我在这儿看到多少钱呢",
+          "errors": 5,
+          "reference_characters": 10
+        }
+      ],
+      "errors": 23,
+      "reference_characters": 44,
+      "cer": 0.5227272727272727,
+      "whole_sentence_correct": 0
+    },
+    "vosk": {
+      "samples": [
+        {
+          "source_row": 0,
+          "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+          "hypothesis": "美好想要了解一下我的银行账户余额有多少啊谢谢",
+          "errors": 3,
+          "reference_characters": 22
+        },
+        {
+          "source_row": 1,
+          "reference": "我想查询我目前的账户余额",
+          "hypothesis": "没想查询我面前的账户与",
+          "errors": 4,
+          "reference_characters": 12
+        },
+        {
+          "source_row": 2,
+          "reference": "我的账户还有多少钱呢",
+          "hypothesis": "我的战后着多少钱呢",
+          "errors": 4,
+          "reference_characters": 10
+        }
+      ],
+      "errors": 11,
+      "reference_characters": 44,
+      "cer": 0.25,
+      "whole_sentence_correct": 0
+    }
+  },
+  "sources": {
+    "real-audio.json": "eb1e4e1493f48750ecedae231a93406de57b72d8305d969718b73026059331e0",
+    "real-vosk.json": "74227879504a3f5ef8065a86ad3d97f31a9618da03e5d6499ea620648894c60e"
+  }
+}

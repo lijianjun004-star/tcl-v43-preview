@@ -1,0 +1,13 @@
+{
+  "mode": "actual Chromium UI + native IndexedDB; synthetic text-only fixtures, no model/network services",
+  "app_sha256": "88b3ce2a8a9cf889f1579337f6d78f83e03dbf3c9bff6fffbb41f1ca0e25e900",
+  "checks": {
+    "different_question_conflict_atomic": true,
+    "stale_submission_blocked": true,
+    "rejected_submission_preserves_checkpoint_and_records": true
+  },
+  "errors": [],
+  "stale_submission": [],
+  "source_unchanged": true,
+  "ok": true
+}

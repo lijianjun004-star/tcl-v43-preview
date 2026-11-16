@@ -2,14 +2,35 @@
 export const Q_KEYS=['question','问题','弹幕内容','弹幕','提问','用户提问','顾客提问','话术问题','用户问题','问'];
 export const A_KEYS=['answer','答案','回答','优秀回答','参考回答','参考话术','话术','主播话术','标准回答','标准解答','解答','合理回答','老主播回答','运营回答','成熟回答','答'];
 export const POINT_KEYS=['keypoints','评分点','知识点','关键点','要点'];
-const qaNorm=s=>String(s||'').toLowerCase().replace(/[\s\p{P}\p{S}]/gu,'');
+// Model/version symbols are data: HDR10 != HDR10+, HDMI2.1 != HDMI21.
+// Only normalize width, case, whitespace and terminal sentence punctuation.
+const qaNorm=s=>String(s??'').normalize('NFKC').toLowerCase().replace(/\s+/gu,'').replace(/[?!。]+$/u,'');
 const cellHeader=s=>String(s||'').trim().toLowerCase().replace(/[\s\(\)（）、]/g,'');
 export function extractQA(parsed){
  const out=[];
- const add=(q,a,point,locator)=>{q=String(q||'').trim();a=String(a||'').trim();if(!q||q.length<3)return;out.push({question:q.slice(0,500),answer:a.slice(0,3000),keyPoints:point?String(point).split(/[、；;,，\n]+/).filter(Boolean).slice(0,12):[],locator,reviewStatus:!a?'incomplete':'needs_review'});};
+ const bounded=(value,max,field,locator)=>{if(value.length>max)throw new Error(`${locator||'导入资料'}：${field}超过${max}字，请拆分或精简后重新导入；未截断保存`);return value;};
+ const add=(q,a,point,locator,minQuestionLength=3)=>{
+   q=String(q??'').trim();a=String(a??'').trim();if(!q||q.length<minQuestionLength)return;
+   const keyPoints=point?String(point).split(/[、；;,，\n]+/).map(value=>value.trim()).filter(Boolean):[];
+   if(keyPoints.length>12)throw new Error(`${locator||'导入资料'}：要点超过12条，请拆分后重新导入；未截断保存`);
+   out.push({question:bounded(q,500,'问题',locator),answer:bounded(a,3000,'回答',locator),keyPoints,locator,reviewStatus:!a?'incomplete':'needs_review'});
+ };
  if(parsed.format==='json'){
-   let val=parsed.jsonData;const arr=Array.isArray(val)?val:Array.isArray(val?.items)?val.items:Array.isArray(val?.questions)?val.questions:[];
-   for(const [i,row]of arr.entries()){if(!row||typeof row!=='object')continue;const q=Q_KEYS.map(k=>row[k]).find(Boolean),a=A_KEYS.map(k=>row[k]).find(Boolean),points=POINT_KEYS.map(k=>row[k]).find(Boolean);add(q,a,Array.isArray(points)?points.join('；'):points,`JSON ${i+1}`)}return out;
+   let val=parsed.jsonData;const arr=Array.isArray(val)?val:Array.isArray(val?.items)?val.items:Array.isArray(val?.questions)?val.questions:null;
+   if(!arr)throw new Error('JSON 顶层须为问答数组，或包含 items/questions 数组的对象');
+   const first=(row,keys)=>keys.map(k=>row[k]).find(v=>v!==null&&v!==undefined&&(typeof v!=='string'||v.trim()!==''));
+   const scalar=(value,field,index)=>{
+     if(value===null||value===undefined)return '';
+     if(typeof value==='string'||typeof value==='boolean'||typeof value==='number'&&Number.isFinite(value))return String(value);
+     throw new Error(`JSON 第${index+1}条的${field}须为文字、数字或布尔值，不能使用嵌套对象或数组`);
+   };
+   for(const [i,row]of arr.entries()){
+     if(!row||typeof row!=='object'||Array.isArray(row))throw new Error(`JSON 第${i+1}条须为包含问题和回答字段的对象`);
+     const q=scalar(first(row,Q_KEYS),'问题',i),a=scalar(first(row,A_KEYS),'回答',i),rawPoints=first(row,POINT_KEYS);
+     if(!q.trim())throw new Error(`JSON 第${i+1}条缺少有效问题字段`);
+     const points=Array.isArray(rawPoints)?rawPoints.map(value=>scalar(value,'要点',i)).join('；'):scalar(rawPoints,'要点',i);
+     add(q,a,points,`JSON ${i+1}`,1);
+   }return out;
  }
  for(const b of parsed.blocks||[]){if(b.kind!=='table')continue;const rr=b.rows||[];if(!rr.length)continue;const hdr=rr[0].cells.map(cellHeader);
  // 运营实际使用的模板：弹幕类型 | 弹幕内容 | 消费者意图分析 | 案例话术1 | 案例话术2 …
@@ -29,8 +50,8 @@ export function extractQA(parsed){
    for(const g of groups.values()){
     const total=g.variants.reduce((n,v)=>n+v.answers.length,0),parts=[];let n=0;
     for(const v of g.variants)for(const a of v.answers){n++;parts.push((total>1?`【话术${n}${v.intent?' · '+v.intent:''}】`:'')+a);}
-    const answer=parts.join('\n\n').slice(0,3000),intents=[...new Set(g.variants.map(v=>v.intent).filter(Boolean))];
-    out.push({question:g.q.slice(0,500),answer,keyPoints:[],intent:intents.join('；').slice(0,500),danmuType:g.type.slice(0,20),locator:g.locator,reviewStatus:answer?'needs_review':'incomplete'});
+    const answer=bounded(parts.join('\n\n'),3000,'合并后的回答',g.locator),intents=[...new Set(g.variants.map(v=>v.intent).filter(Boolean))];
+    out.push({question:bounded(g.q,500,'问题',g.locator),answer,keyPoints:[],intent:bounded(intents.join('；'),500,'消费者意图',g.locator),danmuType:bounded(g.type,20,'弹幕类型',g.locator),locator:g.locator,reviewStatus:answer?'needs_review':'incomplete'});
    }
    continue;
   }

@@ -20,7 +20,8 @@ def archive(entries, compression=zipfile.ZIP_DEFLATED):
 
 
 WORD = '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>TCL HDMI 2.1 T7</w:t></w:r><w:r><w:t>M Pro，价格2500元，144Hz。</w:t></w:r></w:p></w:body></w:document>'
-WB = '<workbook><sheets><sheet name="合成测试"/></sheets></workbook>'
+WB = '<workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="合成测试" r:id="rId1"/></sheets></workbook>'
+RELS = '<Relationships><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'
 SHEET = '<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c><c r="C1" t="inlineStr"><is><t>HDMI 2.1</t></is></c></row><row r="2"><c r="B2" t="inlineStr"><is><t>T7M Pro</t></is></c></row></sheetData></worksheet>'
 DOCX = archive([('word/document.xml', WORD)])
 # Streaming ZIP writers (including some Office exporters) use a data descriptor.
@@ -31,7 +32,7 @@ stream = NonSeekable()
 with zipfile.ZipFile(stream, 'w', compression=zipfile.ZIP_DEFLATED) as z:
     z.writestr('word/document.xml', WORD)
 STREAM_DOCX = stream.getvalue()
-XLSX = archive([('xl/workbook.xml', WB), ('xl/sharedStrings.xml', '<sst><si><t>TCL</t></si></sst>'), ('xl/worksheets/sheet1.xml', SHEET)])
+XLSX = archive([('xl/workbook.xml', WB), ('xl/_rels/workbook.xml.rels', RELS), ('xl/sharedStrings.xml', '<sst><si><t>TCL</t></si></sst>'), ('xl/worksheets/sheet1.xml', SHEET)])
 CRC_BAD = bytearray(archive([('word/document.xml', WORD)], zipfile.ZIP_STORED))
 struct.pack_into('<I', CRC_BAD, 14, 0)
 struct.pack_into('<I', CRC_BAD, CRC_BAD.index(b'PK\x01\x02') + 16, 0)
@@ -42,7 +43,7 @@ struct.pack_into('<I', SIZE_BAD, SIZE_BAD.index(b'PK\x01\x02') + 24, 1)
 
 def xlsx_ref(ref, row=1):
     sheet = f'<worksheet><sheetData><row r="{row}"><c r="{ref}" t="inlineStr"><is><t>TCL</t></is></c></row></sheetData></worksheet>'
-    return archive([('xl/workbook.xml', WB), ('xl/worksheets/sheet1.xml', sheet)])
+    return archive([('xl/workbook.xml', WB), ('xl/_rels/workbook.xml.rels', RELS), ('xl/worksheets/sheet1.xml', sheet)])
 
 
 VALID = [

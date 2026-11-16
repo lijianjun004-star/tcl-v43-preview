@@ -72,12 +72,14 @@ const dbDelete=(store,id)=>memoryFallback?(memStores[store]?.delete(id),Promise.
 // Submitted media stays local. Metadata and media commit in one existing prefs transaction.
 let submissionSaving=false, submittedPlaybackUrls=[],submittedPlaybackEpoch=0,submittedMediaSequence=0;
 function clearSubmittedPlayback(){submittedPlaybackEpoch++;document.querySelectorAll('[id^="submitted-media-"] video,[id^="submitted-media-"] audio').forEach(media=>{try{media.pause()}catch{}});for(const url of submittedPlaybackUrls)URL.revokeObjectURL(url);submittedPlaybackUrls=[];document.querySelectorAll('[id^="submitted-media-"]').forEach(holder=>{holder.replaceChildren();delete holder.dataset.loaded;delete holder.dataset.loading;});}
-function commitSubmission(submission,logId,media){
+function commitSubmission(submission,logId,media,expectedToken){
  if(memoryFallback||!localDB)return Promise.reject(new Error('本机数据库不可用，无法可靠保存提交；请先下载原录像'));
  return new Promise((resolve,reject)=>{let tx,error,merged;try{
   tx=localDB.transaction('prefs','readwrite');const store=tx.objectStore('prefs');
-  const subReq=store.get('submissions'),logsReq=store.get('trainingLogs');let waiting=2;
+  const subReq=store.get('submissions'),logsReq=store.get('trainingLogs'),checkpointReq=store.get(draftKey(submission.anchorName));let waiting=3;
   const write=()=>{if(--waiting)return;try{
+   const checkpoint=checkpointReq.result;
+   if(!expectedToken||checkpoint?.writeToken!==expectedToken||checkpoint.runId!==submission.sessionId||checkpoint.owner!==submission.anchorName)throw new Error('本场保存版本已变化，提交已取消，请重新恢复并核对');
    const oldSubs=subReq.result?.value||[],oldLogs=logsReq.result?.value||[];
    if(oldSubs.some(x=>x.sessionId===submission.sessionId))throw new Error('这次训练已经提交');
    merged={submissions:[submission,...oldSubs],logs:oldLogs.map(x=>x.id===logId?{...x,submitted:true}:x)};
@@ -85,7 +87,7 @@ function commitSubmission(submission,logId,media){
    store.put({id:'trainingLogs',value:merged.logs,updatedAt:nowIso()});
    if(media)store.put(media);
   }catch(e){error=e;try{tx.abort()}catch{}}};
-  subReq.onsuccess=write;logsReq.onsuccess=write;
+  subReq.onsuccess=write;logsReq.onsuccess=write;checkpointReq.onsuccess=write;
   tx.oncomplete=()=>resolve(merged);tx.onabort=()=>reject(error||tx.error||new Error('本机提交事务已取消'));tx.onerror=()=>{};
  }catch(e){if(tx)try{tx.abort()}catch{}reject(e)}});
 }
@@ -441,16 +443,26 @@ const draftKey=name=>'draft-session:'+encodeURIComponent(name);
 const draftMediaKey=(id,part)=>'draft-media:'+id+':'+part;
 let savedSessionCandidate=null,sessionStorageState={run:'',status:'idle',message:''},restoreSessionEpoch=0,sessionStorageSeq=0;
 const storedSessionMedia=new Map();
+// Each tab advances its own observed token only after a committed transaction.
+// A stale tab must never overwrite a newer checkpoint, including during pagehide.
+let checkpointCursor={key:'',token:null,known:false,ready:Promise.resolve()},checkpointWriteChain=Promise.resolve();
+const checkpointToken=row=>!row?null:row.writeToken||('legacy:'+row.runId+':'+(row.updatedAt||''));
 function sessionStorageText(){
  if(sessionStorageState.run!==runId)return '正在准备本机恢复记录；尚未确认保存。';
  return sessionStorageState.message||'正在准备本机恢复记录；尚未确认保存。';
 }
 function showSessionStorageState(){
- const el=ELEM('localSessionSaveStatus');if(el){el.textContent=sessionStorageText();el.dataset.status=sessionStorageState.status;}
+ const el=ELEM('localSessionSaveStatus');if(el){
+  el.textContent=sessionStorageText();el.dataset.status=sessionStorageState.status;
+  if(sessionStorageState.status==='error'&&sessionStorageState.run===runId){
+   const button=document.createElement('button');button.type='button';button.id='exportUnsavedSession';button.className='btn soft';button.textContent='下载本页尚未保存的文字';
+   button.onclick=()=>{const current=currentSessionCheckpoint();if(current)downloadJSON('TCL-本页未保存文字.json',{storageStatus:'未确认保存；这是当前页面文字，不含音视频',snapshot:current.snapshot});};el.append(document.createTextNode(' '),button);
+  }
+ }
 }
 function localSessionFailure(owner,error){
  if(owner!==runId)return;
- sessionStorageState={run:owner,status:'error',message:'本机恢复保存失败：'+String(error?.message||error).slice(0,140)+'。当前文字和录音仍可使用，请下载录像、导出文字后再关闭网页。'};
+ sessionStorageState={run:owner,status:'error',message:'本机恢复保存失败：'+String(error?.message||error).slice(0,140)+'。当前修改仍在本页，请用下方按钮导出文字、下载录像，再刷新并恢复最新版本。'};
  showSessionStorageState();
 }
 function currentSessionCheckpoint(){
@@ -460,67 +472,101 @@ function currentSessionCheckpoint(){
  const safe=JSON.parse(JSON.stringify(snapshot));
  return {id:draftKey(userName),version:1,owner:userName,runId,snapshot:safe,trainingLogId:lastTrainingLogId,videoMeta:sessionVideoMeta?{...sessionVideoMeta}:null,mode:deviceCheck.mode,updatedAt:endedAt};
 }
+function sessionTurnRecord(turn,owner){
+ return {id:turn.id,anchorName:owner,boardId:turn.boardId,category:turn.category,platform:turn.platform,
+  question:turn.prompt,trainingHint:turn.trainingHint,answer:turn.answer||'',transcript:turn.transcript||'',rawTranscript:turn.rawTranscript||'',whisperCandidate:turn.whisperCandidate||'',manualEdited:!!turn.manualEdited,manualCleared:!!turn.manualCleared,
+  responseSeconds:turn.responseSeconds??null,durationSeconds:turn.durationSeconds??null,
+  compliance:turn.compliance||[],matchedKeywords:turn.pointsHit?.length||0,
+  keywordTotal:turn.keyPoints?.length||0,asrStatus:turn.asrStatus||'待录音',
+  result:'训练记录（仅提示，未进行正式AI评分）',createdAt:turn.createdAt};
+}
 async function persistSessionCheckpoint(){
  const data=currentSessionCheckpoint();if(!data)return false;
- const owner=data.runId,writeSeq=++sessionStorageSeq;
+ const owner=data.runId,writeSeq=++sessionStorageSeq,cursor=checkpointCursor;
  if(memoryFallback||!localDB){localSessionFailure(owner,new Error('浏览器数据库不可用，仅保留本页内存'));return false;}
  const media=data.snapshot.turns.filter(t=>perQuestionAudio.has(t.id)).map(t=>({id:draftMediaKey(owner,t.id),turnId:t.id,blob:perQuestionAudio.get(t.id),owner:data.owner,runId:owner}));
  if(sessionVideoBlob)media.push({id:draftMediaKey(owner,'video'),turnId:'video',blob:sessionVideoBlob,owner:data.owner,runId:owner});
  if(media.reduce((n,x)=>n+x.blob.size,0)>LOCAL_SESSION_LIMIT||data.snapshot.turns.length>200){localSessionFailure(owner,new Error('本场超过96MB或200题恢复额度，请下载备份'));return false;}
  data.media=media.map(x=>({id:x.id,turnId:x.turnId,size:x.blob.size}));
- const changed=media.filter(x=>storedSessionMedia.get(x.id)!==x.blob);
+ const records=data.snapshot.turns.map(turn=>sessionTurnRecord(turn,data.owner));
  sessionStorageState={run:owner,status:'saving',message:'正在保存本机恢复记录，请稍候…'};showSessionStorageState();
- try{
-  await new Promise((resolve,reject)=>{
-   let tx,settled=false,timer,writeError;
-   const done=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
-   try{
-    tx=localDB.transaction('prefs','readwrite');const store=tx.objectStore('prefs'),req=store.get(data.id);
-    req.onsuccess=()=>{try{
-     // Replace only this name's previous checkpoint. Other identities and submitted media stay untouched.
-     const old=req.result;
-     if(old?.owner===data.owner)for(const item of old.media||[]){if(!data.media.some(x=>x.id===item.id)&&item.id.startsWith('draft-media:'+old.runId+':'))store.delete(item.id);}
-     for(const item of old?.runId===data.runId?changed:media)store.put(item);
-     store.put(data);
-    }catch(e){writeError=e;try{tx.abort()}catch{}done(reject,e);}};
-    tx.oncomplete=()=>done(resolve);
-    tx.onabort=()=>done(reject,writeError||tx.error||new Error('保存事务已取消'));
-    tx.onerror=()=>{};
-    timer=setTimeout(()=>{try{tx.abort()}catch{}done(reject,new Error('保存超时，未确认落盘'));},Math.max(50,Number(window.__SESSION_SAVE_TIMEOUT_MS)||8000));
-   }catch(e){try{tx?.abort()}catch{}done(reject,e);}
-  });
-  if(runId===owner)for(const item of changed)storedSessionMedia.set(item.id,item.blob);
-  if(runId===owner&&userName===data.owner&&writeSeq===sessionStorageSeq){
-   savedSessionCandidate=data;
-   sessionStorageState={run:owner,status:'saved',message:'已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。'};
-   showSessionStorageState();
-  }
-  return true;
- }catch(e){if(writeSeq===sessionStorageSeq)localSessionFailure(owner,e);return false;}
+ const commit=async()=>{
+  try{
+   await cursor.ready;
+   if(cursor.key!==data.id||!cursor.known)throw new Error('尚未读取本机恢复版本，请刷新后重新进入');
+   const changed=media.filter(x=>storedSessionMedia.get(x.id)!==x.blob);
+   await new Promise((resolve,reject)=>{
+    let tx,settled=false,timer,writeError;
+    const done=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
+    try{
+     // The turn row, checkpoint and new media either all commit or all abort.
+     tx=localDB.transaction(['prefs','records'],'readwrite');const store=tx.objectStore('prefs'),req=store.get(data.id);
+     req.onsuccess=()=>{try{
+      const old=req.result;
+      if(checkpointToken(old)!==cursor.token){const e=new Error('其他标签已更新这份练播记录，本次未保存，已阻止覆盖。请先导出本页修改，再刷新并恢复最新版本');e.name='SessionConflictError';throw e;}
+      if(old?.owner===data.owner)for(const item of old.media||[]){if(!data.media.some(x=>x.id===item.id)&&item.id.startsWith('draft-media:'+old.runId+':'))store.delete(item.id);}
+      for(const item of old?.runId===data.runId?changed:media)store.put(item);
+      data.revision=(Number.isSafeInteger(old?.revision)?old.revision:0)+1;data.writeToken=uid();
+      const recordStore=tx.objectStore('records');for(const row of records)recordStore.put(row);
+      store.put(data);
+     }catch(e){writeError=e;try{tx.abort()}catch{}done(reject,e);}};
+     tx.oncomplete=()=>done(resolve);
+     tx.onabort=()=>done(reject,writeError||tx.error||new Error('保存事务已取消'));
+     tx.onerror=()=>{};
+     timer=setTimeout(()=>{try{tx.abort()}catch{}done(reject,new Error('保存超时，未确认落盘'));},Math.max(50,Number(window.__SESSION_SAVE_TIMEOUT_MS)||8000));
+    }catch(e){try{tx?.abort()}catch{}done(reject,e);}
+   });
+   cursor.token=data.writeToken;
+   if(runId===owner&&userName===data.owner)for(const row of records){const pos=localRecords.findIndex(x=>x.id===row.id);if(pos>=0)localRecords[pos]=row;else localRecords.unshift(row);}
+   if(runId===owner)for(const item of changed)storedSessionMedia.set(item.id,item.blob);
+   if(runId===owner&&userName===data.owner&&writeSeq===sessionStorageSeq){
+    savedSessionCandidate=data;
+    sessionStorageState={run:owner,status:'saved',message:'已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。'};
+    showSessionStorageState();
+   }
+   return true;
+  }catch(e){if(writeSeq===sessionStorageSeq)localSessionFailure(owner,e);return false;}
+ };
+ // Serialize this tab's own rapid saves while keeping cross-tab conflict checks in IndexedDB.
+ const job=checkpointWriteChain.then(commit,commit);checkpointWriteChain=job.then(()=>{});return await job;
 }
 async function findSavedSession(){
  const owner=userName,epoch=++restoreSessionEpoch;savedSessionCandidate=null;
+ const cursor={key:draftKey(owner),token:null,known:false,ready:Promise.resolve()};checkpointCursor=cursor;
  if(userRole!=='anchor'||!owner||memoryFallback||!localDB)return;
  try{
-  const data=await new Promise((resolve,reject)=>{const req=localDB.transaction('prefs','readonly').objectStore('prefs').get(draftKey(owner));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  const lookup=new Promise((resolve,reject)=>{const req=localDB.transaction('prefs','readonly').objectStore('prefs').get(cursor.key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  cursor.ready=lookup.then(data=>{cursor.token=checkpointToken(data);cursor.known=true;},()=>{});
+  const data=await lookup;
   if(epoch!==restoreSessionEpoch||userName!==owner||userRole!=='anchor')return;
   if(data?.version===1&&data.owner===owner&&data.snapshot?.anchorName===owner&&data.snapshot.id===data.runId&&Array.isArray(data.snapshot.turns)&&data.snapshot.turns.length<=200)savedSessionCandidate=data;
   if(page==='home')render();
- }catch(e){if(epoch===restoreSessionEpoch)toast('无法读取本机恢复记录：'+(e?.message||e));}
+ }catch(e){cursor.ready=Promise.resolve();if(epoch===restoreSessionEpoch)toast('无法读取本机恢复记录：'+(e?.message||e));}
 }
 function savedSessionHtml(){
  const d=savedSessionCandidate;if(reviewAlive()||!d||d.owner!==userName)return '';
  return `<button type="button" id="restoreLocalSession" class="resume-review"><span class="resume-label">本机已保存的最近一场</span><b>${ESC(d.snapshot.category)} · ${ESC(d.snapshot.platform)}</b><small>${ESC(new Date(d.updatedAt).toLocaleString('zh-CN'))} · ${d.snapshot.incomplete?'中断场次，仅恢复已保存部分':'可恢复逐题文字及已保存音视频'}</small><em>恢复本场复盘 →</em></button>`;
 }
 async function restoreLocalSession(){
- const data=savedSessionCandidate,owner=userName,epoch=++restoreSessionEpoch;
- if(userRole!=='anchor'||!data||data.owner!==owner||page!=='home'||reviewAlive())return;
+ const candidate=savedSessionCandidate,owner=userName,epoch=++restoreSessionEpoch,initialRun=runId,initialView=ELEM('view')?.firstElementChild;
+ if(userRole!=='anchor'||!candidate||candidate.owner!==owner||page!=='home'||reviewAlive())return;
  const btn=ELEM('restoreLocalSession');if(btn)btn.disabled=true;
  try{
-  const parts=await new Promise((resolve,reject)=>{const tx=localDB.transaction('prefs','readonly'),store=tx.objectStore('prefs'),rows=[];for(const item of data.media||[]){const req=store.get(item.id);req.onsuccess=()=>rows.push(req.result);}tx.oncomplete=()=>resolve(rows);tx.onabort=()=>reject(tx.error||new Error('读取已取消'));tx.onerror=()=>{};});
-  if(epoch!==restoreSessionEpoch||userRole!=='anchor'||userName!==owner||page!=='home')return;
+  // Read the current metadata and all referenced media in one consistent snapshot.
+  const {data,parts}=await new Promise((resolve,reject)=>{
+   const tx=localDB.transaction('prefs','readonly'),store=tx.objectStore('prefs'),rows=[];let data,error;
+   const req=store.get(draftKey(owner));
+   req.onsuccess=()=>{try{
+    data=req.result;
+    if(data?.version!==1||data.owner!==owner||data.snapshot?.anchorName!==owner||data.snapshot.id!==data.runId||!Array.isArray(data.snapshot.turns)||data.snapshot.turns.length>200)throw new Error('本机恢复记录不存在或格式不完整');
+    for(const item of data.media||[]){const q=store.get(item.id);q.onsuccess=()=>rows.push(q.result);}
+   }catch(e){error=e;try{tx.abort()}catch{}}};
+   tx.oncomplete=()=>resolve({data,parts:rows});tx.onabort=()=>reject(error||tx.error||new Error('读取已取消'));tx.onerror=()=>{};
+  });
+  if(epoch!==restoreSessionEpoch||userRole!=='anchor'||userName!==owner||page!=='home'||runId!==initialRun||ELEM('view')?.firstElementChild!==initialView)return;
   if(parts.some(x=>!x||x.owner!==owner||x.runId!==data.runId||!(x.blob instanceof Blob)))throw new Error('部分媒体不存在或不属于本场，未加载');
   resetRunState();discardVideoArchive();
+  checkpointCursor={key:draftKey(owner),token:checkpointToken(data),known:true,ready:Promise.resolve()};savedSessionCandidate=data;
   const snap=JSON.parse(JSON.stringify(data.snapshot));
   runId=snap.id;selectedBoard=snap.boardId;activePlatform=snap.platform;sessionTurns=snap.turns;lastSessionSnapshot=snap;lastTrainingLogId=data.trainingLogId||'';activeAssignmentId=snap.assignmentId||'';
   for(const t of sessionTurns)if(/等待实验 Whisper|实验 Whisper：|正在录音|待自动转写|排队等待转写|正在录后转写|识别中/.test(t.asrStatus||''))t.asrStatus='上次识别或录音已中断，已保存音频可手动补转写';
@@ -727,12 +773,11 @@ function saveCurrentTypedAnswer({asDraft=true}={}){
  if(entered===turn.answer)return;
  const asrPending=/正在录后转写|待自动转写|排队等待转写|正在录音/.test(String(turn.asrStatus||''));
  if(!entered){
-  // 用户主动清空：不再保留旧的人工回答，回退到本题识别文字（没有就为空）。
+  // 用户主动清空：回答保持为空，识别原文仅供展开核对，不计要点覆盖。
   if(!turn.answer&&!turn.manualCleared)return;
-  turn.answer='';turn.manualEdited=false;turn.manualCleared=true;const base=turn.transcript||'';
-  turn.compliance=base?complianceHints(base,turn.platform):[];
-  turn.pointsHit=base?(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,base,turn.pointKeywords?.[i]||[])):[];
-  if(asDraft&&!asrPending)turn.asrStatus=base?'已清空人工修改（回退到识别文字）':'已清空回答';
+  turn.answer='';turn.manualEdited=false;turn.manualCleared=true;
+  turn.compliance=[];turn.pointsHit=[];
+  if(asDraft&&!asrPending)turn.asrStatus='已清空回答（识别原文仍保留）';
   void saveTurn(turn);renderTurnStatus(turn,{preserveInput:true});return;
  }
  turn.answer=entered;
@@ -751,18 +796,10 @@ function enqueueRecordedQuestions(){
 }
 const saveTurn=async(turn)=>{
  if(!turn||!r6WhisperPageAlive()||turn.runId!==runId||turn.boardId!==selectedBoard||turn.platform!==activePlatform)return;
- const record={id:turn.id,anchorName:userRole==='anchor'?userName:'',boardId:turn.boardId,category:turn.category,platform:turn.platform,
-  question:turn.prompt,trainingHint:turn.trainingHint,answer:turn.answer||'',transcript:turn.transcript||'',rawTranscript:turn.rawTranscript||'',whisperCandidate:turn.whisperCandidate||'',manualEdited:!!turn.manualEdited,manualCleared:!!turn.manualCleared,
-  responseSeconds:turn.responseSeconds??null,durationSeconds:turn.durationSeconds??null,
-  compliance:turn.compliance||[],matchedKeywords:turn.pointsHit?.length||0,
-  keywordTotal:turn.keyPoints?.length||0,asrStatus:turn.asrStatus||'待录音',
-  result:'训练记录（仅提示，未进行正式AI评分）',createdAt:turn.createdAt};
  try{
-  await dbPut('records',record);
+  if(!await persistSessionCheckpoint())return false;
   if(!r6WhisperPageAlive()||runId!==turn.runId||selectedBoard!==turn.boardId||activePlatform!==turn.platform)return;
-  const pos=localRecords.findIndex(r=>r.id===record.id);
-  if(pos>=0)localRecords[pos]=record;else localRecords.unshift(record);
-  return await persistSessionCheckpoint();
+  return true;
  }catch(e){localSessionFailure(turn.runId,e);toast('本题记录保存失败，请导出个人记录备份：'+(e.message||e));return false;}
 };
 function liveTurnStatusText(turn){
@@ -910,9 +947,9 @@ async function transcribeQuestion(turnId,{queued=false}={}){
    turn.asrWarnings=[...(assessed.warnings||[]),...(numeric.changes?['已规范化'+numeric.changes+'处明确的口述数值，请重点核对数字/型号']:[])];
    if(turn.captureLimitReached)turn.asrWarnings.push('本题录音达到120秒上限，之后的内容未录入');
    if(/(?:\d|[零〇○一二两三四五六七八九十百千万点]{1,20}(?:英寸|寸|匹|元|块钱|块|秒|分钟|度|瓦|赫兹|公斤|千克|升|厘米|毫米|平方米|平米))/.test(turn.transcript)&&!turn.asrWarnings.some(x=>x.includes('数字'))){turn.asrWarnings.push('数字与型号请对照音频核对，识别错误不会自动猜测修正');}
-   const effectiveText=turn.answer||turn.transcript;
-   turn.compliance=complianceHints(effectiveText,turn.platform);
-   turn.pointsHit=(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,effectiveText,turn.pointKeywords?.[i]||[]));
+   const effectiveText=turn.manualCleared?'':turn.answer||turn.transcript;
+   turn.compliance=effectiveText?complianceHints(effectiveText,turn.platform):[];
+   turn.pointsHit=effectiveText?(turn.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,effectiveText,turn.pointKeywords?.[i]||[])):[];
    const baseStatus=hasManualAnswer?'已转写并保留人工修改':'已转写';
    turn.asrStatus=turn.asrWarnings.length?baseStatus+'（请核对文本；'+turn.asrWarnings.join('；')+'）':baseStatus+'（请核对文本）';
    await saveTurn(turn);if(valid())renderTurnStatus(turn);
@@ -1834,7 +1871,7 @@ function browserAsr(){
    turn.rawTranscript=raw;turn.transcript=normalized.text;
    if(hasManualDraft)turn.answer=typed;
    else if(!turn.answer||turn.answer===prev||!typed||typed===prev)turn.answer=normalized.text;
-   if(onLivePage&&(!typed||typed===prev)){target.value=normalized.text;const visible=ELEM('liveTextAnswer');if(visible&&!ELEM('textAnswerSheet')?.hidden&&(!visible.value.trim()||visible.value.trim()===prev))visible.value=normalized.text;}
+   if(onLivePage&&!turn.manualCleared&&(!typed||typed===prev)){target.value=normalized.text;const visible=ELEM('liveTextAnswer');if(visible&&!ELEM('textAnswerSheet')?.hidden&&(!visible.value.trim()||visible.value.trim()===prev))visible.value=normalized.text;}
    turn.asrWarnings=[...(assessed.warnings||[]),...(normalized.changes?['数值已规范化，请核对原文']:[])];
    turn.compliance=complianceHints(turn.answer,turn.platform);
    turn.pointsHit=(turn.keyPoints||[]).filter((p,i)=>fuzzyPoint(p,turn.answer,turn.pointKeywords?.[i]||[]));
@@ -2502,10 +2539,11 @@ function sessionReviewPage(){
  const iconReplay='<span class="review-tile-icon" aria-hidden="true">▶</span>';
  const iconDetail='<span class="review-tile-icon" aria-hidden="true">▤</span>';
  ELEM('view').innerHTML=`<section class="postlive-screen review-flow" id="postliveScreen">
+ <div id="localSessionSaveStatus" class="notice" role="status"></div>
  <section id="reviewOverview" class="review-stage review-overview" aria-label="练播复盘总览">
   <div class="postlive-top"><button type="button" class="postlive-icon" id="reviewHome" aria-label="返回练播房首页">‹</button><div><strong>练播复盘</strong><small>${ESC(snap.category)} · ${ESC(snap.platform)}</small></div><span class="postlive-done">本场已结束</span></div>
   <div class="result-card"><span class="result-pill">本场训练记录</span><h2>练播完成！</h2><p>本场复盘已生成。这里是客观数据，不是正式 AI 评分。</p><div class="result-metrics"><div><b>${ESC(formatPracticeDuration(snap.durationSeconds))}</b><small>训练时长</small></div><div><b>${snap.turns.length}</b><small>弹幕题数</small></div><div><b id="reviewAnswered">${answered}</b><small>已有回答</small></div><div><b id="reviewCoverage">${stats.total?`${stats.hit}/${stats.total}`:'—'}</b><small>要点覆盖 · 参考</small></div></div></div>
-  <p id="localSessionSaveStatus" class="notice" role="status"></p><div class="review-next-flow" aria-label="推荐复盘顺序"><span class="review-next-current">01 录像回看</span><span>02 校正逐题回答</span><span>03 决定是否提交</span></div><div class="review-priority"><div class="review-heading"><h3>下一步可以改进</h3><span>训练建议 · 非自动评分</span></div><div id="reviewIssues">${stats.issues.slice(0,2).map((x,i)=>`<div class="review-tip"><span>${i+1}</span><p>${ESC(x)}</p></div>`).join('')}</div></div>
+  <div class="review-next-flow" aria-label="推荐复盘顺序"><span class="review-next-current">01 录像回看</span><span>02 校正逐题回答</span><span>03 决定是否提交</span></div><div class="review-priority"><div class="review-heading"><h3>下一步可以改进</h3><span>训练建议 · 非自动评分</span></div><div id="reviewIssues">${stats.issues.slice(0,2).map((x,i)=>`<div class="review-tip"><span>${i+1}</span><p>${ESC(x)}</p></div>`).join('')}</div></div>
   <div class="review-actions review-link-grid"><button type="button" class="review-action" id="reviewReplay">${iconReplay}<b>查看录像回放</b><small>独立播放页面</small><span aria-hidden="true">›</span></button><button type="button" class="review-action" id="reviewDetails">${iconDetail}<b>逐题复盘详情</b><small>查看、修正回答</small><span aria-hidden="true">›</span></button></div>
   <div class="submit-card review-submit-card"><div class="review-heading"><h3>${assignment?'提交运营作业':'提交本次记录'}</h3><span>由主播决定</span></div>${assignment?`<p>发布运营：<b>${ESC(assignment.operatorName)}</b>。没有主动提交前，运营不能看到本次回答或录像。</p><div class="fixed-operator">接收运营：${ESC(assignment.operatorName)}</div>${assignmentExpired(assignment)&&!submitted?'<p class="scene-tip late-tip">作业已过截止时间，提交后标记为逾期。</p>':''}`:`<p>不满意可以再练；满意后才提交给所选运营。</p><div class="field"><label for="submitOperator">接收运营</label><input id="submitOperator" list="operatorNames" placeholder="输入运营姓名"><datalist id="operatorNames">${operatorNames.map(n=>`<option value="${ESC(n)}"></option>`).join('')}</datalist></div>`}${submitted?`<button id="submitSession" class="btn primary wide" disabled>✓ 已提交给 ${ESC(submitted.operatorName)}${submitted.late?'（逾期提交）':''}</button>`:'<button id="submitSession" class="btn primary wide">提交这次完整记录</button>'}<p class="scene-tip submit-local-note">数据先保存在当前浏览器，不能代表已送达运营手机；需要跨设备使用时须接入真实后端。</p></div>
   <button type="button" id="reviewRetry" class="review-retry-link">↻ 不满意？再练一次</button>
@@ -2553,7 +2591,10 @@ async function submitSessionRecord(operatorName){
  const media={id:'submission-media:'+id,video:sessionVideoBlob||null,audio};
  const submission={id,sessionId:snap.id,assignmentId:snap.assignmentId||'',operatorName,anchorName:snap.anchorName,boardId:snap.boardId,category:snap.category,platform:snap.platform,submittedAt:nowIso(),durationSeconds:snap.durationSeconds,turns,videoRecorded:!!sessionVideoBlob,late};
  submissionSaving=true;const btn=ELEM('submitSession');if(btn)btn.disabled=true;
- try{const committed=await commitSubmission(submission,lastTrainingLogId,media);localSubmissions=committed.submissions;localTrainingLogs=committed.logs;notifyWorkflowChange('submissions');if(userRole!=='anchor'||userName!==snap.anchorName)return;toast(`已提交给 ${operatorName}${late?'（逾期提交）':''}（音视频与记录仅保存在本机）`);if(btn?.isConnected)btn.textContent=`✓ 已提交给 ${operatorName}${late?'（逾期提交）':''}`;}
+ try{
+  if(!await persistSessionCheckpoint())throw new Error('本场记录未成功保存，未提交给运营');
+  if(userRole!=='anchor'||userName!==snap.anchorName||runId!==snap.id||lastSessionSnapshot!==snap)throw new Error('当前身份或场次已变化，未提交');
+  const committed=await commitSubmission(submission,lastTrainingLogId,media,checkpointCursor.token);localSubmissions=committed.submissions;localTrainingLogs=committed.logs;notifyWorkflowChange('submissions');if(userRole!=='anchor'||userName!==snap.anchorName)return;toast(`已提交给 ${operatorName}${late?'（逾期提交）':''}（音视频与记录仅保存在本机）`);if(btn?.isConnected)btn.textContent=`✓ 已提交给 ${operatorName}${late?'（逾期提交）':''}`;}
  catch(e){if(btn?.isConnected)btn.disabled=false;toast('提交未保存：'+(e?.message||e)+'。请保留或下载原录像后重试');}
  finally{submissionSaving=false;}
 }
@@ -2600,7 +2641,8 @@ async function parseImport(){
  importParsing=true;ELEM('parseFile').disabled=true;ELEM('importSummary').textContent='正在本地解析：'+file.name;
  try{
   const parsed=await parseDocumentFile(file);if(!importContextCurrent(ctx))return;
-  const candidates=extractQA(parsed).slice(0,500);
+  const candidates=extractQA(parsed);
+  if(candidates.length>500)throw new Error(`识别到${candidates.length}条，单次最多500条，请拆分后导入`);
   if(!candidates.length)throw new Error('未识别到完整问答。可用“弹幕类型/弹幕内容/消费者意图分析/案例话术1”或“问题/优秀回答”列名。');
   detectReviewConflicts(candidates,{existing:localEntries,boardId:ctx.boardId,platform:ctx.scope==='category'?'全部平台':ctx.platform,category:boardById(ctx.boardId)?.category||''});
   for(const row of candidates)if(containsPII(row.question+' '+row.answer+' '+(row.intent||'')+' '+(row.danmuType||'')))row.reviewStatus='sensitive';

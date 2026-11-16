@@ -1,0 +1,30 @@
+{
+  "mode": "actual app transcribeQuestion in Node VM; mocked decoder/Vosk and persistence, not speech or browser evidence",
+  "sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "saved": {
+    "id": "q1",
+    "runId": "run",
+    "boardId": "01",
+    "platform": "京东",
+    "answer": "",
+    "transcript": "清晰的屏幕",
+    "manualEdited": true,
+    "manualCleared": true,
+    "keyPoints": [
+      "清晰"
+    ],
+    "pointKeywords": [
+      [
+        "清晰"
+      ]
+    ],
+    "pointsHit": [
+      "清晰"
+    ],
+    "compliance": [],
+    "asrStatus": "已转写并保留人工修改（请核对文本）",
+    "rawTranscript": "清晰的屏幕",
+    "asrWarnings": []
+  },
+  "confirmed": true
+}

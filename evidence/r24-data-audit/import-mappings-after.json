@@ -1,0 +1,295 @@
+{
+  "mode": "Actual desktop Chromium; synthetic CSV/JSON and Office documents; no Gemini/private business data",
+  "source_hashes": {
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "bde9f1702b8d0975f4dc45e02eb2bf988bd318d3844a6a7d7e2467c39ec605c0"
+  },
+  "cases": [
+    {
+      "file": "model-plus.csv",
+      "input_sha256": "75b5aa4a4e3d5055693c13a58bf13ad76f405ffda249a5bf0ef57e7d2f261b62",
+      "expected": {
+        "questions": [
+          "HDR10怎么设置？",
+          "HDR10+怎么设置？"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "model-dot.csv",
+      "input_sha256": "a0527424369cbb9ef587a75a14eefbc0e0110050390ab696930953d2176f9281",
+      "expected": {
+        "count": 2
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "equivalent-width.csv",
+      "input_sha256": "7e8e12556ae4534797b78fa9fce4d074ccb5aca035a2fb8e6681b60b6227d16f",
+      "expected": {
+        "count": 1,
+        "answer_contains": [
+          "第一种话术",
+          "第二种话术"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 1
+    },
+    {
+      "file": "merged-columns.docx",
+      "input_sha256": "e00f8217b5378012781288edfafbcb83fa64ab44e8a587145483e94b6f9a0d7d",
+      "expected": {
+        "answers": [
+          "请查看该型号官方接口参数"
+        ],
+        "header": [
+          "问题",
+          "",
+          "优秀回答"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 1
+    },
+    {
+      "file": "sheet-order.xlsx",
+      "input_sha256": "553b23ab8f62cc65af7ca60b0d819c91e8aa9624058f23ba8def14c04e2b40e7",
+      "expected": {
+        "sheet_names": [
+          "电视",
+          "冰箱"
+        ],
+        "questions": [
+          "电视怎么清洁？",
+          "冰箱怎么清洁？"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "sheet-custom-name.xlsx",
+      "input_sha256": "3969e26ed305dbd8228b6e332f4e0dabf67a2bd74ce786892671dafeb1c11e71",
+      "expected": {
+        "sheet_names": [
+          "电视",
+          "冰箱"
+        ],
+        "questions": [
+          "电视怎么清洁？",
+          "冰箱怎么清洁？"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "missing-sheet.xlsx",
+      "input_sha256": "39e3899dc99ffea43a99510ac5f65df25d69811c705b21ab93df3fda631d1f30",
+      "expected": {
+        "error": "工作表文件缺失"
+      },
+      "result": "PASS",
+      "error": "XLSX 工作表文件缺失或路径无效",
+      "rows": 0
+    },
+    {
+      "file": "external-sheet.xlsx",
+      "input_sha256": "6b454cb392576827438a9060d1b03689bd7270e17fb22a9acece19e672bd8e6d",
+      "expected": {
+        "error": "外部文件"
+      },
+      "result": "PASS",
+      "error": "XLSX 工作表关系缺失或指向外部文件",
+      "rows": 0
+    },
+    {
+      "file": "json-array.json",
+      "input_sha256": "afcab2b59f4b06b5cb0fd446572d1c9032171aed16ea5d8b372864de8dfb6a7a",
+      "expected": {
+        "answers": [
+          "查看官方参数"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 1
+    },
+    {
+      "file": "json-zero-false.json",
+      "input_sha256": "7e8f3e5d118d97d049ceacbe1bde65b1ff6d51f717284f26704ed5abad07af68",
+      "expected": {
+        "answers": [
+          "0",
+          "false"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "json-scalar-question.json",
+      "input_sha256": "083333000775411f4bebe77fe504c200361b3598204d65700d4ca8c6968c9b5f",
+      "expected": {
+        "questions": [
+          "0",
+          "false"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 2
+    },
+    {
+      "file": "json-object.json",
+      "input_sha256": "03cd6dcb8fc8834e1eea1c239cb6e24347ded93f906b0beb287a97ba737fc3cd",
+      "expected": {
+        "error": "问题须为"
+      },
+      "result": "PASS",
+      "error": "JSON 第1条的问题须为文字、数字或布尔值，不能使用嵌套对象或数组",
+      "rows": 0
+    },
+    {
+      "file": "json-answer-array.json",
+      "input_sha256": "da88b0516709af0ab24abaa4d75868dd8f18bfe52ab1ee8ed5d2d4130bc673d9",
+      "expected": {
+        "error": "回答须为"
+      },
+      "result": "PASS",
+      "error": "JSON 第1条的回答须为文字、数字或布尔值，不能使用嵌套对象或数组",
+      "rows": 0
+    },
+    {
+      "file": "json-point-object.json",
+      "input_sha256": "ff9385cb914a4fe2c1838357adcad9f8049f9dbadc0287feb414a1bc1ee9313c",
+      "expected": {
+        "error": "要点须为"
+      },
+      "result": "PASS",
+      "error": "JSON 第1条的要点须为文字、数字或布尔值，不能使用嵌套对象或数组",
+      "rows": 0
+    },
+    {
+      "file": "json-null-row.json",
+      "input_sha256": "1d8fc6ceb1f94c6326d6d5483d258fcb2e179e9869325b245d105c2219bf69fd",
+      "expected": {
+        "error": "第1条须为"
+      },
+      "result": "PASS",
+      "error": "JSON 第1条须为包含问题和回答字段的对象",
+      "rows": 0
+    },
+    {
+      "file": "json-missing-question.json",
+      "input_sha256": "a60df41ac776e5559a6ff285de9a3cc193fda37468628881103fdd2f4b82d75f",
+      "expected": {
+        "error": "缺少有效问题"
+      },
+      "result": "PASS",
+      "error": "JSON 第1条缺少有效问题字段",
+      "rows": 0
+    },
+    {
+      "file": "long-answer.csv",
+      "input_sha256": "aa25b3dbed572b08fd095679f365dab6b6df2bb596f2be1c8144c223f3185e54",
+      "expected": {
+        "error": "回答超过3000字"
+      },
+      "result": "PASS",
+      "error": "表格第2行：回答超过3000字，请拆分或精简后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "long-question.json",
+      "input_sha256": "739497d9eb104c2e6211b5de49b27e04701567c074413624bdb816b804f14ab2",
+      "expected": {
+        "error": "问题超过500字"
+      },
+      "result": "PASS",
+      "error": "JSON 1：问题超过500字，请拆分或精简后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "many-points.json",
+      "input_sha256": "93bc470e2ec16e20d8ab447e8f366eb8369a6db37af2c9a2bd7059e60166bbaa",
+      "expected": {
+        "error": "要点超过12条"
+      },
+      "result": "PASS",
+      "error": "JSON 1：要点超过12条，请拆分后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "merged-long.csv",
+      "input_sha256": "3fc8709c93f7a69b993e5e4dd0be2de40fdebfe00b991bdfdc4f25e9d6b9c1f6",
+      "expected": {
+        "error": "合并后的回答超过3000字"
+      },
+      "result": "PASS",
+      "error": "表格第2行：合并后的回答超过3000字，请拆分或精简后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "long-intent.csv",
+      "input_sha256": "87c1356aa2e0a4c9309eaaa6ebc5a083caca1a3a468915ab6317c98affd6a33d",
+      "expected": {
+        "error": "消费者意图超过500字"
+      },
+      "result": "PASS",
+      "error": "表格第2行：消费者意图超过500字，请拆分或精简后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "long-type.csv",
+      "input_sha256": "82d6461f2d6d209b123a2be07cfb7c16e4514a5ac0204318d1519660a2c11b3c",
+      "expected": {
+        "error": "弹幕类型超过20字"
+      },
+      "result": "PASS",
+      "error": "表格第2行：弹幕类型超过20字，请拆分或精简后重新导入；未截断保存",
+      "rows": 0
+    },
+    {
+      "file": "whitespace-bom.csv",
+      "input_sha256": "b42a2296842a387340d26dca2674c5fa644294f71eae5318544c98bfe8f3a605",
+      "expected": {
+        "answers": [
+          "以型号官方参数为准\n并核对自己的设备"
+        ]
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 1
+    },
+    {
+      "file": "parser-501.csv",
+      "input_sha256": "2b2e2e7e7f6d3e312a30a8aee1c3d6e4ce41557819fdb5a90c2de2ac75d803ca",
+      "expected": {
+        "count": 501
+      },
+      "result": "PASS",
+      "error": null,
+      "rows": 501
+    }
+  ],
+  "existing_model_variant": "PASS",
+  "status": "PASS",
+  "browser": "156.0.8078.79",
+  "source_hashes_after": {
+    "lib/parser.js": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8",
+    "lib/qa-import.js": "bde9f1702b8d0975f4dc45e02eb2bf988bd318d3844a6a7d7e2467c39ec605c0"
+  },
+  "source_unchanged": true
+}

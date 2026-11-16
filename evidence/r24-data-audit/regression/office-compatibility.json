@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "mode": "Synthetic documents created by python-docx/openpyxl, actual browser parser",
+  "results": [
+    {
+      "file": "python-docx-generated.docx",
+      "bytes": 36596,
+      "format": "docx",
+      "terms": [
+        "TCL",
+        "HDMI 2.1",
+        "T7M Pro"
+      ]
+    },
+    {
+      "file": "openpyxl-generated.xlsx",
+      "bytes": 4848,
+      "format": "xlsx",
+      "terms": [
+        "TCL",
+        "HDMI 2.1",
+        "T7M Pro"
+      ]
+    }
+  ],
+  "app_sha256": "25e158ca9f0e37b9407bc9a39ec7845372ae8e853791a8494fc4a04924c9274f",
+  "app_sha256_after": "25e158ca9f0e37b9407bc9a39ec7845372ae8e853791a8494fc4a04924c9274f",
+  "source_unchanged": true
+}

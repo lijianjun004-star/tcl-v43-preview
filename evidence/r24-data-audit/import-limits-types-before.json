@@ -1,0 +1,143 @@
+{
+  "mode": "Desktop Chromium, synthetic CSV/JSON, isolated local origin",
+  "cases": [
+    {
+      "name": "standard-string",
+      "input": {
+        "items": [
+          {
+            "question": "接口怎样确认？",
+            "answer": "查看官方参数",
+            "keypoints": [
+              "型号",
+              "接口"
+            ]
+          }
+        ]
+      },
+      "output": [
+        {
+          "question": "接口怎样确认？",
+          "answer": "查看官方参数",
+          "keyPoints": [
+            "型号",
+            "接口"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "name": "zero-answer",
+      "input": {
+        "items": [
+          {
+            "question": "当前合成数值是多少？",
+            "answer": 0
+          }
+        ]
+      },
+      "output": [
+        {
+          "question": "当前合成数值是多少？",
+          "answer": "",
+          "keyPoints": [],
+          "locator": "JSON 1",
+          "reviewStatus": "incomplete"
+        }
+      ]
+    },
+    {
+      "name": "false-answer",
+      "input": {
+        "questions": [
+          {
+            "question": "这个合成标记是开启的吗？",
+            "answer": false
+          }
+        ]
+      },
+      "output": [
+        {
+          "question": "这个合成标记是开启的吗？",
+          "answer": "",
+          "keyPoints": [],
+          "locator": "JSON 1",
+          "reviewStatus": "incomplete"
+        }
+      ]
+    },
+    {
+      "name": "nested-objects",
+      "input": {
+        "items": [
+          {
+            "question": {
+              "text": "接口怎样确认？"
+            },
+            "answer": {
+              "text": "查看官方参数"
+            },
+            "keypoints": [
+              {
+                "point": "型号"
+              }
+            ]
+          }
+        ]
+      },
+      "output": [
+        {
+          "question": "[object Object]",
+          "answer": "[object Object]",
+          "keyPoints": [
+            "[object Object]"
+          ],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    },
+    {
+      "name": "nested-arrays",
+      "input": [
+        {
+          "question": [
+            "接口怎样确认？",
+            "型号怎样确认？"
+          ],
+          "answer": [
+            "查看参数",
+            "查看机身标识"
+          ]
+        }
+      ],
+      "output": [
+        {
+          "question": "接口怎样确认？,型号怎样确认？",
+          "answer": "查看参数,查看机身标识",
+          "keyPoints": [],
+          "locator": "JSON 1",
+          "reviewStatus": "needs_review"
+        }
+      ]
+    }
+  ],
+  "row_limit": {
+    "input_rows": 501,
+    "parser_rows": 501,
+    "preview_summary": "文件：synthetic-501.csv；识别 500 条。待审核 500，缺话术 0，重复 0，冲突 0，疑似隐私 0（此类禁止保存）。",
+    "limit_warning_found": false,
+    "stored": {
+      "count": 500,
+      "has_last": false
+    }
+  },
+  "browser": "156.0.8078.79",
+  "product_hashes": {
+    "app.js": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+    "lib/parser.js": "7509eb3b9b43a5cec8aff80f2f6f3ccf4857e194608e87740ea117553cf225cd",
+    "lib/qa-import.js": "bfe7562e3c2647693ce9d58f87f466acc8459aa06ab4e983115b012d754d155f"
+  }
+}

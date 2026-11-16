@@ -93,7 +93,13 @@ export async function parseDocxBuffer(buffer, fileName) {
             const t = extractWordParagraphText(pm[0]);
             if (t) cellParas.push(t);
           }
+          const properties=cm[0].match(/<w:tcPr\b[^>]*>([\s\S]*?)<\/w:tcPr>/)?.[1]||'';
+          const spanValue=properties.match(/<w:gridSpan\b[^>]*\bw:val=["'](\d+)["']/)?.[1];
+          const span=spanValue===undefined?1:Number(spanValue);
+          if(!Number.isSafeInteger(span)||span<1||span>256||cells.length+span>16384)throw new Error('DOCX 表格合并列超出安全范围，请拆分表格后导入');
           cells.push(cellParas.join('\n').trim());
+          // Preserve the table grid: later columns must still align with their headers.
+          for(let missing=1;missing<span;missing++)cells.push('');
         }
         if (cells.some(Boolean)) {
           rows.push({
@@ -163,30 +169,36 @@ export async function parseXlsxBuffer(buffer, fileName) {
   }
 
   const wbXml = await zip.extractText('xl/workbook.xml');
-  const sheetNames = [];
-  const sheetRegex = /<sheet\b[^>]*name="([^"]+)"[^>]*\/?>/g;
-  let sm;
-  while ((sm = sheetRegex.exec(wbXml)) !== null) {
-    sheetNames.push(decodeXmlEntities(sm[1]));
+  const attributes=xml=>Object.fromEntries([...xml.matchAll(/([\w:.-]+)\s*=\s*(["'])([\s\S]*?)\2/g)].map(m=>[m[1],decodeXmlEntities(m[3])]));
+  const relationships=new Map();
+  const relXml=await zip.extractText('xl/_rels/workbook.xml.rels');
+  if(!relXml)throw new Error('XLSX 缺少工作表关系，无法可靠对应表名与内容');
+  for(const match of relXml.matchAll(/<(?:[\w.-]+:)?Relationship\b([^>]*?)\/?\s*>/g)){
+    const rel=attributes(match[1]);
+    if(!rel.Id||relationships.has(rel.Id))throw new Error('XLSX 工作表关系编号无效或重复');
+    relationships.set(rel.Id,rel);
+  }
+  const worksheets=[];
+  for(const match of wbXml.matchAll(/<(?:[\w.-]+:)?sheet\b([^>]*?)\/?\s*>/g)){
+    const sheet=attributes(match[1]);
+    const relationId=Object.entries(sheet).find(([key])=>key.endsWith(':id'))?.[1];
+    const rel=relationships.get(relationId);
+    if(!rel||!rel.Target||rel.TargetMode==='External')throw new Error('XLSX 工作表关系缺失或指向外部文件');
+    // Chartsheets and dialog sheets carry no cell table to import.
+    if(!String(rel.Type||'').endsWith('/worksheet'))continue;
+    const target=new URL(rel.Target,'https://xlsx.invalid/xl/workbook.xml');
+    const entryName=decodeURIComponent(target.pathname.replace(/^\//,''));
+    if(target.origin!=='https://xlsx.invalid'||target.search||target.hash||!entryName.startsWith('xl/')||!zip.has(entryName))throw new Error('XLSX 工作表文件缺失或路径无效');
+    worksheets.push({entryName,sheetName:sheet.name||`Sheet${worksheets.length+1}`});
   }
 
-  const worksheetEntries = zip.list()
-    .filter(n => /^xl\/worksheets\/sheet\d+\.xml$/i.test(n))
-    .sort((a, b) => {
-      const na = parseInt(a.match(/sheet(\d+)/i)?.[1] || '0', 10);
-      const nb = parseInt(b.match(/sheet(\d+)/i)?.[1] || '0', 10);
-      return na - nb;
-    });
-
-  if (!worksheetEntries.length) {
+  if (!worksheets.length) {
     throw new Error('XLSX 文件中未找到工作表数据');
   }
 
   const blocks = [];
   let allocatedCells = 0;
-  for (let sIdx = 0; sIdx < worksheetEntries.length; sIdx++) {
-    const entryName = worksheetEntries[sIdx];
-    const sheetName = sheetNames[sIdx] || `Sheet${sIdx + 1}`;
+  for (const {entryName,sheetName} of worksheets) {
     const sheetXml = await zip.extractText(entryName);
     const rows = [];
     const rowRegex = /<row\b([^>]*)>([\s\S]*?)<\/row>/g;
