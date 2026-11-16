@@ -1275,6 +1275,114 @@ class R24SmoothMobileUpdateTests(unittest.TestCase):
                 gate.r24_resource_bytes(self.smooth_encoded)
 
 
+class R24ReviewStabilityUpdateTests(unittest.TestCase):
+    freeze_fixture = R24InPlaceUpdateTests.freeze_fixture
+    write_archive = R24InPlaceUpdateTests.write_archive
+    freeze_update = R24InPlaceUpdateTests.freeze_update
+    rebuild_fixture = R24InPlaceUpdateTests.rebuild_fixture
+    freeze_question = R24QuestionBankUpdateTests.freeze_question
+    freeze_smooth = R24SmoothMobileUpdateTests.freeze_smooth
+
+    def setUp(self):
+        R24SmoothMobileUpdateTests.setUp(self)
+        self.review_patcher = mock.patch.multiple(gate,
+            R24_REVIEW_ASSET_HASHES={}, R24_REVIEW_ARCHIVE_B64_SHA='', R24_REVIEW_ARCHIVE_SHA='')
+        self.review_patcher.start()
+        self.addCleanup(self.review_patcher.stop)
+        self.review_resources = {**self.smooth_resources,
+            'app.js': b'export const value = 5;',
+            'style.css': b'body { color: blue; overflow-wrap: anywhere; }',
+        }
+        self.freeze_review()
+
+    def freeze_review(self):
+        self.review_resources['static-manifest.json'] = json.dumps({'files': {
+            name: gate.sha256(data) for name, data in self.review_resources.items()
+            if name != 'static-manifest.json'}}).encode()
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as z:
+            for name, value in self.review_resources.items():
+                z.writestr(gate.R24_DEST + '/' + name, value)
+        raw = data.getvalue()
+        self.review_encoded = base64.b64encode(raw) + b'\n'
+        gate.R24_REVIEW_ARCHIVE_SHA = gate.sha256(raw)
+        gate.R24_REVIEW_ARCHIVE_B64_SHA = gate.sha256(self.review_encoded)
+        gate.R24_REVIEW_ASSET_HASHES = {name: gate.sha256(data)
+                                       for name, data in self.review_resources.items()}
+
+    def verify_review(self, old=None, new=None):
+        return gate.verify_r24_archive_update(self.workflow,
+            self.smooth_encoded if old is None else old,
+            self.review_encoded if new is None else new, self.zipbytes, self.trusted)
+
+    def test_all_five_frozen_snapshots_remain_readable(self):
+        for encoded, resources in ((self.old_encoded, self.resources),
+                (self.new_encoded, self.new_resources),
+                (self.question_encoded, self.question_resources),
+                (self.smooth_encoded, self.smooth_resources),
+                (self.review_encoded, self.review_resources)):
+            self.assertEqual(gate.r24_resource_bytes(encoded), resources)
+
+    def test_review_update_and_reverse_keep_worker_and_every_older_asset(self):
+        with mock.patch.object(gate, 'r24_rebuild_previous_stages', side_effect=self.rebuild_fixture):
+            update = self.verify_review()
+            rollback = self.verify_review(self.review_encoded, self.smooth_encoded)
+        self.assertEqual(update['direction'], 'update')
+        self.assertEqual(rollback['direction'], 'rollback')
+        self.assertEqual(update['total_assets'], len(self.baselines) + len(self.smooth_resources))
+        self.assertEqual(rollback['total_assets'], update['total_assets'])
+        self.assertEqual(update['protected_assets'], len(self.baselines))
+        expected = sorted(gate.R24_DEST + '/' + name for name in gate.R24_REVIEW_CHANGED_FILES)
+        self.assertEqual(update['changed'], expected)
+        self.assertEqual(rollback['changed'], expected)
+        for name in ('whisper-worker.mjs', 'whisper-bridge.mjs'):
+            self.assertEqual(self.review_resources[name], self.smooth_resources[name])
+
+    def test_review_cannot_skip_or_repeat_versions(self):
+        for encoded in (self.old_encoded, self.new_encoded, self.question_encoded, self.review_encoded):
+            for pair in ((encoded, self.review_encoded), (self.review_encoded, encoded)):
+                with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                    self.verify_review(*pair)
+
+    def test_review_cannot_add_an_unreviewed_resource_even_when_repinned(self):
+        self.review_resources['another-worker.mjs'] = b'export const surprise = 1;'
+        self.freeze_review()
+        with self.assertRaisesRegex(gate.GateFailure, 'static resource set'):
+            self.verify_review()
+
+    def test_review_cannot_remove_worker_even_when_repinned(self):
+        del self.review_resources['whisper-worker.mjs']
+        self.freeze_review()
+        with self.assertRaisesRegex(gate.GateFailure, 'static resource set'):
+            self.verify_review()
+
+    def test_review_cannot_change_worker_or_bridge_even_when_repinned(self):
+        for name in ('whisper-worker.mjs', 'whisper-bridge.mjs', 'lib/parser.js'):
+            with self.subTest(resource=name):
+                before = self.review_resources[name]
+                self.review_resources[name] = b'export const unreviewed = 5;'
+                self.freeze_review()
+                with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed three files'):
+                    self.verify_review()
+                self.review_resources[name] = before
+
+    def test_review_omitting_an_expected_change_is_rejected(self):
+        self.review_resources['style.css'] = self.smooth_resources['style.css']
+        self.freeze_review()
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed three files'):
+            self.verify_review()
+
+    def test_unfrozen_review_does_not_block_existing_four_snapshots(self):
+        with mock.patch.object(gate, 'R24_REVIEW_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            for encoded, resources in ((self.old_encoded, self.resources),
+                    (self.new_encoded, self.new_resources),
+                    (self.question_encoded, self.question_resources),
+                    (self.smooth_encoded, self.smooth_resources)):
+                self.assertEqual(gate.r24_resource_bytes(encoded), resources)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r24_resource_bytes(self.review_encoded)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
