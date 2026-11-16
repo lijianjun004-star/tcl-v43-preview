@@ -1,32 +1,75 @@
 {
   "task_id": "TCL-R24-DELIVERY-20261116",
-  "status": "BLOCKED_SIGN_IN",
-  "recorded_at_utc": "2026-11-16T18:09:50.084Z",
-  "automation_run_id": "6d32caf6-93f0-45e3-be04-d9488a187a64",
+  "status": "BLOCKED_ATTACHMENT_ENTRY",
+  "recorded_at_utc": "2026-11-16T18:39:19.394691Z",
+  "automation_run_id": "687005d0-2bf6-4349-b888-34057043a5fa",
   "automation_status": "completed",
-  "automation_run_url": "https://agent.tinyfish.ai/runs/6d32caf6-93f0-45e3-be04-d9488a187a64",
-  "automation_attempts": 1,
-  "actual_gemini_business_requests": 0,
-  "request_budget": 1,
+  "automation_run_url": "https://agent.tinyfish.ai/runs/687005d0-2bf6-4349-b888-34057043a5fa",
+  "automation_attempts_started": 3,
+  "actual_gemini_business_requests": 1,
+  "request_budget": 2,
+  "budget_change_reason": "After the Pro request had been sent, the user explicitly requested Argon. One additional request is authorized only if the real model selector actually offers and selects Argon.",
   "automatic_retries": 0,
-  "user_reported_login_saved": true,
-  "observed_browser": {
-    "url": "https://gemini.google.com/app",
-    "signed_in": false,
-    "visible_text": [
-      "Sign in",
-      "Sign in to save activity"
-    ],
-    "visible_default_model": "Flash-Lite",
-    "selected_review_model": null,
-    "attachment_mounted": false
+  "last_completed_attempt": {
+    "automation_run_id": "687005d0-2bf6-4349-b888-34057043a5fa",
+    "status": "BLOCKED_ATTACHMENT_ENTRY",
+    "requested_model": "Argon",
+    "selected_review_model_label": "4 Argon（代码与分析）",
+    "model_availability": "AVAILABLE_WITH_CURRENT_SUBSCRIPTION",
+    "model_selection_scope": "CURRENT_BROWSER_SESSION_ONLY",
+    "global_default_saved": "NOT_ESTABLISHED",
+    "attachment_mounted": false,
+    "actual_gemini_business_requests": 0,
+    "gemini_response_verbatim": null,
+    "attachment_read_verification": "NOT_ESTABLISHED",
+    "execution_evidence": [],
+    "p1_p2_analysis_returned": false,
+    "unique_conversation_url": null,
+    "evidence_file": "gemini-argon-687005d0.json"
+  },
+  "current_authorized_attempt": {
+    "automation_run_id": "687005d0-2bf6-4349-b888-34057043a5fa",
+    "status": "completed",
+    "requested_model": "Argon",
+    "selected_review_model_label": "4 Argon（代码与分析）",
+    "model_availability": "AVAILABLE_WITH_CURRENT_SUBSCRIPTION",
+    "request_sent_status": "NOT_SENT",
+    "actual_gemini_business_requests": 0,
+    "attachment_mounted": false,
+    "send_condition": "Send only after Argon is actually visible and selected and the frozen input is mounted; attachment condition was not met in this attempt.",
+    "further_automatic_attempts": 0
   },
   "input_file_id": "18WS9o63pvNx6PbX594vJdzrmWyF0dmBg",
   "input_url": "https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk",
   "input_sha256": "d13c3e3f54cd39fce7fd32fc7ddc80f42e49962cf21c094ed64e75676fdfbc32",
   "reviewed_app_target_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
-  "gemini_response": null,
-  "gemini_read_code": false,
-  "gemini_executed_tests": false,
-  "reason": "After the user confirmed saved login, the one browser automation run observed Gemini signed out. No file was attached and no business request was sent. The route stopped without automatic retry. This does not establish whether another browser is signed in. Internal Codex agents are not Gemini."
+  "prior_attempt_evidence": [
+    "gemini-attempt-6d32caf6.json",
+    "gemini-review-0fdb3765.json"
+  ],
+  "review_completed": false,
+  "reason": "The signed-in Pro attempt mounted the frozen input and sent one business request, but returned no substantive review. Following the user's explicit Argon request, the completed browser attempt selected 4 Argon (code and analysis), available with the current subscription, but could not open the attachment entry or mount the input in that UI session, so it sent zero business requests. This observation does not establish that Argon generally lacks attachment support. Model selection is confirmed only for this browser session, not as a saved global default. No source-reading confirmation, execution evidence, P1/P2 analysis, or completed Gemini review was obtained. No cause such as filtering or quota exhaustion is inferred; no automatic retry is scheduled.",
+  "automation_attempts_completed": 3,
+  "previous_completed_attempt": {
+    "automation_run_id": "0fdb3765-047b-4cfe-86a6-53ae550ef0a6",
+    "status": "NON_SUBSTANTIVE_RESPONSE",
+    "signed_in": true,
+    "selected_review_model_label": "Pro",
+    "attachment_mounted": true,
+    "actual_gemini_business_requests": 1,
+    "gemini_response_verbatim": "我只是一个文本 AI, 在这方面没法帮到你。",
+    "attachment_read_verification": "NOT_ESTABLISHED",
+    "execution_evidence": [],
+    "p1_p2_analysis_returned": false,
+    "evidence_file": "gemini-review-0fdb3765.json"
+  },
+  "attempt_evidence": [
+    "gemini-attempt-6d32caf6.json",
+    "gemini-review-0fdb3765.json",
+    "gemini-argon-687005d0.json"
+  ],
+  "attachment_read_verification": "NOT_ESTABLISHED",
+  "execution_evidence": [],
+  "p1_p2_analysis_returned": false,
+  "review_findings": null
 }

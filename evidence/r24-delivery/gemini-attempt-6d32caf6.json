@@ -1,0 +1,32 @@
+{
+  "task_id": "TCL-R24-DELIVERY-20261116",
+  "status": "BLOCKED_SIGN_IN",
+  "recorded_at_utc": "2026-11-16T18:09:50.084Z",
+  "automation_run_id": "6d32caf6-93f0-45e3-be04-d9488a187a64",
+  "automation_status": "completed",
+  "automation_run_url": "https://agent.tinyfish.ai/runs/6d32caf6-93f0-45e3-be04-d9488a187a64",
+  "automation_attempts": 1,
+  "actual_gemini_business_requests": 0,
+  "request_budget": 1,
+  "automatic_retries": 0,
+  "user_reported_login_saved": true,
+  "observed_browser": {
+    "url": "https://gemini.google.com/app",
+    "signed_in": false,
+    "visible_text": [
+      "Sign in",
+      "Sign in to save activity"
+    ],
+    "visible_default_model": "Flash-Lite",
+    "selected_review_model": null,
+    "attachment_mounted": false
+  },
+  "input_file_id": "18WS9o63pvNx6PbX594vJdzrmWyF0dmBg",
+  "input_url": "https://drive.google.com/file/d/18WS9o63pvNx6PbX594vJdzrmWyF0dmBg/view?usp=drivesdk",
+  "input_sha256": "d13c3e3f54cd39fce7fd32fc7ddc80f42e49962cf21c094ed64e75676fdfbc32",
+  "reviewed_app_target_sha256": "b086a0c5c9610f338d9c5ac86db631b191758c7bc4e7f50228777d6dd5144deb",
+  "gemini_response": null,
+  "gemini_read_code": false,
+  "gemini_executed_tests": false,
+  "reason": "After the user confirmed saved login, the one browser automation run observed Gemini signed out. No file was attached and no business request was sent. The route stopped without automatic retry. This does not establish whether another browser is signed in. Internal Codex agents are not Gemini."
+}
