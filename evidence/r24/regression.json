@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "checks": 12,
+  "mode": "actual app functions in Node VM; mocked inference, not real speech"
+}

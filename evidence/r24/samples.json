@@ -1,0 +1,20 @@
+[
+  {
+    "file": "zh-0.wav",
+    "reference": "你好我想要了解一下我的银行账户余额有多少谢谢",
+    "source": "PolyAI/minds14 zh-CN train",
+    "row_idx": 0
+  },
+  {
+    "file": "zh-1.wav",
+    "reference": "我想查询我目前的账户余额",
+    "source": "PolyAI/minds14 zh-CN train",
+    "row_idx": 1
+  },
+  {
+    "file": "zh-2.wav",
+    "reference": "我的账户还有多少钱呢",
+    "source": "PolyAI/minds14 zh-CN train",
+    "row_idx": 2
+  }
+]

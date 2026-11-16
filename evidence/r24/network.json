@@ -1,0 +1,23 @@
+{
+  "environment": "cloud Linux; NOT mainland China",
+  "probes": [
+    {
+      "source": "jsDelivr",
+      "status": 200,
+      "bytes": 888173,
+      "seconds": 0.62
+    },
+    {
+      "source": "HuggingFace",
+      "status": 200,
+      "bytes": 2243,
+      "seconds": 0.23
+    },
+    {
+      "source": "hf-mirror",
+      "status": 200,
+      "bytes": 2243,
+      "seconds": 0.59
+    }
+  ]
+}
