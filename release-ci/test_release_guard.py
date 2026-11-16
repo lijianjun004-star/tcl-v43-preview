@@ -724,6 +724,15 @@ class RealModelOneShotGateTests(unittest.TestCase):
         self.assertIn("permissions:\\n  contents: read",policy)
         self.assertNotIn("r21-real-model-smoke.yml' |",policy)
 
+
+class R23PinnedReleasePolicyTests(unittest.TestCase):
+    def test_only_exact_R23_stage_allowed(self):
+        self.assertIn('python3 release-ci/stage_r23.py',gate.R23_STEP)
+        self.assertIn('tcl-v352-asr-autoqa-r23',gate.R23_STEP)
+        self.assertIn(gate.R23_APP_SHA256,gate.R23_STEP)
+        self.assertEqual(gate.R23_STEP.count('site.zip'),0)
+        self.assertEqual(len(gate.R23_ARCHIVE_SHA256),64)
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
