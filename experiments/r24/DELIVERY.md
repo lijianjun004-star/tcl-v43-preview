@@ -67,3 +67,8 @@ CI PR：https://github.com/lijianjun004-star/tcl-v43-preview/pull/105 。原195�
 发布完成：PR106 https://github.com/lijianjun004-star/tcl-v43-preview/pull/106 ，合并 `7c2c8c4429166654a63b9c20f2258ec1cfd31b7b`；Pages https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/43923233532 成功。公网216/216资源HTTP200且哈希匹配，真实上线文字练播/复盘/刷新恢复PASS，零页面异常与外部请求。入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/ 。
 
 Gemini交接任务见 `GEMINI-REVIEW.md`；当前为BLOCKED_ATTACHMENT_ENTRY，累计1条Pro请求无实质复验、Argon已选中但0请求。上述发布和本机测试结论不变，真实手机与TCL语音准确度仍待验收。
+
+
+## 后续数据修复版本
+
+已发布r24-data-fix-20261116，app88b3ce2a取代上述b086a0c5；详见[数据复核与修复](DATA-AUDIT.md)。原交付证据保持历史版本含义，新源码和证据在fix/r24-delivery-20261116分支；发布PR111及Pages43934188599已成功。Gemini/Argon仍未提供实质复验结论。
