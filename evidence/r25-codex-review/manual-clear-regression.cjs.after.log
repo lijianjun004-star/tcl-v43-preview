@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "checks": 3,
+  "mode": "actual app live-clear/Vosk/browser-result functions in Node VM; mocked model, decoder and persistence"
+}

@@ -64,6 +64,7 @@ sub('app.js', "function r6WhisperCancelAll(",
     "let r25WhisperDisabled=false,r25VoskWanted=false;\n"
     "function r25EnsureVosk(){\n"
     " if(typeof voskModel==='undefined'||typeof preloadVoskModel!=='function')return; // same defensive style as the R24 fallback branch\n"
+    " if(voskUi.state==='error'){r25VoskWanted=false;return;} // only an explicit retry may restart a failed download\n"
     " if(voskModel||voskLoadJob||voskUi.state==='loading'||voskUi.state==='init')return;\n"
     " if(r6WhisperRunning||r6WhisperQueue.length||transcriptBusy||oneShotAsrJob){r25VoskWanted=true;return;}\n"
     " r25VoskWanted=false;void preloadVoskModel({silent:true});\n"
@@ -72,7 +73,7 @@ sub('app.js', "function r6WhisperCancelAll(",
     " if(!turn||turn.runId!==runId)return;\n"
     " if(readR23ModelPreference()!=='vosk'&&!r25WhisperDisabled){r6WhisperSubmit(turn.id,blob);return;}\n"
     " if(voskModel){enqueueQuestionAsr(turn.id);return;}\n"
-    " turn.asrStatus='原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答'+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');\n"
+    " turn.asrStatus=(voskUi.state==='error'?'原始录音已保存；中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答')+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');\n"
     " renderTurnStatus(turn);r25EnsureVosk();\n"
     "}\n"
     "function r25AutoVosk(){if(readR23ModelPreference()==='vosk'&&voskUi.state!=='error')r25EnsureVosk();}\n"
@@ -93,8 +94,8 @@ sub('app.js',
     "            if(r6WhisperEngine.isResourceBusy?.()){\n"
     "              turn.asrStatus='Whisper 识别未完成：'+errMsg+'；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写';\n"
     "            }else{\n"
-    "              turn.asrStatus='Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';\n"
-    "              r25VoskWanted=true;\n"
+    "              turn.asrStatus=voskUi.state==='error'?'原始录音已保存；Whisper 不可用（'+errMsg+'），中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';\n"
+    "              r25VoskWanted=voskUi.state!=='error';\n"
     "            }\n"
     "            renderTurnStatus(turn);")
 sub('app.js',
@@ -105,6 +106,12 @@ sub('app.js',
 sub('app.js', "ELEM('startScene').onclick=startScene;ELEM('preloadBeforeStart').onclick=preloadVoskModel;",
     "ELEM('startScene').onclick=startScene;ELEM('preloadBeforeStart').onclick=preloadVoskModel;r25AutoVosk();")
 sub('app.js', "首次逐题转写需联网下载 Whisper", "首次使用需联网下载中文识别模型（约42MB，下载后存本机）")
+
+# Match the actual Whisper preset: an explicit whole-session Whisper request in
+# default Vosk mode uses the already configured Tiny engine, not Base.
+sub('app.js',
+    "engineLabel='Whisper '+(readR23ModelPreference()==='tiny'?'Tiny':'Base')+' 本机模型';",
+    "engineLabel='Whisper '+(readR23ModelPreference()==='base'?'Base':'Tiny')+' 本机模型';")
 
 # Wording: in Vosk mode the model is the main engine, not a "backup".
 sub('app.js', "function voskWidgetHtml(kind){",

@@ -1,0 +1,9 @@
+{
+  "status": "REPRODUCED",
+  "app_sha256": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
+  "mode": "Actual unmodified r25EnsureVosk/r25RouteAsr/r25AutoVosk in Node VM. Loader mocked to fail immediately; no network, media, models or product mutation.",
+  "initial_voskUi_state": "error",
+  "autoVosk_attempts": 0,
+  "three_recording_routes_attempts": 3,
+  "expected_if_failure_requires_manual_retry": 0
+}

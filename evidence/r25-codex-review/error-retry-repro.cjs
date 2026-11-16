@@ -1,0 +1,12 @@
+const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict'), crypto=require('node:crypto');
+const file='/workspace/tcl-r25-verify/experiments/r25/tcl-v352-asr-r25-qa/app.js';
+const app=fs.readFileSync(file,'utf8');
+const block=app.slice(app.indexOf('let r25WhisperDisabled='),app.indexOf('function r6WhisperCancelAll('));
+const ctx=vm.createContext({console});
+vm.runInContext(`let voskModel=null,voskLoadJob=null,voskUi={state:'error'},r6WhisperRunning=false,r6WhisperQueue=[],transcriptBusy=false,oneShotAsrJob=null,runId='run',attempts=0;const readR23ModelPreference=()=> 'vosk';const renderTurnStatus=()=>{};const enqueueQuestionAsr=()=>{};const preloadVoskModel=()=>{attempts++;voskUi.state='error';return Promise.resolve()};`+block,ctx);
+vm.runInContext('r25AutoVosk()',ctx);const afterAuto=vm.runInContext('attempts',ctx);
+for(let i=1;i<=3;i++)vm.runInContext(`r25RouteAsr({id:'q${i}',runId:'run'}, {size:100})`,ctx);
+const afterRoutes=vm.runInContext('attempts',ctx);
+assert.equal(afterAuto,0);assert.equal(afterRoutes,3);
+const result={status:'REPRODUCED',app_sha256:crypto.createHash('sha256').update(app).digest('hex'),mode:'Actual unmodified r25EnsureVosk/r25RouteAsr/r25AutoVosk in Node VM. Loader mocked to fail immediately; no network, media, models or product mutation.',initial_voskUi_state:'error',autoVosk_attempts:afterAuto,three_recording_routes_attempts:afterRoutes,expected_if_failure_requires_manual_retry:0};
+fs.writeFileSync('/workspace/r25-source-review/error-retry-result.json',JSON.stringify(result,null,2)+'\n');console.log(result);

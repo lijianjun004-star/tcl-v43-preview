@@ -1,6 +1,5 @@
-diff -ru a/app.js b/app.js
---- a/app.js	2026-11-16 22:39:41.551146198 +0000
-+++ b/app.js	2026-11-16 22:39:41.554154886 +0000
+--- a/app.js
++++ b/app.js
 @@ -5,7 +5,7 @@
  import { parseDocumentFile } from './lib/parser.js';
  import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
@@ -40,7 +39,7 @@ diff -ru a/app.js b/app.js
    const cur=r6WhisperQueue[0];
    const target=cur&&sessionTurns.find(t=>t.id===cur.turnId);
    if(target&&r6WhisperValid(cur,target)){
-@@ -669,6 +671,24 @@
+@@ -669,6 +671,25 @@
    perQuestionAudio.get(task.turnId)===task.blob&&
    (turn.audioRevision||0)===task.audioRevision
  );
@@ -49,6 +48,7 @@ diff -ru a/app.js b/app.js
 +let r25WhisperDisabled=false,r25VoskWanted=false;
 +function r25EnsureVosk(){
 + if(typeof voskModel==='undefined'||typeof preloadVoskModel!=='function')return; // same defensive style as the R24 fallback branch
++ if(voskUi.state==='error'){r25VoskWanted=false;return;} // only an explicit retry may restart a failed download
 + if(voskModel||voskLoadJob||voskUi.state==='loading'||voskUi.state==='init')return;
 + if(r6WhisperRunning||r6WhisperQueue.length||transcriptBusy||oneShotAsrJob){r25VoskWanted=true;return;}
 + r25VoskWanted=false;void preloadVoskModel({silent:true});
@@ -57,7 +57,7 @@ diff -ru a/app.js b/app.js
 + if(!turn||turn.runId!==runId)return;
 + if(readR23ModelPreference()!=='vosk'&&!r25WhisperDisabled){r6WhisperSubmit(turn.id,blob);return;}
 + if(voskModel){enqueueQuestionAsr(turn.id);return;}
-+ turn.asrStatus='原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答'+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
++ turn.asrStatus=(voskUi.state==='error'?'原始录音已保存；中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答')+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
 + renderTurnStatus(turn);r25EnsureVosk();
 +}
 +function r25AutoVosk(){if(readR23ModelPreference()==='vosk'&&voskUi.state!=='error')r25EnsureVosk();}
@@ -65,7 +65,7 @@ diff -ru a/app.js b/app.js
  function r6WhisperCancelAll(reasonText='识别已取消（离开了复盘页），可在复盘页点「补转写」'){
    r6WhisperCancelSeq++;
    r6WhisperQueue.length=0;
-@@ -757,12 +777,20 @@
+@@ -757,12 +778,20 @@
        }catch(err){
          if(r6WhisperValid(task,turn)){
            const errMsg=String(err?.message||err||'未知错误').slice(0,100);
@@ -81,13 +81,13 @@ diff -ru a/app.js b/app.js
 +            if(r6WhisperEngine.isResourceBusy?.()){
 +              turn.asrStatus='Whisper 识别未完成：'+errMsg+'；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写';
 +            }else{
-+              turn.asrStatus='Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';
-+              r25VoskWanted=true;
++              turn.asrStatus=voskUi.state==='error'?'原始录音已保存；Whisper 不可用（'+errMsg+'），中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';
++              r25VoskWanted=voskUi.state!=='error';
 +            }
              renderTurnStatus(turn);
            }
            await saveTurn(turn).catch(()=>{});
-@@ -772,7 +800,7 @@
+@@ -772,7 +801,7 @@
          if(finishedIndex>=0)r6WhisperQueue.splice(finishedIndex,1);
        }
      }
@@ -96,7 +96,7 @@ diff -ru a/app.js b/app.js
  }
  globalThis.r6WhisperSubmit=r6WhisperSubmit;
  // ---------- END isolated ASR AutoQA ----------
-@@ -1220,7 +1248,7 @@
+@@ -1220,7 +1249,7 @@
      <div class="barrage" id="barrage" role="log" aria-live="polite" aria-label="模拟观众弹幕"><div class="chat-line system"><strong>训练提示</strong><span>准备完成后，点击下方「开始练播」。</span></div></div>
      <div class="live-foot"><div class="chat-ghost">说点什么… <span>模拟弹幕</span></div><span class="danmu-bubble" aria-hidden="true">•••</span></div>
      <button class="prep-exit" id="prepExit" type="button" aria-label="返回训练板块">‹ 返回</button>
@@ -105,7 +105,7 @@ diff -ru a/app.js b/app.js
      <section class="phone-tools-sheet" id="prepMoreSheet" role="dialog" aria-modal="false" aria-label="开播前更多工具" hidden>
        <div class="phone-tools-heading"><h3>更多工具</h3><button type="button" id="prepMoreClose" aria-label="关闭更多工具">✕</button></div>
        <div class="phone-tools-group"><h4>训练内容</h4><div class="phone-tool-grid"><button type="button" id="prepChangeBoard">更换训练板块</button>${categoryPlatformChoices(b).map(x=>`<button type="button" data-prep-platform="${ESC(x.boardId)}" data-p="${ESC(x.platform)}" ${x.selected?'aria-current="true"':''}>${ESC(x.label)}</button>`).join('')}</div></div>
-@@ -1259,7 +1287,7 @@
+@@ -1259,7 +1288,7 @@
  document.querySelectorAll('[data-switch-board]').forEach(el=>el.onclick=()=>quickSwitchBoard(el.dataset.switchBoard));
  document.querySelectorAll('#platforms button').forEach(el=>el.onclick=()=>{if(el.dataset.boardP!==selectedBoard){quickSwitchBoard(el.dataset.boardP,el.dataset.p);return}if(!canLeaveRecording())return;resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();if(answerAudioURL){URL.revokeObjectURL(answerAudioURL);answerAudioURL=''}activePlatform=el.dataset.p;roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};trainingHome()});
  ELEM('runDeviceCheck').onclick=checkDevices;ELEM('prepQuickRecheck').onclick=()=>{if(roomPhase==='ready')returnToCheck();void checkDevices()};ELEM('prepQuickText').onclick=enableTextOnly;ELEM('enterPrep').onclick=showReadyRoom;ELEM('textFallback').onclick=enableTextOnly;
@@ -114,7 +114,7 @@ diff -ru a/app.js b/app.js
  ELEM('prepExit').onclick=()=>{closeDrawer();nav('home')};
  ELEM('prepMore').onclick=()=>togglePhoneSheet('prepMoreSheet','prepMore');ELEM('prepMoreClose').onclick=closeDrawer;
  ELEM('prepChangeBoard').onclick=()=>{if(activeAssignmentId&&!window.confirm('更换板块将退出当前运营作业，改为自由训练，是否继续？'))return;closeDrawer();nav('catalog')};ELEM('prepRecheck').onclick=()=>{closeDrawer();if(roomPhase==='ready')returnToCheck();if(roomPhase!=='check')return;deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};updateDeviceStates();void checkDevices()};
-@@ -1835,7 +1863,7 @@
+@@ -1835,7 +1864,7 @@
      if(cleared){turnAtStart.answer='';turnAtStart.manualEdited=false;turnAtStart.manualCleared=true;}else if(manual){turnAtStart.answer=currentText;turnAtStart.manualEdited=true;turnAtStart.manualCleared=false;turnAtStart.compliance=complianceHints(currentText,turnAtStart.platform);turnAtStart.pointsHit=(turnAtStart.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,currentText,turnAtStart.pointKeywords?.[i]||[]));}else{turnAtStart.answer='';turnAtStart.manualEdited=false;turnAtStart.manualCleared=false;if(answerEl&&activeTurn?.id===turnAtStart.id)answerEl.value='';}
      turnAtStart.asrStatus=(voskModel?'待自动转写':'Vosk未就绪：音频保留在本页，先预下载模型后补转写')+(turnAtStart.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
      perQuestionAudio.set(turnAtStart.id,blob);
@@ -123,7 +123,7 @@ diff -ru a/app.js b/app.js
      if(recordingTurn===turnAtStart)recordingTurn=null;
      /* AutoQA-only: Vosk auto-turn queue disabled; Whisper uses original recording. */void saveTurn(turnAtStart).then(()=>{if(runId===turnAtStart.runId&&isRunPage())renderTurnStatus(turnAtStart)});renderTurnStatus(turnAtStart);
     }
-@@ -2157,7 +2185,7 @@
+@@ -2157,7 +2186,7 @@
  
  // ASR_GUARDS_END
  // VOSK_LOADER_BEGIN
@@ -132,7 +132,7 @@ diff -ru a/app.js b/app.js
  const VOSK_BASE_URL='https://lijianjun004-star.github.io/live-practice-room/voice/';
  const VOSK_MODEL_TOTAL_BYTES=43847018;
  const VOSK_MODEL_FULL_SHA256='ea1bfd4aebbe1bff20ec665c566bf4f2862e9e6cbfbb6d36dfb3357ebe1ef689';
-@@ -2395,6 +2423,11 @@
+@@ -2395,6 +2424,11 @@
  let voskUi={state:'idle',files:0,bytes:0,msg:'',attempt:1},voskAutoTried=false;
  const VOSK_FILE_TOTAL=VOSK_PART_NAMES.length+1;
  function voskWidgetHtml(kind){
@@ -144,9 +144,17 @@ diff -ru a/app.js b/app.js
   const st=voskModel?'ready':voskUi.state,pct=Math.min(100,Math.round(voskUi.files/VOSK_FILE_TOTAL*100)),mb=(voskUi.bytes/1048576).toFixed(0);
   if(st==='ready')return `<div class="r2-model ready ${kind}"><span class="r2-model-dot"></span><b>备用 Vosk 已就绪</b><small>可用于录后转文字，结果请核对</small></div>`;
   if(st==='loading'||st==='init')return `<div class="r2-model busy ${kind}" role="status"><div class="r2-model-row"><b>${st==='init'?'正在启动备用 Vosk…':'正在下载备用 Vosk'}</b><span>${st==='init'?'约 10–30 秒':pct+'%'}</span></div><div class="r2-bar${st==='init'?' indet':''}"><i style="width:${st==='init'?100:Math.max(4,pct)}%"></i></div><small>${st==='init'?'下载完成，正在校验并启动；进入其他页面不影响下载':`已完成 ${voskUi.files}/${VOSK_FILE_TOTAL} 个文件 · 约 ${mb}/42MiB${voskUi.attempt>1?` · 网络较慢，第 ${voskUi.attempt} 次尝试`:''} · 可以继续操作，下载不会中断`}</small></div>`;
-diff -ru a/asr-normalize.mjs b/asr-normalize.mjs
---- a/asr-normalize.mjs	2026-11-16 22:39:41.551320603 +0000
-+++ b/asr-normalize.mjs	2026-11-16 22:39:41.554031254 +0000
+@@ -2491,7 +2525,7 @@
+    asrActive(valid);
+    rawText=String(res?.text||'').trim();
+   }else{
+-   engineLabel='Whisper '+(readR23ModelPreference()==='tiny'?'Tiny':'Base')+' 本机模型';
++   engineLabel='Whisper '+(readR23ModelPreference()==='base'?'Base':'Tiny')+' 本机模型';
+    status.textContent='正在使用与逐题转写相同的本机模型识别整场音频，首次需下载模型…';
+    const job=r6WhisperEngine.transcribePreparedAudio({data:pcm,sampleRate:16000,duration:pcm.length/16000});
+    asrInferJob=job;job.finally(()=>{if(asrInferJob===job){asrInferJob=null;void r6WhisperDrain();void drainQuestionAsrQueue();}}).catch(()=>{});
+--- a/asr-normalize.mjs
++++ b/asr-normalize.mjs
 @@ -1,6 +1,6 @@
  // opencc-js 1.4.2, bundled t2cn preset. No network or generative rewriting.
  import { Converter } from './vendor/opencc/t2cn.mjs';
@@ -155,9 +163,8 @@ diff -ru a/asr-normalize.mjs b/asr-normalize.mjs
  export function toSimplified(raw) {
    // Unit spelling only; preserve model IDs, Latin abbreviations and quantities.
    return convert(String(raw ?? '').trim()).replace(/吋/g, '寸');
-diff -ru a/glossary-ui.mjs b/glossary-ui.mjs
---- a/glossary-ui.mjs	2026-11-16 22:39:41.551365353 +0000
-+++ b/glossary-ui.mjs	2026-11-16 22:39:41.554370983 +0000
+--- a/glossary-ui.mjs
++++ b/glossary-ui.mjs
 @@ -1,6 +1,6 @@
  import {parseTerms,extractTerms} from './asr-glossary.mjs';
  
@@ -166,9 +173,8 @@ diff -ru a/glossary-ui.mjs b/glossary-ui.mjs
  export function initGlossaryUI({parseDocumentFile,isEditable=()=>document.body.dataset.page==='home',storage=null}={}) {
    let saved=[],store=storage,storageError=false;
    try {store=store||globalThis.localStorage;const raw=store.getItem(KEY);if(raw!==null)saved=parseTerms(raw);}catch{storageError=true;}
-diff -ru a/index.html b/index.html
---- a/index.html	2026-11-16 22:39:41.551418089 +0000
-+++ b/index.html	2026-11-16 22:39:41.554463530 +0000
+--- a/index.html
++++ b/index.html
 @@ -1,4 +1,4 @@
 -<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#091423"><title>TCL 智能练播房｜R2.4 本机练播版</title><link rel="stylesheet" href="style.css"></head><body>
 +<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#091423"><title>TCL 智能练播房｜R2.5 中文转写回退修复版</title><link rel="stylesheet" href="style.css"></head><body>
@@ -184,9 +190,8 @@ diff -ru a/index.html b/index.html
    <nav class="mobile-quick-nav" id="mobileQuickNav" aria-label="主播快捷导航" hidden>
        <button type="button" data-quick-page="home" aria-label="工作首页"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><b>首页</b></button>
        <button type="button" data-quick-page="catalog" aria-label="选择专项训练"><svg class="ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="M16 10l5-3v10l-5-3"/></svg><b>练播</b></button>
-diff -ru a/r23-model-choice.js b/r23-model-choice.js
---- a/r23-model-choice.js	2026-11-16 22:39:41.551899732 +0000
-+++ b/r23-model-choice.js	2026-11-16 22:39:41.554546876 +0000
+--- a/r23-model-choice.js
++++ b/r23-model-choice.js
 @@ -1,9 +1,9 @@
  (()=>{
    'use strict';
@@ -211,9 +216,8 @@ diff -ru a/r23-model-choice.js b/r23-model-choice.js
      if(!window.confirm(note+' 切换后刷新本页，是否继续？')){selector.value=get();return;}
      try {localStorage.setItem(key,value);} catch(err){selector.value=get();window.alert('浏览器不允许保存本机模型设置。');return;}
      window.location.reload();
-diff -ru a/static-manifest.json b/static-manifest.json
---- a/static-manifest.json	2026-11-16 22:39:41.551948708 +0000
-+++ b/static-manifest.json	2026-11-16 22:39:41.554689892 +0000
+--- a/static-manifest.json
++++ b/static-manifest.json
 @@ -1,26 +1,26 @@
  {
 -  "version": "r24-review-stability-20261116",
@@ -221,7 +225,7 @@ diff -ru a/static-manifest.json b/static-manifest.json
    "files": {
      "app-config.json": "52a2881798fa934df390727eb8b71084c1e823bcef164207e6352e486c432511",
 -    "app.js": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816",
-+    "app.js": "635ed0ea61402fe6277a5bed2c9d2887b6c8b1cfab05d7d90608006558efb60f",
++    "app.js": "2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc",
      "asr-glossary.mjs": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
 -    "asr-normalize.mjs": "9d78f9e50c5bb8602e9cac37f72ca807776c9a2c966a7817f94ac88d8899ec13",
 -    "glossary-ui.mjs": "e4569e13333eacd891bf6ea7f8b6920ad344faf6c02f934443ff4d150d5d19cb",
@@ -248,9 +252,8 @@ diff -ru a/static-manifest.json b/static-manifest.json
      "whisper-worker.mjs": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b"
    }
  }
-diff -ru a/whisper-bridge.mjs b/whisper-bridge.mjs
---- a/whisper-bridge.mjs	2026-11-16 22:39:41.552572998 +0000
-+++ b/whisper-bridge.mjs	2026-11-16 22:39:41.554594114 +0000
+--- a/whisper-bridge.mjs
++++ b/whisper-bridge.mjs
 @@ -61,7 +61,9 @@
      catch (error) { pending.delete(id); fail(error); reject(failed); }
    });

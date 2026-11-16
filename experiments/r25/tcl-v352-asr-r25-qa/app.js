@@ -676,6 +676,7 @@ const r6WhisperValid=(task,turn)=>!!(
 let r25WhisperDisabled=false,r25VoskWanted=false;
 function r25EnsureVosk(){
  if(typeof voskModel==='undefined'||typeof preloadVoskModel!=='function')return; // same defensive style as the R24 fallback branch
+ if(voskUi.state==='error'){r25VoskWanted=false;return;} // only an explicit retry may restart a failed download
  if(voskModel||voskLoadJob||voskUi.state==='loading'||voskUi.state==='init')return;
  if(r6WhisperRunning||r6WhisperQueue.length||transcriptBusy||oneShotAsrJob){r25VoskWanted=true;return;}
  r25VoskWanted=false;void preloadVoskModel({silent:true});
@@ -684,7 +685,7 @@ function r25RouteAsr(turn,blob){
  if(!turn||turn.runId!==runId)return;
  if(readR23ModelPreference()!=='vosk'&&!r25WhisperDisabled){r6WhisperSubmit(turn.id,blob);return;}
  if(voskModel){enqueueQuestionAsr(turn.id);return;}
- turn.asrStatus='原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答'+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
+ turn.asrStatus=(voskUi.state==='error'?'原始录音已保存；中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'原始录音已保存；正在准备本机中文识别模型（约42MB，首次需下载），就绪后自动写入本题回答')+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
  renderTurnStatus(turn);r25EnsureVosk();
 }
 function r25AutoVosk(){if(readR23ModelPreference()==='vosk'&&voskUi.state!=='error')r25EnsureVosk();}
@@ -788,8 +789,8 @@ async function r6WhisperDrain(){
             if(r6WhisperEngine.isResourceBusy?.()){
               turn.asrStatus='Whisper 识别未完成：'+errMsg+'；底层资源仍被锁定，请保存备份后重新打开页面；当前可手动填写';
             }else{
-              turn.asrStatus='Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';
-              r25VoskWanted=true;
+              turn.asrStatus=voskUi.state==='error'?'原始录音已保存；Whisper 不可用（'+errMsg+'），中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';
+              r25VoskWanted=voskUi.state!=='error';
             }
             renderTurnStatus(turn);
           }
@@ -2524,7 +2525,7 @@ async function transcribeSessionVideo(engine='vosk'){
    asrActive(valid);
    rawText=String(res?.text||'').trim();
   }else{
-   engineLabel='Whisper '+(readR23ModelPreference()==='tiny'?'Tiny':'Base')+' 本机模型';
+   engineLabel='Whisper '+(readR23ModelPreference()==='base'?'Base':'Tiny')+' 本机模型';
    status.textContent='正在使用与逐题转写相同的本机模型识别整场音频，首次需下载模型…';
    const job=r6WhisperEngine.transcribePreparedAudio({data:pcm,sampleRate:16000,duration:pcm.length/16000});
    asrInferJob=job;job.finally(()=>{if(asrInferJob===job){asrInferJob=null;void r6WhisperDrain();void drainQuestionAsrQueue();}}).catch(()=>{});

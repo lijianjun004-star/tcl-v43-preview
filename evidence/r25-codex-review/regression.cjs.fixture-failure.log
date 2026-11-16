@@ -1,0 +1,8 @@
+evalmachine.<anonymous>:135
+              turn.asrStatus=voskUi.state==='error'?'原始录音已保存；Whisper 不可用（'+errMsg+'），中文识别模型下载失败，请点「重试下载中文模型」，就绪后自动补转本题；也可手动填写':'Whisper 不可用（'+errMsg+'），已自动改用本机中文识别：正在准备模型（约42MB），就绪后自动写入本题回答';
+                             ^
+
+ReferenceError: voskUi is not defined
+    at r6WhisperDrain (evalmachine.<anonymous>:135:30)
+
+Node.js v24.22.1

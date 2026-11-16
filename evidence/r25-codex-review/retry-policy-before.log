@@ -1,0 +1,12 @@
+AssertionError [ERR_ASSERTION]: new recordings must not restart a failed Vosk download
+
+4 !== 1
+
+    at /workspace/tcl-r25-fix/experiments/r25/tests/r25-retry-policy.cjs:38:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 4,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

@@ -1,0 +1,9 @@
+AssertionError [ERR_ASSERTION]: vosk mode must display its configured Whisper engine
+    at /workspace/tcl-r25-fix/experiments/r25/tests/r25-session-engine-label.cjs:25:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: '录后识别完成（引擎：Whisper Base 本机模型）。请对照原视频校对数字、型号、价格和同音字；不会自动将整场文字错误分配到单题。本次未修改原始录像。',
+  expected: /引擎：Whisper Tiny 本机模型/,
+  operator: 'match',
+  diff: 'simple'
+}

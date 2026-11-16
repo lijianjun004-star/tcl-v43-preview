@@ -1,5 +1,7 @@
 # R2.5 中文转写回退修复 · 实施与测试报告
 
+> 以下保留Claude对初稿 `910b3a1` / app `635ed0ea…` 的原始报告。Codex独立复核发现并修复自动下载失败后逐题重试及整场Whisper标签问题；本地候选app为 `2848488723324db8a897fcb0fc4cbe577916b0e3e01cce8e05922aed8c3d1bfc`。详见 [CODEX-REVIEW.md](CODEX-REVIEW.md)。后续浏览器/真实模型验收与发布以主任务新证据为准。
+
 任务：TCL-R25-ASR-FALLBACK-20261116 · 实施：Claude · 日期：2026-11-16
 分支：`fix/r25-asr-fallback-20261116`（基于 main `d277aab`）· 新路径：`experiments/r25/tcl-v352-asr-r25-qa/`
 **未合并、未部署、未改动任何线上路由、`site.zip`、CI 或门禁。**

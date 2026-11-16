@@ -25,7 +25,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const r6WhisperPageAlive=()=>alive;
  const r6WhisperEngine=blob=>new Promise((resolve,reject)=>pending.push({blob,resolve,reject}));
  const renderTurnStatus=()=>{},ELEM=()=>null,complianceHints=()=>[],readR23ModelPreference=()=> 'tiny';
- let activeTurn=null,transcriptBusy=false,oneShotAsrJob=null,asrInferJob=null,voskLoadJob=null; const drainQuestionAsrQueue=()=>{}; const saveTurn=async t=>saved.push({...t});
+ let activeTurn=null,transcriptBusy=false,oneShotAsrJob=null,asrInferJob=null,voskLoadJob=null,voskUi={state:'idle'}; const drainQuestionAsrQueue=()=>{}; const saveTurn=async t=>saved.push({...t});
  const normalizeInterfaceDecimals=text=>({text,changes:0});
  function add(id){const t={id,runId,boardId:'b',platform:'p',answer:'',transcript:'',keyPoints:[]};sessionTurns.push(t);perQuestionAudio.set(id,{size:10,id});return t;}
  `+valid+normalize+body,context);

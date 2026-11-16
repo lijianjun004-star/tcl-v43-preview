@@ -1,0 +1,3 @@
+init: AbortSignal rejected, Worker terminated, fallback unlocked, subsequent Whisper rejected
+load: AbortSignal rejected, Worker terminated, fallback unlocked, subsequent Whisper rejected
+infer: AbortSignal rejected, Worker terminated, fallback unlocked, subsequent Whisper rejected
