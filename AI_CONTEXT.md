@@ -648,5 +648,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 候选 r25-direct-registration-20261117，29产品文件，仅app-config.json、cloud-workflow.mjs、cloud-workspace.mjs、name-identity.mjs、static-manifest.json变化，app.js/ASR/SDK等24文件不变。ZIP80139ccbe642de5a2966a5896b6ece528ad9c0f62223eae1284a561235d58675，B646eb7280d0e4cec88f2b8739ebb958c820d5ec47c073292eb6fefb559e3b008da。
 - 本轮实际Node前端45/45、后端实际PGlite SQL/handler12/12组、独立PGlite/RLS102/102。它们使用合成Native Auth/Storage，不是实际CloudBase或真机验收。发布门禁153项和真实归档完整更新/回退通过，旧217资源保持、全站246；新门禁仅增加NAME_INVITE↔DIRECT相邻边。
 - 官方CLI3.9.3读取环境返回AUTH_FAILED（当前环境无有效管理登录）；云端迁移/函数更新、真实注册及跨设备提交尚未执行。Chromium启动socket EPERM；扩展浏览器无连接；云端localhost连接拒绝且错误页观察被URL策略阻断，已停止该路线。真实浏览器UI/物理手机/国内网络均NOT RUN。
-- GitHub HTTPS push无CLI身份，GitHub连接器创建独立源码分支成功，可继续保存/提交审阅。先恢复官方CloudBase管理登录→仅应用002→同函数v2 handler→真实云验收→按独立PR更新原R25 Pages，后端未验收前不得发布要求新API的前端。
+- 源码已通过GitHub连接器保存为10fc15f15794db4c0654fb92dc5bca050aef9776，26文件远端读回逐字节相同。独立CI草稿PR #138，head86b35d8f13837ed01b3d946b0df3778186ea0b75，Actions44067286780已completed/success；未合并或发布Pages。GitHub HTTPS push仍无CLI身份，勿重复尝试。
+- 官方设备登录生成URL后提前退出；TTY/禁止自动开浏览器仍AUTH_FAILED，官方toolbox0.9.4诊断API_ERROR（Device Flow轮询请求失败）。独立只读复现os.networkInterfaces抛ERR_SYSTEM_ERROR（uv_interface_addresses returned Unknown system error 1）；官方轮询在HTTP/token前必读MAC，故被当前环境限制阻断。这不是用户账号状态的判断；所有会话已退出，不提供旧码。须在允许官方客户端正常运行的执行环境重新授权，未改认证代码或绕过限制。
+- 先恢复官方CloudBase管理登录→仅应用002→同函数v2 handler→真实云验收→按独立PR更新原R25 Pages，后端未验收前不得发布要求新API的前端。
 - 回退只能在保留002/v2后端恢复能力前提下回退前端；新直接注册预约存在后不得恢复001或旧handler，不删除身份/作业/媒体或浏览器记录。没有新Gemini请求、付费模型API或收费资源。

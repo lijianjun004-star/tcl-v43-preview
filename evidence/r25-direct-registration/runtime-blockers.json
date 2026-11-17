@@ -1,16 +1,41 @@
 {
   "cloudbase": {
-    "status": "BLOCKED_AUTH",
+    "status": "BLOCKED_RUNTIME_AUTH",
     "officialCli": "3.9.3",
     "command": "tcb env list --json",
     "code": "AUTH_FAILED",
     "message": "No valid identity found, please log in with tcb login",
     "cloudWrites": 0,
-    "initialDeviceAuthorization": "Official device URL issued but CLI returned AUTH_FAILED before authorization completed; that link is not a valid completion result"
+    "initialDeviceAuthorization": "Official device URL issued but CLI returned AUTH_FAILED before authorization completed; that link is not a valid completion result",
+    "headlessTtyRetry": "Same AUTH_FAILED; official process exited, no active authorization handoff",
+    "officialToolboxDiagnostic": {
+      "version": "0.9.4",
+      "options": "AuthSupervisor({throwError:true,cache:false}).loginByWebAuth({flow:device,noBrowser:true,silent:true})",
+      "code": "API_ERROR",
+      "message": "Device Flow 轮询请求失败"
+    },
+    "independentReadOnlyDiagnosis": {
+      "operation": "Node os.networkInterfaces()",
+      "code": "ERR_SYSTEM_ERROR",
+      "message": "uv_interface_addresses returned Unknown system error 1",
+      "officialCodePath": "fetchPollToken -> getMacAddress -> address.mac -> address.interface -> os.networkInterfaces",
+      "boundary": "Fails before HTTP /token; does not establish user account or consent status",
+      "authClientModified": false,
+      "runtimeRestrictionBypassed": false
+    }
   },
   "github": {
     "gitHttpsPush": "No CLI credentials; dry-run cannot read Username",
-    "connectorCreateBranch": "PASS; source branch created"
+    "connectorCreateBranch": "PASS; source branch created",
+    "sourceCommit": "10fc15f15794db4c0654fb92dc5bca050aef9776",
+    "sourceReadback": "26 files byte-identical",
+    "draftCiPr": 138,
+    "ciHead": "86b35d8f13837ed01b3d946b0df3778186ea0b75",
+    "ciRun": 44067286780,
+    "ciStatus": "completed",
+    "ciConclusion": "success",
+    "merged": false,
+    "pagesPublished": false
   },
   "browser": {
     "localChromium": "NOT_RUN: browser process socket() returned EPERM before any product checks",
