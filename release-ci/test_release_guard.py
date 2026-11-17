@@ -1624,6 +1624,12 @@ class R25CloudUpdateTests(unittest.TestCase):
                 'app.js', 'app-config.json', 'index.html', 'style.css', 'static-manifest.json'}),
             R25_RECOVERY_ARCHIVE_B64_SHA='', R25_RECOVERY_ARCHIVE_SHA='',
             R25_RECOVERY_ASSET_HASHES={}, R25_RECOVERY_FILE_COUNT=len(self.cloud_resources),
+            R25_NAME_INVITE_ARCHIVE_B64_SHA='', R25_NAME_INVITE_ARCHIVE_SHA='',
+            R25_NAME_INVITE_ASSET_HASHES={}, R25_NAME_INVITE_FILE_COUNT=len(self.cloud_resources) + 1,
+            R25_NAME_INVITE_CHANGED_FILES=frozenset({'app.js', 'app-config.json',
+                'cloud-workflow.mjs', 'cloud-workspace.mjs', 'style.css',
+                'name-identity.mjs', 'static-manifest.json'}),
+            R25_NAME_INVITE_ADDED_FILES=frozenset({'name-identity.mjs'}),
             R25_BASELINE_WORKFLOW_SHA=gate.sha256(self.before.encode()),
             LAB_BASELINE_ZIP_SHA256=gate.sha256(self.zipbytes),
             R25_BASELINE_FILES=len(self.baseline),
@@ -1637,11 +1643,25 @@ class R25CloudUpdateTests(unittest.TestCase):
         self.cloud_encoded = self.freeze(self.cloud_resources)
         self.recovery_resources = dict(self.cloud_resources, **{'app.js': b'export const recovery = 3;'})
         self.recovery_encoded = self.freeze(self.recovery_resources, recovery=True)
+        self.name_resources = dict(self.recovery_resources)
+        for name in ('app.js', 'app-config.json', 'cloud-workflow.mjs', 'cloud-workspace.mjs', 'style.css'):
+            self.name_resources[name] = (b'export const nameInvite = 4;'
+                                         if name.endswith(('.js', '.mjs')) else b'name fixture')
+        self.name_resources['name-identity.mjs'] = b'export const nameIdentity = true;'
+        self.name_encoded = self.freeze(self.name_resources, name_invite=True)
 
-    def freeze(self, resources, cloud=True, version=None, update_assets=True, recovery=False):
+    def freeze(self, resources, cloud=True, version=None, update_assets=True,
+               recovery=False, name_invite=False):
+        if name_invite:
+            prefix, default_version = 'R25_NAME_INVITE_', gate.R25_NAME_INVITE_VERSION
+        elif recovery:
+            prefix, default_version = 'R25_RECOVERY_', gate.R25_RECOVERY_VERSION
+        elif cloud:
+            prefix, default_version = 'R25_CLOUD_', gate.R25_CLOUD_VERSION
+        else:
+            prefix, default_version = 'R25_', gate.R25_VERSION
         resources['static-manifest.json'] = json.dumps({
-            'version': version or (gate.R25_RECOVERY_VERSION if recovery else
-                                   gate.R25_CLOUD_VERSION if cloud else gate.R25_VERSION),
+            'version': version or default_version,
             'files': {name: gate.sha256(data) for name, data in resources.items()
                       if name != 'static-manifest.json'},
         }, sort_keys=True).encode()
@@ -1651,7 +1671,6 @@ class R25CloudUpdateTests(unittest.TestCase):
                 archive.writestr(gate.R25_DEST + '/' + name, value)
         raw = data.getvalue()
         encoded = base64.b64encode(raw) + b'\n'
-        prefix = 'R25_RECOVERY_' if recovery else 'R25_CLOUD_' if cloud else 'R25_'
         setattr(gate, prefix + 'ARCHIVE_SHA', gate.sha256(raw))
         setattr(gate, prefix + 'ARCHIVE_B64_SHA', gate.sha256(encoded))
         if update_assets:
@@ -1911,6 +1930,79 @@ class R25CloudUpdateTests(unittest.TestCase):
             self.assertEqual(gate.r25_resource_bytes(self.cloud_encoded), self.cloud_resources)
             with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
                 gate.r25_resource_bytes(self.recovery_encoded)
+
+    def test_all_four_snapshots_remain_independently_readable(self):
+        for encoded, resources in ((self.old_encoded, self.old_resources),
+                                   (self.cloud_encoded, self.cloud_resources),
+                                   (self.recovery_encoded, self.recovery_resources),
+                                   (self.name_encoded, self.name_resources)):
+            self.assertEqual(gate.r25_resource_bytes(encoded), resources)
+
+    def test_exact_name_invite_update_and_reverse_preserve_all_older_bytes(self):
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            update = self.verify(self.recovery_encoded, self.name_encoded)
+            rollback = self.verify(self.name_encoded, self.recovery_encoded)
+        self.assertEqual(update['direction'], 'update')
+        self.assertEqual(rollback['direction'], 'rollback')
+        self.assertEqual(update['total_assets'], len(self.baseline) + len(self.name_resources))
+        self.assertEqual(rollback['total_assets'], len(self.baseline) + len(self.recovery_resources))
+        for result in (update, rollback):
+            self.assertEqual(result['protected_assets'], len(self.baseline))
+            self.assertEqual(result['changed'], sorted(gate.R25_DEST + '/' + name
+                                                       for name in gate.R25_NAME_INVITE_CHANGED_FILES))
+
+    def test_name_invite_cannot_skip_asr_or_cloud_versions_or_repeat_itself(self):
+        for old, new in ((self.old_encoded, self.name_encoded),
+                         (self.name_encoded, self.old_encoded),
+                         (self.cloud_encoded, self.name_encoded),
+                         (self.name_encoded, self.cloud_encoded),
+                         (self.name_encoded, self.name_encoded)):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                self.verify(old, new)
+
+    def test_name_invite_cannot_ship_backend_code_even_when_fully_repinned(self):
+        self.name_resources['backend/account-create.js'] = b'export const secretServerCode = true;'
+        gate.R25_NAME_INVITE_FILE_COUNT += 1
+        encoded = self.freeze(self.name_resources, name_invite=True)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+            self.verify(self.recovery_encoded, encoded)
+
+    def test_name_invite_cannot_remove_an_existing_resource_even_when_fully_repinned(self):
+        del self.name_resources['whisper-worker.mjs']
+        gate.R25_NAME_INVITE_FILE_COUNT -= 1
+        encoded = self.freeze(self.name_resources, name_invite=True)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+            self.verify(self.recovery_encoded, encoded)
+
+    def test_name_invite_cannot_rewrite_unreviewed_asr_or_sdk_even_when_repinned(self):
+        for name in ('whisper-worker.mjs', 'asr-normalize.mjs',
+                     'vendor/cloudbase/cloudbase-sdk.mjs'):
+            resources = dict(self.name_resources)
+            resources[name] = b'export const unreviewed = true;'
+            encoded = self.freeze(resources, name_invite=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+                self.verify(self.recovery_encoded, encoded)
+
+    def test_pending_name_invite_policy_does_not_block_the_three_deployed_snapshots(self):
+        with mock.patch.object(gate, 'R25_NAME_INVITE_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            for encoded, resources in ((self.old_encoded, self.old_resources),
+                                       (self.cloud_encoded, self.cloud_resources),
+                                       (self.recovery_encoded, self.recovery_resources)):
+                self.assertEqual(gate.r25_resource_bytes(encoded), resources)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.name_encoded)
+
+    def test_name_invite_edge_still_checks_older_bytes_after_staging(self):
+        original = gate.stage_r25
+        def changing_stage(site, archive):
+            result = original(site, archive)
+            if Path(site).name == '_updated_site':
+                (Path(site) / 'index.html').write_bytes(b'corrupted older root')
+            return result
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            with mock.patch.object(gate, 'stage_r25', changing_stage):
+                with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
+                    self.verify(self.recovery_encoded, self.name_encoded)
 
 
 if __name__=='__main__':
