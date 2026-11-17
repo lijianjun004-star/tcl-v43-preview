@@ -28,7 +28,7 @@ function checkedPassword(value){
 }
 function publicReady(row){
  if(row?.state!=='ready'||typeof row.username!=='string'||!row.username||typeof row.uid!=='string'||!row.uid)fail('PROVIDER_UNAVAILABLE','开户状态尚未确认完成，请重试原尝试');
- return {state:'ready',username:row.username,uid:row.uid,displayName:row.displayName||''};
+ return {state:'ready',username:row.username,uid:row.uid,displayName:row.displayName||'',...(['anchor','operator'].includes(row.role)?{role:row.role}:{})};
 }
 function createIdentityService({provider=createProvider()}={}){
  async function db(action,payload){
@@ -53,13 +53,13 @@ function createIdentityService({provider=createProvider()}={}){
   return user;
  }
  async function finish(row,proof,user){
-  const final=await db('finalize',{...proof,providerUid:user.uid,nativeUsername:row.username,marker:row.marker});
+  const final=await db('finalize',{...proof,providerUid:user.uid,nativeUsername:row.username,marker:row.marker,role:row.role});
   return publicReady(final);
  }
  async function handle(body,context={}){
   try{
    if(!body||typeof body!=='object'||Array.isArray(body))fail('INVALID_REQUEST','请求必须为JSON对象');
-   const allowed={resolve:['action','name'],register:['action','name','password','inviteCode','operationId','operationSecret'],status:['action','name','operationId','operationSecret']}[body.action];
+   const allowed={resolve:['action','name'],register:['action','name','password','role','inviteCode','operationId','operationSecret'],status:['action','name','role','operationId','operationSecret']}[body.action];
    if(!allowed||Object.keys(body).some(key=>!allowed.includes(key)))fail('INVALID_REQUEST','不支持的身份请求字段');
    const rateKey=typeof context.rateKey==='string'&&/^[a-f0-9]{64}$/.test(context.rateKey)?context.rateKey:digest('sha256','shared-unknown-source');
    // Persistent platform-independent abuse accounting. No raw IP is stored.
@@ -78,24 +78,32 @@ function createIdentityService({provider=createProvider()}={}){
     if([...name].length<=40){
      const row=await db('resolve',{name});return {ok:true,data:publicReady(row)};
     }
-    fail('NOT_FOUND','未找到姓名，请核对姓名或使用邀请码首次开通');
+    fail('NOT_FOUND','未找到姓名，请核对姓名或首次注册');
    }
    const proof=operation(body);
+   if(body.role!==undefined&&!['anchor','operator'].includes(body.role))fail('INVALID_ROLE','注册身份仅支持主播或运营');
    if(body.action==='status'){
-    const row=await db('status',{...proof,...(body.name===undefined?{}:{name:normalizeName(body.name)})});
+    const row=await db('status',{...proof,...(body.name===undefined?{}:{name:normalizeName(body.name)}),...(body.role===undefined?{}:{role:body.role})});
     if(row.state==='ready')return {ok:true,data:publicReady(row)};
     const native=await recoverNative(row);
-    return {ok:true,data:native?await finish(row,proof,native):{state:'reserved',requiresPassword:true}};
+    return {ok:true,data:native?await finish(row,proof,native):{state:'reserved',requiresPassword:true,role:row.role}};
    }
    const name=normalizeName(body.name),password=checkedPassword(body.password);
-   if(typeof body.inviteCode!=='string'||!/^[a-f0-9]{32}$/i.test(body.inviteCode.trim()))fail('INVALID_INVITE','邀请码无效');
+   // Old cached clients may finish invite-based operations. New registrations
+   // choose only a non-admin role; never silently reinterpret an old operation.
+   const direct=body.role!==undefined;
+   if(direct&&body.inviteCode!==undefined)fail('INVALID_REQUEST','直接注册无需邀请码');
+   if(!direct){
+    if(body.inviteCode===undefined)fail('INVALID_ROLE','请选择主播或运营身份');
+    if(typeof body.inviteCode!=='string'||!/^[a-f0-9]{32}$/i.test(body.inviteCode.trim()))fail('INVALID_INVITE','邀请码无效');
+   }
    // A human alias must not shadow an existing native login name. No adoption
    // or password reset is attempted for any pre-existing native account.
    if(nativeName.test(name)){
     const old=await find(name);
     if(old)fail('NAME_TAKEN','姓名已存在，请直接用原密码登录，或加部门/编号');
    }
-   const row=await db('reserve',{...proof,name,inviteHash:digest('md5',body.inviteCode.trim().toLowerCase())});
+   const row=await db('reserve',{...proof,name,...(direct?{role:body.role}:{inviteHash:digest('md5',body.inviteCode.trim().toLowerCase())})});
    if(row.state==='ready')return {ok:true,data:publicReady(row)};
    let native=await recoverNative(row);
    if(!native){

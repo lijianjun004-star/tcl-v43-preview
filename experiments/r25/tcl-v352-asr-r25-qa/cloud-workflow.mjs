@@ -141,18 +141,21 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
       return acceptSession(epoch,resolved.uid);
     });
   }
-  async function register({name,username,password,inviteCode,invitationCode}={}) {
+  async function register({name,username,password,role='anchor'}={}) {
+    if(!['anchor','operator'].includes(role))fail('INVALID_ROLE','请选择主播或运营注册');
     const epoch=++identityEpoch;activeWrites.clear();await setIdentity(null,null);
     return mutateNativeAuth(async()=>{
       if(epoch!==identityEpoch)fail('STALE_SESSION','加入请求已被新的操作替代');
-      const registered=await personIdentity.register({name:name||username,password,inviteCode:inviteCode||invitationCode});
+      const registered=await personIdentity.register({name:name||username,password,role});
       if(epoch!==identityEpoch)fail('STALE_SESSION','加入结果已保留，请使用刚才的姓名和密码登录');
       await sdk();await sdkApp.__r25Auth.signIn(registered.username,password);
       if(epoch!==identityEpoch)fail('STALE_SESSION','登录状态已改变');
       const current=await readSession();
       if(!current?.uid||(registered.uid&&current.uid!==registered.uid))fail('IDENTITY_MISMATCH','加入后的身份尚未确认，请使用刚才的姓名和密码重新登录');
       const profile=await acceptSession(epoch,registered.uid);
-      if(profile?.role==='pending')fail('INVITE_REQUIRED','姓名已建立，但邀请尚未绑定完成，请稍后继续原加入操作');
+      if(profile?.role==='pending')fail('ACCOUNT_PENDING','姓名已建立，但账号角色尚未确认，请联系管理员');
+      const expectedRole=registered.legacyRecovery===true?registered.role:role;
+      if(profile?.role!==expectedRole){await setIdentity(null,null);fail('IDENTITY_MISMATCH','注册身份与云端角色不一致，请联系管理员');}
       return profile;
     });
   }

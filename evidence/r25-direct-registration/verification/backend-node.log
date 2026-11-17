@@ -1,0 +1,20 @@
+✔ upgrade and rerun preserve legacy users, aliases and original invite reservation (3418.710866ms)
+✔ direct anchor and operator registration need no invitation and return bound role (57.858231ms)
+✔ role whitelist and privileged fields fail before any native account creation (12.16208ms)
+✔ wrong secret/name/role cannot query or adopt pending native identity (27.283963ms)
+✔ native create timeout and finalization outage recover same UID without password replay (22.734486ms)
+✔ native marker mismatch blocks finalization; existing native UID cannot be adopted (22.100232ms)
+✔ legacy invitation reservation survives upgrade and resumes without role (56.207674ms)
+✔ legacy reservation cannot convert to direct role or bypass revoked inviter (36.478939ms)
+✔ normalized name and legacy username namespaces stay unique (39.602204ms)
+✔ service-only function and private tables reject anon and authenticated (12.646927ms)
+✔ persistent registration quotas enforce per-source and global ceilings (276.610793ms)
+✔ HTTP rejects untrusted origins and maps invalid role without leaking secrets (2.101844ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4250.999501

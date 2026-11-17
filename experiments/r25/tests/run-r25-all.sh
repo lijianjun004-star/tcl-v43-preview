@@ -4,7 +4,8 @@
 set -u
 ROOT=$1; R24SITE=$2; OUT=$3; AUD=$4
 PY=${PYTHON:-python3}; mkdir -p "$OUT/logs" "$OUT/flows" "$OUT/shots"
-export NODE_PATH=${NODE_PATH:-$(npm root -g)}
+# Optional controlled external test dependency directory (no install or repository mutation).
+export NODE_PATH=${R25_TEST_NODE_PATH:-${NODE_PATH:-$(npm root -g)}}
 T=$ROOT/experiments/r25/tests; SITE=$ROOT/experiments/r25
 summary=()
 rec(){ summary+=("$1|$2|$3"); echo "$1 => $2 $3"; }
@@ -12,10 +13,17 @@ cd "$ROOT"
 if [[ -z ${ONLY_FLOWS:-} ]]; then
 for t in "$T"/*.cjs "$T"/*.mjs; do
   b=$(basename "$t"); [[ $b == r25-flow.cjs ]] && continue
+  if [[ $b == name-identity.mjs || $b == name-login-ui.cjs ]]; then
+    rec "node:$b" SUPERSEDED "Direct role/no-invite contract: direct-registration-identity.mjs, direct-registration-workflow.mjs, direct-registration-ui.py; historical invite-only checks not run or counted PASS"
+    continue
+  fi
   if [[ $b == r25-bridge-release.mjs || $b == bridge-worker.mjs || $b == bridge-delivery.mjs || $b == app-queue-wakeup.mjs || $b == audio-locks.mjs ]]; then timeout 300 node --test "$t" >"$OUT/logs/$b.log" 2>&1; else timeout 300 node "$t" >"$OUT/logs/$b.log" 2>&1; fi
-  c=$?; rec "node:$b" $([ $c = 0 ] && echo PASS || echo FAIL) "exit=$c (MOCK)"
+  c=$?; scope="MOCK"; [[ $b == direct-registration-acl.mjs ]] && scope="Actual in-memory PGlite/RLS; synthetic Auth and Storage metadata, no cloud writes"
+  rec "node:$b" $([ $c = 0 ] && echo PASS || echo FAIL) "exit=$c ($scope)"
 done
-for t in record-cache.py session_concurrency.py session_smooth_recovery.py browser_smooth_e2e.py; do
+timeout 300 node --test "$ROOT/backend/r25-name-identity/tests/direct-registration.test.cjs" >"$OUT/logs/direct-registration-backend.log" 2>&1
+c=$?; rec "backend:direct-registration.test.cjs" $([ $c = 0 ] && echo PASS || echo FAIL) "exit=$c (in-memory PGlite, synthetic Auth; NODE_PATH-controlled dependencies, no cloud writes)"
+for t in direct-registration-ui.py record-cache.py session_concurrency.py session_smooth_recovery.py browser_smooth_e2e.py; do
   timeout 900 $PY -I "$T/$t" >"$OUT/logs/$t.log" 2>&1; c=$?; rec "browser:$t" $([ $c = 0 ] && echo PASS || echo FAIL) "exit=$c (Chromium, synthetic data, Whisper mocked)"
 done
 fi
@@ -38,4 +46,4 @@ flow R24-A-hostfail             "$R24SITE" $S24 ''  abort none  "$AUD/q1pad.wav"
 flow R24-B-hosthang             "$R24SITE" $S24 ''  hang  none  "$AUD/q1pad.wav" 11000 false
 flow R24-D-hang-voskready       "$R24SITE" $S24 ''  hang  ready "$AUD/q1pad.wav" 11000 false
 printf '%s\n' "${summary[@]}" >> "$OUT/SUMMARY.txt"
-echo "R25: $(grep -v '^flow:R24' "$OUT/SUMMARY.txt" | grep -c '|PASS|')/$(grep -vc '^flow:R24' "$OUT/SUMMARY.txt") PASS; R24 baseline: $(grep -c 'BUG_REPRODUCED' "$OUT/SUMMARY.txt")/3 defect reproduced"
+echo "R25: $(grep -v '^flow:R24' "$OUT/SUMMARY.txt" | grep -c '|PASS|')/$(grep -v '^flow:R24' "$OUT/SUMMARY.txt" | grep -vc '|SUPERSEDED|') PASS; R24 baseline: $(grep -c 'BUG_REPRODUCED' "$OUT/SUMMARY.txt")/3 defect reproduced"

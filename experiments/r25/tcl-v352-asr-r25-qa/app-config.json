@@ -1,6 +1,6 @@
 {
   "apiBase": "",
-  "note": "姓名登录、邀请码加入、作业、提交与反馈使用CloudBase；旧知识库API未启用，原有本机和云端历史数据保留。",
+  "note": "主播和运营用姓名密码直接注册登录，按运营姓名提交作业，管理员查看全部提交；旧知识库API未启用，原有本机和云端历史数据保留。",
   "cloudbase": {
     "envId": "unknown-roadrunner-d7cap6e21f517",
     "region": "ap-shanghai",

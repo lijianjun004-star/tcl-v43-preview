@@ -1,13 +1,24 @@
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clone = value => JSON.parse(JSON.stringify(value));
-const roleName = role => ({ anchor: '主播', operator: '运营', admin: '管理员', pending: '待绑定邀请' }[role] || '未分配角色');
+const roleName = role => ({ anchor: '主播', operator: '运营', admin: '管理员', pending: '待管理员确认' }[role] || '未分配角色');
 const when = value => value ? new Date(value).toLocaleString('zh-CN') : '—';
 const newId = () => globalThis.crypto.randomUUID();
 const snapshotOf = submission => submission.snapshot || submission;
 const feedbackRows = rows => rows?.length ? rows.map(row => `<article class="cloud-feedback"><b>人工反馈 · ${escape(when(row.createdAt))}</b><p>${escape(row.body)}</p></article>`).join('') : '<p class="muted">暂未收到人工反馈。</p>';
 
+export function resolveOperatorName(rows, value) {
+  const name=String(value||'').normalize('NFKC').trim().toLowerCase();
+  if(!name)throw new Error('请填写接收运营的完整姓名');
+  const matches=rows.filter(row=>row.active!==false&&['operator','admin'].includes(row.role)&&String(row.displayName||row.username||'').normalize('NFKC').trim().toLowerCase()===name);
+  if(!matches.length)throw new Error('没有找到此姓名的有效运营，请核对运营注册姓名');
+  if(matches.length!==1)throw new Error('此运营姓名对应多个账号，请联系管理员区分姓名后再提交');
+  const uid=matches[0].uid||matches[0].id;
+  if(!uid)throw new Error('接收运营身份不完整，请刷新后重试');
+  return String(uid);
+}
+
 export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogout, onStart, onLocalRecords, getLocalResume=()=>null, onResumeReview=()=>{}, onExportLegacy=()=>{}, toast = () => {}, downloadJSON = () => {} }) {
-  let mountSequence = 0, panelSequence=0,detailSequence=0,operators = [], assignments = [];const mediaUrls=new Set(),mediaPlayers=new Set();
+  let mountSequence = 0, panelSequence=0,detailSequence=0, assignments = [];const mediaUrls=new Set(),mediaPlayers=new Set();
   const releaseMedia=()=>{for(const player of mediaPlayers){try{player.pause();player.removeAttribute('src');player.load();player.remove();}catch{}}mediaPlayers.clear();for(const url of mediaUrls)URL.revokeObjectURL(url);mediaUrls.clear();};
   const board = id => boards.find(row => row.id === id) || boards[0];
   const boardOptions = () => boards.map(row => `<option value="${escape(row.id)}">${escape(row.category)}</option>`).join('');
@@ -42,9 +53,8 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       <p data-cloud-status class="cloud-status" role="status">正在读取本人可见的云端记录…</p>
       ${!operator&&resume?`<button type="button" id="cloudResumePractice" class="resume-review"><span>恢复本人本机最近练习</span><b>${escape(resume.title)}</b><small>文字与已保存音视频仍在这台设备，不会自动上传</small></button>`:''}
       ${operator ? publishForm() : practiceForm()}
-      <section class="panel"><h2>${operator ? '我发布的作业' : '运营布置的作业'}</h2><p class="muted">${operator ? '主播主动提交前，只有加入和训练状态对你可见。' : '加入后开始练播，文字和录音仍先保存在这台设备。'}</p><div id="cloudAssignments" class="assignment-results"></div></section>
-      <section class="panel"><h2>${operator ? '云端收件箱' : '我的云端提交与反馈'}</h2><p class="muted">${operator ? '这里只显示主动提交给你的记录。' : '已确认回执的记录可在其他设备登录后查看。'} ${workflow.getState().capabilities.media?'媒体只在主播明确选择后私有上传。':'当前只同步文字，录音录像没有上传。'}</p><div id="cloudSubmissions" class="question-list"></div></section>
-      ${operator ? invitationForm(user.role) : ''}
+      <section class="panel"><h2>${user.role === 'admin' ? '全部运营发布的作业' : operator ? '我发布的作业' : '运营布置的作业'}</h2><p class="muted">${operator ? '主播主动提交前，只有加入和训练状态对你可见。' : '加入后开始练播，文字和录音仍先保存在这台设备。'}</p><div id="cloudAssignments" class="assignment-results"></div></section>
+      <section class="panel"><h2>${user.role === 'admin' ? '全部主播交付作业' : operator ? '我的云端收件箱' : '我的云端提交与反馈'}</h2><p class="muted">${user.role === 'admin' ? '默认显示所有主播已交付的作业。' : operator ? '这里只显示主播主动提交给你的记录。' : '已确认回执的记录可在其他设备登录后查看。'} ${workflow.getState().capabilities.media?'媒体只在主播明确选择后私有上传。':'当前只同步文字，录音录像没有上传。'}</p><div id="cloudSubmissions" class="question-list"></div></section>
       <details class="panel"><summary>旧本机体验记录</summary><p class="muted">旧本机记录仍保留在原浏览器，尚未上传；正式账号使用独立空间，不会按姓名自动认领旧数据。</p><button id="cloudExportLegacy" class="btn soft" type="button">只读导出旧本机文字（不上传）</button></details>
       <section class="panel" id="cloudDetail" hidden></section>
       <section class="panel" id="cloudPending" hidden></section>
@@ -71,7 +81,6 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
     };
     bindTask(container, '#cloudRefresh', refresh);
     if (operator) bindPublish(container, refresh); else bindPractice(container);
-    if (operator) bindInvitations(container);
     container.querySelector('#cloudPasswordForm').addEventListener('submit', async event => {
       event.preventDefault(); const form = event.currentTarget, button = form.querySelector('button'); if (button.disabled) return;
       const oldInput = form.querySelector('#cloudOldPassword'), newInput = form.querySelector('#cloudNewPassword');
@@ -84,9 +93,9 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
   }
   function mountLogin(container, id) {
     const state = workflow.getState();
-    container.innerHTML = `<section class="name-login cloud-workspace" data-cloud-screen="${id}"><div class="name-login-card"><span class="eyebrow">TCL · 练播房</span><h2>用姓名进入练播房</h2><p>首次使用填写姓名、自己设置的密码和邀请码。以后在其他设备用同一姓名和密码登录，即可查看已提交记录与反馈。</p>
-      <div class="cloud-login-tabs" role="tablist" aria-label="加入或登录"><button id="cloudJoinTab" type="button" role="tab" aria-selected="true" aria-controls="cloudJoinPanel">首次使用邀请码加入</button><button id="cloudNameLoginTab" type="button" role="tab" aria-selected="false" aria-controls="cloudNameLoginPanel" tabindex="-1">姓名和密码登录</button></div>
-      <section id="cloudJoinPanel" role="tabpanel" aria-labelledby="cloudJoinTab"><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">姓名</label><input id="cloudRegisterName" required maxlength="40" autocomplete="name" placeholder="填写姓名，重名可加部门"></div><div class="field"><label for="cloudRegisterPassword">自己设置密码</label><input id="cloudRegisterPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password" aria-describedby="cloudJoinPasswordHint"><small id="cloudJoinPasswordHint">8–32位，建议大小写字母加数字，首位用字母或数字。</small></div><div class="field"><label for="cloudInvitationCode">邀请码</label><input id="cloudInvitationCode" required maxlength="128" autocomplete="off" placeholder="填写运营或管理员给你的邀请码"></div><p class="muted">邀请码决定你进入主播端还是运营端。姓名已使用时，请直接登录；同名同事可加部门区分。</p><button type="submit" class="btn primary wide">加入练播房</button><p class="muted">如果上次加入时断网，请保留相同姓名、邀请码，并填写首次设置的密码；再次点击会继续原操作。密码不会由本页保存。</p></form></section>
+    container.innerHTML = `<section class="name-login cloud-workspace" data-cloud-screen="${id}"><div class="name-login-card"><span class="eyebrow">TCL · 练播房</span><h2>用姓名进入练播房</h2><p>首次使用选择主播或运营，填写姓名和自己设置的密码即可注册。以后在其他设备用同一姓名和密码登录，即可查看已提交记录与反馈。</p>
+      <div class="cloud-login-tabs" role="tablist" aria-label="加入或登录"><button id="cloudJoinTab" type="button" role="tab" aria-selected="true" aria-controls="cloudJoinPanel">姓名和密码注册</button><button id="cloudNameLoginTab" type="button" role="tab" aria-selected="false" aria-controls="cloudNameLoginPanel" tabindex="-1">姓名和密码登录</button></div>
+      <section id="cloudJoinPanel" role="tabpanel" aria-labelledby="cloudJoinTab"><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">姓名</label><input id="cloudRegisterName" required maxlength="40" autocomplete="name" placeholder="填写姓名，重名可加部门"></div><div class="field"><label for="cloudRegisterPassword">自己设置密码</label><input id="cloudRegisterPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password" aria-describedby="cloudJoinPasswordHint"><small id="cloudJoinPasswordHint">8–32位，建议大小写字母加数字，首位用字母或数字。</small></div><div class="field"><label for="cloudRegisterRole">注册身份</label><select id="cloudRegisterRole"><option value="anchor">主播</option><option value="operator">运营</option></select></div><p class="muted">选择你使用练播房的身份。管理员账号由管理员配置。姓名已使用时，请直接登录；同名同事可加部门区分。</p><button type="submit" class="btn primary wide">加入练播房</button><p class="muted">如果上次加入时断网，请保留相同姓名和注册身份，并填写首次设置的密码；再次点击会继续原操作。密码不会由本页保存。</p></form></section>
       <section id="cloudNameLoginPanel" role="tabpanel" aria-labelledby="cloudNameLoginTab" hidden><form id="cloudLoginForm"><div class="field"><label for="cloudUsername">姓名</label><input id="cloudUsername" required maxlength="64" autocomplete="username" placeholder="填写加入时使用的姓名"></div><div class="field"><label for="cloudPassword">密码</label><input id="cloudPassword" required type="password" maxlength="128" autocomplete="current-password"></div><button type="submit" class="btn primary wide">登录练播房</button></form></section>
       <p data-cloud-status class="cloud-status${state.error ? ' error' : ''}" role="status">${escape(state.error)}</p><p class="cloud-login-preservation">原有记录继续保留在原身份下。旧本机体验记录仍在原浏览器，尚未上传；不会按姓名自动合并。</p></div></section>`;
     const login = container.querySelector('#cloudLoginForm'), registration = container.querySelector('#cloudRegisterForm');
@@ -119,23 +128,15 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
     });
     registration.addEventListener('submit', event => {
       event.preventDefault(); if (busy) return;
-      const values = { name: container.querySelector('#cloudRegisterName').value.trim(), password: container.querySelector('#cloudRegisterPassword').value, inviteCode: container.querySelector('#cloudInvitationCode').value.trim() };
+      const values = { name: container.querySelector('#cloudRegisterName').value.trim(), password: container.querySelector('#cloudRegisterPassword').value, role: container.querySelector('#cloudRegisterRole').value };
       container.querySelector('#cloudRegisterPassword').value = '';
-      void authenticate(registration, () => workflow.register(values), '正在核验邀请码并建立登录身份，请稍候…');
+      void authenticate(registration, () => workflow.register(values), '正在建立登录身份，请稍候…');
     });
   }
   function mountPending(container, id, user) {
-    container.innerHTML = `<section class="cloud-workspace panel" data-cloud-screen="${id}"><h2>账号已验证，请绑定邀请</h2><p>${escape(user.displayName)}，你的正式账号已登录，业务角色需要管理员邀请确认。</p><div class="field"><label for="cloudPendingCode">邀请口令</label><input id="cloudPendingCode" autocomplete="off" maxlength="128"></div><div class="field"><label for="cloudPendingName">显示姓名</label><input id="cloudPendingName" maxlength="40" value="${escape(user.displayName)}" autocomplete="name"></div><button id="cloudRedeemInvite" class="btn primary" type="button">核验并绑定邀请</button><button id="cloudPendingLogout" class="btn soft" type="button">退出账号</button><p data-cloud-status class="cloud-status" role="status">绑定完成前，不能读取作业或提交记录。</p><details><summary>修改账号密码</summary><form id="cloudPendingPasswordForm"><div class="field"><label for="cloudPendingOldPassword">原密码</label><input id="cloudPendingOldPassword" required type="password" autocomplete="current-password"></div><div class="field"><label for="cloudPendingNewPassword">新密码（8–32位，含字母和数字）</label><input id="cloudPendingNewPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password"></div><button type="submit" class="btn soft">修改密码</button></form></details></section>`;
-    bindTask(container,'#cloudRedeemInvite',async()=>{
-      const code=container.querySelector('#cloudPendingCode').value.trim();if(!code)throw new Error('请填写管理员提供的邀请口令');
-      await workflow.redeemInvitation(code,container.querySelector('#cloudPendingName').value.trim());await onIdentityReady();
-    });
+    container.innerHTML = `<section class="cloud-workspace panel" data-cloud-screen="${id}"><h2>账号等待管理员确认</h2><p>${escape(user.displayName)}，你的账号已登录，但业务角色尚未确认，请联系管理员。确认前不能读取作业或提交记录。</p><button id="cloudPendingRefresh" class="btn primary" type="button">重新检查账号状态</button><button id="cloudPendingLogout" class="btn soft" type="button">退出账号</button><p data-cloud-status class="cloud-status" role="status"></p></section>`;
+    bindTask(container,'#cloudPendingRefresh',async()=>{await workflow.refreshIdentity();await onIdentityReady();});
     bindTask(container,'#cloudPendingLogout',onLogout);
-    container.querySelector('#cloudPendingPasswordForm').addEventListener('submit',async event=>{
-      event.preventDefault();const form=event.currentTarget,button=form.querySelector('button');if(button.disabled)return;
-      const old=form.querySelector('#cloudPendingOldPassword').value,next=form.querySelector('#cloudPendingNewPassword').value;form.reset();button.disabled=true;
-      try{await workflow.changePassword(old,next);status(container,'密码已更新，仍需绑定邀请后使用工作台');}catch(error){status(container,error.message,true);}finally{if(button.isConnected)button.disabled=false;}
-    });
   }
   function practiceForm() {
     return `<section class="panel"><h2>开始自由练播</h2><div class="cols-2"><div class="field"><label for="cloudPracticeBoard">训练板块</label><select id="cloudPracticeBoard">${boardOptions()}</select></div><div class="field"><label for="cloudPracticePlatform">平台</label><select id="cloudPracticePlatform"></select></div></div><button id="cloudFreePractice" class="btn primary wide" type="button">检查设备，准备练播</button><div class="field"><label for="cloudJoinCode">输入运营给你的作业口令</label><input id="cloudJoinCode" maxlength="32" autocomplete="off" placeholder="12位作业口令"></div><button id="cloudJoinByCode" class="btn soft wide" type="button">加入云端作业</button></section>`;
@@ -184,7 +185,7 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
   }
   function renderSubmissions(container, rows, user) {
     const holder = container.querySelector('#cloudSubmissions');
-    holder.innerHTML = rows.length ? rows.map(row => `<button type="button" class="cloud-submission-row" data-cloud-submission="${escape(row.id)}"><b>${escape(row.assignmentTitle || snapshotOf(row).category || '训练提交')}</b><span>${escape(row.anchorName || '')} · ${escape(when(row.submittedAt))}${row.late ? ' · 逾期提交' : ''}</span><small>云端已确认 · ${escape(row.receiptId || row.id)}${row.feedbackCount ? ` · ${row.feedbackCount}条人工反馈` : ''}</small></button>`).join('') : '<div class="empty compact">暂无已确认的云端提交。</div>';
+    holder.innerHTML = rows.length ? rows.map(row => `<button type="button" class="cloud-submission-row" data-cloud-submission="${escape(row.id)}"><b>${escape(row.assignmentTitle || snapshotOf(row).category || '训练提交')}</b><span>${escape(row.anchorName || '')}${user.role==='admin'?` · 接收运营：${escape(row.operatorName||row.operatorId||'待核验')}`:''} · ${escape(when(row.submittedAt))}${row.late ? ' · 逾期提交' : ''}</span><small>云端已确认 · ${escape(row.receiptId || row.id)}${row.feedbackCount ? ` · ${row.feedbackCount}条人工反馈` : ''}</small></button>`).join('') : '<div class="empty compact">暂无已确认的云端提交。</div>';
     holder.querySelectorAll('[data-cloud-submission]').forEach(button => button.addEventListener('click', () => void openSubmission(container, button.dataset.cloudSubmission, user)));
   }
   async function openSubmission(container, id, user) {
@@ -193,7 +194,7 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       const [data, feedback] = await Promise.all([workflow.call('submissions.get', { submissionId: id }), workflow.listAll('feedback.list', { submissionId: id })]);
       if (!current()) return;
       const submission = data.submission || data, snap = snapshotOf(submission);
-      detail.innerHTML = `<h2>已提交的训练记录</h2><p>${escape(snap.category || '')} · ${escape(snap.platform || '')} · ${escape(when(submission.submittedAt))}</p><p class="notice">${submission.media?.length?'本次提交包含主动选择的私有附件，点击后按当前账号权限读取。':'仅文字已提交。录音录像仍在主播原设备，没有上传。'}</p>${(submission.media||[]).map((media,index)=>`<div class="cloud-media"><b>附件 ${index+1} · ${escape(media.mime)} · ${(media.size/1048576).toFixed(1)}MiB</b><button type="button" class="btn soft" data-cloud-media="${index}">读取并播放授权附件</button><div data-cloud-player="${index}"></div></div>`).join('')}${(snap.turns || []).map((turn, index) => `<article class="submission-turn"><b>${index + 1}. ${escape(turn.prompt || turn.question)}</b><p>${escape(turn.manualCleared ? '已手动清空回答' : turn.answer || turn.transcript || '无文字回答')}</p><small>${escape([turn.model && `型号：${turn.model}`, turn.sku && `SKU：${turn.sku}`, turn.source && `来源：${turn.source}`].filter(Boolean).join(' · '))}</small></article>`).join('')}<h3>人工文字反馈</h3><div>${feedbackRows(feedback)}</div>${['operator', 'admin'].includes(user.role) && submission.operatorId === user.uid ? '<div class="field"><label for="cloudFeedbackBody">反馈内容</label><textarea id="cloudFeedbackBody" maxlength="5000" rows="5"></textarea></div><button type="button" class="btn primary" id="cloudSaveFeedback">保存反馈到云端</button>' : ''}`;
+      detail.innerHTML = `<h2>已提交的训练记录</h2>${user.role==='admin'?`<p>接收运营：${escape(submission.operatorName||submission.operatorId||'待核验')}</p>`:''}<p>${escape(snap.category || '')} · ${escape(snap.platform || '')} · ${escape(when(submission.submittedAt))}</p><p class="notice">${submission.media?.length?'本次提交包含主动选择的私有附件，点击后按当前账号权限读取。':'仅文字已提交。录音录像仍在主播原设备，没有上传。'}</p>${(submission.media||[]).map((media,index)=>`<div class="cloud-media"><b>附件 ${index+1} · ${escape(media.mime)} · ${(media.size/1048576).toFixed(1)}MiB</b><button type="button" class="btn soft" data-cloud-media="${index}">读取并播放授权附件</button><div data-cloud-player="${index}"></div></div>`).join('')}${(snap.turns || []).map((turn, index) => `<article class="submission-turn"><b>${index + 1}. ${escape(turn.prompt || turn.question)}</b><p>${escape(turn.manualCleared ? '已手动清空回答' : turn.answer || turn.transcript || '无文字回答')}</p><small>${escape([turn.model && `型号：${turn.model}`, turn.sku && `SKU：${turn.sku}`, turn.source && `来源：${turn.source}`].filter(Boolean).join(' · '))}</small></article>`).join('')}<h3>人工文字反馈</h3><div>${feedbackRows(feedback)}</div>${(user.role === 'admin' || user.role === 'operator' && submission.operatorId === user.uid) ? '<div class="field"><label for="cloudFeedbackBody">反馈内容</label><textarea id="cloudFeedbackBody" maxlength="5000" rows="5"></textarea></div><button type="button" class="btn primary" id="cloudSaveFeedback">保存反馈到云端</button>' : ''}`;
       detail.querySelectorAll('[data-cloud-media]').forEach(button=>button.addEventListener('click',async()=>{
         if(button.disabled)return;button.disabled=true;const index=Number(button.dataset.cloudMedia),media=submission.media[index];
         try{const blob=await workflow.downloadMedia(media.path);if(!current())return;const url=URL.createObjectURL(blob);mediaUrls.add(url);const player=document.createElement(media.mime.startsWith('video/')?'video':'audio');player.controls=true;player.preload='metadata';player.playsInline=true;player.src=url;player.style.maxWidth='100%';mediaPlayers.add(player);detail.querySelector(`[data-cloud-player="${index}"]`).replaceChildren(player);button.textContent='已读取私有附件';}
@@ -218,25 +219,17 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       finally { if (button.isConnected&&button.dataset.confirmed!=='1') button.disabled = false; }
     }));
   }
-  function invitationForm(role) {
-    return `<section class="panel"><h2>邀请成员</h2><p class="muted">把邀请码交给对应成员本人。对方在“首次使用邀请码加入”填写姓名、自己设置的密码和邀请码，即可加入。邀请决定角色。</p><div class="field"><label for="cloudInviteRole">邀请角色</label><select id="cloudInviteRole"><option value="anchor">主播</option>${role==='admin'?'<option value="operator">运营</option>':''}</select></div><button id="cloudCreateInvite" class="btn primary" type="button">生成一次性邀请码</button><p id="cloudInviteResult" class="cloud-invitation" role="status"></p></section>`;
-  }
-  function bindInvitations(container) {
-    bindTask(container, '#cloudCreateInvite', async () => {
-      const data = await workflow.call('invites.create', { role: container.querySelector('#cloudInviteRole').value }, newId());
-      container.querySelector('#cloudInviteResult').textContent = `邀请码：${data.invite.code}；有效期至 ${when(data.invite.expiresAt)}`;
-    });
-  }
   async function mountSubmissionPanel(container, { getSnapshot, getAttachments=()=>[], hasMedia, beforeSubmit, onConfirmed }) {
     const user=workflow.user;if(!user||user.role!=='anchor')return;
     const panelToken=++panelSequence;const snap=getSnapshot();const requireOwner=()=>{if(panelToken!==panelSequence||!container.isConnected||workflow.user?.uid!==user.uid||getSnapshot()?.id!==snap.id)throw new Error('账号或复盘页面已改变，旧提交已停止');};const mediaEnabled=workflow.getState().capabilities.media===true,attachments=getAttachments();
     const attachmentChoices=mediaEnabled?`<fieldset class="cloud-attachment-options"><legend>选择本次提交范围</legend><label class="cloud-text-consent"><input type="radio" name="cloudSubmissionMode" value="text">只提交文字，录音录像仍保留在本机。</label><label class="cloud-text-consent"><input type="radio" name="cloudSubmissionMode" value="media">文字及我主动选择的附件一起提交。</label>${attachments.map((row,index)=>`<label class="cloud-text-consent"><input type="checkbox" data-cloud-attachment="${index}"${row.blob.size>50*1024*1024?' disabled':''}>${escape(row.label)} · ${(row.blob.size/1048576).toFixed(1)}MiB${row.blob.size>50*1024*1024?'（超过单附件50MiB限制，请另行下载保留）':''}</label>`).join('')||'<p class="muted">本场没有可上传附件。</p>'}<small>最多选择3个附件，每个不超过50MiB。没有勾选的录音录像不会上传，也不会从本机删除。</small></fieldset>`:'<label class="cloud-text-consent"><input type="checkbox" id="cloudTextOnlyConsent">我选择仅提交文字；录音录像没有上传，请保留或下载原文件。</label>';
-    container.innerHTML=`<div class="review-heading"><h3>主动提交本次记录</h3><span>由主播决定</span></div><p>只有云端返回回执后才算提交成功。${hasMedia?'本场录音录像仍先保存在这台设备。':'本场没有待上传媒体。'}</p><div class="field"><label for="cloudSubmitOperator">接收运营</label><select id="cloudSubmitOperator"><option value="">正在读取可提交的运营…</option></select></div>${attachmentChoices}<button id="cloudSubmitText" class="btn primary wide" type="button">确认范围并提交</button><p class="cloud-status" data-cloud-status role="status">尚未发送给运营。</p>`;
-    const uploaded=new Map();
+    container.innerHTML=`<div class="review-heading"><h3>主动提交本次记录</h3><span>由主播决定</span></div><p>只有云端返回回执后才算提交成功。${hasMedia?'本场录音录像仍先保存在这台设备。':'本场没有待上传媒体。'}</p><div class="field"><label for="cloudSubmitOperator">接收运营姓名</label><input id="cloudSubmitOperator" maxlength="64" autocomplete="off" list="cloudOperatorNames" placeholder="填写运营注册时使用的完整姓名"><datalist id="cloudOperatorNames"></datalist></div>${attachmentChoices}<button id="cloudSubmitText" class="btn primary wide" type="button">确认范围并提交</button><p class="cloud-status" data-cloud-status role="status">尚未发送给运营。</p>`;
+    const uploaded=new Map();let operators=[];
     try{
       operators=await workflow.listAll('operators.list');requireOwner();
-      const selector=container.querySelector('#cloudSubmitOperator');selector.innerHTML='<option value="">请选择接收运营</option>'+operators.map(row=>`<option value="${escape(row.uid||row.id)}">${escape(row.displayName||row.username||'运营')}</option>`).join('');
-      if(snap.assignmentId){const current=assignments.find(row=>row.id===snap.assignmentId);if(current?.operatorId){selector.value=current.operatorId;}else{selector.innerHTML='<option>作业发布运营（由云端核验）</option>';}selector.disabled=true;}
+      const selector=container.querySelector('#cloudSubmitOperator');
+      container.querySelector('#cloudOperatorNames').innerHTML=operators.filter(row=>row.active!==false).map(row=>`<option value="${escape(row.displayName||row.username||'')}"></option>`).join('');
+      if(snap.assignmentId){const current=assignments.find(row=>row.id===snap.assignmentId);selector.value=operators.find(row=>(row.uid||row.id)===current?.operatorId)?.displayName||'作业发布运营（由云端核验）';selector.disabled=true;}
     }catch(error){status(container,error.message,true);const button=container.querySelector('#cloudSubmitText');if(button)button.disabled=true;return;}
     bindTask(container,'#cloudSubmitText',async()=>{
       requireOwner();const latest=clone(getSnapshot()),pending=(await workflow.pendingOperations()).find(row=>row.id==='submissions.create:'+latest.id);requireOwner();
@@ -245,8 +238,8 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       else{
         const mode=mediaEnabled?container.querySelector('input[name="cloudSubmissionMode"]:checked')?.value:container.querySelector('#cloudTextOnlyConsent').checked?'text':null;
         if(!mode)throw new Error('请先明确本次提交范围；不会自动上传或省略录音录像');
-        const receiver=container.querySelector('#cloudSubmitOperator').value;
-        if(!latest.assignmentId&&!receiver)throw new Error('请选择接收运营');
+        if(!latest.assignmentId){operators=await workflow.listAll('operators.list');requireOwner();}
+        const receiver=latest.assignmentId?null:resolveOperatorName(operators,container.querySelector('#cloudSubmitOperator').value);
         await beforeSubmit();requireOwner();
         const selected=mode==='media'?[...container.querySelectorAll('[data-cloud-attachment]:checked')].map(input=>attachments[Number(input.dataset.cloudAttachment)]):[];
         if(mode==='media'&&(selected.length<1||selected.length>3))throw new Error('请选择1到3个受支持的附件，或明确选择只提交文字');
@@ -265,5 +258,5 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
     });
   }
 
-  return { mount, mountSubmissionPanel, releaseMedia, invalidate: () => { releaseMedia();mountSequence++;detailSequence++;panelSequence++; assignments = []; operators = []; } };
+  return { mount, mountSubmissionPanel, releaseMedia, invalidate: () => { releaseMedia();mountSequence++;detailSequence++;panelSequence++; assignments = []; } };
 }

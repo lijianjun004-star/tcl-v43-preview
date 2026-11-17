@@ -1,0 +1,37 @@
+{
+  "cloudbase": {
+    "status": "BLOCKED_AUTH",
+    "officialCli": "3.9.3",
+    "command": "tcb env list --json",
+    "code": "AUTH_FAILED",
+    "message": "No valid identity found, please log in with tcb login",
+    "cloudWrites": 0,
+    "initialDeviceAuthorization": "Official device URL issued but CLI returned AUTH_FAILED before authorization completed; that link is not a valid completion result"
+  },
+  "github": {
+    "gitHttpsPush": "No CLI credentials; dry-run cannot read Username",
+    "connectorCreateBranch": "PASS; source branch created"
+  },
+  "browser": {
+    "localChromium": "NOT_RUN: browser process socket() returned EPERM before any product checks",
+    "extension": "UNAVAILABLE: originating browser context required",
+    "cloudLocalCandidate": "NOT_RUN: ERR_CONNECTION_REFUSED; follow-up observation blocked by URL policy; stopped this route"
+  },
+  "aclInitialRootInvocation": {
+    "status": "DEPENDENCY_SETUP_FAILURE",
+    "code": "MODULE_NOT_FOUND",
+    "cause": "NODE_PATH missing after test portability change",
+    "resolution": "Reran with explicit installed dependency directory; no product modification"
+  },
+  "externalModels": {
+    "geminiRequests": 0,
+    "paidApiRequests": 0
+  },
+  "unverified": [
+    "Real CloudBase direct signup and Native Auth",
+    "Real cross-device submission and private media",
+    "Real iPhone and Android",
+    "Mainland China network",
+    "Multi-connection PostgreSQL lock concurrency"
+  ]
+}

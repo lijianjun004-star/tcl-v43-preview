@@ -80,10 +80,10 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(name.toLowerCase()));
     return `r25-name-join:${encodeURIComponent(envId || '')}:${hex(new Uint8Array(digest))}`;
   }
-  async function reservationFor(name) {
+  async function reservationFor(name, role) {
     const key = await keyFor(name);
     try {
-      const value = { name, operationId: crypto.randomUUID(), operationSecret: hex(crypto.getRandomValues(new Uint8Array(32))), createdAt: new Date().toISOString(), state: 'pending' };
+      const value = { name, role, operationId: crypto.randomUUID(), operationSecret: hex(crypto.getRandomValues(new Uint8Array(32))), createdAt: new Date().toISOString(), state: 'pending' };
       const result = await registry.reserve(key, value);
       if (result.value?.name?.toLowerCase() !== name.toLowerCase() || !result.value.operationId || !/^[0-9a-f]{64}$/.test(result.value.operationSecret)) error('REGISTRATION_STORAGE', '本机加入重试信息无法确认，请联系管理员核对');
       return { key, ...result };
@@ -103,15 +103,25 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
     }
     return ready(await request({ action: 'resolve', name }));
   }
-  async function register({ name: inputName, password, inviteCode }) {
+  async function register({ name: inputName, password, role = 'anchor' }) {
     const name = normalizePersonName(inputName, { registration: true }); validateJoinPassword(password);
-    if (!String(inviteCode || '').trim()) error('INVITATION_REQUIRED', '请填写运营或管理员给你的邀请码');
+    if (!['anchor', 'operator'].includes(role)) error('INVALID_ROLE', '请选择主播或运营注册，管理员账号不能自行注册');
     if (!enabled) error('IDENTITY_UNAVAILABLE', '姓名加入服务正在准备，请稍后重试');
-    const reservation = await reservationFor(name);
-    const operation = { name: reservation.value.name, operationId: reservation.value.operationId, operationSecret: reservation.value.operationSecret };
+    const reservation = await reservationFor(name, role);
+    const legacyRecovery = reservation.value.role == null;
+    if (!legacyRecovery && reservation.value.role !== role) error('REGISTRATION_CONFLICT', '本姓名已有其他角色的注册操作，请使用首次选择的角色重试；旧账号请直接登录或联系管理员');
+    const operation = { name: reservation.value.name, ...(legacyRecovery ? {} : { role: reservation.value.role }), operationId: reservation.value.operationId, operationSecret: reservation.value.operationSecret };
     if (reservation.existing) {
       try {
         const status = await request({ action: 'status', ...operation });
+        if (legacyRecovery) {
+          if (status.state !== 'ready') error('LEGACY_REGISTRATION_PENDING', '原账号注册尚未完成，安全重试信息已保留；请尝试姓名密码登录，或联系管理员恢复原操作');
+          if (!['anchor', 'operator'].includes(status.role)) error('REGISTRATION_CONFLICT', '原账号角色尚未确认，请联系管理员');
+          const recovered = ready(status);
+          if (!recovered.uid) error('INVALID_IDENTITY_RESPONSE', '原账号身份尚未确认，请联系管理员');
+          return { ...recovered, role: status.role, legacyRecovery: true };
+        }
+        if (status.role !== role) error('REGISTRATION_CONFLICT', '注册角色尚未确认，请保留原角色并联系管理员');
         if (status.state === 'ready') {
           const data = ready(status);
           if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
@@ -121,11 +131,14 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
       } catch (failure) {
         // The first request may never have reached the server. Keep the same recovery operation.
         if (failure.code !== 'NOT_FOUND') throw failure;
+        if (legacyRecovery) error('LEGACY_REGISTRATION_PENDING', '原注册操作尚未确认，安全重试信息已保留；请使用姓名密码登录或联系管理员恢复');
       }
     }
-    const data = ready(await request({ action: 'register', ...operation, password, inviteCode: String(inviteCode).trim() }));
+    const result = await request({ action: 'register', ...operation, password });
+    if (result.role !== role) error('REGISTRATION_CONFLICT', '注册角色尚未确认，请保留原角色并联系管理员');
+    const data = ready(result);
     if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
-    // Only identifiers and the recovery secret are retained. Never persist a password or invite code.
+    // Only identifiers and the recovery secret are retained. Never persist a password.
     try { await registry.put(reservation.key, { ...reservation.value, state: 'ready', uid: data.uid, username: data.username }); } catch {}
     return data;
   }
