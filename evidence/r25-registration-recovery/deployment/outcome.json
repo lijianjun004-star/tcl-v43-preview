@@ -1,0 +1,33 @@
+{
+  "taskId": "TCL-R25-REGISTRATION-RECOVERY-DEPLOY-20261117",
+  "status": "DEPLOYED_LIVE_VERIFIED",
+  "owner": "ChatGPT",
+  "executor": "Codex",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "version": "r25-registration-recovery-20261117",
+  "ciPr": 139,
+  "releasePr": 140,
+  "releaseMerge": "a0f5b819fa9a107facb6bb1e71d80dbdffc24967",
+  "pagesRun": 44113696230,
+  "cloudRegistration": 36,
+  "officialSdkBrowser": 18,
+  "adminPrivateMedia": 19,
+  "publicProductUi": 29,
+  "publicStaticFirstPass": 246,
+  "publicStaticRereads": 0,
+  "oldResourcesPreserved": 217,
+  "originalTables": 14,
+  "originalRowsPreserved": 19,
+  "testAccountsBlockedAndInactive": 6,
+  "syntheticSubmissionsRetained": 2,
+  "syntheticPrivateMediaRetained": 1,
+  "deletedRows": 0,
+  "externalGeminiRequests": 0,
+  "paidModelApiCalls": 0,
+  "notRun": [
+    "Physical devices/mainland network",
+    "Original account password login",
+    "Media hardware/ASR accuracy",
+    "PostgreSQL multi-connection schedules"
+  ]
+}

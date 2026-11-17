@@ -1,0 +1,87 @@
+{
+  "suite": "REAL_SYNTHETIC_ADMIN_AND_PRIVATE_MEDIA",
+  "status": "PASS_WITH_NOT_RUN",
+  "checks": [
+    {
+      "label": "anchor_real_login_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "private_media_already_enabled_no_setting_changes",
+      "pass": true
+    },
+    {
+      "label": "operator_real_login_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "outsider_real_login_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_real_login_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "synthetic_admin_reads_existing_synthetic_submission",
+      "pass": true
+    },
+    {
+      "label": "owner_real_private_upload_receipt",
+      "pass": true
+    },
+    {
+      "label": "private_media_submission_real_receipt",
+      "pass": true
+    },
+    {
+      "label": "anchor_reads_private_media_submission",
+      "pass": true
+    },
+    {
+      "label": "anchor_downloads_exact_private_wav",
+      "pass": true
+    },
+    {
+      "label": "operator_reads_private_media_submission",
+      "pass": true
+    },
+    {
+      "label": "operator_downloads_exact_private_wav",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_reads_private_media_submission",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_downloads_exact_private_wav",
+      "pass": true
+    },
+    {
+      "label": "unrelated_operator_submission_denied",
+      "pass": true
+    },
+    {
+      "label": "unrelated_operator_private_download_denied",
+      "pass": true
+    },
+    {
+      "label": "synthetic_admin_list_page_1",
+      "pass": true
+    },
+    {
+      "label": "synthetic_admin_lists_both_synthetic_submissions",
+      "pass": true
+    },
+    {
+      "label": "synthetic_admin_lists_every_authoritative_submission_id",
+      "pass": true
+    }
+  ],
+  "scope": "Actual candidate official SDK adapter with real Auth/PG/Storage; synthetic WAV and test-only accounts; no original passwords",
+  "notRun": [
+    "Physical phones and mainland network",
+    "Original administrator password login"
+  ]
+}

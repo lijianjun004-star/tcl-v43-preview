@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "scope": "Independent read-only final PostgreSQL verification",
+  "envId": "unknown-roadrunner-d7cap6e21f517",
+  "verifiedAt": "2026-11-17T15:25:57.545Z",
+  "cloudWrites": 0,
+  "exactFunctionBodies": 2,
+  "functionGrantsPassed": true,
+  "securityDefinerAndSearchPathPassed": true,
+  "directColumnsNullable": true,
+  "originalTablesChecked": 14,
+  "originalRowsPreserved": 19,
+  "includesBusinessAndIdentityTables": true,
+  "limitations": [
+    "Does not verify Native Auth API or browser/mobile flows",
+    "Additional synthetic rows are allowed; original rows must remain byte-equivalent by row MD5"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "status": "GITHUB_PAGES_DEPLOYED_STATIC_VERIFIED",
+  "scope": "GitHub CI/release/Pages and public static bytes only; root owns live cloud/product UI acceptance and cleanup",
+  "entry": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "version": "r25-registration-recovery-20261117",
+  "ci_pr": {
+    "headRefOid": "d5d57ae5983c9ffd25ec60c2c4a4f0c967f44d82",
+    "mergeCommit": {
+      "oid": "8981781e4366611fdfe46af69c8172e7e5969ea9"
+    },
+    "mergedAt": "2026-11-17T15:21:19Z",
+    "number": 139,
+    "state": "MERGED",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/139"
+  },
+  "release_pr": {
+    "headRefOid": "1a30cd054c97f73cd7c1bdb70f44d6df86501215",
+    "mergeCommit": {
+      "oid": "a0f5b819fa9a107facb6bb1e71d80dbdffc24967"
+    },
+    "mergedAt": "2026-11-17T15:23:00Z",
+    "number": 140,
+    "state": "MERGED",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/140"
+  },
+  "ci_run": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44101980262",
+  "release_check": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44113534312",
+  "pages": {
+    "databaseId": 44113696230,
+    "headSha": "a0f5b819fa9a107facb6bb1e71d80dbdffc24967",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44113696230"
+  },
+  "archive_zip_sha256": "365363d043f6aa88f43746373b9a1842c00d56e0a6b378073fc5b46eba3cc034",
+  "archive_b64_sha256": "b7de6c8cc7e5fd718156af495711c6b122438a623674bc6c67ded20c44e905fb",
+  "public_static": {
+    "status": "PASS_FIRST_PASS",
+    "resources": 246,
+    "protected_old": 217,
+    "r25_files": 29,
+    "first_pass_passed": 246,
+    "failed_first_pass": 0,
+    "bounded_rereads": 0,
+    "http_attempts": 250,
+    "anchors_pass": true,
+    "version_stable": true,
+    "evidence": "/workspace/r25-deployment/public-resources/run-20261117T152357314062Z/result.json"
+  },
+  "changed_repository_files": [
+    "experiments/r25-release/site-only.zip.b64"
+  ],
+  "root_site_zip_and_workflow_unchanged": true,
+  "not_run": [
+    "Physical phones",
+    "Mainland China network"
+  ]
+}

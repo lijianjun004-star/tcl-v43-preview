@@ -1,0 +1,174 @@
+{
+  "suite": "REAL_CLOUDBASE_REGISTRATION_RECOVERY",
+  "startedAt": "2026-11-17T15:16:27.571Z",
+  "status": "PASS_WITH_NOT_RUN",
+  "checks": [
+    {
+      "label": "synthetic_name_scope_empty_before_writes",
+      "pass": true
+    },
+    {
+      "label": "operator_direct_register",
+      "pass": true
+    },
+    {
+      "label": "operator_ready_role",
+      "pass": true
+    },
+    {
+      "label": "operator_name_resolves",
+      "pass": true
+    },
+    {
+      "label": "operator_same_uid",
+      "pass": true
+    },
+    {
+      "label": "anchor_direct_register",
+      "pass": true
+    },
+    {
+      "label": "anchor_ready_role",
+      "pass": true
+    },
+    {
+      "label": "anchor_name_resolves",
+      "pass": true
+    },
+    {
+      "label": "anchor_same_uid",
+      "pass": true
+    },
+    {
+      "label": "outsider_direct_register",
+      "pass": true
+    },
+    {
+      "label": "outsider_ready_role",
+      "pass": true
+    },
+    {
+      "label": "outsider_name_resolves",
+      "pass": true
+    },
+    {
+      "label": "outsider_same_uid",
+      "pass": true
+    },
+    {
+      "label": "admin_public_signup_rejected",
+      "pass": true,
+      "detail": {
+        "code": "INVALID_ROLE"
+      }
+    },
+    {
+      "label": "noNative_trusted_reserve",
+      "pass": true
+    },
+    {
+      "label": "noNative_original_status_reserved",
+      "pass": true
+    },
+    {
+      "label": "noNative_requires_password",
+      "pass": true
+    },
+    {
+      "label": "noNative_trusted_proof_rotation",
+      "pass": true
+    },
+    {
+      "label": "noNative_old_proof_rejected",
+      "pass": true,
+      "detail": {
+        "code": "INVALID_OPERATION_SECRET"
+      }
+    },
+    {
+      "label": "noNative_new_status",
+      "pass": true
+    },
+    {
+      "label": "noNative_canonical_role",
+      "pass": true
+    },
+    {
+      "label": "noNative_reserved_after_rotation",
+      "pass": true
+    },
+    {
+      "label": "noNative_continue_register",
+      "pass": true
+    },
+    {
+      "label": "noNative_same_native_username",
+      "pass": true
+    },
+    {
+      "label": "noNative_ready_cannot_rotate",
+      "pass": true,
+      "detail": {
+        "code": "RECOVERY_NOT_PENDING"
+      }
+    },
+    {
+      "label": "hasNative_trusted_reserve",
+      "pass": true
+    },
+    {
+      "label": "hasNative_uid_precision_safe",
+      "pass": true
+    },
+    {
+      "label": "hasNative_official_create_receipt",
+      "pass": true
+    },
+    {
+      "label": "hasNative_trusted_proof_rotation",
+      "pass": true
+    },
+    {
+      "label": "hasNative_old_proof_rejected",
+      "pass": true,
+      "detail": {
+        "code": "INVALID_OPERATION_SECRET"
+      }
+    },
+    {
+      "label": "hasNative_new_status",
+      "pass": true
+    },
+    {
+      "label": "hasNative_canonical_role",
+      "pass": true
+    },
+    {
+      "label": "hasNative_same_native_username",
+      "pass": true
+    },
+    {
+      "label": "hasNative_same_uid_no_recreate",
+      "pass": true
+    },
+    {
+      "label": "hasNative_ready_cannot_rotate",
+      "pass": true,
+      "detail": {
+        "code": "RECOVERY_NOT_PENDING"
+      }
+    },
+    {
+      "label": "existing_business_rows_preserved",
+      "pass": true
+    }
+  ],
+  "notRun": [
+    "Native Auth login and submissions ACL: run accept-browser.py separately",
+    "Private media upload/download",
+    "Real phone and China mainland network",
+    "Multi-connection PostgreSQL contention"
+  ],
+  "cloudMutationsExpected": "only exact synthetic fixture accounts, their reservations, roles and later scoped test submission; no deletion",
+  "finishedAt": "2026-11-17T15:17:12.982Z"
+}

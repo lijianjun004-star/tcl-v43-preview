@@ -1,0 +1,475 @@
+{
+  "suite": "REAL_PUBLIC_REGISTRATION_RECOVERY_PRODUCT_UI",
+  "status": "PASS_WITH_NOT_RUN",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "version": "r25-registration-recovery-20261117",
+  "checks": [
+    {
+      "label": "registration_has_no_invitation_field",
+      "pass": true
+    },
+    {
+      "label": "public_manifest_exact_candidate_version_and_hashes",
+      "pass": true
+    },
+    {
+      "label": "public_recovery_input_masks_secret",
+      "pass": true
+    },
+    {
+      "label": "invalid_code_rejected_cleared_without_network_or_login",
+      "pass": true
+    },
+    {
+      "label": "valid_code_restores_exact_name_role_without_auto_login",
+      "pass": true
+    },
+    {
+      "label": "actual_recovery_status_same_operation_secret_uid_role",
+      "pass": true
+    },
+    {
+      "label": "recovery_profile_name_and_role_dashboard",
+      "pass": true
+    },
+    {
+      "label": "recovery_server_me_matches_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "join_continues_original_status_without_new_register",
+      "pass": true
+    },
+    {
+      "label": "public_recovery_storage_keeps_same_proof_not_password_or_raw_code",
+      "pass": true
+    },
+    {
+      "label": "operator_profile_name_and_role_dashboard",
+      "pass": true
+    },
+    {
+      "label": "operator_server_me_matches_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "operator_existing_synthetic_inbox_scope",
+      "pass": true
+    },
+    {
+      "label": "operator_opens_only_scoped_synthetic_submission",
+      "pass": true
+    },
+    {
+      "label": "anchor_profile_name_and_role_dashboard",
+      "pass": true
+    },
+    {
+      "label": "anchor_server_me_matches_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "anchor_existing_synthetic_inbox_scope",
+      "pass": true
+    },
+    {
+      "label": "anchor_opens_only_scoped_synthetic_submission",
+      "pass": true
+    },
+    {
+      "label": "outsider_profile_name_and_role_dashboard",
+      "pass": true
+    },
+    {
+      "label": "outsider_server_me_matches_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "outsider_existing_synthetic_inbox_scope",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_profile_name_and_role_dashboard",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_server_me_matches_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_existing_synthetic_inbox_scope",
+      "pass": true
+    },
+    {
+      "label": "syntheticAdmin_opens_only_scoped_synthetic_submission",
+      "pass": true
+    },
+    {
+      "label": "every_actual_important_static_response_matches_candidate",
+      "pass": true
+    },
+    {
+      "label": "new_identity_workflow_workspace_and_sdk_actually_loaded",
+      "pass": true
+    },
+    {
+      "label": "public_product_no_page_errors",
+      "pass": true
+    },
+    {
+      "label": "no_model_downloads_or_practice_actions",
+      "pass": true
+    }
+  ],
+  "assetResponses": [
+    {
+      "actor": "recovery",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "recovery",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "b75895b5b31aa71505587b29dfac3f9e9f53297a8638aaa86286823164ca6a60"
+    },
+    {
+      "actor": "recovery",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "c3c2a2fdcc4ca7ae0541f003044d3cdc689c756e270334adce176b5cd73415b0"
+    },
+    {
+      "actor": "recovery",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "recovery",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "39ffa832a7db658e2c1e26b096f89e091b3732264f7927e09db398eeefa71b54"
+    },
+    {
+      "actor": "recovery",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca"
+    },
+    {
+      "actor": "recovery",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "operator",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "c3c2a2fdcc4ca7ae0541f003044d3cdc689c756e270334adce176b5cd73415b0"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "b75895b5b31aa71505587b29dfac3f9e9f53297a8638aaa86286823164ca6a60"
+    },
+    {
+      "actor": "operator",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "39ffa832a7db658e2c1e26b096f89e091b3732264f7927e09db398eeefa71b54"
+    },
+    {
+      "actor": "operator",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca"
+    },
+    {
+      "actor": "operator",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "anchor",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "c3c2a2fdcc4ca7ae0541f003044d3cdc689c756e270334adce176b5cd73415b0"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "b75895b5b31aa71505587b29dfac3f9e9f53297a8638aaa86286823164ca6a60"
+    },
+    {
+      "actor": "anchor",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "39ffa832a7db658e2c1e26b096f89e091b3732264f7927e09db398eeefa71b54"
+    },
+    {
+      "actor": "anchor",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca"
+    },
+    {
+      "actor": "anchor",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "outsider",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "outsider",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "b75895b5b31aa71505587b29dfac3f9e9f53297a8638aaa86286823164ca6a60"
+    },
+    {
+      "actor": "outsider",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "c3c2a2fdcc4ca7ae0541f003044d3cdc689c756e270334adce176b5cd73415b0"
+    },
+    {
+      "actor": "outsider",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "outsider",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "39ffa832a7db658e2c1e26b096f89e091b3732264f7927e09db398eeefa71b54"
+    },
+    {
+      "actor": "outsider",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca"
+    },
+    {
+      "actor": "outsider",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "b75895b5b31aa71505587b29dfac3f9e9f53297a8638aaa86286823164ca6a60"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "c3c2a2fdcc4ca7ae0541f003044d3cdc689c756e270334adce176b5cd73415b0"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "39ffa832a7db658e2c1e26b096f89e091b3732264f7927e09db398eeefa71b54"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    }
+  ],
+  "pageErrors": [],
+  "modelRequests": 0,
+  "sdkInjection": false,
+  "configurationOverride": false,
+  "responseMocks": false,
+  "requestInterception": false,
+  "testOnlyAccountsCreated": 0,
+  "notRun": [
+    "Physical iPhone/Android",
+    "China mainland network",
+    "Media hardware and model inference",
+    "Original user password login"
+  ],
+  "identityRequests": [
+    {
+      "actor": "recovery",
+      "action": "status",
+      "ok": true,
+      "sameOperation": true,
+      "sameSecret": true,
+      "sameUid": true,
+      "canonicalRole": true,
+      "state": "ready"
+    },
+    {
+      "actor": "recovery",
+      "action": "status",
+      "ok": true,
+      "sameOperation": true,
+      "sameSecret": true,
+      "sameUid": true,
+      "canonicalRole": true,
+      "state": "ready"
+    },
+    {
+      "actor": "operator",
+      "action": "resolve",
+      "ok": true,
+      "sameOperation": false,
+      "sameSecret": false,
+      "sameUid": true,
+      "canonicalRole": false,
+      "state": "ready"
+    },
+    {
+      "actor": "anchor",
+      "action": "resolve",
+      "ok": true,
+      "sameOperation": false,
+      "sameSecret": false,
+      "sameUid": true,
+      "canonicalRole": false,
+      "state": "ready"
+    },
+    {
+      "actor": "outsider",
+      "action": "resolve",
+      "ok": true,
+      "sameOperation": false,
+      "sameSecret": false,
+      "sameUid": true,
+      "canonicalRole": false,
+      "state": "ready"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "action": "resolve",
+      "ok": true,
+      "sameOperation": true,
+      "sameSecret": true,
+      "sameUid": true,
+      "canonicalRole": false,
+      "state": "ready"
+    }
+  ],
+  "meChecks": [
+    {
+      "actor": "recovery",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "311521cff170740f04dfaefe07377db7bd8597dd3e45dbadc155d6112426df9a"
+    },
+    {
+      "actor": "recovery",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "311521cff170740f04dfaefe07377db7bd8597dd3e45dbadc155d6112426df9a"
+    },
+    {
+      "actor": "operator",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "4e59b9bde3b572bb0a3ae8741dadaa3384ef73df76fe29afe862e36a93cd3b40"
+    },
+    {
+      "actor": "operator",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "4e59b9bde3b572bb0a3ae8741dadaa3384ef73df76fe29afe862e36a93cd3b40"
+    },
+    {
+      "actor": "anchor",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "414962947a54ee0a3cb02b168d7449c6bac2c4498253290592aae8c663451f85"
+    },
+    {
+      "actor": "anchor",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "414962947a54ee0a3cb02b168d7449c6bac2c4498253290592aae8c663451f85"
+    },
+    {
+      "actor": "outsider",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "4b6695434bfd44e1f6b5f4ce5170475d69385767e49489da53c8941d1c4b55a6"
+    },
+    {
+      "actor": "outsider",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "4b6695434bfd44e1f6b5f4ce5170475d69385767e49489da53c8941d1c4b55a6"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "0470c49461f476b8d86ccec2504265d8bacf8c7ccfcbc7ed28d3e1d329c9155e"
+    },
+    {
+      "actor": "syntheticAdmin",
+      "sameUid": true,
+      "expectedRole": true,
+      "uidSha256": "0470c49461f476b8d86ccec2504265d8bacf8c7ccfcbc7ed28d3e1d329c9155e"
+    }
+  ],
+  "browser": "156.0.8078.79",
+  "contextsClosed": true
+}

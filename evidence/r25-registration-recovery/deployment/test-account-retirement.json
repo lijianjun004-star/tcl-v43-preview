@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "testAccounts": 6,
+  "nativeBlocked": 6,
+  "businessProfilesInactive": 6,
+  "deletedRows": 0,
+  "retainedSyntheticSubmissions": 2,
+  "retainedSyntheticMedia": 1,
+  "scope": "Only generated test fixture accounts. Immutable synthetic records retained with explicit acceptance labels. Original accounts/data untouched."
+}

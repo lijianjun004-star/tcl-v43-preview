@@ -1,0 +1,85 @@
+{
+  "suite": "REAL_OFFICIAL_SDK_AUTH_AND_SUBMISSIONS_ACL",
+  "status": "PASS_WITH_NOT_RUN",
+  "checks": [
+    {
+      "label": "operator_official_login",
+      "pass": true
+    },
+    {
+      "label": "operator_me_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "anchor_official_login",
+      "pass": true
+    },
+    {
+      "label": "anchor_me_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "outsider_official_login",
+      "pass": true
+    },
+    {
+      "label": "outsider_me_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "noNative_official_login",
+      "pass": true
+    },
+    {
+      "label": "noNative_me_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "hasNative_official_login",
+      "pass": true
+    },
+    {
+      "label": "hasNative_me_exact_uid_role",
+      "pass": true
+    },
+    {
+      "label": "synthetic_submission_real_receipt",
+      "pass": true
+    },
+    {
+      "label": "same_operation_same_receipt",
+      "pass": true
+    },
+    {
+      "label": "recipient_operator_reads",
+      "pass": true
+    },
+    {
+      "label": "unrelated_operator_denied",
+      "pass": true
+    },
+    {
+      "label": "unrelated_anchor_denied",
+      "pass": true
+    },
+    {
+      "label": "original_anchor_reads",
+      "pass": true
+    },
+    {
+      "label": "recipient_feedback_persisted",
+      "pass": true
+    },
+    {
+      "label": "anchor_reads_feedback",
+      "pass": true
+    }
+  ],
+  "notRun": [
+    "Private media",
+    "Real mobile and mainland network",
+    "Existing administrator real Auth login/all-submission access: no private existing-admin fixture supplied; no account guessed or changed",
+    "Existing user original-password login: no private legacy fixture supplied; database preservation checked separately"
+  ],
+  "testScope": "test-only browser harness uses actual official bundled SDK and real Auth/PG; not product UI acceptance"
+}

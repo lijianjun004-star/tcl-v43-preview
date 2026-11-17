@@ -1,0 +1,21 @@
+{
+  "baseRefName": "main",
+  "headRefOid": "1a30cd054c97f73cd7c1bdb70f44d6df86501215",
+  "isDraft": false,
+  "mergeable": "MERGEABLE",
+  "number": 140,
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-17T15:22:26Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44113534312/job/134145264581",
+      "name": "verify-pages-release",
+      "startedAt": "2026-11-17T15:22:16Z",
+      "status": "COMPLETED",
+      "workflowName": "Verify TCL Pages release PR"
+    }
+  ],
+  "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/140"
+}
