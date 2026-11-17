@@ -1299,6 +1299,42 @@ R25_NAME_INVITE_CHANGED_FILES = frozenset({'app-config.json',
  'static-manifest.json',
  'style.css'})
 R25_NAME_INVITE_ADDED_FILES = frozenset({'name-identity.mjs'})
+# Exact adjacent direct-registration snapshot; backend code is never staged.
+R25_DIRECT_VERSION = 'r25-direct-registration-20261117'
+R25_DIRECT_ARCHIVE_B64_SHA = '6eb7280d0e4cec88f2b8739ebb958c820d5ec47c073292eb6fefb559e3b008da'
+R25_DIRECT_ARCHIVE_SHA = '80139ccbe642de5a2966a5896b6ece528ad9c0f62223eae1284a561235d58675'
+R25_DIRECT_ASSET_HASHES = {'app-config.json': 'fab251e739687ad50d658058ca1696f523b56297282ecac369a10c874758c7ca',
+ 'app.js': '7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168',
+ 'cloud-workflow.mjs': '229d932915109d081e92f5f8ceb10b39a029c20644cf97c27e611b07cba63ced',
+ 'cloud-workspace.mjs': '3ba47efbf182de948f4a3b60c04367c0272f70006d8981b98be5092d765c9e02',
+ 'cloudbase-adapter.mjs': 'a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524',
+ 'glossary-ui.mjs': 'a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f',
+ 'index.html': '86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'name-identity.mjs': '0b446f3dcf4c3f085c3ece71f699461cee43a338f35a90a535fa80850c006b60',
+ 'r23-model-choice.js': 'b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec',
+ 'static-manifest.json': 'ce6503bec38b0f35f4ba491239c9f9180fc0902f2927c13ba8a773ff8eaa1e05',
+ 'style.css': 'da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/cloudbase/LICENSE': '92d7d7d2d4771b84f44e38dc59052faae8e3cd0a234a62de6180a1c6746c979e',
+ 'vendor/cloudbase/README.md': '48665329cfa0baee544a8c57f38eb1518c9809430ebb0647aa904061db9ac767',
+ 'vendor/cloudbase/cloudbase-sdk.mjs': 'df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': '47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee',
+ 'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+R25_DIRECT_FILE_COUNT = 29
+R25_DIRECT_CHANGED_FILES = frozenset({'app-config.json', 'cloud-workflow.mjs',
+ 'cloud-workspace.mjs', 'name-identity.mjs', 'static-manifest.json'})
 R25_BASELINE_WORKFLOW_SHA = 'e69778fb93e39cd241f9f7fe8c4a8e714d330b5b8d2310605f5aff98130aaf14'
 R25_BASELINE_FILES = 217
 R25_BASELINE_TREE_SHA = '13df1a6bac7a368dac95b336f17c89c8fda8c8460a98e38c868bed84092a1cc6'
@@ -1342,6 +1378,8 @@ def r25_resource_bytes(encoded):
          R25_RECOVERY_VERSION, R25_RECOVERY_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
         (R25_NAME_INVITE_ARCHIVE_B64_SHA, R25_NAME_INVITE_ARCHIVE_SHA, R25_NAME_INVITE_ASSET_HASHES,
          R25_NAME_INVITE_VERSION, R25_NAME_INVITE_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
+        (R25_DIRECT_ARCHIVE_B64_SHA, R25_DIRECT_ARCHIVE_SHA, R25_DIRECT_ASSET_HASHES,
+         R25_DIRECT_VERSION, R25_DIRECT_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
     )
     selected = [snapshot for snapshot in snapshots if snapshot[0] == sha256(encoded)]
     if len(encoded) > R25_MAX_ENCODED_BYTES or len(selected) != 1:
@@ -1482,6 +1520,8 @@ def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
          R25_RECOVERY_CHANGED_FILES, frozenset()),
         ((R25_RECOVERY_ARCHIVE_B64_SHA, R25_NAME_INVITE_ARCHIVE_B64_SHA),
          R25_NAME_INVITE_CHANGED_FILES, R25_NAME_INVITE_ADDED_FILES),
+        ((R25_NAME_INVITE_ARCHIVE_B64_SHA, R25_DIRECT_ARCHIVE_B64_SHA),
+         R25_DIRECT_CHANGED_FILES, frozenset()),
     )
     matches = [(forward, changed, added) for forward, changed, added in transitions
                if pair[0] != pair[1] and pair in (forward, forward[::-1])]
