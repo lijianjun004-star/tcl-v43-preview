@@ -1,0 +1,1 @@
+Official @cloudbase/js-sdk 3.11.1, bundled as browser ESM with esbuild 0.25.12. Source integrity: sha512-Zpr2jjiibIWOiUzuSMobCNZAohqQmmCPWkWP+M7fJ0Mv1QTdk8Q/mGJ1XyWsk1r2g1xWuqhnu+1p3VyNBaJxMg==. No project credentials are included.
