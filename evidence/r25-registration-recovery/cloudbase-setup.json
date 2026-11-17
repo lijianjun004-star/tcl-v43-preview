@@ -1,0 +1,33 @@
+{
+  "taskId": "TCL-CLOUDBASE-DOMESTIC-SETUP-20261117",
+  "owner": "ChatGPT",
+  "executor": "Codex",
+  "status": "CLI_AUTHENTICATED_ENV_BOUND_MCP_NEXT_SESSION",
+  "officialSetupSource": "https://docs.cloudbase.net/skill.md",
+  "sourceSha256": "59630769f91fb21a0a3ea9157c176eee90623d4196b888084219641a368a3317",
+  "site": "domestic",
+  "region": "ap-shanghai",
+  "envId": "unknown-roadrunner-d7cap6e21f517",
+  "envStatus": "NORMAL",
+  "cliVersion": "3.9.3",
+  "pluginVersion": "0.2.5",
+  "skillCount": 32,
+  "mcpNativeToolsPresent": false,
+  "mcpDomesticEndpoint": "https://tcb-api.cloud.tencent.com/mcp/v1",
+  "verified": [
+    "official plugin user-scope Codex install succeeded",
+    "official CLI env list found exact existing environment",
+    "CLI env use succeeded",
+    "CLI isIntl false",
+    "authenticated readonly PostgreSQL current_user service_role",
+    "project site/region/envId persisted",
+    "no new environments or billing changes"
+  ],
+  "productionState": {
+    "recoveryFunctionInstalled": false,
+    "migrationRun": false,
+    "frontendPublished": false
+  },
+  "nextTask": "Resume already-authorized R25 recovery deployment: complete backup, apply reviewed002 then003, update identity function, real acceptance, isolated CI139 and one-B64 release PR",
+  "externalGeminiRequests": 0
+}

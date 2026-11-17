@@ -664,3 +664,7 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 后续按002→003→原身份函数→真实云验收→独立CI→仅一个B64归档的发行PR顺序。不得在003后重跑001/002覆盖恢复函数；前端回退保留兼容后台。按本次用户交接明确要求，正式合并或发布前交精确变更与验证结果确认；本轮未做云端写入、合并或发布。
 
 - 本轮交付已落地：实现16bd69e0fc09c0d754c33a5235edfa06c42172a8；独立CI草稿PR139 head d5d57ae5983c9ffd25ec60c2c4a4f0c967f44d82，Actions44101980262已success，仅两份门禁文件，替代旧138候选。正式合并及Pages仍未执行。私有修复包 https://drive.google.com/file/d/1g9w6i0WWdfJS0ZdK9Y5sim-ikiHVUjZo/view?usp=drivesdk ，13335690字节、SHA256 26a2f347521f542c28b445e620bf52acdee40cd3b2976505ff4fe8e6161cc11f；实际回下载SHA/CRC一致，资料中心父目录与shared=false已核验。包内51项校验与最终生产函数入口加载通过；详细状态见evidence/r25-registration-recovery/outcome.json。
+
+## CloudBase 国内站官方接入完成（2026-11-17）
+
+用户要求读取https://docs.cloudbase.net/skill.md并接入国内站。已按官方路径安装cloudbase@plugins-cli 0.2.5（32技能）和官方CLI3.9.3；本会话无原生MCP工具，当前通过CLI操作，插件MCP需新会话加载。已实际核验官方授权有效、CLI国内站isIntl=false、环境列表存在unknown-roadrunner-d7cap6e21f517且NORMAL，env use绑定成功，上海service_role只读PG查询成功。.cloudbase/project.json记录domestic/ap-shanghai/原envId，未写入密钥。此前“授权未保存/等待扫码”已被当前实际登录状态取代，不要重复要求登录。003恢复函数仍未安装，未运行迁移、发布或购买资源。用户此前“上传吧”已授权既定R25修复部署，下一步按备份→002/003→原函数→真实验收→独立CI139/归档PR执行，不重新询问相同发布许可。详见evidence/r25-registration-recovery/cloudbase-setup.json。
