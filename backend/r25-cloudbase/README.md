@@ -10,7 +10,7 @@
 2. 管理通道执行 `schema.sql`。它创建独立业务表、默认拒绝的RLS、固定search_path的SECURITY DEFINER RPC及私有媒体授权谓词。业务表不授予客户端直接读写；RPC仅授予authenticated，anon/PUBLIC不可执行。
 3. 用管理员SQL将一个已存在的原生用户UID绑定为业务admin；无公开首人管理员入口。初始管理员绑定由有管理权限的人执行一次，不能把测试UID、密码或bootstrap私有脚本提交到仓库。
 4. 用正式原生账号测试me、待绑定账号、邀请、作业、加入、主动提交、回执、收件、反馈和另一设备读回；测试跨用户和匿名拒绝，以及同一operation_id重试。
-5. 如需私有附件，再执行 `media-storage.sql`。它要求新桶不存在，避免覆盖既有配置；非目标桶规则保持原样。真实验证上传、权限、不可覆盖/删除、对象元数据及附件关联后，由管理通道明确启用private_media capability。
+5. 如需私有附件，依次执行 `media-storage.sql` 和 `media-storage-insert-compat.sql`。前者要求新桶不存在；后者只修正本轮两个INSERT策略在上传初始化阶段过早读取owner/metadata的问题，保留大小/MIME、读取和禁止覆盖/删除限制。真实验证上传、权限、对象元数据及附件关联后，由管理通道明确启用private_media capability。2026-11-17本任务已实际应用两份迁移并完成真实云验收，原403与修复证据保留。
 6. 发布前端对应配置与完整static-manifest，经精确发布门禁上线；只有真实后台和前端两端都验证后才能称已接通。回滚前端不删除后台数据。
 
 官方CLI 3.9.3的命令帮助已在本任务实际读取核对：
@@ -23,6 +23,7 @@ tcb db execute -e "$R25_ENV_ID" --sql "SELECT 1"
 # 从文件读取SQL后作为一个参数传入，勿把文件内容拼成未转义的Shell程序。
 tcb db execute -e "$R25_ENV_ID" --sql "$(cat backend/r25-cloudbase/schema.sql)"
 tcb db execute -e "$R25_ENV_ID" --sql "$(cat backend/r25-cloudbase/media-storage.sql)"
+tcb db execute -e "$R25_ENV_ID" --sql "$(cat backend/r25-cloudbase/media-storage-insert-compat.sql)"
 ```
 
 原生PostgreSQL环境下CLI的 `--read-only` 开关会被忽略；只读检查必须实际使用SELECT，不可凭该开关执行任意SQL。

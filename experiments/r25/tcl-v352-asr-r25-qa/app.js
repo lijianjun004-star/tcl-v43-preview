@@ -563,18 +563,20 @@ async function persistSessionCheckpoint(){
  // Serialize this tab's own rapid saves while keeping cross-tab conflict checks in IndexedDB.
  const job=checkpointWriteChain.then(commit,commit);checkpointWriteChain=job.then(()=>{});return await job;
 }
-async function findSavedSession(){
+async function findSavedSession({renderOnReady=true}={}){
  const owner=userName,epoch=++restoreSessionEpoch;savedSessionCandidate=null;
  const cursor={key:draftKey(owner),token:null,known:false,ready:Promise.resolve()};checkpointCursor=cursor;
- if(userRole!=='anchor'||!owner||memoryFallback||!localDB)return;
+ if(userRole!=='anchor'||!owner||memoryFallback||!localDB)return false;
+ const database=localDB;
  try{
-  const lookup=new Promise((resolve,reject)=>{const req=localDB.transaction('prefs','readonly').objectStore('prefs').get(cursor.key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  const lookup=new Promise((resolve,reject)=>{const req=database.transaction('prefs','readonly').objectStore('prefs').get(cursor.key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
   cursor.ready=lookup.then(data=>{cursor.token=checkpointToken(data);cursor.known=true;},()=>{});
   const data=await lookup;
-  if(epoch!==restoreSessionEpoch||userName!==owner||userRole!=='anchor')return;
+  if(epoch!==restoreSessionEpoch||userName!==owner||userRole!=='anchor'||localDB!==database)return false;
   if(data?.version===1&&data.owner===owner&&data.snapshot?.anchorName===owner&&data.snapshot.id===data.runId&&Array.isArray(data.snapshot.turns)&&data.snapshot.turns.length<=200)savedSessionCandidate=data;
-  if(page==='home')render();
- }catch(e){cursor.ready=Promise.resolve();if(epoch===restoreSessionEpoch)toast('无法读取本机恢复记录：'+(e?.message||e));}
+  if(renderOnReady&&page==='home')render();
+  return true;
+ }catch(e){cursor.ready=Promise.resolve();if(epoch===restoreSessionEpoch)toast('无法读取本机恢复记录：'+(e?.message||e));return false;}
 }
 function savedSessionHtml(){
  const d=savedSessionCandidate;if(reviewAlive()||!d||d.owner!==userName)return '';
@@ -1071,7 +1073,14 @@ function nav(to){if(!pageAllowed(to)){toast('当前身份不能进入此页面')
  if(reviewAlive()&&(page==='sessionReview'||reviewParked)){if(page==='sessionReview'&&!leaveReviewKeepingSession())return;activeAssignmentId='';page=to;render();window.scrollTo({top:0,behavior:'instant'});return;}
  if(!canLeaveRecording())return;activeAssignmentId='';resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();if(answerAudioURL){URL.revokeObjectURL(answerAudioURL);answerAudioURL=''}roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};page=to;render();window.scrollTo({top:0,behavior:'instant'});}
 function home(){
- if(cloudWorkflowEnabled()){setTitle(cloudWorkflow?.user?'云端工作台':'正式账号登录');applyRoleChrome();void cloudWorkspace.mount(ELEM('view'));return;}
+ if(cloudWorkflowEnabled()){
+  setTitle(cloudWorkflow?.user?'云端工作台':'正式账号登录');applyRoleChrome();
+  if(cloudWorkflow?.user?.role==='anchor'&&!currentCloudCheckpointReady()){
+   ELEM('view').innerHTML='<section class="panel"><h2>正在准备本人本机恢复记录</h2><p role="status">恢复版本尚未读完，暂不能开始新的练播，以免覆盖已有记录。旧文字和录音不会在这里被改写。</p><button type="button" class="btn soft" id="retryCloudCheckpoint">重新读取本人恢复记录</button></section>';
+   ELEM('retryCloudCheckpoint').onclick=async()=>{const button=ELEM('retryCloudCheckpoint'),owner=userName;button.disabled=true;await findSavedSession({renderOnReady:false});if(userName===owner&&page==='home')render();};return;
+  }
+  void cloudWorkspace.mount(ELEM('view'));return;
+ }
  setTitle(userRole?(userRole==='operator'?'运营工作台':'练播房'):'选择进入方式');applyRoleChrome();
  if(!userRole||!userName){
   ELEM('view').innerHTML=`<section class="role-gateway"><div class="role-gateway-head"><span class="eyebrow">TCL · PRACTICE HUB</span><h2>今天要进入哪个工作区？</h2><p>先选择工作区，进入后只需填写姓名。此版本为本机体验，不等同正式账号登录。</p></div><div class="role-grid"><button class="role-card anchor" data-role-pick="anchor"><span class="role-icon" aria-hidden="true">${ICON.video}</span><span class="role-index">01 / ANCHOR</span><strong>主播练播房</strong><small>选品类、看镜头、练弹幕、复盘回看。<br>把时间留给练播本身。</small><span>进入主播端 →</span></button><button class="role-card operator" data-role-pick="operator"><span class="role-icon" aria-hidden="true">${ICON.tasks}</span><span class="role-index">02 / OPERATIONS</span><strong>直播运营</strong><small>创建作业、跟踪进度、查看主动提交记录。<br>每次专注完成一件事。</small><span>进入运营端 →</span></button></div></section>`;
@@ -1220,6 +1229,7 @@ function confirmReplacePractice(onConfirm){
  overlay.querySelector('#tclRestartCancel').focus();
 }
 function openBoard(id,platform='',opts={}){
+ if(cloudWorkflowEnabled()&&!currentCloudCheckpointReady()){page='home';render();return toast('请先完成本人本机恢复版本读取，再开始练播');}
  if(!pageAllowed('training'))return toast('当前身份不能进入训练');
  if(capturePending||roomPhase==='live'||videoRecorderFinalizing||finishingSession)return toast('请先结束当前练播，等待录像封装后再重新开始');
  if(!opts.confirmed){
@@ -2853,6 +2863,14 @@ async function syncCloud(){try{if(!cloud.base)throw new Error('请先填写 API 
 function downloadText(name,text,type='application/json'){const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=name;a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000)}
 const downloadJSON=(name,obj)=>downloadText(name,JSON.stringify(obj,null,2),'application/json;charset=utf-8');
 
+function currentCloudCheckpointReady(){
+ return !!(localDB&&!memoryFallback&&userRole==='anchor'&&userName&&cloudWorkflow?.user?.uid===userName&&localPartitionName===cloudPartitionName(cloudbaseConfig.envId,userName)&&checkpointCursor.key===draftKey(userName)&&checkpointCursor.known);
+}
+async function prepareCloudCheckpoint(identity,sequence){
+ if(identity?.role!=='anchor')return true;
+ if(!currentCloudCheckpointReady())await findSavedSession({renderOnReady:false});
+ return sequence===cloudPartitionSequence&&userName===identity.uid&&currentCloudCheckpointReady();
+}
 let cloudPartitionSequence=0,cloudPartitionSwitchChain=Promise.resolve();
 async function loadCloudLocalPartition(identity){
  const sequence=++cloudPartitionSequence;const next=()=>performCloudPartitionSwitch(identity,sequence);const job=cloudPartitionSwitchChain.then(next,next);cloudPartitionSwitchChain=job.then(()=>{},()=>{});return job;
@@ -2860,9 +2878,9 @@ async function loadCloudLocalPartition(identity){
 async function performCloudPartitionSwitch(identity,sequence){
  if(sequence!==cloudPartitionSequence)return;
  const key=cloudPartitionName(cloudbaseConfig.envId,identity?.uid||'signed-out');
- if(localDB&&localPartitionName===key){userName=identity?.uid||'';userRole=identity?(identity.role==='admin'?'operator':identity.role):'';updateMode();return;}
+ if(localDB&&localPartitionName===key){userName=identity?.uid||'';userRole=identity?(identity.role==='admin'?'operator':identity.role):'';await prepareCloudCheckpoint(identity,sequence);if(sequence!==cloudPartitionSequence)return;updateMode();return;}
  saveCurrentTypedAnswer();const queued=persistSessionCheckpoint(),priorChain=checkpointWriteChain;
- userRole='';userName='';restoreSessionEpoch++;savedSessionCandidate=null;cloudTrainingAttempts.clear();cloudWorkspace?.invalidate();invalidateImportPreview();uploadedFileName='';librarySearch='';assignmentSearch='';cloud.token='';cloud.role='';cloud.name='';
+ userRole='';userName='';restoreSessionEpoch++;savedSessionCandidate=null;checkpointCursor={key:'',token:null,known:false,ready:Promise.resolve()};cloudTrainingAttempts.clear();cloudWorkspace?.invalidate();invalidateImportPreview();uploadedFileName='';librarySearch='';assignmentSearch='';cloud.token='';cloud.role='';cloud.name='';
  if(typeof r6WhisperCancelAll==='function')r6WhisperCancelAll();
  resetRunState();stopScene();discardVideoArchive();lastSessionSnapshot=null;lastTrainingLogId='';activeAssignmentId='';
  await Promise.allSettled([queued,priorChain]);
@@ -2880,12 +2898,14 @@ async function performCloudPartitionSwitch(identity,sequence){
  const scope=cloudbaseConfig.envId+':'+(identity?.uid||'signed-out');
  const storage={getItem:key=>identity?localStorage.getItem(key+':'+scope):null,setItem:(key,value)=>{if(!identity)throw new Error('请先登录');localStorage.setItem(key+':'+scope,value);},removeItem:key=>{if(identity)localStorage.removeItem(key+':'+scope);}};
  asrGlossary=initGlossaryUI({parseDocumentFile,isEditable:()=>!!cloudWorkflow?.user&&page==='home'&&!r6WhisperRunning&&!oneShotAsrJob&&!transcriptBusy&&!speechRecognizer,storage});
+ await prepareCloudCheckpoint(identity,sequence);if(sequence!==cloudPartitionSequence||userName!==(identity?.uid||''))return;
  updateMode();if(cloudWorkspace&&cloudWorkflow?.getState().initialized&&document.getElementById('view'))render();
 }
 async function initializeCloudWorkflow(){
  cloudWorkflow=createCloudWorkflow({config:cloudbaseConfig,sdkFactory:createOfficialCloudBaseAdapter,businessTransport:cloudbaseRpcTransport,onIdentityChange:loadCloudLocalPartition});
- cloudWorkspace=createCloudWorkspace({workflow:cloudWorkflow,boards:BOARDS,toast,downloadJSON,onIdentityReady:async()=>{await loadCloudLocalPartition(cloudWorkflow.user);page='home';render();void findSavedSession();},onLogout:logoutIdentity,onLocalRecords:()=>nav('progress'),getLocalResume:()=>reviewAlive()?{title:(lastSessionSnapshot?.category||'')+' · '+(lastSessionSnapshot?.platform||'')}:savedSessionCandidate?{title:(savedSessionCandidate.snapshot.category||'')+' · '+(savedSessionCandidate.snapshot.platform||'')}:null,onResumeReview:()=>reviewAlive()?nav('sessionReview'):restoreLocalSession(),onExportLegacy:exportLegacyLocalText,onStart:async({boardId,platform,assignment})=>{
+ cloudWorkspace=createCloudWorkspace({workflow:cloudWorkflow,boards:BOARDS,toast,downloadJSON,onIdentityReady:async()=>{await loadCloudLocalPartition(cloudWorkflow.user);page='home';render();},onLogout:logoutIdentity,onLocalRecords:()=>nav('progress'),getLocalResume:()=>reviewAlive()?{title:(lastSessionSnapshot?.category||'')+' · '+(lastSessionSnapshot?.platform||'')}:savedSessionCandidate?{title:(savedSessionCandidate.snapshot.category||'')+' · '+(savedSessionCandidate.snapshot.platform||'')}:null,onResumeReview:()=>reviewAlive()?nav('sessionReview'):restoreLocalSession(),onExportLegacy:exportLegacyLocalText,onStart:async({boardId,platform,assignment})=>{
   const owner=cloudWorkflow.user?.uid;if(!owner||userName!==owner||userRole!=='anchor')throw new Error('登录状态已改变，请重新登录');
+  const cursor=checkpointCursor;await cursor.ready;if(cursor!==checkpointCursor||cloudWorkflow.user?.uid!==owner||!currentCloudCheckpointReady())throw new Error('本人本机恢复版本尚未读取完成，请返回首页重试');
   if(assignment){localAssignments=[{...assignment,operatorName:assignment.operatorName||'运营'},...localAssignments.filter(x=>x.id!==assignment.id)];await savePref('assignments',localAssignments);if(cloudWorkflow.user?.uid!==owner)throw new Error('账号已切换');}
   openBoard(boardId,platform,{assignmentId:assignment?.id||''});
  }});
