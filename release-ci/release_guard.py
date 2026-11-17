@@ -1221,6 +1221,41 @@ R25_CLOUD_ADDED_FILES = frozenset({'cloud-workflow.mjs',
  'vendor/cloudbase/README.md',
  'vendor/cloudbase/cloudbase-sdk.mjs'})
 R25_CLOUD_MAX_RESOURCE_BYTES = 1_000_000
+# Exact next snapshot: restore the saved cursor after native-session reload.
+# Previous snapshots stay pinned; only app.js and its manifest may change.
+R25_RECOVERY_VERSION = 'r25-cloud-sync-recovery-20261117'
+R25_RECOVERY_ARCHIVE_B64_SHA = 'ebe2f473c29e9717bc1c7ba6a70777afc5ac41351cd16ef57480e58b7f521661'
+R25_RECOVERY_ARCHIVE_SHA = 'c71b8416733caf0b1e079771bc07a04be26257c76063e35a6385ab9c97ded5d8'
+R25_RECOVERY_ASSET_HASHES = {'app-config.json': '3df42c4f593e9c10776631bac75d5526e1e2a00bcd4e14e2e51627bf7b8c3dea',
+ 'app.js': '684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168',
+ 'cloud-workflow.mjs': 'd894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364',
+ 'cloud-workspace.mjs': '98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15',
+ 'cloudbase-adapter.mjs': 'a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524',
+ 'glossary-ui.mjs': 'a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f',
+ 'index.html': '86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec',
+ 'static-manifest.json': '736e1aa94d40a7cc44ba141825d3fc2524ba34a4c15c184727316733d3d55ec1',
+ 'style.css': '31b61b22ed66caec4dd8ee993b55e5306c79f5f27c9ec47113ca47296cf99109',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/cloudbase/LICENSE': '92d7d7d2d4771b84f44e38dc59052faae8e3cd0a234a62de6180a1c6746c979e',
+ 'vendor/cloudbase/README.md': '48665329cfa0baee544a8c57f38eb1518c9809430ebb0647aa904061db9ac767',
+ 'vendor/cloudbase/cloudbase-sdk.mjs': 'df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': '47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee',
+ 'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+R25_RECOVERY_FILE_COUNT = 28
+R25_RECOVERY_CHANGED_FILES = frozenset({'app.js', 'static-manifest.json'})
 R25_BASELINE_WORKFLOW_SHA = 'e69778fb93e39cd241f9f7fe8c4a8e714d330b5b8d2310605f5aff98130aaf14'
 R25_BASELINE_FILES = 217
 R25_BASELINE_TREE_SHA = '13df1a6bac7a368dac95b336f17c89c8fda8c8460a98e38c868bed84092a1cc6'
@@ -1260,6 +1295,8 @@ def r25_resource_bytes(encoded):
          R25_VERSION, 22, R25_MAX_RESOURCE_BYTES),
         (R25_CLOUD_ARCHIVE_B64_SHA, R25_CLOUD_ARCHIVE_SHA, R25_CLOUD_ASSET_HASHES,
          R25_CLOUD_VERSION, R25_CLOUD_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
+        (R25_RECOVERY_ARCHIVE_B64_SHA, R25_RECOVERY_ARCHIVE_SHA, R25_RECOVERY_ASSET_HASHES,
+         R25_RECOVERY_VERSION, R25_RECOVERY_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
     )
     selected = [snapshot for snapshot in snapshots if snapshot[0] == sha256(encoded)]
     if len(encoded) > R25_MAX_ENCODED_BYTES or len(selected) != 1:
@@ -1391,11 +1428,19 @@ def verify_r25_rollback(before, after, removed_archive, zipbytes, trusted_inputs
 
 
 def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trusted_inputs):
-    """Accept only the two frozen adjacent R25 snapshots and their exact reversal."""
+    """Accept only explicit adjacent frozen R25 pairs and their exact reversals."""
     pair = (sha256(old_encoded), sha256(new_encoded))
-    forward = (R25_ARCHIVE_B64_SHA, R25_CLOUD_ARCHIVE_B64_SHA)
-    if pair[0] == pair[1] or pair not in (forward, forward[::-1]):
+    transitions = (
+        ((R25_ARCHIVE_B64_SHA, R25_CLOUD_ARCHIVE_B64_SHA),
+         R25_CLOUD_CHANGED_FILES, R25_CLOUD_ADDED_FILES),
+        ((R25_CLOUD_ARCHIVE_B64_SHA, R25_RECOVERY_ARCHIVE_B64_SHA),
+         R25_RECOVERY_CHANGED_FILES, frozenset()),
+    )
+    matches = [(forward, changed, added) for forward, changed, added in transitions
+               if pair[0] != pair[1] and pair in (forward, forward[::-1])]
+    if len(matches) != 1:
         raise GateFailure('R2.5 update requires the exact old/new snapshot pair')
+    forward, expected_changed, added_forward = matches[0]
     if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
         raise GateFailure('R2.5 update cannot change protected site.zip')
     step = r25_stage_step()
@@ -1403,13 +1448,13 @@ def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
             sha256(workflow.replace(step, '', 1).encode()) != R25_BASELINE_WORKFLOW_SHA):
         raise GateFailure('R2.5 update must retain the exact existing Pages workflow')
     old_data, new_data = r25_resource_bytes(old_encoded), r25_resource_bytes(new_encoded)
-    added, removed = ((R25_CLOUD_ADDED_FILES, frozenset()) if pair == forward
-                      else (frozenset(), R25_CLOUD_ADDED_FILES))
+    added, removed = ((added_forward, frozenset()) if pair == forward
+                      else (frozenset(), added_forward))
     if set(new_data) - set(old_data) != added or set(old_data) - set(new_data) != removed:
         raise GateFailure('R2.5 update changed the exact reviewed resource set')
     changed = {name for name in set(old_data) | set(new_data)
                if old_data.get(name) != new_data.get(name)}
-    if changed != R25_CLOUD_CHANGED_FILES:
+    if changed != expected_changed:
         raise GateFailure('R2.5 update changed resources outside the exact reviewed scope')
     with tempfile.TemporaryDirectory() as temp:
         root = pathlib.Path(temp)
