@@ -1,0 +1,85 @@
+{
+  "scope": "Checksums of the submitted local replay artifacts, excluding this manifest itself. No data directory or node_modules included.",
+  "files": [
+    {
+      "file": ".gitignore",
+      "sha256": "ca1838cde9e4cfb493f3ea87a08bf973a9d6102aac688fc8828107d5586042aa"
+    },
+    {
+      "file": "README.md",
+      "sha256": "3d6f0514f48c868642cfb8eae8943f6aebb555b5f5e375ea861422c63f956bf8"
+    },
+    {
+      "file": "SOURCE-SHA256.json",
+      "sha256": "afdcc80b965e702589b1914b5add80df8d0a3cb3ebb354e21627cb53abd5bef2"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "a5f4e99f782e711c94e51c598f621c5f9c36ca858b139210bd49b10b52745ef6"
+    },
+    {
+      "file": "package.json",
+      "sha256": "5e3b84c68fa19520ee08a09bb6f90d014d0a27df8a81a9c992947279532111bf"
+    },
+    {
+      "file": "replay-summary.json",
+      "sha256": "25d3c3203dbc9c74408ce27c337c7ce3568b04d97b298eaeed2b0eb5b3acbb32"
+    },
+    {
+      "file": "run-local.mjs",
+      "sha256": "b6242fc1fa4679a71438b6d923f0a23f00eb37318dcc2e2f8232a99ccbaaeb38"
+    },
+    {
+      "file": "snapshots/handler-result.json",
+      "sha256": "c764795387f2d237cdb4a92d0665b30b7aa561bc1d80819d42dffaada6b94e12"
+    },
+    {
+      "file": "snapshots/historical-alias-precedence-result.json",
+      "sha256": "a4f3b861fab52ce17a64100aa6b49f27d12c3473ea7544728fc3089371e0186a"
+    },
+    {
+      "file": "snapshots/namespace-result.json",
+      "sha256": "9c611d223c535187c5cd0a9c692c8938810a0d252189e4c51cdaf81172c4a124"
+    },
+    {
+      "file": "snapshots/real-pg-concurrency-result.json",
+      "sha256": "728f7374c54093e23ed89e280fabb6310295c60c0e21395f2ffd46ec5d1fb7ea"
+    },
+    {
+      "file": "snapshots/service-result.json",
+      "sha256": "ca1d84f919acd51ec0f23eecf42bda516f658ddb21fcd689d549d9805f40661f"
+    },
+    {
+      "file": "source/bootstrap.mjs",
+      "sha256": "9101a63d75ba460db5cbd0b8a3afca3110854a807132019e1d920c61724c0e18"
+    },
+    {
+      "file": "source/handler-test.mjs",
+      "sha256": "85ea20ad2ce8c94bfaa6e36588eac717974919a5c65362b3a3e29cbd3957821d"
+    },
+    {
+      "file": "source/harness.mjs",
+      "sha256": "f762be22af03cef1f77c93d272344f31412abf19b61c1d793b0223156a72d7cd"
+    },
+    {
+      "file": "source/historical-alias-precedence-test.mjs",
+      "sha256": "795476b1a5524f71189f8de3be6e80fcdb9ff72ca931bf7e3a48b6269e719356"
+    },
+    {
+      "file": "source/namespace-test.mjs",
+      "sha256": "8154f017529dc51ada46f47a04f43c7854d0597490e06cac52ec319c09f28f4e"
+    },
+    {
+      "file": "source/pre-casefold-001.sql",
+      "sha256": "8865dfa166249406c05f48b8e0d11e916c35f8f1a19f20be56ccd248824f48fb"
+    },
+    {
+      "file": "source/real-pg-concurrency.mjs",
+      "sha256": "8a9dd351135d1aefc5ca0b15879c10973faee2c74e73adabe27804fffcfcb397"
+    },
+    {
+      "file": "source/service-test.mjs",
+      "sha256": "c37651fc629356d7a53728baeef135fd94f4139f0e48cd9a9076973207d2c080"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "scope": "Actual cloud read-only catalog/privilege SELECT; no user rows or credential data",
+  "requestId": "d02b0430-0c15-4287-93ae-5fd4ca446f33",
+  "affectedRows": 0,
+  "status": "PASS",
+  "tables": [
+    {
+      "name": "r25wf_name_aliases",
+      "rls_enabled": true,
+      "anon_any_dml": false,
+      "policy_count": 0,
+      "authenticated_any_dml": false
+    },
+    {
+      "name": "r25wf_name_conflicts",
+      "rls_enabled": true,
+      "anon_any_dml": false,
+      "policy_count": 0,
+      "authenticated_any_dml": false
+    },
+    {
+      "name": "r25wf_name_rates",
+      "rls_enabled": true,
+      "anon_any_dml": false,
+      "policy_count": 0,
+      "authenticated_any_dml": false
+    },
+    {
+      "name": "r25wf_name_registrations",
+      "rls_enabled": true,
+      "anon_any_dml": false,
+      "policy_count": 0,
+      "authenticated_any_dml": false
+    },
+    {
+      "name": "r25wf_native_identities",
+      "rls_enabled": true,
+      "anon_any_dml": false,
+      "policy_count": 0,
+      "authenticated_any_dml": false
+    }
+  ],
+  "functions": [
+    {
+      "name": "r25wf_name_identity_service",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "anon_execute": false,
+      "security_definer": true,
+      "service_role_execute": true,
+      "authenticated_execute": false
+    },
+    {
+      "name": "r25wf_name_key",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "anon_execute": false,
+      "security_definer": false,
+      "service_role_execute": true,
+      "authenticated_execute": false
+    },
+    {
+      "name": "r25wf_name_profile_guard",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "anon_execute": false,
+      "security_definer": true,
+      "service_role_execute": true,
+      "authenticated_execute": false
+    },
+    {
+      "name": "r25wf_name_registration_json",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "anon_execute": false,
+      "security_definer": false,
+      "service_role_execute": true,
+      "authenticated_execute": false
+    },
+    {
+      "name": "r25wf_native_identity_namespace_guard",
+      "config": [
+        "search_path=pg_catalog, public"
+      ],
+      "anon_execute": false,
+      "security_definer": true,
+      "service_role_execute": true,
+      "authenticated_execute": false
+    }
+  ]
+}

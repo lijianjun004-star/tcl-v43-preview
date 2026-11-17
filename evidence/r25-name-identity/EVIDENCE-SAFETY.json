@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "scanScope": "Every copied file including image bytes; exact password/invite/code/operationSecret values from available owner-only workspace fixtures, plus JWT pattern",
+  "privateFixtureFilesRead": 22,
+  "privateValueCount": 29,
+  "copiedFilesScanned": 30,
+  "filesWithFindings": [],
+  "findingCount": 0,
+  "screenshots": "All included ui-local and ui-public screenshots visually inspected: only synthetic names, no input passwords or invite values; identity and assignment metadata masked",
+  "rawHttpCopied": false,
+  "privateFilesCopied": false,
+  "networkRequests": 0,
+  "recordedAt": "2026-11-17T08:36:29.260224+00:00"
+}

@@ -1,4 +1,6 @@
-# Native identity provider: ready for root read-only probe
+# Native identity provider: implementation and probe history
+
+Current outcome (2026-11-17): the production Event handler is deployed. Actual public broker + official Native Auth + PG checks passed 72/72, and actual local product UI passed 26/26. See [final backend verification](../../evidence/r25-name-identity/BACKEND-VERIFICATION.md). The read-only preparation checkpoints below remain historical evidence, not the current release gate.
 
 Scope: existing domestic environment `unknown-roadrunner-d7cap6e21f517`, region `ap-shanghai`. No cloud request, account creation, role creation or deployment was performed by this preparation task. No CLI credentials were read or copied into function configuration.
 

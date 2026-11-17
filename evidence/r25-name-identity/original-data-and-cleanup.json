@@ -1,0 +1,70 @@
+{
+  "allOriginalRowsPreserved": true,
+  "changedOrMissing": [],
+  "beforeCounts": {
+    "joins": 0,
+    "users": 7,
+    "invites": 3,
+    "feedback": 0,
+    "settings": 2,
+    "training": 0,
+    "assignments": 0,
+    "idempotency": 3,
+    "submissions": 0,
+    "submission_media": 0
+  },
+  "afterCounts": {
+    "joins": 0,
+    "users": 7,
+    "invites": 3,
+    "feedback": 0,
+    "settings": 2,
+    "training": 0,
+    "assignments": 0,
+    "idempotency": 3,
+    "submissions": 0,
+    "submission_media": 0
+  },
+  "originalRowsChecked": 15,
+  "finalIdentityIntegrity": {
+    "originalNameAliasesExact": true,
+    "originalFormalActiveCount": 2,
+    "syntheticProfilesRemaining": 0,
+    "originalNativeMappingsExact": true,
+    "immutableSubmissionTriggerEnabled": true
+  },
+  "targetedDatabaseCleanup": {
+    "pass": true,
+    "exitCode": 0,
+    "requestId": "dfa90b74-750d-403c-80dc-de2ee6d4ea0a",
+    "summary": {
+      "status": "SYNTHETIC_DB_SCOPE_REMOVED",
+      "originalUserCount": 7,
+      "deletedProfileCount": 10,
+      "originalInviteCount": 3,
+      "originalRowsVerified": true,
+      "nativeDeletionPerformed": false,
+      "nameRateCountersRetained": true
+    },
+    "reviewedSqlSha256": "2253d7293663030fe3630f389edf35db23caafcaa1509e6b6ef076b21fa458f4",
+    "nativeDeletionPerformed": false
+  },
+  "targetedNativeCleanup": {
+    "exitCode": 0,
+    "attemptedSyntheticCount": 10,
+    "protectedExpectedRemainingCount": 3,
+    "RequestId": "683a5d58-b150-4dc4-9253-b55f70ecedfd",
+    "FailedCount": 0,
+    "SuccessCount": 10
+  },
+  "nativeWholeUidSetAfterCleanup": {
+    "scope": "read-only Native whole UID set comparison",
+    "pass": true,
+    "actualCount": 3,
+    "expectedCount": 3,
+    "cloudWrites": 0
+  },
+  "nativeScope": "Only 10 verified task synthetic identities removed; original two formal identities and existing system administrator preserved. No unknown/native prefix bulk deletion.",
+  "browserDataScope": "No real user browser was accessed or cleared. Existing UID partitions are retained by code; legacy local text export remains read-only.",
+  "secretsLogged": false
+}

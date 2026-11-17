@@ -1,0 +1,113 @@
+{
+  "scope": "Actual Chromium DOM and native IndexedDB; identity HTTP/Auth/business are synthetic. No cloud writes.",
+  "passed": 22,
+  "total": 22,
+  "results": [
+    {
+      "name": "first tab is invitation joining",
+      "passed": true
+    },
+    {
+      "name": "registration asks only name password invite",
+      "passed": true
+    },
+    {
+      "name": "technical account input is absent",
+      "passed": true
+    },
+    {
+      "name": "later login is initially hidden",
+      "passed": true
+    },
+    {
+      "name": "registration uses actual register action",
+      "passed": true
+    },
+    {
+      "name": "join handler sends no self selected role or username",
+      "passed": true
+    },
+    {
+      "name": "password input cleared before wait",
+      "passed": true
+    },
+    {
+      "name": "tabs cannot start competing login while joining",
+      "passed": true
+    },
+    {
+      "name": "no successful entry before registration settles",
+      "passed": true
+    },
+    {
+      "name": "later tab shows only name and password",
+      "passed": true
+    },
+    {
+      "name": "daily login accepts existing short password",
+      "passed": true
+    },
+    {
+      "name": "daily password is cleared",
+      "passed": true
+    },
+    {
+      "name": "conflict is shown without claiming login",
+      "passed": true
+    },
+    {
+      "name": "mobile has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "operator invitation choices follow allowed roles",
+      "passed": true
+    },
+    {
+      "name": "operator invitation describes direct name joining",
+      "passed": true
+    },
+    {
+      "name": "admin invitation choices follow allowed roles",
+      "passed": true
+    },
+    {
+      "name": "admin invitation describes direct name joining",
+      "passed": true
+    },
+    {
+      "name": "concurrent browser attempts share persisted operation",
+      "passed": true
+    },
+    {
+      "name": "concurrent browser attempts retain same 256 bit secret",
+      "passed": true
+    },
+    {
+      "name": "native IndexedDB contains no password or invite",
+      "passed": true
+    },
+    {
+      "name": "no browser errors",
+      "passed": true
+    }
+  ],
+  "storageResult": {
+    "requestCount": 2,
+    "oneOperation": true,
+    "oneSecret": true,
+    "oneRow": true,
+    "secretLength": 64,
+    "noPassword": true,
+    "noInvite": true,
+    "state": "ready"
+  },
+  "pageErrors": [],
+  "sha256": {
+    "app.js": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e",
+    "cloud-workflow.mjs": "a592b2f79a7e80f1317b036352bdf9033182da0e4d26d5b3b65d0e845a156277",
+    "cloud-workspace.mjs": "efbabf6f3e2cf6f3a0a10fb6204884176fc44c513d57920fa347e63948beaff1",
+    "name-identity.mjs": "702a15438acc838d06a431553812b54d27d1fb7c21fae29f32861903181e83fa",
+    "style.css": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+  }
+}

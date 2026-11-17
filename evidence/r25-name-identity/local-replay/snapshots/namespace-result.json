@@ -1,0 +1,161 @@
+{
+  "scope": "localPGmock-auth-native-namespace",
+  "checks": [
+    {
+      "name": "backfill_old_raw_native_username",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "mapped": 1,
+          "conflicts": 0
+        }
+      }
+    },
+    {
+      "name": "casefold_native_username_blocks_human_alias_reservation",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_TAKEN",
+          "message": "姓名与既有登录名冲突，请直接登录原账号或加部门编号"
+        }
+      }
+    },
+    {
+      "name": "rejected_native_namespace_claim_does_not_consume_invite",
+      "pass": true
+    },
+    {
+      "name": "rejected_native_namespace_claim_creates_no_registration",
+      "pass": true
+    },
+    {
+      "name": "new_unrelated_alias_reserves",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:f1d6bf42-928e-4c47-a297-7246ced8971c",
+          "nameKey": "alias_conflict",
+          "username": "r25n_1bae875d0b344129b0281b6c",
+          "displayName": "ALIAS_CONFLICT",
+          "operationId": "41dfe47d-da7c-485a-b51d-8a7264542e36",
+          "reservationId": "f1d6bf42-928e-4c47-a297-7246ced8971c"
+        }
+      }
+    },
+    {
+      "name": "new_unrelated_alias_finalizes",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "local-alias-owner",
+          "role": "anchor",
+          "state": "ready",
+          "marker": "r25wf-name-v1:f1d6bf42-928e-4c47-a297-7246ced8971c",
+          "nameKey": "alias_conflict",
+          "username": "r25n_1bae875d0b344129b0281b6c",
+          "displayName": "ALIAS_CONFLICT",
+          "operationId": "41dfe47d-da7c-485a-b51d-8a7264542e36",
+          "reservationId": "f1d6bf42-928e-4c47-a297-7246ced8971c"
+        }
+      }
+    },
+    {
+      "name": "backfill_native_username_cannot_shadow_other_uid_alias",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "原生用户名与另一姓名别名冲突，未覆盖任何映射"
+        }
+      }
+    },
+    {
+      "name": "rejected_backfill_does_not_install_native_mapping",
+      "pass": true
+    },
+    {
+      "name": "existing_alias_owner_unchanged",
+      "pass": true
+    },
+    {
+      "name": "pending_alias_reserves",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:cc9b39cc-44a0-46c3-85f6-6e8407124365",
+          "nameKey": "pending_conflict",
+          "username": "r25n_c09d5933d40f410fb804dfe5",
+          "displayName": "PENDING_CONFLICT",
+          "operationId": "e00b8701-179d-44c2-bef0-6bb19b31cdaa",
+          "reservationId": "cc9b39cc-44a0-46c3-85f6-6e8407124365"
+        }
+      }
+    },
+    {
+      "name": "backfill_native_username_cannot_shadow_pending_reservation",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "原生用户名与待完成开户姓名冲突，未覆盖预约"
+        }
+      }
+    },
+    {
+      "name": "pending_backfill_failure_keeps_native_mapping_empty",
+      "pass": true
+    },
+    {
+      "name": "pending_reservation_not_taken_over",
+      "pass": true,
+      "detail": {
+        "uid": null,
+        "state": "reserved"
+      }
+    },
+    {
+      "name": "exact_old_native_login_keeps_uid",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "legacy-one",
+          "state": "ready",
+          "legacy": true,
+          "username": "tcl_user",
+          "displayName": "旧成员甲"
+        }
+      }
+    },
+    {
+      "name": "old_native_uid_is_original",
+      "pass": true
+    },
+    {
+      "name": "old_business_identity_unchanged",
+      "pass": true
+    },
+    {
+      "name": "source_unchanged",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "serviceShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "serviceShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "status": "PASS"
+}

@@ -1,0 +1,14 @@
+{
+  "changed": [
+    "app-config.json",
+    "app.js",
+    "cloud-workflow.mjs",
+    "cloud-workspace.mjs",
+    "static-manifest.json",
+    "style.css"
+  ],
+  "added": [
+    "name-identity.mjs"
+  ],
+  "removed": []
+}

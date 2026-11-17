@@ -1,0 +1,80 @@
+{
+  "scope": "Original local-only test scripts and synthetic result snapshots copied byte-for-byte. No private fixtures, provider credentials, database directories or node_modules.",
+  "files": [
+    {
+      "file": "source/bootstrap.mjs",
+      "source": "/workspace/r25-name-identity-tests/bootstrap.mjs",
+      "sha256": "9101a63d75ba460db5cbd0b8a3afca3110854a807132019e1d920c61724c0e18"
+    },
+    {
+      "file": "source/harness.mjs",
+      "source": "/workspace/r25-name-identity-tests/harness.mjs",
+      "sha256": "f762be22af03cef1f77c93d272344f31412abf19b61c1d793b0223156a72d7cd"
+    },
+    {
+      "file": "source/service-test.mjs",
+      "source": "/workspace/r25-name-identity-tests/service-test.mjs",
+      "sha256": "c37651fc629356d7a53728baeef135fd94f4139f0e48cd9a9076973207d2c080"
+    },
+    {
+      "file": "source/handler-test.mjs",
+      "source": "/workspace/r25-name-identity-tests/handler-test.mjs",
+      "sha256": "85ea20ad2ce8c94bfaa6e36588eac717974919a5c65362b3a3e29cbd3957821d"
+    },
+    {
+      "file": "source/namespace-test.mjs",
+      "source": "/workspace/r25-name-identity-tests/namespace-test.mjs",
+      "sha256": "8154f017529dc51ada46f47a04f43c7854d0597490e06cac52ec319c09f28f4e"
+    },
+    {
+      "file": "source/historical-alias-precedence-test.mjs",
+      "source": "/workspace/r25-name-identity-tests/historical-alias-precedence-test.mjs",
+      "sha256": "795476b1a5524f71189f8de3be6e80fcdb9ff72ca931bf7e3a48b6269e719356"
+    },
+    {
+      "file": "source/real-pg-concurrency.mjs",
+      "source": "/workspace/r25-name-identity-tests/real-pg-concurrency.mjs",
+      "sha256": "8a9dd351135d1aefc5ca0b15879c10973faee2c74e73adabe27804fffcfcb397"
+    },
+    {
+      "file": "source/pre-casefold-001.sql",
+      "source": "/workspace/r25-name-identity-tests/pre-casefold-001.sql",
+      "sha256": "8865dfa166249406c05f48b8e0d11e916c35f8f1a19f20be56ccd248824f48fb"
+    },
+    {
+      "file": "snapshots/service-result.json",
+      "source": "/workspace/r25-name-identity-tests/service-result.json",
+      "sha256": "ca1d84f919acd51ec0f23eecf42bda516f658ddb21fcd689d549d9805f40661f"
+    },
+    {
+      "file": "snapshots/handler-result.json",
+      "source": "/workspace/r25-name-identity-tests/handler-result.json",
+      "sha256": "c764795387f2d237cdb4a92d0665b30b7aa561bc1d80819d42dffaada6b94e12"
+    },
+    {
+      "file": "snapshots/namespace-result.json",
+      "source": "/workspace/r25-name-identity-tests/namespace-result.json",
+      "sha256": "9c611d223c535187c5cd0a9c692c8938810a0d252189e4c51cdaf81172c4a124"
+    },
+    {
+      "file": "snapshots/historical-alias-precedence-result.json",
+      "source": "/workspace/r25-name-identity-tests/historical-alias-precedence-result.json",
+      "sha256": "a4f3b861fab52ce17a64100aa6b49f27d12c3473ea7544728fc3089371e0186a"
+    },
+    {
+      "file": "snapshots/real-pg-concurrency-result.json",
+      "source": "/workspace/r25-name-identity-tests/real-pg-concurrency-result.json",
+      "sha256": "728f7374c54093e23ed89e280fabb6310295c60c0e21395f2ffd46ec5d1fb7ea"
+    },
+    {
+      "file": "package.json",
+      "source": "/workspace/r25-name-identity-tests/package.json",
+      "sha256": "5e3b84c68fa19520ee08a09bb6f90d014d0a27df8a81a9c992947279532111bf"
+    },
+    {
+      "file": "package-lock.json",
+      "source": "/workspace/r25-name-identity-tests/package-lock.json",
+      "sha256": "a5f4e99f782e711c94e51c598f621c5f9c36ca858b139210bd49b10b52745ef6"
+    }
+  ]
+}

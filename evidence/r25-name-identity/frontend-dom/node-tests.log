@@ -1,0 +1,41 @@
+✔ disabled config never initializes official auth or business transport (6.463246ms)
+✔ passwords go only to official adapter; role and uid are verified against session (1.977304ms)
+✔ unconfigured name registration never guesses native account creation or calls business RPC (0.676084ms)
+✔ failed submission stays pending and retry reuses exact original payload and operation id (2.383512ms)
+✔ incomplete server receipt never marks pending submission confirmed (0.448862ms)
+✔ double click shares one in-flight durable request (5.648956ms)
+✔ account switching prevents old responses from entering new identity and isolates outboxes (1.28103ms)
+✔ password change uses official adapter only (0.790094ms)
+✔ pagination must finish and never silently repeats a cursor (0.915332ms)
+✔ verified pending account can bind invitation but cannot read or write business data (4.898491ms)
+✔ private media remains disabled until backend capability and enforces file limits (146.607527ms)
+✔ late media upload result cannot attach after account logout (4.267276ms)
+✔ server-confirmed receipt remains confirmation when only local receipt cache fails (0.579479ms)
+✔ native session switched in another tab prevents business request under stale UI identity (0.236524ms)
+✔ native session changed while business read is in flight discards late private response (0.944085ms)
+✔ native session changed before media request prevents upload under wrong token (0.357336ms)
+✔ name resolution keeps daily passwords in official Auth and retains existing UID partitions (0.255553ms)
+✔ successful invitation registration requires official native session and matching backend role (0.2068ms)
+✔ broker success cannot install a mismatching native UID (0.168803ms)
+✔ duplicate name rejection never signs into or changes an existing account (0.250455ms)
+✔ native drift between resolved UID check and profile acceptance cannot install another name (0.253259ms)
+✔ native drift while me is pending never applies stale local identity (1.606188ms)
+✔ native drift during local partition callback is guarded and clears stale identity (0.449043ms)
+✔ normalization follows backend and rejects hidden controls and oversized names (5.672822ms)
+✔ first password matches official three of four classes and alphanumeric first rule (0.50038ms)
+✔ daily resolve sends name only and never persists a password (5.872982ms)
+✔ registration persists recovery identifiers before request and never passwords or invite (8.417646ms)
+✔ response loss is resumed by status using same operation without duplicate account creation (2.058135ms)
+✔ reserved and missing first requests continue same durable operation with reentered password (3.557802ms)
+✔ case-normalized retries retain original reservation name and secret (1.37468ms)
+✔ unavailable service preserves legacy native login but never fabricates name signup (0.386269ms)
+✔ name conflicts and unexpected registration states remain failures (1.778316ms)
+✔ weak provider password fails before persisting or sending an invitation registration (0.458427ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 258.21668

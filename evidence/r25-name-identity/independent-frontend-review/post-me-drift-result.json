@@ -1,0 +1,16 @@
+{
+  "scope": "Local mock official adapter and business reply. No cloud request or product mutation.",
+  "status": "resolved",
+  "nativeUid": "B",
+  "workflowUid": "A",
+  "appliedIdentities": [
+    "A"
+  ],
+  "wrongIdentityInstalled": true,
+  "sha256": {
+    "name-identity.mjs": "5774496cb5fcdfe037cb19b08e55e53204cce2e2a4367f69f9c73bf95b6bdea5",
+    "cloud-workflow.mjs": "645e623892eed34209e9b446ca42a4ec663a46fb7df4106a59d86c5556a2ebc9",
+    "cloud-workspace.mjs": "062eb7fb97492aaa911eb2d5e909c1697c226517b2ea75712c89397809513fa3",
+    "app.js": "136a489d0cedcdd12c37160abe3cfaf2a509f9dc55806772cdac960f74daef5f"
+  }
+}

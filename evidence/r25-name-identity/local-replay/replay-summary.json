@@ -1,0 +1,55 @@
+{
+  "scope": "Local actual PostgreSQL/PGlite; mocked Auth and Native. No cloud calls.",
+  "startedAt": "2026-11-17T08:28:57.049Z",
+  "outputDirectory": "/tmp/r25ni-replay-lITY9b",
+  "pathAdaptationOnly": true,
+  "suites": [
+    {
+      "script": "service-test.mjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "checks": 102,
+      "expectedChecks": 102,
+      "cloudCalls": 0
+    },
+    {
+      "script": "handler-test.mjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "checks": 48,
+      "expectedChecks": 48,
+      "cloudCalls": 0
+    },
+    {
+      "script": "namespace-test.mjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "checks": 17,
+      "expectedChecks": 17,
+      "cloudCalls": 0
+    },
+    {
+      "script": "historical-alias-precedence-test.mjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "checks": 7,
+      "expectedChecks": 7,
+      "cloudCalls": 0
+    },
+    {
+      "script": "real-pg-concurrency.mjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "checks": 19,
+      "expectedChecks": 19,
+      "cloudCalls": 0
+    }
+  ],
+  "sourceHashes": {
+    "backend/r25-cloudbase/schema.sql": "576c6b7137e0fe89113597773b675b56b01baacd8c62a4b2d4c32b559f8b2f4e",
+    "backend/r25-name-identity/001-name-identity.sql": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+    "backend/r25-name-identity/handler.cjs": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a"
+  },
+  "status": "PASS",
+  "completedAt": "2026-11-17T08:29:06.290Z"
+}

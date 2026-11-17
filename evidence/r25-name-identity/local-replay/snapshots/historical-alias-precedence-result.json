@@ -1,0 +1,56 @@
+{
+  "scope": "localPGmock-auth-historical-collision-upgrade",
+  "checks": [
+    {
+      "name": "old_native_mapping_created",
+      "pass": true
+    },
+    {
+      "name": "old_sql_allows_casefold_collision_fixture",
+      "pass": true
+    },
+    {
+      "name": "old_fixture_alias_finalized",
+      "pass": true
+    },
+    {
+      "name": "migration_does_not_rewrite_existing_users",
+      "pass": true
+    },
+    {
+      "name": "migration_does_not_delete_historical_aliases",
+      "pass": true
+    },
+    {
+      "name": "exact_native_username_wins_over_conflicting_historical_alias",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "tcl_user",
+          "uid": "legacy-one",
+          "displayName": "旧成员甲",
+          "legacy": true
+        }
+      }
+    },
+    {
+      "name": "without_exact_native_match_existing_alias_uid_not_merged",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_f11eaf236b7c46cdba372303",
+          "uid": "historical-new-N",
+          "displayName": "TCL_USER"
+        }
+      }
+    }
+  ],
+  "cloudCalls": 0,
+  "serviceSha": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "handlerSha": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a",
+  "status": "PASS"
+}

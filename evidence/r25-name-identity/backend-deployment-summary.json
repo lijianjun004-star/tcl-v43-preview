@@ -1,0 +1,41 @@
+{
+  "scope": "Root-supplied final deployment records; local production directory matches listed repository source hashes. Does not claim remote package download attestation.",
+  "function": {
+    "name": "r25wf_name_identity",
+    "resourceType": "EVENT",
+    "runtime": "Nodejs20.19",
+    "timeoutSeconds": 60,
+    "memoryMiB": 128,
+    "managerNodeInstalled": "5.10.4",
+    "deployedAt": "2026-11-17T07:47:42.247Z",
+    "success": true,
+    "results": [
+      {
+        "status": "success",
+        "name": "r25wf_name_identity",
+        "action": "create"
+      }
+    ]
+  },
+  "sourceHashes": {
+    "001-name-identity.sql": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+    "handler.cjs": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a",
+    "provider-cloudbase.cjs": "5dd3a1054245b0e75d282f0a0d3fe44b3523af4af6cb7bf876f9a08f0187c78c",
+    "index.js": "2d38f99c1bf10242f6a447ab77d412ffcaefaedb5270e32a0ea35457254706f2",
+    "API_CONTRACT.md": "329fc8f565a8d6276122fcb1b0cb14a882207217fafa9a4ca4a21b245f38e60d"
+  },
+  "sqlDeploy": {
+    "RequestId": "15961ac9-485d-4063-8347-48f91497c1a8",
+    "AffectedRows": 0,
+    "ExecutionTimeMs": 33
+  },
+  "publicRoute": "/r25-name-identity",
+  "legacyResolveProbe": {
+    "httpStatus": 200,
+    "ok": true,
+    "state": "ready",
+    "uidPresent": true,
+    "usernamePresent": true,
+    "errorCode": null
+  }
+}

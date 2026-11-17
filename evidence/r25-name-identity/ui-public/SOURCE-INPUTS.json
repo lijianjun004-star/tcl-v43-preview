@@ -1,0 +1,13 @@
+{
+  "scope": "Local runner captured after run; actual public app HTTP hashes are recorded in result.json; no product/config bytes copied",
+  "files": [
+    {
+      "file": "/workspace/r25-name-invite-tests/common.py",
+      "sha256": "3fa1cfd1b30f4fdd01dc6ac0fb9b51b1a304f46142eabb8f6a2f7f8e43bc567d"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/run_ui.py",
+      "sha256": "0b19cb1a654e819be216bdfed849bb6baa266c33e58ca1546419e6d2da237ace"
+    }
+  ]
+}

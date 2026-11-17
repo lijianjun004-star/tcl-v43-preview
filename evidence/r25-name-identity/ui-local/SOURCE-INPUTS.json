@@ -1,0 +1,33 @@
+{
+  "scope": "Local files captured after run; actual app HTTP bytes are independently recorded in result.json",
+  "files": [
+    {
+      "file": "/workspace/r25-name-invite-tests/common.py",
+      "sha256": "3fa1cfd1b30f4fdd01dc6ac0fb9b51b1a304f46142eabb8f6a2f7f8e43bc567d"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/run_ui.py",
+      "sha256": "0b19cb1a654e819be216bdfed849bb6baa266c33e58ca1546419e6d2da237ace"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/experiments/r25/tcl-v352-asr-r25-qa/app.js",
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/experiments/r25/tcl-v352-asr-r25-qa/name-identity.mjs",
+      "sha256": "702a15438acc838d06a431553812b54d27d1fb7c21fae29f32861903181e83fa"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "sha256": "a592b2f79a7e80f1317b036352bdf9033182da0e4d26d5b3b65d0e845a156277"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/experiments/r25/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "sha256": "efbabf6f3e2cf6f3a0a10fb6204884176fc44c513d57920fa347e63948beaff1"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/experiments/r25/tcl-v352-asr-r25-qa/app-config.json",
+      "sha256": "c757eae6eb5360a713980eda78bc6c2b4d1310b855a702ec542b3aaeb969e3a1"
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "scope": "native-localhost-PostgreSQL-two-transaction-concurrency+mock-auth",
+  "checks": [
+    {
+      "name": "migration_keeps_preexisting_duplicate_rows_unchanged",
+      "pass": true
+    },
+    {
+      "name": "genuinely_distinct_postgres_backend_connections",
+      "pass": true
+    },
+    {
+      "name": "new_reserve_succeeds_before_legacy_contender",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:740cbce6-ad76-48da-bb68-6980211971da",
+          "nameKey": "双连接新路先锁",
+          "username": "r25n_83b54ecf50be45acab6211c2",
+          "displayName": "双连接新路先锁",
+          "operationId": "bd5dc7ca-c6e8-474f-afa5-aa14dda25cc4",
+          "reservationId": "740cbce6-ad76-48da-bb68-6980211971da"
+        }
+      }
+    },
+    {
+      "name": "legacy_redeem_actually_waits_on_new_reserved_name",
+      "pass": true,
+      "detail": {
+        "wait_event_type": "Lock",
+        "wait_event": "advisory",
+        "state": "active"
+      }
+    },
+    {
+      "name": "legacy_redeem_rejects_reserved_name_after_wait",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_PENDING",
+          "message": "姓名已由另一开户尝试预约，请恢复原尝试或加部门编号"
+        }
+      }
+    },
+    {
+      "name": "rejected_legacy_redeem_does_not_consume_other_invite",
+      "pass": true
+    },
+    {
+      "name": "reserved_native_uid_can_finalize_through_guard",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "native-A-one",
+          "role": "anchor",
+          "state": "ready",
+          "marker": "r25wf-name-v1:740cbce6-ad76-48da-bb68-6980211971da",
+          "nameKey": "双连接新路先锁",
+          "username": "r25n_83b54ecf50be45acab6211c2",
+          "displayName": "双连接新路先锁",
+          "operationId": "bd5dc7ca-c6e8-474f-afa5-aa14dda25cc4",
+          "reservationId": "740cbce6-ad76-48da-bb68-6980211971da"
+        }
+      }
+    },
+    {
+      "name": "cross_entrypoint_has_single_active_uid",
+      "pass": true
+    },
+    {
+      "name": "legacy_redeem_can_claim_free_name_first",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "native-B-two",
+            "uid": "native-B-two",
+            "role": "anchor",
+            "active": true,
+            "username": "native-B-two",
+            "displayName": "双连接旧路先锁"
+          },
+          "registered": true
+        }
+      }
+    },
+    {
+      "name": "new_reserve_actually_waits_on_legacy_name_guard",
+      "pass": true,
+      "detail": {
+        "wait_event_type": "Lock",
+        "wait_event": "advisory",
+        "state": "active"
+      }
+    },
+    {
+      "name": "new_reserve_rejects_legacy_committed_name",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_TAKEN",
+          "message": "姓名属于已有账号，请用原密码登录或联系管理员"
+        }
+      }
+    },
+    {
+      "name": "rejected_new_reserve_keeps_own_invite_unconsumed",
+      "pass": true
+    },
+    {
+      "name": "legacy_same_invite_first_succeeds",
+      "pass": true
+    },
+    {
+      "name": "new_same_invite_waits_before_name_lock",
+      "pass": true,
+      "detail": {
+        "wait_event_type": "Lock",
+        "wait_event": "transactionid",
+        "state": "active"
+      }
+    },
+    {
+      "name": "same_invite_legacy_wins_without_deadlock",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请码无效或已被使用"
+        }
+      }
+    },
+    {
+      "name": "new_same_invite_first_succeeds",
+      "pass": true
+    },
+    {
+      "name": "legacy_same_invite_waits_on_new_reserve",
+      "pass": true,
+      "detail": {
+        "wait_event_type": "Lock",
+        "wait_event": "transactionid",
+        "state": "active"
+      }
+    },
+    {
+      "name": "same_invite_new_reserve_wins_without_deadlock",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请已被使用"
+        }
+      }
+    },
+    {
+      "name": "migration_source_unchanged_during_concurrency_tests",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "migrationShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "backendPids": [
+    63179,
+    63178
+  ],
+  "version": "PostgreSQL 18.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+  "migrationShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "status": "PASS"
+}

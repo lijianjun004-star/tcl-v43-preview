@@ -1,0 +1,428 @@
+{
+  "scope": "localPGmock-auth+mock-official-native-provider",
+  "checks": [
+    {
+      "name": "client_role_extra_field_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "不支持的身份请求字段"
+        }
+      }
+    },
+    {
+      "name": "extra_role_never_reserves",
+      "pass": true
+    },
+    {
+      "name": "invalid_invite_handler_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请码无效或已被使用"
+        }
+      }
+    },
+    {
+      "name": "invalid_invite_never_calls_native_create",
+      "pass": true
+    },
+    {
+      "name": "password_policy_two_classes",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PASSWORD",
+          "message": "首次密码须8至32位，首位为字母或数字，并含大写、小写、数字、指定符号中至少三类；建议大小写字母加数字"
+        }
+      }
+    },
+    {
+      "name": "password_rejection_creates_no_reservation_two_classes",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_does_not_consume_invite_two_classes",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_never_calls_native_two_classes",
+      "pass": true
+    },
+    {
+      "name": "password_policy_leading_symbol",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PASSWORD",
+          "message": "首次密码须8至32位，首位为字母或数字，并含大写、小写、数字、指定符号中至少三类；建议大小写字母加数字"
+        }
+      }
+    },
+    {
+      "name": "password_rejection_creates_no_reservation_leading_symbol",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_does_not_consume_invite_leading_symbol",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_never_calls_native_leading_symbol",
+      "pass": true
+    },
+    {
+      "name": "password_policy_nonofficial_symbol_not_counted",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PASSWORD",
+          "message": "首次密码须8至32位，首位为字母或数字，并含大写、小写、数字、指定符号中至少三类；建议大小写字母加数字"
+        }
+      }
+    },
+    {
+      "name": "password_rejection_creates_no_reservation_nonofficial_symbol_not_counted",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_does_not_consume_invite_nonofficial_symbol_not_counted",
+      "pass": true
+    },
+    {
+      "name": "password_rejection_never_calls_native_nonofficial_symbol_not_counted",
+      "pass": true
+    },
+    {
+      "name": "normal_register_finalizes_account",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_9eb07b98829246beb21c6c7d",
+          "uid": "local-created-1",
+          "displayName": "测试成员甲"
+        }
+      }
+    },
+    {
+      "name": "ready_has_native_uid",
+      "pass": true,
+      "detail": {
+        "state": "ready",
+        "username": "r25n_9eb07b98829246beb21c6c7d",
+        "uid": "local-created-1",
+        "displayName": "测试成员甲"
+      }
+    },
+    {
+      "name": "same_operation_register_retry",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_9eb07b98829246beb21c6c7d",
+          "uid": "local-created-1",
+          "displayName": "测试成员甲"
+        }
+      }
+    },
+    {
+      "name": "retry_keeps_native_uid_username",
+      "pass": true,
+      "detail": {
+        "state": "ready",
+        "username": "r25n_9eb07b98829246beb21c6c7d",
+        "uid": "local-created-1",
+        "displayName": "测试成员甲"
+      }
+    },
+    {
+      "name": "retry_never_creates_or_resets_native_password",
+      "pass": true
+    },
+    {
+      "name": "status_recovers_ready_without_password",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_9eb07b98829246beb21c6c7d",
+          "uid": "local-created-1",
+          "displayName": "测试成员甲"
+        }
+      }
+    },
+    {
+      "name": "status_same_native_identity",
+      "pass": true
+    },
+    {
+      "name": "wrong_secret_cannot_recover",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_OPERATION_SECRET",
+          "message": "无法恢复此开户尝试，请使用原设备或联系管理员"
+        }
+      }
+    },
+    {
+      "name": "resolve_registered_name",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_9eb07b98829246beb21c6c7d",
+          "uid": "local-created-1",
+          "displayName": "测试成员甲"
+        }
+      }
+    },
+    {
+      "name": "resolve_uses_alias_uid",
+      "pass": true
+    },
+    {
+      "name": "password_and_raw_secrets_never_enter_sql",
+      "pass": true
+    },
+    {
+      "name": "public_response_hides_internal_reservation_fields",
+      "pass": true,
+      "detail": {
+        "state": "ready",
+        "username": "r25n_9eb07b98829246beb21c6c7d",
+        "uid": "local-created-1",
+        "displayName": "测试成员甲"
+      }
+    },
+    {
+      "name": "native_created_finalize_failure_not_ready",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "PROVIDER_UNAVAILABLE",
+          "message": "身份服务暂不可用，请保留原尝试后重试"
+        }
+      }
+    },
+    {
+      "name": "status_recovers_native_created_before_finalize",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_7b73f8c1cf5d4c17b53da106",
+          "uid": "local-created-2",
+          "displayName": "崩溃恢复成员"
+        }
+      }
+    },
+    {
+      "name": "status_recovery_creates_no_second_native_account",
+      "pass": true
+    },
+    {
+      "name": "status_recovery_returns_ready_uid",
+      "pass": true,
+      "detail": {
+        "state": "ready",
+        "username": "r25n_7b73f8c1cf5d4c17b53da106",
+        "uid": "local-created-2",
+        "displayName": "崩溃恢复成员"
+      }
+    },
+    {
+      "name": "second_operation_same_name_blocked_during_native_create",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_PENDING",
+          "message": "姓名已有未完成开户，请恢复原尝试"
+        }
+      }
+    },
+    {
+      "name": "first_name_contender_finalizes",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_54b2049d2ffe4973841b0cf3",
+          "uid": "local-created-3",
+          "displayName": "争抢姓名成员"
+        }
+      }
+    },
+    {
+      "name": "losing_name_contender_own_invite_not_consumed",
+      "pass": true
+    },
+    {
+      "name": "second_operation_same_invite_blocked_during_native_create",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请码无效或已被使用"
+        }
+      }
+    },
+    {
+      "name": "first_invite_contender_finalizes",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_ce22ebac58404fe6bbcce0bc",
+          "uid": "local-created-4",
+          "displayName": "争抢邀请成员甲"
+        }
+      }
+    },
+    {
+      "name": "foreign_native_marker_not_adopted",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "该原生账号不属于本次开户，未绑定任何角色"
+        }
+      }
+    },
+    {
+      "name": "foreign_uid_fixture_status",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:fdd126dd-62c5-497a-811e-55728d9b8e26",
+          "nameKey": "禁止冒领原生账号",
+          "username": "r25n_4fd6e11d1511488b80b8a469",
+          "displayName": "禁止冒领原生账号",
+          "operationId": "40e6fed0-057b-4214-b21f-6934da0f098e",
+          "reservationId": "fdd126dd-62c5-497a-811e-55728d9b8e26"
+        }
+      }
+    },
+    {
+      "name": "correct_marker_cannot_adopt_existing_business_uid",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "该UID或原生用户名已属于既有账号，未覆盖原身份"
+        }
+      }
+    },
+    {
+      "name": "native_create_reply_lost_recovers_exact_marker",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_83d83578bcf440338ff08dd5",
+          "uid": "local-created-5",
+          "displayName": "原生回复丢失成员"
+        }
+      }
+    },
+    {
+      "name": "lost_reply_creates_one_native_identity",
+      "pass": true
+    },
+    {
+      "name": "same_operation_parallel_first_ready",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_4dc518a9fc6f4d6f9e032d3a",
+          "uid": "local-created-6",
+          "displayName": "同操作并发成员"
+        }
+      }
+    },
+    {
+      "name": "same_operation_parallel_second_ready",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "state": "ready",
+          "username": "r25n_4dc518a9fc6f4d6f9e032d3a",
+          "uid": "local-created-6",
+          "displayName": "同操作并发成员"
+        }
+      }
+    },
+    {
+      "name": "same_operation_parallel_retries_converge_on_one_uid",
+      "pass": true,
+      "detail": [
+        {
+          "ok": true,
+          "data": {
+            "state": "ready",
+            "username": "r25n_4dc518a9fc6f4d6f9e032d3a",
+            "uid": "local-created-6",
+            "displayName": "同操作并发成员"
+          }
+        },
+        {
+          "ok": true,
+          "data": {
+            "state": "ready",
+            "username": "r25n_4dc518a9fc6f4d6f9e032d3a",
+            "uid": "local-created-6",
+            "displayName": "同操作并发成员"
+          }
+        }
+      ]
+    },
+    {
+      "name": "all_secret_fields_never_enter_sql",
+      "pass": true
+    },
+    {
+      "name": "all_legacy_uid_roles_names_unchanged",
+      "pass": true
+    },
+    {
+      "name": "handler_source_unchanged",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "productModified": false,
+  "handlerShaBefore": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a",
+  "serviceSha": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "handlerShaAfter": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a",
+  "status": "PASS"
+}

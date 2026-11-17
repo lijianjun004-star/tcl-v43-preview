@@ -1,0 +1,1011 @@
+{
+  "scope": "localPGmock-auth-name-service",
+  "checks": [
+    {
+      "name": "actual_schema_applies",
+      "pass": true
+    },
+    {
+      "name": "service_rpc_execute_denied_anon",
+      "pass": true
+    },
+    {
+      "name": "service_rpc_execute_denied_authenticated",
+      "pass": true
+    },
+    {
+      "name": "reservation_table_browser_access_denied",
+      "pass": true
+    },
+    {
+      "name": "invalid_invite_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请码无效或已被使用"
+        }
+      }
+    },
+    {
+      "name": "invalid_invite_leaves_no_reservation_or_alias",
+      "pass": true
+    },
+    {
+      "name": "expired_invite_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVITE_EXPIRED",
+          "message": "邀请码已过期"
+        }
+      }
+    },
+    {
+      "name": "old_uid_targeted_invite_cannot_create_user",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVITE_FOR_EXISTING_ACCOUNT",
+          "message": "此邀请码属于既有账号，请先登录原账号再绑定"
+        }
+      }
+    },
+    {
+      "name": "valid_reservation",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:6e71a230-c762-4179-bd04-adb4e8aa9268",
+          "nameKey": "新成员甲",
+          "username": "r25n_26b8ad5c3fb94ca0861373c6",
+          "displayName": "新成员甲",
+          "operationId": "a49af779-3a57-4d47-b6cf-9f2be92e436c",
+          "reservationId": "6e71a230-c762-4179-bd04-adb4e8aa9268"
+        }
+      }
+    },
+    {
+      "name": "native_username_shape_and_marker",
+      "pass": true,
+      "detail": {
+        "uid": null,
+        "role": "anchor",
+        "state": "reserved",
+        "marker": "r25wf-name-v1:6e71a230-c762-4179-bd04-adb4e8aa9268",
+        "nameKey": "新成员甲",
+        "username": "r25n_26b8ad5c3fb94ca0861373c6",
+        "displayName": "新成员甲",
+        "operationId": "a49af779-3a57-4d47-b6cf-9f2be92e436c",
+        "reservationId": "6e71a230-c762-4179-bd04-adb4e8aa9268"
+      }
+    },
+    {
+      "name": "invite_held_by_persistent_reservation",
+      "pass": true
+    },
+    {
+      "name": "same_name_operation_proof_retry_reuses_reservation",
+      "pass": true
+    },
+    {
+      "name": "wrong_operation_proof_cannot_recover",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_OPERATION_SECRET",
+          "message": "无法恢复此开户尝试，请使用原设备或联系管理员"
+        }
+      }
+    },
+    {
+      "name": "same_operation_different_name_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "REGISTRATION_CONFLICT",
+          "message": "此操作编号已用于其他姓名或邀请码"
+        }
+      }
+    },
+    {
+      "name": "same_operation_different_invite_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "REGISTRATION_CONFLICT",
+          "message": "此操作编号已用于其他姓名或邀请码"
+        }
+      }
+    },
+    {
+      "name": "second_operation_same_name_cannot_takeover",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_PENDING",
+          "message": "姓名已有未完成开户，请恢复原尝试"
+        }
+      }
+    },
+    {
+      "name": "losing_name_contender_does_not_consume_own_invite",
+      "pass": true
+    },
+    {
+      "name": "different_name_same_reserved_invite_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_INVITE",
+          "message": "邀请码无效或已被使用"
+        }
+      }
+    },
+    {
+      "name": "losing_invite_contender_creates_no_reservation",
+      "pass": true
+    },
+    {
+      "name": "finalize_cannot_adopt_existing_uid",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "该UID或原生用户名已属于既有账号，未覆盖原身份"
+        }
+      }
+    },
+    {
+      "name": "existing_uid_business_identity_unchanged",
+      "pass": true
+    },
+    {
+      "name": "finalize_wrong_marker_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "官方身份确认与原预约不一致"
+        }
+      }
+    },
+    {
+      "name": "finalize_trusted_native_uid",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "new-local-one",
+          "role": "anchor",
+          "state": "ready",
+          "marker": "r25wf-name-v1:6e71a230-c762-4179-bd04-adb4e8aa9268",
+          "nameKey": "新成员甲",
+          "username": "r25n_26b8ad5c3fb94ca0861373c6",
+          "displayName": "新成员甲",
+          "operationId": "a49af779-3a57-4d47-b6cf-9f2be92e436c",
+          "reservationId": "6e71a230-c762-4179-bd04-adb4e8aa9268"
+        }
+      }
+    },
+    {
+      "name": "ready_uid_role_from_invite",
+      "pass": true,
+      "detail": {
+        "uid": "new-local-one",
+        "role": "anchor",
+        "state": "ready",
+        "marker": "r25wf-name-v1:6e71a230-c762-4179-bd04-adb4e8aa9268",
+        "nameKey": "新成员甲",
+        "username": "r25n_26b8ad5c3fb94ca0861373c6",
+        "displayName": "新成员甲",
+        "operationId": "a49af779-3a57-4d47-b6cf-9f2be92e436c",
+        "reservationId": "6e71a230-c762-4179-bd04-adb4e8aa9268"
+      }
+    },
+    {
+      "name": "role_native_mapping_alias_atomically_present",
+      "pass": true,
+      "detail": [
+        {
+          "role": "anchor",
+          "display_name": "新成员甲",
+          "native_username": "r25n_26b8ad5c3fb94ca0861373c6",
+          "name_key": "新成员甲"
+        }
+      ]
+    },
+    {
+      "name": "finalize_invite_consumed_by_actual_uid",
+      "pass": true
+    },
+    {
+      "name": "finalize_retry_same_native_uid_idempotent",
+      "pass": true
+    },
+    {
+      "name": "finalize_ready_uid_cannot_change",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "已完成开户的UID不能更换"
+        }
+      }
+    },
+    {
+      "name": "resolve_ready_alias",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "new-local-one",
+          "state": "ready",
+          "legacy": false,
+          "username": "r25n_26b8ad5c3fb94ca0861373c6",
+          "displayName": "新成员甲"
+        }
+      }
+    },
+    {
+      "name": "resolved_uid_stable",
+      "pass": true,
+      "detail": {
+        "uid": "new-local-one",
+        "state": "ready",
+        "legacy": false,
+        "username": "r25n_26b8ad5c3fb94ca0861373c6",
+        "displayName": "新成员甲"
+      }
+    },
+    {
+      "name": "existing_display_name_cannot_be_claimed",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_TAKEN",
+          "message": "姓名属于已有账号，请用原密码登录或联系管理员"
+        }
+      }
+    },
+    {
+      "name": "old_name_rejection_does_not_consume_invite",
+      "pass": true
+    },
+    {
+      "name": "backfill_existing_native_accounts",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "mapped": 1,
+          "conflicts": 2
+        }
+      }
+    },
+    {
+      "name": "duplicate_legacy_names_recorded_as_conflict",
+      "pass": true,
+      "detail": {
+        "mapped": 1,
+        "conflicts": 2
+      }
+    },
+    {
+      "name": "unique_legacy_name_alias_resolves_original_uid",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "legacy-one",
+          "state": "ready",
+          "legacy": false,
+          "username": "legacy_one",
+          "displayName": "旧成员甲"
+        }
+      }
+    },
+    {
+      "name": "legacy_uid_not_replaced",
+      "pass": true,
+      "detail": {
+        "uid": "legacy-one",
+        "state": "ready",
+        "legacy": false,
+        "username": "legacy_one",
+        "displayName": "旧成员甲"
+      }
+    },
+    {
+      "name": "duplicate_legacy_name_never_selects_arbitrary_uid",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_CONFLICT",
+          "message": "姓名重名，请加部门或编号，并联系管理员核对旧账号"
+        }
+      }
+    },
+    {
+      "name": "duplicate_legacy_name_has_no_alias",
+      "pass": true
+    },
+    {
+      "name": "duplicate_name_users_keep_native_login",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "legacy-two",
+          "state": "ready",
+          "legacy": true,
+          "username": "legacy_two",
+          "displayName": "同名旧成员"
+        }
+      }
+    },
+    {
+      "name": "legacy_native_login_keeps_original_uid",
+      "pass": true
+    },
+    {
+      "name": "backfill_cannot_rename_mapped_native_username",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NATIVE_IDENTITY_CONFLICT",
+          "message": "既有UID的原生用户名不一致，未改动"
+        }
+      }
+    },
+    {
+      "name": "unicode_nfkc_reservation",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:ce2eba96-c17b-4c62-abb5-fbb16c6af022",
+          "nameKey": "alice",
+          "username": "r25n_f8229e4b3ffd47c5ac7c0de1",
+          "displayName": "Alice",
+          "operationId": "c30f5032-eb9a-43a6-9db3-c7768d800d45",
+          "reservationId": "ce2eba96-c17b-4c62-abb5-fbb16c6af022"
+        }
+      }
+    },
+    {
+      "name": "name_nfkc_case_key",
+      "pass": true,
+      "detail": {
+        "uid": null,
+        "role": "anchor",
+        "state": "reserved",
+        "marker": "r25wf-name-v1:ce2eba96-c17b-4c62-abb5-fbb16c6af022",
+        "nameKey": "alice",
+        "username": "r25n_f8229e4b3ffd47c5ac7c0de1",
+        "displayName": "Alice",
+        "operationId": "c30f5032-eb9a-43a6-9db3-c7768d800d45",
+        "reservationId": "ce2eba96-c17b-4c62-abb5-fbb16c6af022"
+      }
+    },
+    {
+      "name": "unicode_equivalent_name_contender_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_PENDING",
+          "message": "姓名已有未完成开户，请恢复原尝试"
+        }
+      }
+    },
+    {
+      "name": "hidden_direction_name_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_NAME",
+          "message": "姓名须1至40字，不得包含隐藏控制字符"
+        }
+      }
+    },
+    {
+      "name": "raw_secret_fields_rejected_by_database",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "秘密字段不得进入业务数据库"
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_0",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_1",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_2",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_3",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_4",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_5",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_6",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_7",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_8",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_9",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_10",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_11",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_12",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_13",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_14",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_15",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_16",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_17",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_18",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_19",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_20",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_21",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_22",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_23",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_24",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_25",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_26",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_27",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_28",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_29",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_30",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_31",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_32",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_33",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_34",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_35",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_36",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_37",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_38",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_39",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_40",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_41",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_42",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_43",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_44",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_45",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_46",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_47",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_48",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_rate_attempt_49",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "persistent_register_limit_51st_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "RATE_LIMITED",
+          "message": "请求过于频繁，请稍后再试"
+        }
+      }
+    },
+    {
+      "name": "reservation_survives_database_restart",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": null,
+          "role": "anchor",
+          "state": "reserved",
+          "marker": "r25wf-name-v1:ce2eba96-c17b-4c62-abb5-fbb16c6af022",
+          "nameKey": "alice",
+          "username": "r25n_f8229e4b3ffd47c5ac7c0de1",
+          "displayName": "Alice",
+          "operationId": "c30f5032-eb9a-43a6-9db3-c7768d800d45",
+          "reservationId": "ce2eba96-c17b-4c62-abb5-fbb16c6af022"
+        }
+      }
+    },
+    {
+      "name": "restart_same_native_username_and_marker",
+      "pass": true
+    },
+    {
+      "name": "ready_alias_survives_database_restart",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "uid": "new-local-one",
+          "role": "anchor",
+          "state": "ready",
+          "marker": "r25wf-name-v1:6e71a230-c762-4179-bd04-adb4e8aa9268",
+          "nameKey": "新成员甲",
+          "username": "r25n_26b8ad5c3fb94ca0861373c6",
+          "displayName": "新成员甲",
+          "operationId": "a49af779-3a57-4d47-b6cf-9f2be92e436c",
+          "reservationId": "6e71a230-c762-4179-bd04-adb4e8aa9268"
+        }
+      }
+    },
+    {
+      "name": "restart_ready_uid_stable",
+      "pass": true
+    },
+    {
+      "name": "service_source_unchanged",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "productModified": false,
+  "serviceShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "baseSha": "576c6b7137e0fe89113597773b675b56b01baacd8c62a4b2d4c32b559f8b2f4e",
+  "serviceShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+  "status": "PASS"
+}

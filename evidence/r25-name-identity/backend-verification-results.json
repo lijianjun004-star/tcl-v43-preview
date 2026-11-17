@@ -1,0 +1,1157 @@
+{
+  "scope": "Allowlisted projections; excludes raw details, native UID, names, operation IDs, credentials and request bodies. Original source files remain outside repository.",
+  "broker": {
+    "suite": "REAL_NAME_INVITE_BROKER_AND_NATIVE_AUTH",
+    "startedAt": "2026-11-17T08:06:33.537991+00:00",
+    "completedAt": "2026-11-17T08:07:59.397387+00:00",
+    "status": "PASS_WITH_NOT_RUN",
+    "network": "REAL HTTP + official native Auth/PG only; never mock success",
+    "browser": "156.0.8078.79",
+    "contextsClosed": true,
+    "secretsLogged": false,
+    "checks": [
+      {
+        "name": "legacy-before_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "legacy-before_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "legacy-before_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "weak_password_rejected_before_reservation",
+        "pass": true
+      },
+      {
+        "name": "weak_password_creates_no_alias",
+        "pass": true
+      },
+      {
+        "name": "weak_password_creates_no_reservation",
+        "pass": true
+      },
+      {
+        "name": "missing_invite_register_is_server_rejected",
+        "pass": true
+      },
+      {
+        "name": "missing_invite_does_not_create_login_alias",
+        "pass": true
+      },
+      {
+        "name": "wrong_invite_register_is_server_rejected",
+        "pass": true
+      },
+      {
+        "name": "wrong_invite_does_not_create_login_alias",
+        "pass": true
+      },
+      {
+        "name": "untrusted_role_uid_username_rejected",
+        "pass": true
+      },
+      {
+        "name": "role_rejection_does_not_create_alias",
+        "pass": true
+      },
+      {
+        "name": "operator_chinese_name_enrollment_ready",
+        "pass": true
+      },
+      {
+        "name": "operator_broker_uses_29_character_opaque_native_username",
+        "pass": true
+      },
+      {
+        "name": "operator_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "operator_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "operator_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "operator_daily_name_resolves_same_native_identity",
+        "pass": true
+      },
+      {
+        "name": "operator-daily_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "operator-daily_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "operator-daily_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "anchor_chinese_name_enrollment_ready",
+        "pass": true
+      },
+      {
+        "name": "weak_password_did_not_consume_valid_invite",
+        "pass": true
+      },
+      {
+        "name": "anchor_broker_uses_29_character_opaque_native_username",
+        "pass": true
+      },
+      {
+        "name": "anchor_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "anchor_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "anchor_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "anchor_daily_name_resolves_same_native_identity",
+        "pass": true
+      },
+      {
+        "name": "anchor-daily_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "anchor-daily_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "anchor-daily_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "outsider_chinese_name_enrollment_ready",
+        "pass": true
+      },
+      {
+        "name": "outsider_broker_uses_29_character_opaque_native_username",
+        "pass": true
+      },
+      {
+        "name": "outsider_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "outsider_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "outsider_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "outsider_daily_name_resolves_same_native_identity",
+        "pass": true
+      },
+      {
+        "name": "outsider-daily_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "outsider-daily_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "outsider-daily_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "same_operation_secret_status_recovers_same_uid",
+        "pass": true
+      },
+      {
+        "name": "same_operation_replay_preserves_native_uid",
+        "pass": true
+      },
+      {
+        "name": "wrong_operation_secret_cannot_recover",
+        "pass": true
+      },
+      {
+        "name": "status_rejects_password_field",
+        "pass": true
+      },
+      {
+        "name": "duplicate_name_cannot_replace_existing_account",
+        "pass": true
+      },
+      {
+        "name": "anchor-after-name-conflict_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "anchor-after-name-conflict_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "anchor-after-name-conflict_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "legacy_native_username_casefold_namespace_cannot_be_claimed",
+        "pass": true
+      },
+      {
+        "name": "legacy_native_username_resolves_original_uid",
+        "pass": true
+      },
+      {
+        "name": "independent_native_context_uids_are_distinct",
+        "pass": true
+      },
+      {
+        "name": "operator_assignments.create_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_assignments.join_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_submissions.create_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_submission_has_real_receipt",
+        "pass": true
+      },
+      {
+        "name": "operator_submissions.list_confirmed",
+        "pass": true
+      },
+      {
+        "name": "assigned_operator_receives_new_anchor_once",
+        "pass": true
+      },
+      {
+        "name": "other_context_cannot_read_submission",
+        "pass": true
+      },
+      {
+        "name": "operator_feedback.create_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_feedback.list_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_reads_operator_persisted_feedback",
+        "pass": true
+      },
+      {
+        "name": "other_context_cannot_read_feedback",
+        "pass": true
+      },
+      {
+        "name": "operator_me_confirmed",
+        "pass": true
+      },
+      {
+        "name": "operator_session_still_own_uid_after_other_logins",
+        "pass": true
+      },
+      {
+        "name": "anchor_me_confirmed",
+        "pass": true
+      },
+      {
+        "name": "anchor_session_still_own_uid_after_other_logins",
+        "pass": true
+      },
+      {
+        "name": "outsider_me_confirmed",
+        "pass": true
+      },
+      {
+        "name": "outsider_session_still_own_uid_after_other_logins",
+        "pass": true
+      },
+      {
+        "name": "legacy-after_official_native_login",
+        "pass": true
+      },
+      {
+        "name": "legacy-after_server_native_uid_matches",
+        "pass": true
+      },
+      {
+        "name": "legacy-after_me_bound_expected_role",
+        "pass": true
+      },
+      {
+        "name": "legacy_uid_and_original_password_still_work",
+        "pass": true
+      }
+    ],
+    "notRun": [
+      {
+        "name": "native_provider_no_account_created_for_invalid_invites",
+        "reason": "Root must independently compare exact synthetic fixture scope with native DescribeUserList before/after; alias absence alone is not provider proof"
+      },
+      {
+        "name": "weak_password_native_create_call_count_is_zero",
+        "reason": "Root/provider audit must prove zero native CreateUser calls; no alias/reservation and reusing the same invite alone cannot inspect server internals"
+      },
+      {
+        "name": "formal_business_data_unchanged",
+        "reason": "Root must perform before/after readonly SQL audit excluding explicitly scoped synthetic writes"
+      },
+      {
+        "name": "crash_between_native_create_and_sql_finalize",
+        "reason": "Requires a root-approved server checkpoint; no production fault switch is assumed"
+      }
+    ]
+  },
+  "localSuites": [
+    {
+      "sourceFile": "service-result.json",
+      "scope": "localPGmock-auth-name-service",
+      "status": "PASS",
+      "cloudCalls": 0,
+      "sourceHashes": {
+        "serviceShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+        "baseSha": "576c6b7137e0fe89113597773b675b56b01baacd8c62a4b2d4c32b559f8b2f4e",
+        "serviceShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c"
+      },
+      "checks": [
+        {
+          "name": "actual_schema_applies",
+          "pass": true
+        },
+        {
+          "name": "service_rpc_execute_denied_anon",
+          "pass": true
+        },
+        {
+          "name": "service_rpc_execute_denied_authenticated",
+          "pass": true
+        },
+        {
+          "name": "reservation_table_browser_access_denied",
+          "pass": true
+        },
+        {
+          "name": "invalid_invite_rejected",
+          "pass": true
+        },
+        {
+          "name": "invalid_invite_leaves_no_reservation_or_alias",
+          "pass": true
+        },
+        {
+          "name": "expired_invite_rejected",
+          "pass": true
+        },
+        {
+          "name": "old_uid_targeted_invite_cannot_create_user",
+          "pass": true
+        },
+        {
+          "name": "valid_reservation",
+          "pass": true
+        },
+        {
+          "name": "native_username_shape_and_marker",
+          "pass": true
+        },
+        {
+          "name": "invite_held_by_persistent_reservation",
+          "pass": true
+        },
+        {
+          "name": "same_name_operation_proof_retry_reuses_reservation",
+          "pass": true
+        },
+        {
+          "name": "wrong_operation_proof_cannot_recover",
+          "pass": true
+        },
+        {
+          "name": "same_operation_different_name_rejected",
+          "pass": true
+        },
+        {
+          "name": "same_operation_different_invite_rejected",
+          "pass": true
+        },
+        {
+          "name": "second_operation_same_name_cannot_takeover",
+          "pass": true
+        },
+        {
+          "name": "losing_name_contender_does_not_consume_own_invite",
+          "pass": true
+        },
+        {
+          "name": "different_name_same_reserved_invite_rejected",
+          "pass": true
+        },
+        {
+          "name": "losing_invite_contender_creates_no_reservation",
+          "pass": true
+        },
+        {
+          "name": "finalize_cannot_adopt_existing_uid",
+          "pass": true
+        },
+        {
+          "name": "existing_uid_business_identity_unchanged",
+          "pass": true
+        },
+        {
+          "name": "finalize_wrong_marker_rejected",
+          "pass": true
+        },
+        {
+          "name": "finalize_trusted_native_uid",
+          "pass": true
+        },
+        {
+          "name": "ready_uid_role_from_invite",
+          "pass": true
+        },
+        {
+          "name": "role_native_mapping_alias_atomically_present",
+          "pass": true
+        },
+        {
+          "name": "finalize_invite_consumed_by_actual_uid",
+          "pass": true
+        },
+        {
+          "name": "finalize_retry_same_native_uid_idempotent",
+          "pass": true
+        },
+        {
+          "name": "finalize_ready_uid_cannot_change",
+          "pass": true
+        },
+        {
+          "name": "resolve_ready_alias",
+          "pass": true
+        },
+        {
+          "name": "resolved_uid_stable",
+          "pass": true
+        },
+        {
+          "name": "existing_display_name_cannot_be_claimed",
+          "pass": true
+        },
+        {
+          "name": "old_name_rejection_does_not_consume_invite",
+          "pass": true
+        },
+        {
+          "name": "backfill_existing_native_accounts",
+          "pass": true
+        },
+        {
+          "name": "duplicate_legacy_names_recorded_as_conflict",
+          "pass": true
+        },
+        {
+          "name": "unique_legacy_name_alias_resolves_original_uid",
+          "pass": true
+        },
+        {
+          "name": "legacy_uid_not_replaced",
+          "pass": true
+        },
+        {
+          "name": "duplicate_legacy_name_never_selects_arbitrary_uid",
+          "pass": true
+        },
+        {
+          "name": "duplicate_legacy_name_has_no_alias",
+          "pass": true
+        },
+        {
+          "name": "duplicate_name_users_keep_native_login",
+          "pass": true
+        },
+        {
+          "name": "legacy_native_login_keeps_original_uid",
+          "pass": true
+        },
+        {
+          "name": "backfill_cannot_rename_mapped_native_username",
+          "pass": true
+        },
+        {
+          "name": "unicode_nfkc_reservation",
+          "pass": true
+        },
+        {
+          "name": "name_nfkc_case_key",
+          "pass": true
+        },
+        {
+          "name": "unicode_equivalent_name_contender_rejected",
+          "pass": true
+        },
+        {
+          "name": "hidden_direction_name_rejected",
+          "pass": true
+        },
+        {
+          "name": "raw_secret_fields_rejected_by_database",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_0",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_1",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_2",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_3",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_4",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_5",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_6",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_7",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_8",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_9",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_10",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_11",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_12",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_13",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_14",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_15",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_16",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_17",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_18",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_19",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_20",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_21",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_22",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_23",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_24",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_25",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_26",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_27",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_28",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_29",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_30",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_31",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_32",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_33",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_34",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_35",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_36",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_37",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_38",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_39",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_40",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_41",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_42",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_43",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_44",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_45",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_46",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_47",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_48",
+          "pass": true
+        },
+        {
+          "name": "persistent_rate_attempt_49",
+          "pass": true
+        },
+        {
+          "name": "persistent_register_limit_51st_rejected",
+          "pass": true
+        },
+        {
+          "name": "reservation_survives_database_restart",
+          "pass": true
+        },
+        {
+          "name": "restart_same_native_username_and_marker",
+          "pass": true
+        },
+        {
+          "name": "ready_alias_survives_database_restart",
+          "pass": true
+        },
+        {
+          "name": "restart_ready_uid_stable",
+          "pass": true
+        },
+        {
+          "name": "service_source_unchanged",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "sourceFile": "handler-result.json",
+      "scope": "localPGmock-auth+mock-official-native-provider",
+      "status": "PASS",
+      "cloudCalls": 0,
+      "sourceHashes": {
+        "handlerShaBefore": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a",
+        "serviceSha": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+        "handlerShaAfter": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a"
+      },
+      "checks": [
+        {
+          "name": "client_role_extra_field_rejected",
+          "pass": true
+        },
+        {
+          "name": "extra_role_never_reserves",
+          "pass": true
+        },
+        {
+          "name": "invalid_invite_handler_rejected",
+          "pass": true
+        },
+        {
+          "name": "invalid_invite_never_calls_native_create",
+          "pass": true
+        },
+        {
+          "name": "password_policy_two_classes",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_creates_no_reservation_two_classes",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_does_not_consume_invite_two_classes",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_never_calls_native_two_classes",
+          "pass": true
+        },
+        {
+          "name": "password_policy_leading_symbol",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_creates_no_reservation_leading_symbol",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_does_not_consume_invite_leading_symbol",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_never_calls_native_leading_symbol",
+          "pass": true
+        },
+        {
+          "name": "password_policy_nonofficial_symbol_not_counted",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_creates_no_reservation_nonofficial_symbol_not_counted",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_does_not_consume_invite_nonofficial_symbol_not_counted",
+          "pass": true
+        },
+        {
+          "name": "password_rejection_never_calls_native_nonofficial_symbol_not_counted",
+          "pass": true
+        },
+        {
+          "name": "normal_register_finalizes_account",
+          "pass": true
+        },
+        {
+          "name": "ready_has_native_uid",
+          "pass": true
+        },
+        {
+          "name": "same_operation_register_retry",
+          "pass": true
+        },
+        {
+          "name": "retry_keeps_native_uid_username",
+          "pass": true
+        },
+        {
+          "name": "retry_never_creates_or_resets_native_password",
+          "pass": true
+        },
+        {
+          "name": "status_recovers_ready_without_password",
+          "pass": true
+        },
+        {
+          "name": "status_same_native_identity",
+          "pass": true
+        },
+        {
+          "name": "wrong_secret_cannot_recover",
+          "pass": true
+        },
+        {
+          "name": "resolve_registered_name",
+          "pass": true
+        },
+        {
+          "name": "resolve_uses_alias_uid",
+          "pass": true
+        },
+        {
+          "name": "password_and_raw_secrets_never_enter_sql",
+          "pass": true
+        },
+        {
+          "name": "public_response_hides_internal_reservation_fields",
+          "pass": true
+        },
+        {
+          "name": "native_created_finalize_failure_not_ready",
+          "pass": true
+        },
+        {
+          "name": "status_recovers_native_created_before_finalize",
+          "pass": true
+        },
+        {
+          "name": "status_recovery_creates_no_second_native_account",
+          "pass": true
+        },
+        {
+          "name": "status_recovery_returns_ready_uid",
+          "pass": true
+        },
+        {
+          "name": "second_operation_same_name_blocked_during_native_create",
+          "pass": true
+        },
+        {
+          "name": "first_name_contender_finalizes",
+          "pass": true
+        },
+        {
+          "name": "losing_name_contender_own_invite_not_consumed",
+          "pass": true
+        },
+        {
+          "name": "second_operation_same_invite_blocked_during_native_create",
+          "pass": true
+        },
+        {
+          "name": "first_invite_contender_finalizes",
+          "pass": true
+        },
+        {
+          "name": "foreign_native_marker_not_adopted",
+          "pass": true
+        },
+        {
+          "name": "foreign_uid_fixture_status",
+          "pass": true
+        },
+        {
+          "name": "correct_marker_cannot_adopt_existing_business_uid",
+          "pass": true
+        },
+        {
+          "name": "native_create_reply_lost_recovers_exact_marker",
+          "pass": true
+        },
+        {
+          "name": "lost_reply_creates_one_native_identity",
+          "pass": true
+        },
+        {
+          "name": "same_operation_parallel_first_ready",
+          "pass": true
+        },
+        {
+          "name": "same_operation_parallel_second_ready",
+          "pass": true
+        },
+        {
+          "name": "same_operation_parallel_retries_converge_on_one_uid",
+          "pass": true
+        },
+        {
+          "name": "all_secret_fields_never_enter_sql",
+          "pass": true
+        },
+        {
+          "name": "all_legacy_uid_roles_names_unchanged",
+          "pass": true
+        },
+        {
+          "name": "handler_source_unchanged",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "sourceFile": "namespace-result.json",
+      "scope": "localPGmock-auth-native-namespace",
+      "status": "PASS",
+      "cloudCalls": 0,
+      "sourceHashes": {
+        "serviceShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+        "serviceShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c"
+      },
+      "checks": [
+        {
+          "name": "backfill_old_raw_native_username",
+          "pass": true
+        },
+        {
+          "name": "casefold_native_username_blocks_human_alias_reservation",
+          "pass": true
+        },
+        {
+          "name": "rejected_native_namespace_claim_does_not_consume_invite",
+          "pass": true
+        },
+        {
+          "name": "rejected_native_namespace_claim_creates_no_registration",
+          "pass": true
+        },
+        {
+          "name": "new_unrelated_alias_reserves",
+          "pass": true
+        },
+        {
+          "name": "new_unrelated_alias_finalizes",
+          "pass": true
+        },
+        {
+          "name": "backfill_native_username_cannot_shadow_other_uid_alias",
+          "pass": true
+        },
+        {
+          "name": "rejected_backfill_does_not_install_native_mapping",
+          "pass": true
+        },
+        {
+          "name": "existing_alias_owner_unchanged",
+          "pass": true
+        },
+        {
+          "name": "pending_alias_reserves",
+          "pass": true
+        },
+        {
+          "name": "backfill_native_username_cannot_shadow_pending_reservation",
+          "pass": true
+        },
+        {
+          "name": "pending_backfill_failure_keeps_native_mapping_empty",
+          "pass": true
+        },
+        {
+          "name": "pending_reservation_not_taken_over",
+          "pass": true
+        },
+        {
+          "name": "exact_old_native_login_keeps_uid",
+          "pass": true
+        },
+        {
+          "name": "old_native_uid_is_original",
+          "pass": true
+        },
+        {
+          "name": "old_business_identity_unchanged",
+          "pass": true
+        },
+        {
+          "name": "source_unchanged",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "sourceFile": "historical-alias-precedence-result.json",
+      "scope": "localPGmock-auth-historical-collision-upgrade",
+      "status": "PASS",
+      "cloudCalls": 0,
+      "sourceHashes": {
+        "serviceSha": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+        "handlerSha": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a"
+      },
+      "checks": [
+        {
+          "name": "old_native_mapping_created",
+          "pass": true
+        },
+        {
+          "name": "old_sql_allows_casefold_collision_fixture",
+          "pass": true
+        },
+        {
+          "name": "old_fixture_alias_finalized",
+          "pass": true
+        },
+        {
+          "name": "migration_does_not_rewrite_existing_users",
+          "pass": true
+        },
+        {
+          "name": "migration_does_not_delete_historical_aliases",
+          "pass": true
+        },
+        {
+          "name": "exact_native_username_wins_over_conflicting_historical_alias",
+          "pass": true
+        },
+        {
+          "name": "without_exact_native_match_existing_alias_uid_not_merged",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "sourceFile": "real-pg-concurrency-result.json",
+      "scope": "native-localhost-PostgreSQL-two-transaction-concurrency+mock-auth",
+      "status": "PASS",
+      "cloudCalls": 0,
+      "sourceHashes": {
+        "migrationShaBefore": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+        "migrationShaAfter": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c"
+      },
+      "checks": [
+        {
+          "name": "migration_keeps_preexisting_duplicate_rows_unchanged",
+          "pass": true
+        },
+        {
+          "name": "genuinely_distinct_postgres_backend_connections",
+          "pass": true
+        },
+        {
+          "name": "new_reserve_succeeds_before_legacy_contender",
+          "pass": true
+        },
+        {
+          "name": "legacy_redeem_actually_waits_on_new_reserved_name",
+          "pass": true
+        },
+        {
+          "name": "legacy_redeem_rejects_reserved_name_after_wait",
+          "pass": true
+        },
+        {
+          "name": "rejected_legacy_redeem_does_not_consume_other_invite",
+          "pass": true
+        },
+        {
+          "name": "reserved_native_uid_can_finalize_through_guard",
+          "pass": true
+        },
+        {
+          "name": "cross_entrypoint_has_single_active_uid",
+          "pass": true
+        },
+        {
+          "name": "legacy_redeem_can_claim_free_name_first",
+          "pass": true
+        },
+        {
+          "name": "new_reserve_actually_waits_on_legacy_name_guard",
+          "pass": true
+        },
+        {
+          "name": "new_reserve_rejects_legacy_committed_name",
+          "pass": true
+        },
+        {
+          "name": "rejected_new_reserve_keeps_own_invite_unconsumed",
+          "pass": true
+        },
+        {
+          "name": "legacy_same_invite_first_succeeds",
+          "pass": true
+        },
+        {
+          "name": "new_same_invite_waits_before_name_lock",
+          "pass": true
+        },
+        {
+          "name": "same_invite_legacy_wins_without_deadlock",
+          "pass": true
+        },
+        {
+          "name": "new_same_invite_first_succeeds",
+          "pass": true
+        },
+        {
+          "name": "legacy_same_invite_waits_on_new_reserve",
+          "pass": true
+        },
+        {
+          "name": "same_invite_new_reserve_wins_without_deadlock",
+          "pass": true
+        },
+        {
+          "name": "migration_source_unchanged_during_concurrency_tests",
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

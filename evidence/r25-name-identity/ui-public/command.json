@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/r25-name-invite-tests/run_ui.py",
+    "--execute",
+    "--private-fixture",
+    "/workspace/r25-name-public-fixture-private.json",
+    "--response-loss",
+    "--out",
+    "/workspace/r25-name-invite-tests/results/ui-public-1"
+  ],
+  "exitCode": 0,
+  "stdoutStderr": "run.log",
+  "contextsClosed": true,
+  "navigationTargetFromPrivateFixture": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "driverNavigation": "page.goto(config.browserUrl), followed by actual UI actions; no localhost proxy",
+  "recordedAfterExecution": "2026-11-17T08:36:24.765717+00:00"
+}

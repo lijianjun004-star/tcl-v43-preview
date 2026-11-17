@@ -1,0 +1,57 @@
+[
+  {
+    "path": "RESULTS.md",
+    "bytes": 2595,
+    "sha256": "31d5d84aef8dc05798a312fc8c3684058e171a2b56753e9b1ba92ccbeface2d3"
+  },
+  {
+    "path": "SECRET-SCAN.json",
+    "bytes": 186,
+    "sha256": "6beac83a213fddfe866612928ce6f0d17f69d522a738d906131f7eedfb618c01"
+  },
+  {
+    "path": "SOURCE-INPUTS.json",
+    "bytes": 1417,
+    "sha256": "af73c28231112f7a58ad43007faceff913c89290da90dfb4e65dfdd256b9a644"
+  },
+  {
+    "path": "anchor-new-name-workflow.png",
+    "bytes": 201081,
+    "sha256": "6ec0af2b77e66a064417e18fde46180edd6b28c793ed2b789573d4619f5bf185"
+  },
+  {
+    "path": "anchor-signup-complete.png",
+    "bytes": 117605,
+    "sha256": "7fbea0f8705efb76e6ab8b998bd0e62f0d0d2be1f5dc9e5313e8058b3ba8bed1"
+  },
+  {
+    "path": "command.json",
+    "bytes": 514,
+    "sha256": "24b35f4bebf44bdf64b1dacd1f5a272cffd952de40638ac977389378043c7350"
+  },
+  {
+    "path": "operator-new-name-workflow.png",
+    "bytes": 243451,
+    "sha256": "08dab8ea5bf0d9bd11e80d0993733ccbc5429426e0f4b28d3be30c557597b547"
+  },
+  {
+    "path": "operator-signup-complete.png",
+    "bytes": 143823,
+    "sha256": "2419014d62564928a44b2094268e17fac82ace8713609d18a07e3a5d9c79232e"
+  },
+  {
+    "path": "outsider-signup-complete.png",
+    "bytes": 117589,
+    "sha256": "93d481aae56eddde32f55539d56dd49e483270d6098eaec9cbee442b52bf91a9"
+  },
+  {
+    "path": "result.json",
+    "bytes": 4993,
+    "sha256": "528108565ce203931fcb0115c14e172654c00c548b7ee45ca9402ec21f8b4618"
+  },
+  {
+    "path": "run.log",
+    "bytes": 89,
+    "sha256": "ab0800b9fd146e4520d69ced05e975552a4dea8221b5dc17efa305b2c2e15fc1"
+  }
+]

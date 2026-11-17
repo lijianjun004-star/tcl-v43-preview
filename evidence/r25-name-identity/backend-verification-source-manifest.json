@@ -1,0 +1,117 @@
+{
+  "scope": "SHA256 of inspected public source or sanitized evidence inputs; no private files copied or read by this collection",
+  "files": [
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/result.json",
+      "sha256": "0a9984fc11d37672ab67138fc99fe1fa0b794eb6c134c68d632235139b4d8708"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/service-result.json",
+      "sha256": "ca1d84f919acd51ec0f23eecf42bda516f658ddb21fcd689d549d9805f40661f"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/handler-result.json",
+      "sha256": "c764795387f2d237cdb4a92d0665b30b7aa561bc1d80819d42dffaada6b94e12"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/namespace-result.json",
+      "sha256": "9c611d223c535187c5cd0a9c692c8938810a0d252189e4c51cdaf81172c4a124"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/historical-alias-precedence-result.json",
+      "sha256": "a4f3b861fab52ce17a64100aa6b49f27d12c3473ea7544728fc3089371e0186a"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/real-pg-concurrency-result.json",
+      "sha256": "728f7374c54093e23ed89e280fabb6310295c60c0e21395f2ffd46ec5d1fb7ea"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/RESULTS.md",
+      "sha256": "69c817a3b1bb0725d3354a54d5fd5d95f3a85b407cd76eafbd327a6874d3788d"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/SECRET-SCAN.json",
+      "sha256": "b97871c8b8e40df47dff3c55f214e753b23953dc9b2ad7560d6243903ff23ec9"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/SOURCE-INPUTS.json",
+      "sha256": "0efabb372746701e96aad5dd92144784260d02756066175d2d4cc6209bc8c2ae"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/command.json",
+      "sha256": "0a3c31ae030d58ae1b2f07378aea0fa79c3d7903377d3a12c85bb80120b8a7d5"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/results/broker-1/adapter-build.json",
+      "sha256": "a5d103cbdcf855f5f08616c24a4336e660bf98fbab5e12e47e6d1eb4d921e1b7"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/README.md",
+      "sha256": "56b23555a7992625e30227c7f28d009fe719d26a4129c1bff6952e7279681b27"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/REPORT.md",
+      "sha256": "f8eb10077587cf955a84c79074c49eaa0b3ab193ce19177399401b2a9eb9eba3"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/legacy-redeem-shadow-before.json",
+      "sha256": "09a18c94bcdf4875b222e2d1cd5b24d8cd47b0b87d7c15c64b13bf9ac70b33f9"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/legacy-redeem-shadow-result.json",
+      "sha256": "a36b3d562f1a14e9ad6936a3fc0eb99126fddb1072c4a69d05e080d25b3a8968"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/legacy-casefold-result.json",
+      "sha256": "8176f43991a6074727c823d3e56c30e6372c7931f5a09593a4f4e5c8ca185a7d"
+    },
+    {
+      "file": "/workspace/r25-name-identity-tests/historical-alias-precedence-result.json",
+      "sha256": "a4f3b861fab52ce17a64100aa6b49f27d12c3473ea7544728fc3089371e0186a"
+    },
+    {
+      "file": "/workspace/r25-name-identity-final-acl-result.json",
+      "sha256": "320980fb3e55dcd44369765ea8ae8fb83eb0b481d233e6f6429f967e2f276cf5"
+    },
+    {
+      "file": "/workspace/r25-name-invalid-native-audit/result.json",
+      "sha256": "ca19ec18215d6de5e90657c7a1d11a9ec755a7cc0bffa1fabc4fc976a06a4298"
+    },
+    {
+      "file": "/workspace/r25-name-identity-final-deploy-meta.json",
+      "sha256": "302f26485a47ca56e23e71274bc9311ab46dc14c09ca0c6b2f2d00e49ac2ef71"
+    },
+    {
+      "file": "/workspace/r25-name-identity-final-function-deploy-result.json",
+      "sha256": "9ec4fe63844234f6d16d5f3a47b1a88aa4ceef06b8abf9f6b10d9b7a4b84bc53"
+    },
+    {
+      "file": "/workspace/r25-name-identity-final-deploy-result.json",
+      "sha256": "2b139dae368589d84fd678eeb1d070ad2434b3d231538f370820bc3dcf11d6e0"
+    },
+    {
+      "file": "/workspace/r25-name-live-resolve-probe-result.json",
+      "sha256": "0178a7603d536544fa2118cd6f0b3c193fdc7a7ebde693466c683e984d193d5a"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/001-name-identity.sql",
+      "sha256": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/handler.cjs",
+      "sha256": "b5bee8e6fbf7cf4c06ccd85f29312160e11d751161d07219d8c3d6432b83d39a"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/provider-cloudbase.cjs",
+      "sha256": "5dd3a1054245b0e75d282f0a0d3fe44b3523af4af6cb7bf876f9a08f0187c78c"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/index.js",
+      "sha256": "2d38f99c1bf10242f6a447ab77d412ffcaefaedb5270e32a0ea35457254706f2"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/API_CONTRACT.md",
+      "sha256": "329fc8f565a8d6276122fcb1b0cb14a882207217fafa9a4ca4a21b245f38e60d"
+    }
+  ]
+}

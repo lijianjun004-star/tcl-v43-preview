@@ -1,0 +1,17 @@
+{
+  "fixtureId": "ROOT-GENERATED-UNIQUE-TEST-SCOPE",
+  "executionApproved": false,
+  "testOnly": true,
+  "registrationEndpoint": "https://DEPLOYED-BROKER-ENDPOINT",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "origin": "https://lijianjun004-star.github.io",
+  "envId": "unknown-roadrunner-d7cap6e21f517",
+  "region": "ap-shanghai",
+  "newAccounts": {
+    "operator": {"name": "合成运营唯一编号", "password": "REPLACE-PRIVATE-STRONG-PASSWORD", "inviteCode": "REPLACE-UNUSED-OPERATOR-INVITE", "role": "operator"},
+    "anchor": {"name": "合成主播唯一编号", "password": "REPLACE-PRIVATE-STRONG-PASSWORD", "inviteCode": "REPLACE-UNUSED-ANCHOR-INVITE", "role": "anchor"},
+    "outsider": {"name": "合成他人唯一编号", "password": "REPLACE-PRIVATE-STRONG-PASSWORD", "inviteCode": "REPLACE-UNUSED-ANCHOR-INVITE", "role": "anchor"}
+  },
+  "nameConflictInviteCode": "REPLACE-FOURTH-UNUSED-INVITE",
+  "legacyAccount": {"username": "ROOT-PROVIDED-EXISTING-NATIVE-USERNAME", "password": "PRIVATE-EXISTING-PASSWORD", "uid": "ROOT-VERIFIED-EXISTING-UID", "role": "anchor"}
+}

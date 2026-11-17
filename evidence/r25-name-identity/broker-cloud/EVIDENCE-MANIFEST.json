@@ -1,0 +1,37 @@
+[
+  {
+    "path": "RESULTS.md",
+    "bytes": 2121,
+    "sha256": "69c817a3b1bb0725d3354a54d5fd5d95f3a85b407cd76eafbd327a6874d3788d"
+  },
+  {
+    "path": "SECRET-SCAN.json",
+    "bytes": 148,
+    "sha256": "b97871c8b8e40df47dff3c55f214e753b23953dc9b2ad7560d6243903ff23ec9"
+  },
+  {
+    "path": "SOURCE-INPUTS.json",
+    "bytes": 985,
+    "sha256": "0efabb372746701e96aad5dd92144784260d02756066175d2d4cc6209bc8c2ae"
+  },
+  {
+    "path": "adapter-build.json",
+    "bytes": 284,
+    "sha256": "a5d103cbdcf855f5f08616c24a4336e660bf98fbab5e12e47e6d1eb4d921e1b7"
+  },
+  {
+    "path": "command.json",
+    "bytes": 469,
+    "sha256": "0a3c31ae030d58ae1b2f07378aea0fa79c3d7903377d3a12c85bb80120b8a7d5"
+  },
+  {
+    "path": "result.json",
+    "bytes": 16573,
+    "sha256": "0a9984fc11d37672ab67138fc99fe1fa0b794eb6c134c68d632235139b4d8708"
+  },
+  {
+    "path": "run.log",
+    "bytes": 119,
+    "sha256": "ccbd48e8468c4ff1473765df2f625897b32ce58ccf4fb64912608fc6203545e1"
+  }
+]

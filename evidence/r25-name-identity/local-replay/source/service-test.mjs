@@ -1,0 +1,60 @@
+/** localPGmock-auth: actual service SQL/ACL, synthetic users/invites/native confirmations. */
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import {PGlite} from '@electric-sql/pglite';
+import {pgcrypto} from '@electric-sql/pglite/contrib/pgcrypto';
+import {withIdentity} from './bootstrap.mjs';
+import {loadDatabase,databaseTransport,seedFixtures,seedInvite,sha,md5,writeReport} from './harness.mjs';
+let db,service;const report={scope:'localPGmock-auth-name-service',checks:[],cloudCalls:0,productModified:false};
+const check=(name,ok,detail)=>{report.checks.push({name,pass:!!ok,...(detail===undefined?{}:{detail})});assert.ok(ok,name+': '+JSON.stringify(detail))};
+const ok=(name,v)=>{check(name,v?.ok===true,v);return v.data};
+const err=(name,v,code)=>{check(name,v?.ok===false&&(!code||v.error?.code===code),v);return v.error};
+const op=(name,code)=>({name,operationId:crypto.randomUUID(),operationProof:sha(crypto.randomBytes(32)),inviteHash:md5(code.toLowerCase())});
+const final=(p,r,providerUid)=>({operationId:p.operationId,operationProof:p.operationProof,providerUid,nativeUsername:r.username,marker:r.marker});
+const counts=async()=> (await db.query(`SELECT (SELECT count(*) FROM public.r25wf_name_registrations)::int registrations,(SELECT count(*) FROM public.r25wf_name_aliases)::int aliases,(SELECT count(*) FROM public.r25wf_users)::int users`)).rows[0];
+try{
+ await fs.rm('./pg-data',{recursive:true,force:true});const loaded=await loadDatabase('./pg-data');db=loaded.db;report.serviceShaBefore=loaded.serviceSha;report.baseSha=loaded.baseSha;service=databaseTransport(db);await seedFixtures(db);check('actual_schema_applies',true);
+ for(const role of ['anon','authenticated']){let denied=false;try{await withIdentity(db,{uid:'local-actor',role},()=>db.query("SELECT public.r25wf_name_identity_service('resolve','{\"name\":\"anything\"}')"))}catch(e){denied=e.code==='42501'}check('service_rpc_execute_denied_'+role,denied)}
+ let directDenied=false;try{await withIdentity(db,{uid:'local-actor'},()=>db.query('SELECT * FROM public.r25wf_name_registrations'))}catch(e){directDenied=e.code==='42501'}check('reservation_table_browser_access_denied',directDenied);
+ const before=await counts();err('invalid_invite_rejected',await service('reserve',op('无效邀请预约','invalid-local-code')),'INVALID_INVITE');check('invalid_invite_leaves_no_reservation_or_alias',JSON.stringify(await counts())===JSON.stringify(before));
+ const expired=await seedInvite(db,{code:'expired-local-invite',expired:true});err('expired_invite_rejected',await service('reserve',op('过期邀请','expired-local-invite')),'INVITE_EXPIRED');
+ const targeted=await seedInvite(db,{code:'targeted-local-invite',targetUid:'legacy-one'});err('old_uid_targeted_invite_cannot_create_user',await service('reserve',op('定向新用户','targeted-local-invite')),'INVITE_FOR_EXISTING_ACCOUNT');
+ const valid=await seedInvite(db,{code:'valid-local-invite'});const p=op(' 新成员甲 ','valid-local-invite');const reservation=ok('valid_reservation',await service('reserve',p));
+ check('native_username_shape_and_marker',/^r25n_[a-f0-9]{24}$/.test(reservation.username)&&reservation.marker==='r25wf-name-v1:'+reservation.reservationId,reservation);
+ const reservedInvite=(await db.query('SELECT consumed_by FROM public.r25wf_invites WHERE id=$1',[valid.id])).rows[0];check('invite_held_by_persistent_reservation',reservedInvite.consumed_by==='reserved:'+reservation.reservationId);
+ assert.deepEqual(await service('reserve',p),{ok:true,data:reservation});check('same_name_operation_proof_retry_reuses_reservation',true);
+ err('wrong_operation_proof_cannot_recover',await service('status',{operationId:p.operationId,operationProof:sha('other-local-secret')}),'INVALID_OPERATION_SECRET');
+ err('same_operation_different_name_rejected',await service('reserve',{...p,name:'另一个姓名'}),'REGISTRATION_CONFLICT');
+ const second=await seedInvite(db,{code:'second-local-invite'});err('same_operation_different_invite_rejected',await service('reserve',{...p,inviteHash:md5('second-local-invite')}),'REGISTRATION_CONFLICT');
+ err('second_operation_same_name_cannot_takeover',await service('reserve',op('新成员甲','second-local-invite')),'NAME_PENDING');
+ check('losing_name_contender_does_not_consume_own_invite',(await db.query('SELECT consumed_by FROM public.r25wf_invites WHERE id=$1',[second.id])).rows[0].consumed_by===null);
+ err('different_name_same_reserved_invite_rejected',await service('reserve',op('新成员乙','valid-local-invite')),'INVALID_INVITE');
+ check('losing_invite_contender_creates_no_reservation',(await db.query("SELECT count(*)::int n FROM public.r25wf_name_registrations WHERE name_key='新成员乙'")).rows[0].n===0);
+ const snapshotLegacy=(await db.query("SELECT * FROM public.r25wf_users WHERE uid='legacy-one'")).rows[0];
+ err('finalize_cannot_adopt_existing_uid',await service('finalize',final(p,reservation,'legacy-one')),'NATIVE_IDENTITY_CONFLICT');check('existing_uid_business_identity_unchanged',JSON.stringify((await db.query("SELECT * FROM public.r25wf_users WHERE uid='legacy-one'")).rows[0])===JSON.stringify(snapshotLegacy));
+ err('finalize_wrong_marker_rejected',await service('finalize',{...final(p,reservation,'new-local-one'),marker:'r25wf-name-v1:wrong-marker'}),'NATIVE_IDENTITY_CONFLICT');
+ const finished=ok('finalize_trusted_native_uid',await service('finalize',final(p,reservation,'new-local-one')));check('ready_uid_role_from_invite',finished.state==='ready'&&finished.uid==='new-local-one'&&finished.role==='anchor',finished);
+ const newRows=(await db.query("SELECT u.role,u.display_name,n.native_username,x.name_key FROM public.r25wf_users u JOIN public.r25wf_native_identities n USING(uid) JOIN public.r25wf_name_aliases x USING(uid) WHERE u.uid='new-local-one'")).rows;check('role_native_mapping_alias_atomically_present',newRows.length===1&&newRows[0].name_key==='新成员甲'&&newRows[0].role==='anchor',newRows);
+ check('finalize_invite_consumed_by_actual_uid',(await db.query('SELECT consumed_by FROM public.r25wf_invites WHERE id=$1',[valid.id])).rows[0].consumed_by==='new-local-one');
+ assert.deepEqual(await service('finalize',final(p,reservation,'new-local-one')),{ok:true,data:finished});check('finalize_retry_same_native_uid_idempotent',true);
+ err('finalize_ready_uid_cannot_change',await service('finalize',final(p,reservation,'new-local-other')),'NATIVE_IDENTITY_CONFLICT');
+ const resolved=ok('resolve_ready_alias',await service('resolve',{name:' 新成员甲 '}));check('resolved_uid_stable',resolved.uid==='new-local-one'&&resolved.username===reservation.username,resolved);
+ const oldName=await seedInvite(db,{code:'old-name-invite'});err('existing_display_name_cannot_be_claimed',await service('reserve',op('旧成员甲','old-name-invite')),'NAME_TAKEN');check('old_name_rejection_does_not_consume_invite',(await db.query('SELECT consumed_by FROM public.r25wf_invites WHERE id=$1',[oldName.id])).rows[0].consumed_by===null);
+ const bf=ok('backfill_existing_native_accounts',await service('backfill',{identities:[{uid:'legacy-one',nativeUsername:'legacy_one'},{uid:'legacy-two',nativeUsername:'legacy_two'},{uid:'legacy-three',nativeUsername:'legacy_three'}]}));check('duplicate_legacy_names_recorded_as_conflict',bf.conflicts===2,bf);
+ const oldResolved=ok('unique_legacy_name_alias_resolves_original_uid',await service('resolve',{name:'旧成员甲'}));check('legacy_uid_not_replaced',oldResolved.uid==='legacy-one',oldResolved);
+ err('duplicate_legacy_name_never_selects_arbitrary_uid',await service('resolve',{name:'同名旧成员'}),'NAME_CONFLICT');
+ check('duplicate_legacy_name_has_no_alias',(await db.query("SELECT count(*)::int n FROM public.r25wf_name_aliases WHERE name_key='同名旧成员'")).rows[0].n===0);
+ const legacyLogin=ok('duplicate_name_users_keep_native_login',await service('resolveLegacy',{providerUid:'legacy-two',nativeUsername:'legacy_two'}));check('legacy_native_login_keeps_original_uid',legacyLogin.uid==='legacy-two');
+ err('backfill_cannot_rename_mapped_native_username',await service('backfill',{identities:[{uid:'legacy-one',nativeUsername:'different_user'}]}),'NATIVE_IDENTITY_CONFLICT');
+ const normInvite=await seedInvite(db,{code:'norm-local-invite'});const norm=op(' Ａｌｉｃｅ ','norm-local-invite');const nr=ok('unicode_nfkc_reservation',await service('reserve',norm));check('name_nfkc_case_key',nr.nameKey==='alice',nr);
+ err('unicode_equivalent_name_contender_rejected',await service('reserve',op('alice','second-local-invite')),'NAME_PENDING');
+ err('hidden_direction_name_rejected',await service('reserve',op('张\u202e三','second-local-invite')),'INVALID_NAME');
+ err('raw_secret_fields_rejected_by_database',await service('reserve',{...op('秘密误传','second-local-invite'),password:'synthetic-only'}),'INVALID_REQUEST');
+ const rateKey=sha('local-rate-fixture');for(let i=0;i<50;i++)ok('persistent_rate_attempt_'+i,await service('limit',{rateKey,bucket:'register'}));err('persistent_register_limit_51st_rejected',await service('limit',{rateKey,bucket:'register'}),'RATE_LIMITED');
+ await db.close();db=new PGlite('./pg-data',{extensions:{pgcrypto}});await db.waitReady;service=databaseTransport(db);const status=ok('reservation_survives_database_restart',await service('status',{operationId:norm.operationId,operationProof:norm.operationProof,name:'alice'}));check('restart_same_native_username_and_marker',status.username===nr.username&&status.marker===nr.marker&&status.state==='reserved');
+ const finalStatus=ok('ready_alias_survives_database_restart',await service('status',{operationId:p.operationId,operationProof:p.operationProof}));check('restart_ready_uid_stable',finalStatus.uid==='new-local-one'&&finalStatus.state==='ready');
+ report.serviceShaAfter=sha(await fs.readFile('/workspace/tcl-r25-name-login/backend/r25-name-identity/001-name-identity.sql'));check('service_source_unchanged',report.serviceShaAfter===report.serviceShaBefore);report.status='PASS';
+}catch(e){report.status='FAIL';report.error={message:e.message,code:e.code,stack:e.stack}}
+finally{if(db)await db.close();await writeReport('service-result.json',report);console.log(JSON.stringify(report,null,2))}
+if(report.status!=='PASS')process.exitCode=1;

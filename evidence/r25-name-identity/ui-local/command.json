@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/r25-name-invite-tests/run_ui.py",
+    "--execute",
+    "--private-fixture",
+    "/workspace/r25-name-ui-fixture-private.json",
+    "--response-loss",
+    "--out",
+    "/workspace/r25-name-invite-tests/results/ui-1"
+  ],
+  "exitCode": 0,
+  "stdoutStderr": "run.log",
+  "contextsClosed": true,
+  "recordedAfterExecution": "2026-11-17T08:20:29.060981+00:00",
+  "scope": "Actual localhost8766 UI and real deployed broker/native Auth/PG; no config/SDK/business injection"
+}

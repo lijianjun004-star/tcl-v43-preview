@@ -1,0 +1,749 @@
+{
+  "suite": "REAL_NAME_INVITE_BROKER_AND_NATIVE_AUTH",
+  "fixtureIdSha256": "a807e33cfd9c41b3696e2d8d79ecbf2c3237babc18dc5ee1e7b54cad98dc1127",
+  "startedAt": "2026-11-17T08:06:33.537991+00:00",
+  "status": "PASS_WITH_NOT_RUN",
+  "checks": [
+    {
+      "name": "legacy-before_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "legacy-before_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "40605ef5157610678f294ee8b3cb8faad7f864ce1fc699e6d4c2e39720bf1d3d"
+      }
+    },
+    {
+      "name": "legacy-before_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "admin"
+      }
+    },
+    {
+      "name": "weak_password_rejected_before_reservation",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_PASSWORD"
+      }
+    },
+    {
+      "name": "weak_password_creates_no_alias",
+      "pass": true,
+      "detail": {
+        "errorCode": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "weak_password_creates_no_reservation",
+      "pass": true,
+      "detail": {
+        "errorCode": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "missing_invite_register_is_server_rejected",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_INVITE"
+      }
+    },
+    {
+      "name": "missing_invite_does_not_create_login_alias",
+      "pass": true,
+      "detail": {
+        "errorCode": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "wrong_invite_register_is_server_rejected",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_INVITE"
+      }
+    },
+    {
+      "name": "wrong_invite_does_not_create_login_alias",
+      "pass": true,
+      "detail": {
+        "errorCode": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "untrusted_role_uid_username_rejected",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_REQUEST"
+      }
+    },
+    {
+      "name": "role_rejection_does_not_create_alias",
+      "pass": true,
+      "detail": {
+        "errorCode": "NOT_FOUND"
+      }
+    },
+    {
+      "name": "operator_chinese_name_enrollment_ready",
+      "pass": true,
+      "detail": {
+        "state": "ready"
+      }
+    },
+    {
+      "name": "operator_broker_uses_29_character_opaque_native_username",
+      "pass": true,
+      "detail": {
+        "usernameLength": 29
+      }
+    },
+    {
+      "name": "operator_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "ecd65c4c196a41ce7c06aa78e6abf70b59b58218cc7be6049d668097bc86a41a"
+      }
+    },
+    {
+      "name": "operator_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "operator"
+      }
+    },
+    {
+      "name": "operator_daily_name_resolves_same_native_identity",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator-daily_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator-daily_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "ecd65c4c196a41ce7c06aa78e6abf70b59b58218cc7be6049d668097bc86a41a"
+      }
+    },
+    {
+      "name": "operator-daily_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "operator"
+      }
+    },
+    {
+      "name": "anchor_chinese_name_enrollment_ready",
+      "pass": true,
+      "detail": {
+        "state": "ready"
+      }
+    },
+    {
+      "name": "weak_password_did_not_consume_valid_invite",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_broker_uses_29_character_opaque_native_username",
+      "pass": true,
+      "detail": {
+        "usernameLength": 29
+      }
+    },
+    {
+      "name": "anchor_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "29fdb5ad02d03766eab657f2c511eb6dbac8c6c70010520910e4cbfbdd055b39"
+      }
+    },
+    {
+      "name": "anchor_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "anchor"
+      }
+    },
+    {
+      "name": "anchor_daily_name_resolves_same_native_identity",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor-daily_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor-daily_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "29fdb5ad02d03766eab657f2c511eb6dbac8c6c70010520910e4cbfbdd055b39"
+      }
+    },
+    {
+      "name": "anchor-daily_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "anchor"
+      }
+    },
+    {
+      "name": "outsider_chinese_name_enrollment_ready",
+      "pass": true,
+      "detail": {
+        "state": "ready"
+      }
+    },
+    {
+      "name": "outsider_broker_uses_29_character_opaque_native_username",
+      "pass": true,
+      "detail": {
+        "usernameLength": 29
+      }
+    },
+    {
+      "name": "outsider_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "0e9a0e98e65d4317f02b2c2454fc457ea5d6fea17c6d8711c642466bf4bbaf6d"
+      }
+    },
+    {
+      "name": "outsider_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "anchor"
+      }
+    },
+    {
+      "name": "outsider_daily_name_resolves_same_native_identity",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider-daily_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider-daily_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "0e9a0e98e65d4317f02b2c2454fc457ea5d6fea17c6d8711c642466bf4bbaf6d"
+      }
+    },
+    {
+      "name": "outsider-daily_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "anchor"
+      }
+    },
+    {
+      "name": "same_operation_secret_status_recovers_same_uid",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "same_operation_replay_preserves_native_uid",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "wrong_operation_secret_cannot_recover",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_OPERATION_SECRET"
+      }
+    },
+    {
+      "name": "status_rejects_password_field",
+      "pass": true,
+      "detail": {
+        "errorCode": "INVALID_REQUEST"
+      }
+    },
+    {
+      "name": "duplicate_name_cannot_replace_existing_account",
+      "pass": true,
+      "detail": {
+        "errorCode": "NAME_TAKEN"
+      }
+    },
+    {
+      "name": "anchor-after-name-conflict_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor-after-name-conflict_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "29fdb5ad02d03766eab657f2c511eb6dbac8c6c70010520910e4cbfbdd055b39"
+      }
+    },
+    {
+      "name": "anchor-after-name-conflict_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "anchor"
+      }
+    },
+    {
+      "name": "legacy_native_username_casefold_namespace_cannot_be_claimed",
+      "pass": true,
+      "detail": {
+        "errorCode": "NAME_TAKEN"
+      }
+    },
+    {
+      "name": "legacy_native_username_resolves_original_uid",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "independent_native_context_uids_are_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_assignments.create_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_assignments.join_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_submissions.create_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_submission_has_real_receipt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_submissions.list_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "assigned_operator_receives_new_anchor_once",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "other_context_cannot_read_submission",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "operator_feedback.create_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_feedback.list_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_reads_operator_persisted_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "other_context_cannot_read_feedback",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "operator_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_session_still_own_uid_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_session_still_own_uid_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_session_still_own_uid_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "legacy-after_official_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "legacy-after_server_native_uid_matches",
+      "pass": true,
+      "detail": {
+        "uidSha256": "40605ef5157610678f294ee8b3cb8faad7f864ce1fc699e6d4c2e39720bf1d3d"
+      }
+    },
+    {
+      "name": "legacy-after_me_bound_expected_role",
+      "pass": true,
+      "detail": {
+        "role": "admin"
+      }
+    },
+    {
+      "name": "legacy_uid_and_original_password_still_work",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "notRun": [
+    {
+      "name": "native_provider_no_account_created_for_invalid_invites",
+      "reason": "Root must independently compare exact synthetic fixture scope with native DescribeUserList before/after; alias absence alone is not provider proof"
+    },
+    {
+      "name": "weak_password_native_create_call_count_is_zero",
+      "reason": "Root/provider audit must prove zero native CreateUser calls; no alias/reservation and reusing the same invite alone cannot inspect server internals"
+    },
+    {
+      "name": "formal_business_data_unchanged",
+      "reason": "Root must perform before/after readonly SQL audit excluding explicitly scoped synthetic writes"
+    },
+    {
+      "name": "crash_between_native_create_and_sql_finalize",
+      "reason": "Requires a root-approved server checkpoint; no production fault switch is assumed"
+    }
+  ],
+  "operations": [
+    {
+      "action": "register",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_PASSWORD",
+      "elapsedMs": 8471
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 404,
+      "ok": false,
+      "state": null,
+      "errorCode": "NOT_FOUND",
+      "elapsedMs": 2185
+    },
+    {
+      "action": "status",
+      "httpStatus": 404,
+      "ok": false,
+      "state": null,
+      "errorCode": "NOT_FOUND",
+      "elapsedMs": 1991
+    },
+    {
+      "action": "register",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_INVITE",
+      "elapsedMs": 1152
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 404,
+      "ok": false,
+      "state": null,
+      "errorCode": "NOT_FOUND",
+      "elapsedMs": 3250
+    },
+    {
+      "action": "register",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_INVITE",
+      "elapsedMs": 1107
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 404,
+      "ok": false,
+      "state": null,
+      "errorCode": "NOT_FOUND",
+      "elapsedMs": 878
+    },
+    {
+      "action": "register",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_REQUEST",
+      "elapsedMs": 701
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 404,
+      "ok": false,
+      "state": null,
+      "errorCode": "NOT_FOUND",
+      "elapsedMs": 823
+    },
+    {
+      "action": "register",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 2648
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 588
+    },
+    {
+      "action": "register",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 1625
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 738
+    },
+    {
+      "action": "register",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 1934
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 1392
+    },
+    {
+      "action": "status",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 1452
+    },
+    {
+      "action": "register",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 616
+    },
+    {
+      "action": "status",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_OPERATION_SECRET",
+      "elapsedMs": 977
+    },
+    {
+      "action": "status",
+      "httpStatus": 400,
+      "ok": false,
+      "state": null,
+      "errorCode": "INVALID_REQUEST",
+      "elapsedMs": 418
+    },
+    {
+      "action": "register",
+      "httpStatus": 409,
+      "ok": false,
+      "state": null,
+      "errorCode": "NAME_TAKEN",
+      "elapsedMs": 629
+    },
+    {
+      "action": "register",
+      "httpStatus": 409,
+      "ok": false,
+      "state": null,
+      "errorCode": "NAME_TAKEN",
+      "elapsedMs": 1226
+    },
+    {
+      "action": "resolve",
+      "httpStatus": 200,
+      "ok": true,
+      "state": "ready",
+      "errorCode": null,
+      "elapsedMs": 1119
+    },
+    {
+      "actor": "operator",
+      "action": "assignments.create",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.join",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "action": "submissions.create",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "operator",
+      "action": "submissions.list",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "outsider",
+      "action": "submissions.get",
+      "ok": false,
+      "errorCode": "FORBIDDEN"
+    },
+    {
+      "actor": "operator",
+      "action": "feedback.create",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "action": "feedback.list",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "outsider",
+      "action": "feedback.list",
+      "ok": false,
+      "errorCode": "FORBIDDEN"
+    },
+    {
+      "actor": "operator",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "outsider",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    }
+  ],
+  "network": "REAL HTTP + official native Auth/PG only; never mock success",
+  "secretsLogged": false,
+  "browser": "156.0.8078.79",
+  "contextsClosed": true,
+  "completedAt": "2026-11-17T08:07:59.397387+00:00"
+}

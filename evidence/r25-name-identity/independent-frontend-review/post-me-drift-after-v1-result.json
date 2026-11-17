@@ -1,0 +1,18 @@
+{
+  "scope": "Local mock official adapter and business reply. No cloud request or product mutation.",
+  "status": "rejected",
+  "error": {
+    "code": "STALE_SESSION",
+    "message": "姓名登录会话已在其他页面改变，请重新登录"
+  },
+  "nativeUid": "B",
+  "workflowUid": null,
+  "appliedIdentities": [],
+  "wrongIdentityInstalled": false,
+  "sha256": {
+    "name-identity.mjs": "b4cf7f2517a8fa5095baf1a66f5a803ee2a274b5ddc192b16dcabfe8674b14d9",
+    "cloud-workflow.mjs": "8b58d13d9c9f4de8c0022774dfab00ac4737d90d884caa05e03769669254bc79",
+    "cloud-workspace.mjs": "31053ddcef75f053ec76d61a096a98a375a162a3ec06a47fa6037df57c0cde92",
+    "app.js": "164b610416cbb2c8d37c09187f23a8dd38c9c923298c5e93c4df44b6f59bd432"
+  }
+}

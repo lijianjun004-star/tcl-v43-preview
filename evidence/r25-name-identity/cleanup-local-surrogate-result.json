@@ -1,0 +1,74 @@
+{
+  "scope": "private-local-surrogate-PGlite18.6-mock-auth-not-cloud-original-hashes",
+  "sourceShaBefore": "2253d7293663030fe3630f389edf35db23caafcaa1509e6b6ef076b21fa458f4",
+  "checks": [
+    {
+      "name": "reviewed_original_sha_matches_frozen",
+      "pass": true
+    },
+    {
+      "name": "surrogate_full_cleanup_succeeds",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "surrogate_exactly_ten_profiles_removed",
+      "pass": true
+    },
+    {
+      "name": "surrogate_original_three_invites_remain",
+      "pass": true
+    },
+    {
+      "name": "surrogate_internal_submissions_feedback_removed",
+      "pass": true
+    },
+    {
+      "name": "valid_immutable_trigger_enabled_O_after_completion_or_rollback",
+      "pass": true,
+      "detail": "O"
+    },
+    {
+      "name": "foreign-invite_guard_aborts",
+      "pass": true,
+      "detail": {
+        "message": "Fixture invite consumption/target escaped the verified synthetic members",
+        "code": "P0001"
+      }
+    },
+    {
+      "name": "foreign-invite_whole_transaction_rolled_back",
+      "pass": true
+    },
+    {
+      "name": "foreign-invite_immutable_trigger_enabled_O_after_completion_or_rollback",
+      "pass": true,
+      "detail": "O"
+    },
+    {
+      "name": "foreign-feedback_guard_aborts",
+      "pass": true,
+      "detail": {
+        "message": "Synthetic records point to external owners/feedback/assignments; stop for review",
+        "code": "P0001"
+      }
+    },
+    {
+      "name": "foreign-feedback_whole_transaction_rolled_back",
+      "pass": true
+    },
+    {
+      "name": "foreign-feedback_immutable_trigger_enabled_O_after_completion_or_rollback",
+      "pass": true,
+      "detail": "O"
+    },
+    {
+      "name": "frozen_private_sql_unchanged",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "productModified": false,
+  "sourceShaAfter": "2253d7293663030fe3630f389edf35db23caafcaa1509e6b6ef076b21fa458f4",
+  "status": "PASS"
+}

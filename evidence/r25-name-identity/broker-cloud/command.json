@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/r25-name-invite-tests/run_broker.py",
+    "--execute",
+    "--private-fixture",
+    "/workspace/r25-name-broker-fixture-private.json",
+    "--out",
+    "/workspace/r25-name-invite-tests/results/broker-1"
+  ],
+  "exitCode": 0,
+  "stdoutStderr": "run.log",
+  "network": "Real deployed HTTP broker, official JS SDK Auth and native PG",
+  "contextsClosed": true,
+  "recordedAfterExecution": "2026-11-17T08:09:26.258364+00:00"
+}

@@ -1,0 +1,73 @@
+{
+  "scope": "Complete app Chromium DOM and native IndexedDB; official SDK/Auth/PG and name HTTP replaced only to control exact race timing. No cloud requests.",
+  "passed": 15,
+  "total": 15,
+  "checks": [
+    {
+      "name": "me rejects stale identity before successful workspace",
+      "passed": true
+    },
+    {
+      "name": "me shows explicit changed-session error",
+      "passed": true
+    },
+    {
+      "name": "me has no browser error",
+      "passed": true
+    },
+    {
+      "name": "me drift never reads A local records",
+      "passed": true
+    },
+    {
+      "name": "me leaves original A record byte-equivalent",
+      "passed": true
+    },
+    {
+      "name": "partition rejects stale identity before successful workspace",
+      "passed": true
+    },
+    {
+      "name": "partition shows explicit changed-session error",
+      "passed": true
+    },
+    {
+      "name": "partition has no browser error",
+      "passed": true
+    },
+    {
+      "name": "partition exercises delayed actual A IndexedDB read",
+      "passed": true
+    },
+    {
+      "name": "partition leaves original A record byte-equivalent",
+      "passed": true
+    },
+    {
+      "name": "partition-auth-event rejects stale identity before successful workspace",
+      "passed": true
+    },
+    {
+      "name": "partition-auth-event shows explicit changed-session error",
+      "passed": true
+    },
+    {
+      "name": "partition-auth-event has no browser error",
+      "passed": true
+    },
+    {
+      "name": "partition-auth-event exercises delayed actual A IndexedDB read",
+      "passed": true
+    },
+    {
+      "name": "partition-auth-event leaves original A record byte-equivalent",
+      "passed": true
+    }
+  ],
+  "sha256": {
+    "app.js": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e",
+    "cloud-workflow.mjs": "a592b2f79a7e80f1317b036352bdf9033182da0e4d26d5b3b65d0e845a156277",
+    "cloud-workspace.mjs": "efbabf6f3e2cf6f3a0a10fb6204884176fc44c513d57920fa347e63948beaff1",
+    "name-identity.mjs": "702a15438acc838d06a431553812b54d27d1fb7c21fae29f32861903181e83fa"
+  }
+}

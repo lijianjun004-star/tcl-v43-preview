@@ -1,0 +1,25 @@
+{
+  "scope": "Local runner and contract snapshot captured after this run; deployed handler identity independently owned by root",
+  "files": [
+    {
+      "file": "/workspace/r25-name-invite-tests/common.py",
+      "sha256": "3fa1cfd1b30f4fdd01dc6ac0fb9b51b1a304f46142eabb8f6a2f7f8e43bc567d"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/run_broker.py",
+      "sha256": "5a8c052017bc9b94b9e0a4177c5b517589bc317415beb236b3e0e0971c1171fd"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/browser-client.mjs",
+      "sha256": "ccfb00c2ed635d131f6006307ec83e90c3138ff5743d38e813b69bdb4d850d03"
+    },
+    {
+      "file": "/workspace/r25-name-invite-tests/browser-client.bundle.js",
+      "sha256": "3ba0a75894bda67461ebdf81b4f2ab2b52224ba51dc12252f72a5b8f26b4589c"
+    },
+    {
+      "file": "/workspace/tcl-r25-name-login/backend/r25-name-identity/API_CONTRACT.md",
+      "sha256": "329fc8f565a8d6276122fcb1b0cb14a882207217fafa9a4ca4a21b245f38e60d"
+    }
+  ]
+}

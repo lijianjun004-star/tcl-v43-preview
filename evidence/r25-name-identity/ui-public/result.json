@@ -1,0 +1,200 @@
+{
+  "suite": "ACTUAL_NAME_INVITE_PRODUCT_UI",
+  "fixtureIdSha256": "d1f7a03ba4cc09f0f8141dde937cb37a67bca3953c64588a5aa934cb89df573e",
+  "startedAt": "2026-11-17T08:32:39.392633+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "operator_actual_ui_chinese_name_enrollment",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_password_and_invite_not_persisted_in_web_storage",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_registration_indexeddb_persists_no_password_or_invite",
+      "pass": true,
+      "detail": {
+        "exists": true,
+        "rowCount": 1,
+        "safe": true
+      }
+    },
+    {
+      "name": "cdp_dropped_actual_ready_enrollment_response",
+      "pass": true,
+      "detail": {
+        "dropCount": 1,
+        "callbackErrors": []
+      }
+    },
+    {
+      "name": "lost_ready_response_not_shown_as_logged_in",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_actual_ui_chinese_name_enrollment",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_password_and_invite_not_persisted_in_web_storage",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_registration_indexeddb_persists_no_password_or_invite",
+      "pass": true,
+      "detail": {
+        "exists": true,
+        "rowCount": 1,
+        "safe": true
+      }
+    },
+    {
+      "name": "response_loss_recovered_same_operation_secret_uid",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_actual_ui_chinese_name_enrollment",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_password_and_invite_not_persisted_in_web_storage",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_registration_indexeddb_persists_no_password_or_invite",
+      "pass": true,
+      "detail": {
+        "exists": true,
+        "rowCount": 1,
+        "safe": true
+      }
+    },
+    {
+      "name": "anchor_separate_context_daily_name_password_login",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_operator_ui_publishes_real_task",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "other_anchor_does_not_list_unjoined_task",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_native_session_survives_actual_model_reload",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_anchor_first_text_save_after_auth_restore",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "assignment_receiver_is_actual_new_operator",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_anchor_ui_receives_real_submit_receipt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_operator_reads_new_anchor_answer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_anchor_reads_new_operator_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "separate_other_context_has_no_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reload_keeps_native_identity_and_cloud_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all_actual_http_app_hashes_match_candidate",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no_product_page_errors",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no_model_downloads",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "notRun": [],
+  "operations": [],
+  "network": "REAL HTTP + official native Auth/PG only; never mock success",
+  "secretsLogged": false,
+  "sdkInjection": false,
+  "configurationOverride": false,
+  "businessMocks": false,
+  "pageErrors": [],
+  "modelRequests": [],
+  "appResponses": [
+    {
+      "actor": "operator",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "outsider",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor-daily",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    }
+  ],
+  "expectedAppSha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e",
+  "lossRecovery": {
+    "transport": "Actual Chromium CDP response stage",
+    "uidSha256": "09d3e63a2126650de147dc41125ecc35c22faacf8daa1ba71112c8c887a0a230",
+    "registerRequests": 1,
+    "statusRequests": 1,
+    "operationSecretsLogged": false
+  },
+  "browser": "156.0.8078.79",
+  "contextsClosed": true,
+  "completedAt": "2026-11-17T08:34:03.697576+00:00"
+}

@@ -1,0 +1,72 @@
+{
+  "scope": "Actual app partition/checkpoint functions and workflow with synthetic IDB/Auth/PG; no cloud or product writes.",
+  "status": "PASS",
+  "cases": [
+    {
+      "phase": "db-read",
+      "event": false,
+      "status": "PASS",
+      "nativeUid": "B",
+      "workflowUid": null,
+      "finalLocalUser": "",
+      "renderedA": false,
+      "errors": [
+        {
+          "code": "STALE_SESSION",
+          "message": "姓名登录会话已改变，本机身份未应用，请重新登录"
+        }
+      ]
+    },
+    {
+      "phase": "db-read",
+      "event": true,
+      "status": "PASS",
+      "nativeUid": "B",
+      "workflowUid": null,
+      "finalLocalUser": "",
+      "renderedA": false,
+      "errors": [
+        {
+          "code": "STALE_SESSION",
+          "message": "登录状态已改变，旧身份结果已忽略"
+        }
+      ]
+    },
+    {
+      "phase": "checkpoint-read",
+      "event": false,
+      "status": "PASS",
+      "nativeUid": "B",
+      "workflowUid": null,
+      "finalLocalUser": "",
+      "renderedA": false,
+      "errors": [
+        {
+          "code": "STALE_SESSION",
+          "message": "姓名登录会话已改变，本机身份未应用，请重新登录"
+        }
+      ]
+    },
+    {
+      "phase": "checkpoint-read",
+      "event": true,
+      "status": "PASS",
+      "nativeUid": "B",
+      "workflowUid": null,
+      "finalLocalUser": "",
+      "renderedA": false,
+      "errors": [
+        {
+          "code": "STALE_SESSION",
+          "message": "登录状态已改变，旧身份结果已忽略"
+        }
+      ]
+    }
+  ],
+  "sha256": {
+    "name-identity.mjs": "b4cf7f2517a8fa5095baf1a66f5a803ee2a274b5ddc192b16dcabfe8674b14d9",
+    "cloud-workflow.mjs": "a592b2f79a7e80f1317b036352bdf9033182da0e4d26d5b3b65d0e845a156277",
+    "cloud-workspace.mjs": "31053ddcef75f053ec76d61a096a98a375a162a3ec06a47fa6037df57c0cde92",
+    "app.js": "164b610416cbb2c8d37c09187f23a8dd38c9c923298c5e93c4df44b6f59bd432"
+  }
+}

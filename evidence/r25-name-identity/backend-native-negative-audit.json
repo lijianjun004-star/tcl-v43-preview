@@ -1,0 +1,53 @@
+{
+  "scope": "Actual public broker rejected requests bracketed by complete official Native user lists; not internal CreateUser invocation tracing",
+  "completedAt": "2026-11-17T08:21:28.987189+00:00",
+  "cases": [
+    {
+      "case": "invalid_invite",
+      "httpStatus": 400,
+      "ok": false,
+      "code": "INVALID_INVITE",
+      "state": null
+    },
+    {
+      "case": "weak_password",
+      "httpStatus": 400,
+      "ok": false,
+      "code": "INVALID_PASSWORD",
+      "state": null
+    }
+  ],
+  "beforeCount": 10,
+  "afterCount": 10,
+  "beforeUidHashes": [
+    "0e9a0e98e65d4317f02b2c2454fc457ea5d6fea17c6d8711c642466bf4bbaf6d",
+    "29fdb5ad02d03766eab657f2c511eb6dbac8c6c70010520910e4cbfbdd055b39",
+    "310440c0d8e01eda821beda6412f4b8084f62bef441b606118f472f0afa0dce1",
+    "357ba62b784703b3c159de5b2e8db7cc1bab331bf2ad3970e75c1d9c4e6ad6b1",
+    "40605ef5157610678f294ee8b3cb8faad7f864ce1fc699e6d4c2e39720bf1d3d",
+    "49950a77a65e46c01f6018aa438e03efae0c5c2ae472ee64613eba1988dc035f",
+    "5d932d6cc91e12182de4d406c77997d76722298dc23e1d0c2908faa330632568",
+    "ab868cfd56f6b575df2798344613068611cc8df0acdc3023cde5d67e6397b76f",
+    "c919d3aa694611999509892eb63363b6f80cf385dad93f80eea304985cb3eb3a",
+    "ecd65c4c196a41ce7c06aa78e6abf70b59b58218cc7be6049d668097bc86a41a"
+  ],
+  "afterUidHashes": [
+    "0e9a0e98e65d4317f02b2c2454fc457ea5d6fea17c6d8711c642466bf4bbaf6d",
+    "29fdb5ad02d03766eab657f2c511eb6dbac8c6c70010520910e4cbfbdd055b39",
+    "310440c0d8e01eda821beda6412f4b8084f62bef441b606118f472f0afa0dce1",
+    "357ba62b784703b3c159de5b2e8db7cc1bab331bf2ad3970e75c1d9c4e6ad6b1",
+    "40605ef5157610678f294ee8b3cb8faad7f864ce1fc699e6d4c2e39720bf1d3d",
+    "49950a77a65e46c01f6018aa438e03efae0c5c2ae472ee64613eba1988dc035f",
+    "5d932d6cc91e12182de4d406c77997d76722298dc23e1d0c2908faa330632568",
+    "ab868cfd56f6b575df2798344613068611cc8df0acdc3023cde5d67e6397b76f",
+    "c919d3aa694611999509892eb63363b6f80cf385dad93f80eea304985cb3eb3a",
+    "ecd65c4c196a41ce7c06aa78e6abf70b59b58218cc7be6049d668097bc86a41a"
+  ],
+  "checks": {
+    "invalid_invite_rejected": true,
+    "weak_password_rejected": true,
+    "native_uid_set_unchanged": true
+  },
+  "pass": true,
+  "secretsLogged": false
+}

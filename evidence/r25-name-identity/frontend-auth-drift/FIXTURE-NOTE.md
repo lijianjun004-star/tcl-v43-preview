@@ -1,0 +1,3 @@
+首轮驱动因waitForFunction读取尚未赋值的裸变量__releaseMe而ReferenceError，未到产品断言。改用window.__releaseMe存在性检查后重跑。保留此记录；不是产品失败，也不是云验收。
+
+中间版已安全拒绝旧身份，但分区失败清理触发页面重建后，原表单错误提示丢失，等待错误UI超时。partition-failed.json/png保留该实际表现。产品补充清理前保存失败提示后，最终三种时序15项通过。
