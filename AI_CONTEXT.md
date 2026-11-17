@@ -668,3 +668,18 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 ## CloudBase 国内站官方接入完成（2026-11-17）
 
 用户要求读取https://docs.cloudbase.net/skill.md并接入国内站。已按官方路径安装cloudbase@plugins-cli 0.2.5（32技能）和官方CLI3.9.3；本会话无原生MCP工具，当前通过CLI操作，插件MCP需新会话加载。已实际核验官方授权有效、CLI国内站isIntl=false、环境列表存在unknown-roadrunner-d7cap6e21f517且NORMAL，env use绑定成功，上海service_role只读PG查询成功。.cloudbase/project.json记录domestic/ap-shanghai/原envId，未写入密钥。此前“授权未保存/等待扫码”已被当前实际登录状态取代，不要重复要求登录。003恢复函数仍未安装，未运行迁移、发布或购买资源。用户此前“上传吧”已授权既定R25修复部署，下一步按备份→002/003→原函数→真实验收→独立CI139/归档PR执行，不重新询问相同发布许可。详见evidence/r25-registration-recovery/cloudbase-setup.json。
+
+## R25 免邀请码与注册中断恢复已部署（2026-11-17）
+
+任务TCL-R25-REGISTRATION-RECOVERY-DEPLOY-20261117。用户在Gemini/Claude复验后要求修复，随后“上传吧”已批准同范围正式部署；用户确认腾讯云目标控制台登录，官方管理授权与国内站上海环境已实测可用。此前“待授权/未部署/PR138待合并”等是历史状态，不再作为当前执行阻塞。ChatGPT统筹/Codex实现与云端执行，内部并行复核；新增外部Gemini/Claude业务请求0、付费模型API0，无新环境、托管、域名或套餐。
+
+- 固定入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/ 。当前版本r25-registration-recovery-20261117。主播/运营姓名＋密码直接注册，无邀请码；主播输入已注册运营完整姓名交付，接收运营仅看给自己的提交，管理员看全部已提交内容。原账号与数据保留。
+- 未到达服务端的误选角色可经原operationId/secret查询NOT_FOUND后改选；已预约身份以服务端原角色为准。丢失本机凭据时，由可信管理员核验本人及原生marker后，按003的旧proof/精确快照CAS只轮换恢复凭据，不删除预约、不变原姓名/角色/UID/原生账号/密码。网页“注册中断·使用恢复码”先服务端核验再本机CAS，旧注册及旧导入响应不能覆盖新码；仍需首次密码。已完成账号不能重发注册恢复码，忘记密码须走官方经核验的Auth恢复。
+- 本轮已完成私有备份（原函数代码/config、14张业务与身份表19个原行及定义），执行002→003，官方SDK COS更新原Event函数r25wf_name_identity。Nodejs20.19、128MiB、60秒、index.main、原执行角色/环境变量/路由/CORS保留，回下载源码哈希一致，状态Active。初次用runtime service_role做DDL报PGExecuteSqlError且未改表，改用官方管理默认表所有者通道后成功，未扩大runtime权限。不得在003后重跑001/002覆盖新函数。
+- 真实云端身份/恢复36、官方SDK浏览器Auth/业务18、真实合成admin及私有WAV19、最终公开产品UI29各自全通过，不合并成单一通过率。已实际验证Native创建前/后未finalize两条恢复同UID、旧proof失效、首次密码真实登录、幂等回执、运营/主播错人隔离、管理员权威ID全集及3244字节合成私有WAV逐字节下载和无关账号拒绝。Native创建窗口为受控管理调用后恢复，不声称注入服务器崩溃。公开UI无配置/SDK/成功响应注入或请求拦截，0页面异常/0模型请求。
+- CI139 head d5d57ae5983c9ffd25ec60c2c4a4f0c967f44d82，检查44101980262成功，merge8981781e4366611fdfe46af69c8172e7e5969ea9；取代旧PR138候选。发行PR140 head1a30cd054c97f73cd7c1bdb70f44d6df86501215，检查44113534312成功，精确head合并a0f5b819fa9a107facb6bb1e71d80dbdffc24967。Pages44113696230成功。只替换experiments/r25-release/site-only.zip.b64，未整体合并源码分支、未改根site.zip或Pages工作流。
+- 前端ZIP SHA256 365363d043f6aa88f43746373b9a1842c00d56e0a6b378073fc5b46eba3cc034，B64 b7de6c8cc7e5fd718156af495711c6b122438a623674bc6c67ded20c44e905fb，manifest eefb3eb3b096976f629c82151bb027528a51a4211e6dfa9fd429909bae29dbe1。29产品文件、全站246；公网246/246首轮HTTP200/SHA一致，旧217保护资源不变、失败0/补读0，首尾版本稳定（含4锚点共250请求）。app.js本体保持原7c83ce…，本轮身份模块/UI和manifest更新。
+- 5个明确验收注册账号及1个可信管理侧测试admin已按UID/name/native marker精确核验后全部Native BLOCKED、业务active=false，实际回读6/6，浏览器contexts关闭；无原账号停用。为保留不可变提交策略，本轮不删除任何数据，留下2条明确合成验收提交/反馈及1个合成私有WAV，管理员可见验收标识，测试运营不再出现在active收件名单。退役后独立只读检查再次确认原14表19行逐行MD5多重集保留、两份SQL源码/权限/search_path正确。私有fixture/密码/恢复秘密/备份不入仓库或网盘。
+- 实现冻结16bd69e0fc09c0d754c33a5235edfa06c42172a8。完整部署、验收、失败归因和工具源码在fix/r25-registration-recovery-20261117的证据冻结8b7780cf1cc6bc4ec64b705824b27b4c83c84da8：evidence/r25-registration-recovery/deployment/README.md与JSON。先前Drive修复包26a2f347…是候选交付快照，其“未部署”文字保留为历史，不代表当前状态。CloudBase官方插件0.2.5/32技能和CLI3.9.3已接入国内站，MCP需新会话加载，本轮通过官方管理SDK/CLI执行。
+- NOT RUN：物理iPhone/Android、真实大陆网络、原正式账号密码实际登录、真麦克风/相机/ASR准确率、PostgreSQL多连接竞争调度。本轮合成admin验证真实admin角色权限，不冒充原管理员密码登录；390px视口不是物理手机。原语音/模型边界不变。
+- 回退仅独立PR恢复邻近已审定前端归档，并保留002/003与兼容identity handler及恢复入口能力；不得恢复001/旧handler、删直接预约/UID、清本机数据或覆盖其他站点。后续先读实时main与原环境，不重复索取同范围发布批准。
