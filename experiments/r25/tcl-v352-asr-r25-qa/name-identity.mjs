@@ -50,7 +50,23 @@ function createRegistrationStore(envId) {
       transaction.onerror = transaction.onabort = () => reject(transaction.error || request.error);
     });
   }
-  return { reserve, put: (key, value) => transact('readwrite', store => store.put(value, key)) };
+  async function save(key, value, expected) {
+    const connection = await db();
+    return new Promise((resolve, reject) => {
+      const transaction = connection.transaction('operations', 'readwrite'), store = transaction.objectStore('operations');
+      const request = store.get(key); let saved = false;
+      request.onsuccess = () => {
+        const current = request.result;
+        // A late response in an old tab must never overwrite an imported recovery secret.
+        if (expected === null ? current === undefined : current?.operationId === expected.operationId && current?.operationSecret === expected.operationSecret) {
+          store.put(value, key); saved = true;
+        }
+      };
+      transaction.oncomplete = () => resolve(saved);
+      transaction.onerror = transaction.onabort = () => reject(transaction.error || request.error);
+    });
+  }
+  return { reserve, save, get: key => transact('readonly', store => store.get(key)) };
 }
 
 export function createNameIdentityClient({ config = {}, envId, fetchImpl = globalThis.fetch, storage, crypto = globalThis.crypto } = {}) {
@@ -103,25 +119,60 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
     }
     return ready(await request({ action: 'resolve', name }));
   }
+  async function saveReservation(key, value, expected) {
+    if (!await registry.save(key, value, expected)) error('REGISTRATION_STORAGE_CHANGED', '本机恢复信息已在其他页面改变，请关闭旧页面后重试');
+  }
+  async function restoreRecovery(code) {
+    let value;
+    try {
+      const token = String(code || '').trim();
+      if (token.length > 4096 || !/^R25REC1\.[A-Za-z0-9_-]+$/.test(token)) throw new Error();
+      const encoded = token.slice(8).replace(/-/g, '+').replace(/_/g, '/');
+      value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(encoded), c => c.charCodeAt(0))));
+      if (!value || value.version !== 1 || value.envId !== envId ||
+          Object.keys(value).sort().join(',') !== 'envId,name,operationId,operationSecret,role,version' ||
+          typeof value.name !== 'string' || normalizePersonName(value.name, { registration: true }) !== value.name ||
+          !['anchor', 'operator'].includes(value.role) || typeof value.operationId !== 'string' ||
+          !/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(value.operationId) ||
+          typeof value.operationSecret !== 'string' || !/^[a-f0-9]{64}$/.test(value.operationSecret)) throw new Error();
+    } catch { error('INVALID_RECOVERY_CODE', '恢复码无效或不属于当前练播房，请联系管理员核对'); }
+    const { name, role, operationId, operationSecret } = value;
+    // Snapshot before the network request: a delayed old code import must not
+    // overwrite a newer verified code imported while its response was pending.
+    const key = await keyFor(name), previous = await registry.get(key);
+    // Validate against the server before replacing any existing local attempt.
+    const status = await request({ action: 'status', name, operationId, operationSecret });
+    if (status.role !== role || !['reserved', 'ready'].includes(status.state) ||
+        status.state === 'reserved' && status.requiresPassword !== true) error('INVALID_IDENTITY_RESPONSE', '恢复身份尚未确认，本机原信息已保留');
+    if (status.state === 'ready' && !ready(status).uid) error('INVALID_IDENTITY_RESPONSE', '恢复身份尚未确认，本机原信息已保留');
+    await saveReservation(key, { name, role, operationId, operationSecret, state: status.state, recoveredAt: new Date().toISOString() }, previous || null);
+    return { name, role, state: status.state };
+  }
   async function register({ name: inputName, password, role = 'anchor' }) {
     const name = normalizePersonName(inputName, { registration: true }); validateJoinPassword(password);
     if (!['anchor', 'operator'].includes(role)) error('INVALID_ROLE', '请选择主播或运营注册，管理员账号不能自行注册');
     if (!enabled) error('IDENTITY_UNAVAILABLE', '姓名加入服务正在准备，请稍后重试');
     const reservation = await reservationFor(name, role);
     const legacyRecovery = reservation.value.role == null;
-    if (!legacyRecovery && reservation.value.role !== role) error('REGISTRATION_CONFLICT', '本姓名已有其他角色的注册操作，请使用首次选择的角色重试；旧账号请直接登录或联系管理员');
-    const operation = { name: reservation.value.name, ...(legacyRecovery ? {} : { role: reservation.value.role }), operationId: reservation.value.operationId, operationSecret: reservation.value.operationSecret };
+    const proof = { name: reservation.value.name, operationId: reservation.value.operationId, operationSecret: reservation.value.operationSecret };
     if (reservation.existing) {
       try {
-        const status = await request({ action: 'status', ...operation });
+        // Discover the server's canonical role with the same high-entropy proof.
+        // Never infer it from a previous browser write or change an existing server role.
+        const status = await request({ action: 'status', ...proof });
         if (legacyRecovery) {
           if (status.state !== 'ready') error('LEGACY_REGISTRATION_PENDING', '原账号注册尚未完成，安全重试信息已保留；请尝试姓名密码登录，或联系管理员恢复原操作');
-          if (!['anchor', 'operator'].includes(status.role)) error('REGISTRATION_CONFLICT', '原账号角色尚未确认，请联系管理员');
+          if (!['anchor', 'operator'].includes(status.role)) error('REGISTRATION_CONFLICT', '原账号身份尚未确认，请联系管理员');
           const recovered = ready(status);
           if (!recovered.uid) error('INVALID_IDENTITY_RESPONSE', '原账号身份尚未确认，请联系管理员');
           return { ...recovered, role: status.role, legacyRecovery: true };
         }
-        if (status.role !== role) error('REGISTRATION_CONFLICT', '注册角色尚未确认，请保留原角色并联系管理员');
+        if (!['anchor', 'operator'].includes(status.role)) error('INVALID_IDENTITY_RESPONSE', '注册身份尚未确认，本机原信息已保留');
+        if (status.role !== reservation.value.role) {
+          reservation.value = { ...reservation.value, role: status.role };
+          await saveReservation(reservation.key, reservation.value, proof);
+        }
+        if (status.role !== role) error('REGISTRATION_CONFLICT', `该姓名已在服务端预约为${status.role === 'operator' ? '运营' : '主播'}，请使用原身份继续；更正身份请联系管理员`);
         if (status.state === 'ready') {
           const data = ready(status);
           if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
@@ -129,18 +180,22 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
         }
         if (status.state !== 'reserved' || status.requiresPassword !== true) error('REGISTRATION_PENDING', '加入尚未确认，请稍后继续原操作');
       } catch (failure) {
-        // The first request may never have reached the server. Keep the same recovery operation.
         if (failure.code !== 'NOT_FOUND') throw failure;
         if (legacyRecovery) error('LEGACY_REGISTRATION_PENDING', '原注册操作尚未确认，安全重试信息已保留；请使用姓名密码登录或联系管理员恢复');
+        // Keep the same operation and secret even when changing an unsent role.
+        // A racing original request is still protected by the SQL role guard;
+        // the next roleless status reads back whichever role actually committed.
+        reservation.value = { ...reservation.value, role };
+        await saveReservation(reservation.key, reservation.value, proof);
       }
     }
-    const result = await request({ action: 'register', ...operation, password });
+    const result = await request({ action: 'register', ...proof, role, password });
     if (result.role !== role) error('REGISTRATION_CONFLICT', '注册角色尚未确认，请保留原角色并联系管理员');
     const data = ready(result);
     if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
-    // Only identifiers and the recovery secret are retained. Never persist a password.
-    try { await registry.put(reservation.key, { ...reservation.value, state: 'ready', uid: data.uid, username: data.username }); } catch {}
+    // Conditional writes keep late old-tab responses from restoring retired secrets.
+    await saveReservation(reservation.key, { ...reservation.value, state: 'ready', uid: data.uid, username: data.username }, proof);
     return data;
   }
-  return { enabled, resolve, register };
+  return { enabled, resolve, register, restoreRecovery };
 }

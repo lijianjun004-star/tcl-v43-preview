@@ -270,5 +270,5 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     if (epoch !== identityEpoch) fail('STALE_SESSION', '账号已切换');
     return rows.filter(row => row.status === 'pending').map(copy);
   }
-  return { initialize, signIn, register, redeemInvitation, signOut, changePassword, call, listAll, durableWrite, pendingOperations, uploadMedia, downloadMedia, refreshIdentity, getState: snapshot, get user() { return user ? { ...user } : null; } };
+  return { initialize, signIn, register, restoreRegistration: code => personIdentity.restoreRecovery(code), redeemInvitation, signOut, changePassword, call, listAll, durableWrite, pendingOperations, uploadMedia, downloadMedia, refreshIdentity, getState: snapshot, get user() { return user ? { ...user } : null; } };
 }

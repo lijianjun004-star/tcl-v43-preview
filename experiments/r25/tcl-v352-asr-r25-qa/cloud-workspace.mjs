@@ -95,8 +95,9 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
     const state = workflow.getState();
     container.innerHTML = `<section class="name-login cloud-workspace" data-cloud-screen="${id}"><div class="name-login-card"><span class="eyebrow">TCL · 练播房</span><h2>用姓名进入练播房</h2><p>首次使用选择主播或运营，填写姓名和自己设置的密码即可注册。以后在其他设备用同一姓名和密码登录，即可查看已提交记录与反馈。</p>
       <div class="cloud-login-tabs" role="tablist" aria-label="加入或登录"><button id="cloudJoinTab" type="button" role="tab" aria-selected="true" aria-controls="cloudJoinPanel">姓名和密码注册</button><button id="cloudNameLoginTab" type="button" role="tab" aria-selected="false" aria-controls="cloudNameLoginPanel" tabindex="-1">姓名和密码登录</button></div>
-      <section id="cloudJoinPanel" role="tabpanel" aria-labelledby="cloudJoinTab"><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">姓名</label><input id="cloudRegisterName" required maxlength="40" autocomplete="name" placeholder="填写姓名，重名可加部门"></div><div class="field"><label for="cloudRegisterPassword">自己设置密码</label><input id="cloudRegisterPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password" aria-describedby="cloudJoinPasswordHint"><small id="cloudJoinPasswordHint">8–32位，建议大小写字母加数字，首位用字母或数字。</small></div><div class="field"><label for="cloudRegisterRole">注册身份</label><select id="cloudRegisterRole"><option value="anchor">主播</option><option value="operator">运营</option></select></div><p class="muted">选择你使用练播房的身份。管理员账号由管理员配置。姓名已使用时，请直接登录；同名同事可加部门区分。</p><button type="submit" class="btn primary wide">加入练播房</button><p class="muted">如果上次加入时断网，请保留相同姓名和注册身份，并填写首次设置的密码；再次点击会继续原操作。密码不会由本页保存。</p></form></section>
+      <section id="cloudJoinPanel" role="tabpanel" aria-labelledby="cloudJoinTab"><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">姓名</label><input id="cloudRegisterName" required maxlength="40" autocomplete="name" placeholder="填写姓名，重名可加部门"></div><div class="field"><label for="cloudRegisterPassword">自己设置密码</label><input id="cloudRegisterPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password" aria-describedby="cloudJoinPasswordHint"><small id="cloudJoinPasswordHint">8–32位，建议大小写字母加数字，首位用字母或数字。</small></div><div class="field"><label for="cloudRegisterRole">注册身份</label><select id="cloudRegisterRole"><option value="anchor">主播</option><option value="operator">运营</option></select></div><p class="muted">选择你使用练播房的身份。管理员账号由管理员配置。姓名已使用时，请直接登录；同名同事可加部门区分。</p><button type="submit" class="btn primary wide">加入练播房</button><p class="muted">如果上次加入时断网，请填写首次设置的密码重试。只有服务端尚未预约时才能重新选择身份。不要清理浏览器存储；换设备或恢复信息丢失时，请联系管理员取得恢复码。密码不会由本页保存。</p></form></section>
       <section id="cloudNameLoginPanel" role="tabpanel" aria-labelledby="cloudNameLoginTab" hidden><form id="cloudLoginForm"><div class="field"><label for="cloudUsername">姓名</label><input id="cloudUsername" required maxlength="64" autocomplete="username" placeholder="填写加入时使用的姓名"></div><div class="field"><label for="cloudPassword">密码</label><input id="cloudPassword" required type="password" maxlength="128" autocomplete="current-password"></div><button type="submit" class="btn primary wide">登录练播房</button></form></section>
+      <details class="panel"><summary>注册中断 · 使用恢复码</summary><p class="muted">换设备或清理存储后注册无法继续，请联系管理员核验并取得恢复码。仅恢复原姓名和身份，不修改密码；仍需首次设置的密码。恢复码请仅交给本人，不要发到群聊。</p><form id="cloudRecoveryForm"><div class="field"><label for="cloudRecoveryCode">管理员提供的恢复码</label><input id="cloudRecoveryCode" type="password" required maxlength="4096" autocomplete="off" spellcheck="false"></div><button type="submit" class="btn soft">验证并恢复原注册</button></form></details>
       <p data-cloud-status class="cloud-status${state.error ? ' error' : ''}" role="status">${escape(state.error)}</p><p class="cloud-login-preservation">原有记录继续保留在原身份下。旧本机体验记录仍在原浏览器，尚未上传；不会按姓名自动合并。</p></div></section>`;
     const login = container.querySelector('#cloudLoginForm'), registration = container.querySelector('#cloudRegisterForm');
     const joinTab = container.querySelector('#cloudJoinTab'), loginTab = container.querySelector('#cloudNameLoginTab');
@@ -125,6 +126,22 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       event.preventDefault(); if (busy) return;
       const name = container.querySelector('#cloudUsername').value, input = container.querySelector('#cloudPassword'), password = input.value; input.value = '';
       void authenticate(login, () => workflow.signIn(name, password), '正在验证姓名和密码…');
+    });
+    container.querySelector('#cloudRecoveryForm').addEventListener('submit', async event => {
+      event.preventDefault(); if (busy) return; busy = true;
+      const input = container.querySelector('#cloudRecoveryCode'), code = input.value.trim(); input.value = '';
+      const buttons = [...container.querySelectorAll('button')]; buttons.forEach(button => { button.disabled = true; });
+      try {
+        status(container, '正在验证恢复码…');
+        const recovered = await workflow.restoreRegistration(code);
+        if (!input.isConnected) return;
+        busy = false; selectTab(true); busy = true;
+        container.querySelector('#cloudRegisterName').value = recovered.name;
+        container.querySelector('#cloudRegisterRole').value = recovered.role;
+        status(container, '原注册已恢复，请填写首次设置的密码，再点击加入练播房。');
+        container.querySelector('#cloudRegisterPassword').focus({ preventScroll: true });
+      } catch (error) { if (input.isConnected) status(container, error.message || '恢复未确认，请保留原信息后重试', true); }
+      finally { busy = false; buttons.forEach(button => { if (button.isConnected) button.disabled = false; }); }
     });
     registration.addEventListener('submit', event => {
       event.preventDefault(); if (busy) return;

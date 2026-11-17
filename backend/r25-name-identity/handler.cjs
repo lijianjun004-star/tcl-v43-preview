@@ -83,6 +83,8 @@ function createIdentityService({provider=createProvider()}={}){
    const proof=operation(body);
    if(body.role!==undefined&&!['anchor','operator'].includes(body.role))fail('INVALID_ROLE','注册身份仅支持主播或运营');
    if(body.action==='status'){
+    // A verified operation secret may discover its immutable server role.
+    // SQL 003 still rejects any explicit wrong role and finalize uses row.role.
     const row=await db('status',{...proof,...(body.name===undefined?{}:{name:normalizeName(body.name)}),...(body.role===undefined?{}:{role:body.role})});
     if(row.state==='ready')return {ok:true,data:publicReady(row)};
     const native=await recoverNative(row);

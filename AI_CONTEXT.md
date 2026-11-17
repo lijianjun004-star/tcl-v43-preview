@@ -652,3 +652,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 官方设备登录生成URL后提前退出；TTY/禁止自动开浏览器仍AUTH_FAILED，官方toolbox0.9.4诊断API_ERROR（Device Flow轮询请求失败）。独立只读复现os.networkInterfaces抛ERR_SYSTEM_ERROR（uv_interface_addresses returned Unknown system error 1）；官方轮询在HTTP/token前必读MAC，故被当前环境限制阻断。这不是用户账号状态的判断；所有会话已退出，不提供旧码。须在允许官方客户端正常运行的执行环境重新授权，未改认证代码或绕过限制。
 - 先恢复官方CloudBase管理登录→仅应用002→同函数v2 handler→真实云验收→按独立PR更新原R25 Pages，后端未验收前不得发布要求新API的前端。
 - 回退只能在保留002/v2后端恢复能力前提下回退前端；新直接注册预约存在后不得恢复001或旧handler，不删除身份/作业/媒体或浏览器记录。没有新Gemini请求、付费模型API或收费资源。
+
+## R25 注册中断恢复修复候选（2026-11-17，尚未部署）
+
+用户返回Gemini与Claude复验包后，本Codex补测确认：已预约但未完成开户时丢失本机凭据会持续NAME_PENDING，“清理存储即可恢复”不适用于该状态。用户明确“开始执行修复”。任务TCL-R25-REGISTRATION-RECOVERY-20261117，ChatGPT负责/Codex实现，内部并行复核；新增外部Gemini/Claude请求0，付费API0。
+
+- 基于f5dee44471bb54c850118f9d94e1536e24df7ddc修复；本轮实时main仍c658a4a7af6a608a22f2708d3832e67746ed8136，PR138仍草稿未合并。源码分支fix/r25-registration-recovery-20261117只作源码证据，不整体合并，其历史归档不是本轮发行包。
+- 新增003管理侧proof-only恢复和离线私有恢复码工具；不删除预约、不变原UID/角色/原生账号/密码，公开角色无执行权。网页恢复码先服务端核验再本机CAS；旧注册与旧导入迟到响应均不能覆盖新凭据。未送达预约可在保留同op/secret的前提下改选身份；已预约以服务端原角色为准。管理员核验并见ok=true/rotated=true后才能私下发码，密码仍为首次密码。
+- 最终本地前端54、后端20、ACL102、跨层集成1、Chromium原DOM7/恢复与跨页IndexedDB7、门禁162各自全通过；完整归档更新/回退保留217旧资源，总246。独立复核发现导入竞态后已修复。真实云/多连接数据库/手机/大陆网络未验收。
+- 版本r25-registration-recovery-20261117；ZIP365363d043f6aa88f43746373b9a1842c00d56e0a6b378073fc5b46eba3cc034，B64b7de6c8cc7e5fd718156af495711c6b122438a623674bc6c67ded20c44e905fb；29文件相对main只改五项，原app/ASR/旧数据不变。详见evidence/r25-registration-recovery/README.md与release-identity.json。
+- 后续按002→003→原身份函数→真实云验收→独立CI→仅一个B64归档的发行PR顺序。不得在003后重跑001/002覆盖恢复函数；前端回退保留兼容后台。按本次用户交接明确要求，正式合并或发布前交精确变更与验证结果确认；本轮未做云端写入、合并或发布。

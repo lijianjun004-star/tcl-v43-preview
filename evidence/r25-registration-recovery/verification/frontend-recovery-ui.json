@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "recovery code input is masked and excludes autofill",
+    "successful recovery clears secret input, prefills canonical name and role, requires original password without login",
+    "failed recovery stays a failure, preserves form identity and never registers or signs in",
+    "second browser page imports server-validated recovery into actual shared IndexedDB",
+    "late response from old browser page cannot overwrite rotated secret or allocate another operation",
+    "server role mismatch rejects recovery in browser",
+    "delayed older recovery import across browser pages cannot overwrite a newer validated code"
+  ],
+  "scope": "Real Chromium DOM and cross-page IndexedDB; synthetic identity responses, no cloud calls"
+}

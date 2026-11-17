@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "registration has no invitation field",
+    "operator role submitted directly without invite",
+    "admin dashboard requests submissions and labels scope",
+    "operator dashboard requests submissions and labels scope",
+    "missing recipient cannot submit",
+    "ambiguous recipient cannot submit",
+    "unique exact operator resolves stable uid and requires server receipt"
+  ],
+  "scope": "Chromium DOM, synthetic workflow; no cloud calls"
+}

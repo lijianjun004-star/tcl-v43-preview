@@ -13,6 +13,7 @@ const root=path.resolve(__dirname,'..');
 const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
 const md5=v=>crypto.createHash('md5').update(v).digest('hex');
 const migration=fs.readFileSync(path.join(root,'002-direct-registration.sql'),'utf8');
+const recoveryMigration=fs.readFileSync(path.join(root,'003-registration-recovery.sql'),'utf8');
 let db,legacyReservation,legacySnapshot,legacyInvite,service;
 const users=new Map(),calls=[],dbCalls=[];
 let serial=0,createBehavior=null,finalizeFailure=false;
@@ -64,12 +65,12 @@ before(async()=>{
  legacyInvite=await invite();legacyReservation=request('升级前未完成');delete legacyReservation.role;legacyReservation.inviteCode=legacyInvite.code;
  const old=await sqlCall('reserve',{...proof(legacyReservation),name:legacyReservation.name,inviteHash:md5(legacyInvite.code)});assert.equal(old.ok,true,JSON.stringify(old));
  legacySnapshot=(await db.query("SELECT row_to_json(r) row FROM public.r25wf_name_registrations r WHERE operation_id=$1",[legacyReservation.operationId])).rows[0].row;
- await db.exec(migration);service=createIdentityService({provider});
+ await db.exec(migration);await db.exec(recoveryMigration);service=createIdentityService({provider});
 });
 after(async()=>{await db?.close();});
 test('upgrade and rerun preserve legacy users, aliases and original invite reservation',async()=>{
  assert.deepEqual((await db.query("SELECT row_to_json(r) row FROM public.r25wf_name_registrations r WHERE operation_id=$1",[legacyReservation.operationId])).rows[0].row,legacySnapshot);
- await db.exec(migration);
+ await db.exec(migration);await db.exec(recoveryMigration);
  assert.deepEqual((await db.query("SELECT uid,role,display_name FROM public.r25wf_users ORDER BY uid")).rows,[{uid:'legacy-admin',role:'admin',display_name:'已有管理员'},{uid:'legacy-anchor',role:'anchor',display_name:'旧主播'},{uid:'legacy-operator',role:'operator',display_name:'旧运营'}]);
  assert.equal((await db.query('SELECT count(*)::int n FROM public.r25wf_name_aliases')).rows[0].n,3);
 });
@@ -84,7 +85,7 @@ test('direct anchor and operator registration need no invitation and return boun
   assert.deepEqual(await service.handle({...req,password:'Different123!'}),r,'ready replay retains UID without resetting native password');
   assert.deepEqual(await service.handle(status(req)),r);assert.equal(calls.filter(x=>x.method==='create').length,count);
   expectError(await service.handle({...req,role:role==='anchor'?'operator':'anchor'}),'REGISTRATION_CONFLICT');
-  expectError(await service.handle({...status(req),role:undefined}),'REGISTRATION_CONFLICT');
+  assert.deepEqual(await service.handle({...status(req),role:undefined}),r,'proof-authenticated status learns canonical role without changing it');
   expectError(await service.handle({...status(req),role:role==='anchor'?'operator':'anchor'}),'REGISTRATION_CONFLICT');
  }
 });

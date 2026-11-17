@@ -1,0 +1,28 @@
+✔ upgrade and rerun preserve legacy users, aliases and original invite reservation (3137.854107ms)
+✔ direct anchor and operator registration need no invitation and return bound role (49.45529ms)
+✔ role whitelist and privileged fields fail before any native account creation (10.104711ms)
+✔ wrong secret/name/role cannot query or adopt pending native identity (16.309149ms)
+✔ native create timeout and finalization outage recover same UID without password replay (15.815587ms)
+✔ native marker mismatch blocks finalization; existing native UID cannot be adopted (9.560153ms)
+✔ legacy invitation reservation survives upgrade and resumes without role (22.300693ms)
+✔ legacy reservation cannot convert to direct role or bypass revoked inviter (11.97289ms)
+✔ normalized name and legacy username namespaces stay unique (16.947596ms)
+✔ service-only function and private tables reject anon and authenticated (5.464782ms)
+✔ persistent registration quotas enforce per-source and global ceilings (141.223721ms)
+✔ HTTP rejects untrusted origins and maps invalid role without leaking secrets (1.447055ms)
+✔ lost pending proof rotates once and resumes original reservation, role, native username and marker (3019.528775ms)
+✔ pending native-created recovery uses same UID without recreating or resetting native password (12.474985ms)
+✔ stale snapshot, wrong name/role/id and second rotation cannot replace recovery proof (13.029026ms)
+✔ a finalization winning before rotation blocks stale recovery, preserving ready account (11.576083ms)
+✔ roleless status safely discovers server role, while wrong-role reserve/status/finalize stay blocked (11.495873ms)
+✔ legacy invite reservations and ready users cannot be rotated; public roles cannot execute recovery (10.282944ms)
+✔ 003 replay preserves all reservations and rejects raw secrets in administrative SQL payload (5.628504ms)
+✔ offline preparation writes private portable code and hash-only SQL, never a secret to stdout (112.474564ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3611.054683

@@ -61,6 +61,8 @@ try{
  await sqlFile('backend/r25-name-identity/002-direct-registration.sql');
  // Migration must also be safe to replay during a recovered deployment.
  await sqlFile('backend/r25-name-identity/002-direct-registration.sql');
+ await sqlFile('backend/r25-name-identity/003-registration-recovery.sql');
+ await sqlFile('backend/r25-name-identity/003-registration-recovery.sql');
  check('migration_preserves_existing_profiles',JSON.stringify(before)===JSON.stringify((await db.query('SELECT uid,role,display_name FROM public.r25wf_users ORDER BY uid')).rows));
  ok('legacy_pending_status_after_migration',await identity('status',legacyProof));
  const legacyReady=ok('legacy_pending_finalize_after_migration',await identity('finalize',{...legacyProof,providerUid:'legacy-pending',nativeUsername:legacy.username,marker:legacy.marker}));

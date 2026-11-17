@@ -1,0 +1,598 @@
+{
+  "scope": "Actual PGlite PostgreSQL/RLS execution with synthetic Auth claims and Storage metadata; not real CloudBase/Auth/Storage API acceptance",
+  "cloudCalls": 0,
+  "actualNativeAuth": false,
+  "actualStorageApi": false,
+  "startedAt": "2026-11-17T14:17:22.581Z",
+  "checks": [
+    {
+      "name": "legacy_invite_create",
+      "pass": true
+    },
+    {
+      "name": "legacy_pending_before_migration",
+      "pass": true
+    },
+    {
+      "name": "migration_preserves_existing_profiles",
+      "pass": true
+    },
+    {
+      "name": "legacy_pending_status_after_migration",
+      "pass": true
+    },
+    {
+      "name": "legacy_pending_finalize_after_migration",
+      "pass": true
+    },
+    {
+      "name": "legacy_pending_preserves_invited_role",
+      "pass": true
+    },
+    {
+      "name": "reserve_operator-A",
+      "pass": true
+    },
+    {
+      "name": "finalize_operator-A",
+      "pass": true
+    },
+    {
+      "name": "bound_role_operator-A",
+      "pass": true
+    },
+    {
+      "name": "reserve_operator-B",
+      "pass": true
+    },
+    {
+      "name": "finalize_operator-B",
+      "pass": true
+    },
+    {
+      "name": "bound_role_operator-B",
+      "pass": true
+    },
+    {
+      "name": "reserve_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "finalize_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "bound_role_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "reserve_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "finalize_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "bound_role_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "public_admin_role_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ROLE",
+          "message": "注册身份仅支持主播或运营"
+        }
+      }
+    },
+    {
+      "name": "admin_role_failure_reserves_nothing",
+      "pass": true
+    },
+    {
+      "name": "direct_pending_reserved",
+      "pass": true
+    },
+    {
+      "name": "pending_role_cannot_change",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "REGISTRATION_CONFLICT",
+          "message": "此操作编号已用于其他姓名、身份或注册方式"
+        }
+      }
+    },
+    {
+      "name": "status_role_cannot_change",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "REGISTRATION_CONFLICT",
+          "message": "开户身份与原尝试不一致，请恢复原身份"
+        }
+      }
+    },
+    {
+      "name": "finalize_role_cannot_change",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "REGISTRATION_CONFLICT",
+          "message": "开户身份与原尝试不一致，请恢复原身份"
+        }
+      }
+    },
+    {
+      "name": "wrong_secret_cannot_recover",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_OPERATION_SECRET",
+          "message": "无法恢复此开户尝试，请使用原设备或联系管理员"
+        }
+      }
+    },
+    {
+      "name": "duplicate_legacy_backfill",
+      "pass": true
+    },
+    {
+      "name": "duplicate_legacy_not_merged",
+      "pass": true
+    },
+    {
+      "name": "duplicate_legacy_name_does_not_resolve",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_CONFLICT",
+          "message": "姓名重名，请加部门或编号，并联系管理员核对旧账号"
+        }
+      }
+    },
+    {
+      "name": "duplicate_legacy_name_cannot_reregister",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NAME_CONFLICT",
+          "message": "姓名重名，请加部门或编号"
+        }
+      }
+    },
+    {
+      "name": "anchor_reads_authoritative_operators",
+      "pass": true
+    },
+    {
+      "name": "duplicate_legacy_options_remain_ambiguous",
+      "pass": true
+    },
+    {
+      "name": "active_operators_have_stable_uid",
+      "pass": true
+    },
+    {
+      "name": "anchors_not_offered_as_recipients",
+      "pass": true
+    },
+    {
+      "name": "anchor_uid_cannot_receive",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PAYLOAD",
+          "message": "请选择有效的接收运营"
+        }
+      }
+    },
+    {
+      "name": "disabled_recipient_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PAYLOAD",
+          "message": "请选择有效的接收运营"
+        }
+      }
+    },
+    {
+      "name": "disabled_operator_list",
+      "pass": true
+    },
+    {
+      "name": "disabled_operator_omitted",
+      "pass": true
+    },
+    {
+      "name": "unsubmitted_media_denied_to_operator",
+      "pass": true
+    },
+    {
+      "name": "unsubmitted_media_denied_to_admin",
+      "pass": true
+    },
+    {
+      "name": "anchor_submits_to_operator_A",
+      "pass": true
+    },
+    {
+      "name": "receipt_stores_auth_anchor_and_receiver",
+      "pass": true
+    },
+    {
+      "name": "anchor_B_submits_to_operator_B",
+      "pass": true
+    },
+    {
+      "name": "list_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "default_list_scope_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "list_omits_snapshot_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "list_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "default_list_scope_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "list_omits_snapshot_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "list_operator-A",
+      "pass": true
+    },
+    {
+      "name": "default_list_scope_operator-A",
+      "pass": true
+    },
+    {
+      "name": "list_omits_snapshot_operator-A",
+      "pass": true
+    },
+    {
+      "name": "list_operator-B",
+      "pass": true
+    },
+    {
+      "name": "default_list_scope_operator-B",
+      "pass": true
+    },
+    {
+      "name": "list_omits_snapshot_operator-B",
+      "pass": true
+    },
+    {
+      "name": "list_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "default_list_scope_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "list_omits_snapshot_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "get_authorized_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "get_keeps_content_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "media_authorized_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "get_authorized_operator-A",
+      "pass": true
+    },
+    {
+      "name": "get_keeps_content_operator-A",
+      "pass": true
+    },
+    {
+      "name": "media_authorized_operator-A",
+      "pass": true
+    },
+    {
+      "name": "get_authorized_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "get_keeps_content_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "media_authorized_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "get_denied_anchor-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "feedback_read_denied_anchor-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "feedback_write_denied_anchor-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "media_denied_anchor-B",
+      "pass": true
+    },
+    {
+      "name": "get_denied_operator-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "feedback_read_denied_operator-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "feedback_write_denied_operator-B",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "media_denied_operator-B",
+      "pass": true
+    },
+    {
+      "name": "receiver_feedback",
+      "pass": true
+    },
+    {
+      "name": "admin_feedback_for_another_receiver",
+      "pass": true
+    },
+    {
+      "name": "feedback_list_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "feedback_visible_anchor-A",
+      "pass": true
+    },
+    {
+      "name": "feedback_list_operator-A",
+      "pass": true
+    },
+    {
+      "name": "feedback_visible_operator-A",
+      "pass": true
+    },
+    {
+      "name": "feedback_list_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "feedback_visible_admin-existing",
+      "pass": true
+    },
+    {
+      "name": "anchor_cannot_write_feedback",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "仅接收运营可以写反馈"
+        }
+      }
+    },
+    {
+      "name": "retry_cannot_change_receiver",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "IDEMPOTENCY_CONFLICT",
+          "message": "同一operation_id不能提交不同内容"
+        }
+      }
+    },
+    {
+      "name": "even_privileged_update_cannot_change_receiver",
+      "pass": true,
+      "detail": {
+        "code": "P0001",
+        "message": "CONFLICT|已提交内容不可修改或删除"
+      }
+    },
+    {
+      "name": "stored_receiver_unchanged",
+      "pass": true
+    },
+    {
+      "name": "authenticated_direct_table_denied_users",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_users"
+      }
+    },
+    {
+      "name": "authenticated_direct_table_denied_submissions",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_submissions"
+      }
+    },
+    {
+      "name": "authenticated_direct_table_denied_submission_media",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_submission_media"
+      }
+    },
+    {
+      "name": "authenticated_direct_table_denied_feedback",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_feedback"
+      }
+    },
+    {
+      "name": "authenticated_direct_table_denied_name_registrations",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_name_registrations"
+      }
+    },
+    {
+      "name": "authenticated_direct_table_denied_name_aliases",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for table r25wf_name_aliases"
+      }
+    },
+    {
+      "name": "authenticated_identity_admin_rpc_denied",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for function r25wf_name_identity_service"
+      }
+    },
+    {
+      "name": "anon_business_rpc_denied",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "permission denied for function r25wf_api"
+      }
+    },
+    {
+      "name": "anon_private_media_denied",
+      "pass": true
+    },
+    {
+      "name": "disabled_receiver_business_denied",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "ACCOUNT_DISABLED",
+          "message": "账号已停用，请联系管理员"
+        }
+      }
+    },
+    {
+      "name": "disabled_receiver_media_denied",
+      "pass": true
+    },
+    {
+      "name": "operator_assignment_create",
+      "pass": true
+    },
+    {
+      "name": "anchor_assignment_join",
+      "pass": true
+    },
+    {
+      "name": "assignment_cannot_redirect_to_other_operator",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "接收运营必须是该作业发布者"
+        }
+      }
+    },
+    {
+      "name": "assignment_uses_original_publisher",
+      "pass": true
+    },
+    {
+      "name": "assignment_receiver_is_server_set",
+      "pass": true
+    }
+  ],
+  "sourceSha256": {
+    "backend/r25-cloudbase/schema.sql": "576c6b7137e0fe89113597773b675b56b01baacd8c62a4b2d4c32b559f8b2f4e",
+    "backend/r25-name-identity/001-name-identity.sql": "0cea86c37538ee6212dad529434b207a8768f24139b8773ecac063c737f1ad4c",
+    "backend/r25-name-identity/002-direct-registration.sql": "5f48cfd20344b1792eccad0d8730d01449361852519f5be62ebdfd1ca722fee7",
+    "backend/r25-name-identity/003-registration-recovery.sql": "f9fb2590f780c580ed3fb7e66ef71057bb6dbbfc2c051aab45a48fd69145ed85",
+    "backend/r25-cloudbase/media-storage.sql": "5b29f8df5c813191241ca834eff94c677b16b3e8ed3d0cec5c2bd36529c51d1f",
+    "backend/r25-cloudbase/media-storage-insert-compat.sql": "2f6a624653ce2ea9466369fe649e8dc0c5b9d6e40171baae8e9af0efa77c2379"
+  },
+  "status": "PASS",
+  "finishedAt": "2026-11-17T14:17:24.828Z",
+  "passed": 102,
+  "total": 102
+}
