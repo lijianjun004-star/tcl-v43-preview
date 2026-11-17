@@ -1630,6 +1630,11 @@ class R25CloudUpdateTests(unittest.TestCase):
                 'cloud-workflow.mjs', 'cloud-workspace.mjs', 'style.css',
                 'name-identity.mjs', 'static-manifest.json'}),
             R25_NAME_INVITE_ADDED_FILES=frozenset({'name-identity.mjs'}),
+            R25_DIRECT_ARCHIVE_B64_SHA='', R25_DIRECT_ARCHIVE_SHA='',
+            R25_DIRECT_ASSET_HASHES={}, R25_DIRECT_FILE_COUNT=len(self.cloud_resources) + 1,
+            R25_REGISTRATION_RECOVERY_ARCHIVE_B64_SHA='', R25_REGISTRATION_RECOVERY_ARCHIVE_SHA='',
+            R25_REGISTRATION_RECOVERY_ASSET_HASHES={},
+            R25_REGISTRATION_RECOVERY_FILE_COUNT=len(self.cloud_resources) + 1,
             R25_BASELINE_WORKFLOW_SHA=gate.sha256(self.before.encode()),
             LAB_BASELINE_ZIP_SHA256=gate.sha256(self.zipbytes),
             R25_BASELINE_FILES=len(self.baseline),
@@ -1649,10 +1654,23 @@ class R25CloudUpdateTests(unittest.TestCase):
                                          if name.endswith(('.js', '.mjs')) else b'name fixture')
         self.name_resources['name-identity.mjs'] = b'export const nameIdentity = true;'
         self.name_encoded = self.freeze(self.name_resources, name_invite=True)
+        self.direct_resources = dict(self.name_resources)
+        for name in ('app-config.json', 'cloud-workflow.mjs', 'cloud-workspace.mjs', 'name-identity.mjs'):
+            self.direct_resources[name] = (b'export const directRegistration = 5;'
+                                           if name.endswith('.mjs') else b'direct fixture')
+        self.direct_encoded = self.freeze(self.direct_resources, direct=True)
+        self.registration_resources = dict(self.direct_resources)
+        for name in ('cloud-workflow.mjs', 'cloud-workspace.mjs', 'name-identity.mjs'):
+            self.registration_resources[name] = b'export const registrationRecovery = 6;'
+        self.registration_encoded = self.freeze(self.registration_resources, registration_recovery=True)
 
     def freeze(self, resources, cloud=True, version=None, update_assets=True,
-               recovery=False, name_invite=False):
-        if name_invite:
+               recovery=False, name_invite=False, direct=False, registration_recovery=False):
+        if registration_recovery:
+            prefix, default_version = 'R25_REGISTRATION_RECOVERY_', gate.R25_REGISTRATION_RECOVERY_VERSION
+        elif direct:
+            prefix, default_version = 'R25_DIRECT_', gate.R25_DIRECT_VERSION
+        elif name_invite:
             prefix, default_version = 'R25_NAME_INVITE_', gate.R25_NAME_INVITE_VERSION
         elif recovery:
             prefix, default_version = 'R25_RECOVERY_', gate.R25_RECOVERY_VERSION
@@ -2003,6 +2021,172 @@ class R25CloudUpdateTests(unittest.TestCase):
             with mock.patch.object(gate, 'stage_r25', changing_stage):
                 with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
                     self.verify(self.recovery_encoded, self.name_encoded)
+
+
+    def test_direct_five_snapshots_remain_readable(self):
+        for encoded, resources in ((self.old_encoded, self.old_resources),
+                                   (self.cloud_encoded, self.cloud_resources),
+                                   (self.recovery_encoded, self.recovery_resources),
+                                   (self.name_encoded, self.name_resources),
+                                   (self.direct_encoded, self.direct_resources)):
+            self.assertEqual(gate.r25_resource_bytes(encoded), resources)
+
+    def test_direct_exact_adjacent_update_reverse_preserve_older_assets(self):
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            update = self.verify(self.name_encoded, self.direct_encoded)
+            rollback = self.verify(self.direct_encoded, self.name_encoded)
+        self.assertEqual(update['direction'], 'update')
+        self.assertEqual(rollback['direction'], 'rollback')
+        for result in (update, rollback):
+            self.assertEqual(result['protected_assets'], len(self.baseline))
+            self.assertEqual(result['total_assets'], len(self.baseline) + len(self.name_resources))
+            self.assertEqual(result['changed'], sorted(gate.R25_DEST + '/' + name
+                                                       for name in gate.R25_DIRECT_CHANGED_FILES))
+
+    def test_direct_cannot_skip_older_snapshots_or_repeat_itself(self):
+        for encoded in (self.old_encoded, self.cloud_encoded, self.recovery_encoded, self.direct_encoded):
+            for old, new in ((encoded, self.direct_encoded), (self.direct_encoded, encoded)):
+                with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                    self.verify(old, new)
+
+    def test_direct_cannot_ship_backend_or_remove_resources_when_repinned(self):
+        for addition in (True, False):
+            resources = dict(self.direct_resources)
+            if addition:
+                resources['backend/account-create.js'] = b'export const backend = true;'
+            else:
+                del resources['whisper-worker.mjs']
+            gate.R25_DIRECT_FILE_COUNT = len(resources)
+            encoded = self.freeze(resources, direct=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+                self.verify(self.name_encoded, encoded)
+
+    def test_direct_cannot_rewrite_app_asr_sdk_or_style_even_when_repinned(self):
+        for name in ('app.js', 'whisper-worker.mjs', 'asr-normalize.mjs',
+                     'cloudbase-adapter.mjs', 'vendor/cloudbase/cloudbase-sdk.mjs', 'style.css'):
+            resources = dict(self.direct_resources)
+            resources[name] = b'export const unreviewed = true;'
+            encoded = self.freeze(resources, direct=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+                self.verify(self.name_encoded, encoded)
+
+    def test_direct_requires_every_reviewed_change(self):
+        for name in ('app-config.json', 'cloud-workflow.mjs', 'cloud-workspace.mjs', 'name-identity.mjs'):
+            resources = dict(self.direct_resources)
+            resources[name] = self.name_resources[name]
+            encoded = self.freeze(resources, direct=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+                self.verify(self.name_encoded, encoded)
+
+    def test_pending_direct_pins_preserve_all_four_earlier_snapshots(self):
+        with mock.patch.object(gate, 'R25_DIRECT_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            for encoded in (self.old_encoded, self.cloud_encoded, self.recovery_encoded, self.name_encoded):
+                gate.r25_resource_bytes(encoded)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.direct_encoded)
+
+    def test_direct_edge_checks_old_217_bytes_and_protected_zip(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'protected site.zip'):
+            self.verify(self.name_encoded, self.direct_encoded, zipbytes=b'changed protected bytes')
+        original = gate.stage_r25
+        def corrupt_older(site, archive):
+            result = original(site, archive)
+            if Path(site).name == '_updated_site':
+                (Path(site) / 'index.html').write_bytes(b'corrupted older root')
+            return result
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            with mock.patch.object(gate, 'stage_r25', corrupt_older):
+                with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
+                    self.verify(self.name_encoded, self.direct_encoded)
+
+    def test_registration_recovery_all_six_frozen_snapshots_remain_readable(self):
+        for encoded, resources in ((self.old_encoded, self.old_resources),
+                                   (self.cloud_encoded, self.cloud_resources),
+                                   (self.recovery_encoded, self.recovery_resources),
+                                   (self.name_encoded, self.name_resources),
+                                   (self.direct_encoded, self.direct_resources),
+                                   (self.registration_encoded, self.registration_resources)):
+            self.assertEqual(gate.r25_resource_bytes(encoded), resources)
+
+    def test_registration_recovery_update_from_deployed_name_and_candidate_direct_and_reverse(self):
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            for previous, changed in ((self.name_encoded, gate.R25_REGISTRATION_RECOVERY_FROM_NAME_CHANGED_FILES),
+                                      (self.direct_encoded, gate.R25_REGISTRATION_RECOVERY_CHANGED_FILES)):
+                update = self.verify(previous, self.registration_encoded)
+                rollback = self.verify(self.registration_encoded, previous)
+                self.assertEqual(update['direction'], 'update')
+                self.assertEqual(rollback['direction'], 'rollback')
+                for result in (update, rollback):
+                    self.assertEqual(result['protected_assets'], len(self.baseline))
+                    self.assertEqual(result['total_assets'], len(self.baseline) + len(self.name_resources))
+                    self.assertEqual(result['changed'], sorted(gate.R25_DEST + '/' + name for name in changed))
+
+    def test_registration_recovery_rejects_unrelated_and_repeated_snapshot_pairs(self):
+        for encoded in (self.old_encoded, self.cloud_encoded, self.recovery_encoded, self.registration_encoded):
+            for old, new in ((encoded, self.registration_encoded), (self.registration_encoded, encoded)):
+                with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                    self.verify(old, new)
+
+    def test_registration_recovery_rejects_unpinned_bytes_and_wrong_zip_pin(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'encoded archive hash'):
+            gate.r25_resource_bytes(self.registration_encoded + b' ')
+        with mock.patch.object(gate, 'R25_REGISTRATION_RECOVERY_ARCHIVE_SHA', 'f' * 64):
+            with self.assertRaisesRegex(gate.GateFailure, 'ZIP archive hash'):
+                gate.r25_resource_bytes(self.registration_encoded)
+
+    def test_registration_recovery_cannot_add_backend_or_remove_resources_when_repinned(self):
+        for addition in (True, False):
+            resources = dict(self.registration_resources)
+            if addition:
+                resources['backend/recovery-token.js'] = b'export const forbidden = true;'
+            else:
+                del resources['whisper-worker.mjs']
+            gate.R25_REGISTRATION_RECOVERY_FILE_COUNT = len(resources)
+            encoded = self.freeze(resources, registration_recovery=True)
+            for previous in (self.name_encoded, self.direct_encoded):
+                with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+                    self.verify(previous, encoded)
+
+    def test_registration_recovery_cannot_rewrite_unreviewed_product_bytes_when_repinned(self):
+        for name in ('app.js', 'app-config.json', 'whisper-worker.mjs', 'asr-normalize.mjs',
+                     'cloudbase-adapter.mjs', 'vendor/cloudbase/cloudbase-sdk.mjs', 'style.css'):
+            resources = dict(self.registration_resources)
+            resources[name] = b'export const unreviewed = true;'
+            encoded = self.freeze(resources, registration_recovery=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+                self.verify(self.direct_encoded, encoded)
+
+    def test_registration_recovery_requires_all_four_reviewed_changes(self):
+        for name in ('cloud-workflow.mjs', 'cloud-workspace.mjs', 'name-identity.mjs'):
+            resources = dict(self.registration_resources)
+            resources[name] = self.direct_resources[name]
+            encoded = self.freeze(resources, registration_recovery=True)
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+                self.verify(self.direct_encoded, encoded)
+
+    def test_pending_registration_recovery_pins_do_not_affect_earlier_snapshots(self):
+        with mock.patch.object(gate, 'R25_REGISTRATION_RECOVERY_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            for encoded in (self.old_encoded, self.cloud_encoded, self.recovery_encoded,
+                            self.name_encoded, self.direct_encoded):
+                gate.r25_resource_bytes(encoded)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.registration_encoded)
+
+    def test_registration_recovery_checks_protected_zip_workflow_and_older_assets(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'protected site.zip'):
+            self.verify(self.name_encoded, self.registration_encoded, zipbytes=b'changed protected bytes')
+        with self.assertRaisesRegex(gate.GateFailure, 'exact existing Pages workflow'):
+            self.verify(self.name_encoded, self.registration_encoded, workflow=self.workflow + '#changed')
+        original = gate.stage_r25
+        def corrupt_older(site, archive):
+            result = original(site, archive)
+            if Path(site).name == '_updated_site':
+                (Path(site) / 'index.html').write_bytes(b'corrupted older root')
+            return result
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            with mock.patch.object(gate, 'stage_r25', corrupt_older):
+                with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
+                    self.verify(self.name_encoded, self.registration_encoded)
 
 
 if __name__=='__main__':
