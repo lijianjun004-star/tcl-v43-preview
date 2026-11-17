@@ -1,3 +1,4 @@
+import { createNameIdentityClient, validateJoinPassword } from './name-identity.mjs';
 // CloudBase credentials stay inside the official SDK. Business calls never contain passwords.
 const copy = value => JSON.parse(JSON.stringify(value));
 export class WorkflowError extends Error {
@@ -36,8 +37,9 @@ export function createOperationStore({ envId, uid, indexedDB = globalThis.indexe
   };
 }
 
-export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFactory = createOperationStore, businessTransport, onIdentityChange = async () => {} } = {}) {
+export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFactory = createOperationStore, businessTransport, nameIdentity, onIdentityChange = async () => {} } = {}) {
   let sdkApp, sdkReady, user = null, session = null, identityEpoch = 0, operationStore;
+  const personIdentity=nameIdentity||createNameIdentityClient({config:config.nameIdentity||{},envId:config.envId});
   const activeWrites = new Map();let nativeAuthChain=Promise.resolve(),nativeMutationDepth=0,authSubscription;
   const mutateNativeAuth=task=>{const execute=async()=>{nativeMutationDepth++;try{return await task();}finally{nativeMutationDepth--;}};const run=nativeAuthChain.then(execute,execute);nativeAuthChain=run.then(()=>{},()=>{});return run;};
   const state = { configured: isCloudConfigured(config), user: null, error: '', initialized: false, capabilities: { media: false } };
@@ -65,31 +67,39 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     return envelope.data;
   }
   function onNativeAuthEvent(event,next){
-    if(!state.initialized||nativeMutationDepth||!user)return;
+    if(!state.initialized||!user)return;
     if(event!=='SIGNED_OUT'&&(!next?.uid||next.uid===user.uid))return;
     const owner=user.uid,epoch=identityEpoch;
     // Events can be delivered late after this page's own login. Re-read before clearing a newer session.
     void readSession().then(async actual=>{
-      if(nativeMutationDepth||epoch!==identityEpoch||user?.uid!==owner)return;
-      if(!actual||actual.uid!==owner){++identityEpoch;activeWrites.clear();await setIdentity(null,null);state.error='账号会话已在其他页面改变，请重新登录';}
+      if(epoch!==identityEpoch||user?.uid!==owner)return;
+      if(!actual||actual.uid!==owner){++identityEpoch;activeWrites.clear();await setIdentity(null,null,'账号会话已在其他页面改变，请重新登录');}
     }).catch(()=>{});
   }
   async function readSession() {
     // SDK-specific response normalization belongs in the official adapter.
     return sdkApp.__r25Auth.getSession();
   }
-  async function setIdentity(next, currentSession) {
-    const old = user?.uid, oldRole = user?.role;
-    user = next; session = currentSession || null; state.user = next; state.error = '';if(!next)state.capabilities={media:false};
+  async function setIdentity(next, currentSession, errorMessage = '') {
+    const old = user?.uid, oldRole = user?.role, epoch = identityEpoch;
+    user = next; session = currentSession || null; state.user = next; state.error = errorMessage;if(!next)state.capabilities={media:false};
     if (old !== next?.uid || oldRole !== next?.role) {
       if (operationStore) await operationStore.close?.();
       operationStore = next ? operationStoreFactory({ envId: config.envId, uid: next.uid }) : null;
-      await onIdentityChange(next ? { ...next } : null);
+      const isCurrent=async()=>{
+        if(epoch!==identityEpoch||user?.uid!==next?.uid)return false;
+        if(!next)return true;
+        const actual=await readSession();
+        return epoch===identityEpoch&&user?.uid===next.uid&&actual?.uid===next.uid;
+      };
+      try { await onIdentityChange(next ? { ...next } : null,{isCurrent}); }
+      catch(error){if(next&&epoch===identityEpoch&&user?.uid===next.uid){++identityEpoch;await setIdentity(null,null,error.message||'姓名登录会话已改变，请重新登录');}throw error;}
     }
   }
-  async function acceptSession(epoch) {
+  async function acceptSession(epoch, expectedUid) {
     const current = await readSession();
     if (epoch !== identityEpoch) fail('STALE_SESSION', '登录状态已改变');
+    if (expectedUid && current?.uid !== expectedUid) fail('IDENTITY_MISMATCH', '姓名对应的登录身份尚未确认，请重新登录');
     if (!current?.uid) { await setIdentity(null, null); return null; }
     const data = await raw('me',{},undefined,current.uid); const profile = data?.user ? { ...data.user } : null;
     if (profile && data.registered === false && profile.role == null) profile.role = 'pending';
@@ -98,10 +108,17 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
       fail('IDENTITY_MISMATCH', '云端账号身份未验证，请退出后重新登录');
     }
     if (epoch !== identityEpoch) fail('STALE_SESSION', '登录状态已改变');
+    await verifyAcceptedSession(current.uid,epoch);
     state.capabilities={media:data.capabilities?.privateMedia===true};
     await setIdentity({ ...profile, uid:String(profile.uid), displayName: profile.displayName || profile.username || '已登录用户' }, current);
+    await verifyAcceptedSession(current.uid,epoch);
     if(epoch!==identityEpoch||user?.uid!==current.uid)fail('STALE_SESSION','登录状态已改变，旧身份应用结果已忽略');
     return user;
+  }
+  async function verifyAcceptedSession(owner,epoch){
+    const actual=await readSession();
+    if(epoch!==identityEpoch)fail('STALE_SESSION','登录状态已改变，旧身份结果已忽略');
+    if(actual?.uid!==owner){const message='姓名登录会话已在其他页面改变，请重新登录';++identityEpoch;activeWrites.clear();await setIdentity(null,null,message);fail('STALE_SESSION',message);}
   }
   async function initialize() {
     if (!state.configured) { state.initialized = true; return snapshot(); }
@@ -111,17 +128,34 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     state.initialized = true; return snapshot();
   }
   async function signIn(username, password) {
-    if (!username?.trim() || !password) fail('CREDENTIALS_REQUIRED', '请输入账号和密码');
+    if (!username?.trim() || !password) fail('CREDENTIALS_REQUIRED', '请输入姓名和密码');
     const epoch = ++identityEpoch;activeWrites.clear();
     await setIdentity(null, null);
     return mutateNativeAuth(async()=>{
       if(epoch!==identityEpoch)fail('STALE_SESSION','登录请求已被新的账号操作替代');
-      await sdk();await sdkApp.__r25Auth.signIn(username.trim(),password);
+      const resolved=await personIdentity.resolve(username.trim());
+      if(epoch!==identityEpoch)fail('STALE_SESSION','登录请求已被新的姓名操作替代');
+      await sdk();await sdkApp.__r25Auth.signIn(resolved.username,password);
       if(epoch!==identityEpoch)fail('STALE_SESSION','登录请求已被新的账号操作替代');
-      return acceptSession(epoch);
+      if(resolved.uid&&(await readSession())?.uid!==resolved.uid)fail('IDENTITY_MISMATCH','姓名对应的登录身份尚未确认，请重新登录');
+      return acceptSession(epoch,resolved.uid);
     });
   }
-  async function register() { fail('MANAGED_ACCOUNTS', '本环境请由管理员开通正式账号，再登录并绑定邀请'); }
+  async function register({name,username,password,inviteCode,invitationCode}={}) {
+    const epoch=++identityEpoch;activeWrites.clear();await setIdentity(null,null);
+    return mutateNativeAuth(async()=>{
+      if(epoch!==identityEpoch)fail('STALE_SESSION','加入请求已被新的操作替代');
+      const registered=await personIdentity.register({name:name||username,password,inviteCode:inviteCode||invitationCode});
+      if(epoch!==identityEpoch)fail('STALE_SESSION','加入结果已保留，请使用刚才的姓名和密码登录');
+      await sdk();await sdkApp.__r25Auth.signIn(registered.username,password);
+      if(epoch!==identityEpoch)fail('STALE_SESSION','登录状态已改变');
+      const current=await readSession();
+      if(!current?.uid||(registered.uid&&current.uid!==registered.uid))fail('IDENTITY_MISMATCH','加入后的身份尚未确认，请使用刚才的姓名和密码重新登录');
+      const profile=await acceptSession(epoch,registered.uid);
+      if(profile?.role==='pending')fail('INVITE_REQUIRED','姓名已建立，但邀请尚未绑定完成，请稍后继续原加入操作');
+      return profile;
+    });
+  }
   async function redeemInvitation(code, displayName) {
     await sdk(); const current = await readSession();
     if (!current?.uid) fail('AUTH_REQUIRED', '请先使用正式账号登录');
@@ -131,7 +165,7 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
   }
   async function changePassword(oldPassword, newPassword) {
     if (!user || !session) fail('AUTH_REQUIRED', '请先登录正式账号');
-    if (!oldPassword || String(newPassword).length < 12) fail('PASSWORD_REQUIRED', '请填写原密码和至少12位新密码');
+    if (!oldPassword) fail('PASSWORD_REQUIRED', '请填写原密码');validateJoinPassword(newPassword);
     const epoch = identityEpoch;
     return mutateNativeAuth(async()=>{await verifyNativeSession(user.uid,epoch);await sdkApp.__r25Auth.changePassword(oldPassword,newPassword);return acceptSession(epoch);});
   }

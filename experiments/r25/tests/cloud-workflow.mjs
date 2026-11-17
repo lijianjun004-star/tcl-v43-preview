@@ -3,29 +3,29 @@ import assert from 'node:assert/strict';
 import { createCloudWorkflow, cloudPartitionName } from '../tcl-v352-asr-r25-qa/cloud-workflow.mjs';
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
-function fixture() {
-  let currentUid = null, rpcOverride = null, privateMedia=false, uploadOverride=null, failConfirmedCache=false;
+function fixture(nameIdentity,onIdentityChange) {
+  let currentUid = null, rpcOverride = null, privateMedia=false, uploadOverride=null, failConfirmedCache=false, sessionReadOverride, meOverride;
   const calls = [], authCalls = [], mediaCalls=[], partitions = new Map();
   const users = { anchor: { uid: 'anchor', displayName: '主播A', role: 'anchor' }, operator: { uid: 'operator', displayName: '运营O', role: 'operator' } };
   const officialAdapter = { __r25Media:{upload:async(path,blob,mime)=>{mediaCalls.push({path,size:blob.size,mime});if(uploadOverride)return uploadOverride(path,blob,mime);return {path};},download:async path=>new Blob(['media'],{type:'audio/webm'})}, __r25Auth: {
-    getSession: async () => currentUid ? { uid: currentUid } : null,
+    getSession: async () => sessionReadOverride ? sessionReadOverride(currentUid) : currentUid ? { uid: currentUid } : null,
     signIn: async (username, password) => { authCalls.push(['signIn', username, password]); currentUid = username; },
     signOut: async () => { authCalls.push(['signOut']); currentUid = null; },
     changePassword: async (old, next) => { authCalls.push(['changePassword', old, next]); }
   } };
-  const client = createCloudWorkflow({ config: { enabled: true, envId: 'test-env', functionName: 'r25wf_api' }, sdkFactory: async () => officialAdapter,
+  const client = createCloudWorkflow({ config: { enabled: true, envId: 'test-env', functionName: 'r25wf_api' }, nameIdentity, onIdentityChange, sdkFactory: async () => officialAdapter,
     operationStoreFactory: ({ uid }) => {
       const rows = partitions.get(uid) || new Map(); partitions.set(uid, rows);
       return { get: async id => rows.get(id), put: async row => { if(failConfirmedCache&&row.status==='confirmed')throw new Error('quota');rows.set(row.id, structuredClone(row)); }, list: async () => [...rows.values()], close: async () => {} };
     },
     businessTransport: async event => {
       calls.push(structuredClone(event));
-      if (event.action === 'me') return { ok: true, data: { user: users[currentUid], capabilities:{privateMedia} } };
+      if (event.action === 'me') return meOverride ? meOverride(event) : { ok: true, data: { user: users[currentUid], capabilities:{privateMedia} } };
       if (rpcOverride) return rpcOverride(event);
       return { ok: true, data: { items: [] } };
     }
   });
-  return { client, calls, authCalls, partitions, mediaCalls,externalSession:uid=>{currentUid=uid;}, setMediaEnabled:value=>{privateMedia=value;},setUpload:fn=>{uploadOverride=fn;},failConfirmedCache:()=>{failConfirmedCache=true;}, setRpc: fn => { rpcOverride = fn; }, setUser: (key, value) => { users[key] = value; } };
+  return { client, calls, authCalls, partitions, mediaCalls,externalSession:uid=>{currentUid=uid;},setMe:fn=>{meOverride=fn;},setSessionReader:fn=>{sessionReadOverride=fn;}, setMediaEnabled:value=>{privateMedia=value;},setUpload:fn=>{uploadOverride=fn;},failConfirmedCache:()=>{failConfirmedCache=true;}, setRpc: fn => { rpcOverride = fn; }, setUser: (key, value) => { users[key] = value; } };
 }
 
 test('disabled config never initializes official auth or business transport', async () => {
@@ -41,8 +41,8 @@ test('passwords go only to official adapter; role and uid are verified against s
   f.setUser('operator', { uid: 'forged', role: 'admin' });
   await assert.rejects(f.client.signIn('operator', 'password'), /身份未验证/); assert.equal(f.client.user, null);
 });
-test('native account creation is not guessed or sent to business RPC', async () => {
-  const f = fixture(); await assert.rejects(f.client.register({ username: 'new', password: 'secret' }), /管理员开通/);
+test('unconfigured name registration never guesses native account creation or calls business RPC', async () => {
+  const f = fixture(); await assert.rejects(f.client.register({ name: '新主播', password: 'Newpass123', inviteCode: 'invite' }), /正在准备/);
   assert.equal(f.authCalls.length, 0); assert.equal(f.calls.length, 0);
 });
 test('failed submission stays pending and retry reuses exact original payload and operation id', async () => {
@@ -77,9 +77,9 @@ test('account switching prevents old responses from entering new identity and is
   assert.notEqual(cloudPartitionName('env', 'anchor'), cloudPartitionName('env', 'operator'));
 });
 test('password change uses official adapter only', async () => {
-  const f = fixture(); await f.client.signIn('anchor', 'password'); await f.client.changePassword('old-secret', 'new-secret-long');
+  const f = fixture(); await f.client.signIn('anchor', 'password'); await f.client.changePassword('old-secret', 'new-secret-long1');
   assert.equal(f.authCalls.some(row => row[0] === 'changePassword'), true);
-  assert.equal(JSON.stringify(f.calls).includes('old-secret'), false); assert.equal(JSON.stringify(f.calls).includes('new-secret-long'), false);
+  assert.equal(JSON.stringify(f.calls).includes('old-secret'), false); assert.equal(JSON.stringify(f.calls).includes('new-secret-long1'), false);
 });
 test('pagination must finish and never silently repeats a cursor', async () => {
   const f = fixture(); await f.client.signIn('anchor', 'password'); let calls = 0;
@@ -126,4 +126,45 @@ test('native session changed while business read is in flight discards late priv
 test('native session changed before media request prevents upload under wrong token',async()=>{
  const f=fixture();f.setMediaEnabled(true);await f.client.signIn('anchor','password');f.externalSession('operator');
  await assert.rejects(f.client.uploadMedia(new Blob(['a'],{type:'audio/webm'})),/会话已改变/);assert.equal(f.mediaCalls.length,0);
+});
+
+test('name resolution keeps daily passwords in official Auth and retains existing UID partitions', async()=>{
+ const resolveCalls=[];const f=fixture({resolve:async name=>{resolveCalls.push(name);return {username:'anchor',uid:'anchor'};}});
+ await f.client.signIn('主播甲','old');assert.deepEqual(resolveCalls,['主播甲']);assert.equal(f.client.user.uid,'anchor');
+ assert.deepEqual(f.authCalls[0],['signIn','anchor','old']);assert.equal(JSON.stringify(f.calls).includes('old'),false);
+});
+test('successful invitation registration requires official native session and matching backend role',async()=>{
+ const registerCalls=[];const f=fixture({register:async value=>{registerCalls.push(value);return {username:'anchor',uid:'anchor',state:'ready'};}});
+ await f.client.register({name:'主播甲',password:'Newpass123',inviteCode:'invite'});assert.equal(f.client.user.uid,'anchor');assert.equal(f.client.user.role,'anchor');
+ assert.equal(registerCalls.length,1);assert.equal(f.authCalls[0][0],'signIn');assert.equal(f.authCalls[0][2],'Newpass123');
+ assert.equal(JSON.stringify(f.calls).includes('Newpass123'),false);assert.equal(JSON.stringify(f.calls).includes('invite'),false);
+});
+test('broker success cannot install a mismatching native UID',async()=>{
+ const f=fixture({register:async()=>({username:'anchor',uid:'someone-else',state:'ready'})});
+ await assert.rejects(f.client.register({name:'主播甲',password:'Newpass123',inviteCode:'invite'}),error=>error.code==='IDENTITY_MISMATCH');
+ assert.equal(f.client.user,null);assert.equal(f.calls.length,0);
+});
+test('duplicate name rejection never signs into or changes an existing account',async()=>{
+ const f=fixture({register:async()=>{throw Object.assign(new Error('姓名已使用，请直接登录或加部门'),{code:'NAME_CONFLICT'});}});
+ await assert.rejects(f.client.register({name:'重名主播',password:'Newpass123',inviteCode:'invite'}),error=>error.code==='NAME_CONFLICT');
+ assert.equal(f.client.user,null);assert.equal(f.authCalls.length,0);assert.equal(f.calls.length,0);
+});
+test('native drift between resolved UID check and profile acceptance cannot install another name',async()=>{
+ for(const action of ['signIn','register']){
+  const f=fixture({resolve:async()=>({username:'anchor',uid:'anchor'}),register:async()=>({username:'anchor',uid:'anchor',state:'ready'})});let reads=0;
+  f.setSessionReader(()=>({uid:++reads===1?'anchor':'operator'}));
+  await assert.rejects(action==='signIn'?f.client.signIn('主播甲','old'):f.client.register({name:'主播甲',password:'Joinpass123',inviteCode:'invite'}),error=>error.code==='IDENTITY_MISMATCH');
+  assert.equal(f.client.user,null);assert.equal(f.calls.length,0);
+ }
+});
+test('native drift while me is pending never applies stale local identity',async()=>{
+ const applied=[],f=fixture({resolve:async()=>({username:'anchor',uid:'anchor'})},async value=>applied.push(value?.uid||null)),reply=deferred();f.setMe(()=>reply.promise);
+ const pending=f.client.signIn('主播甲','old');await tick();f.externalSession('operator');reply.resolve({ok:true,data:{user:{uid:'anchor',role:'anchor',displayName:'主播甲'}}});
+ await assert.rejects(pending,error=>error.code==='STALE_SESSION');assert.equal(f.client.user,null);assert.equal(applied.includes('anchor'),false);
+});
+test('native drift during local partition callback is guarded and clears stale identity',async()=>{
+ const started=deferred(),resume=deferred(),installed=[];let f;
+ f=fixture({resolve:async()=>({username:'anchor',uid:'anchor'})},async(value,{isCurrent})=>{if(value){started.resolve();await resume.promise;if(!(await isCurrent()))throw Object.assign(new Error('stale partition'),{code:'STALE_SESSION'});installed.push(value.uid);}});
+ const pending=f.client.signIn('主播甲','old');await started.promise;f.externalSession('operator');resume.resolve();
+ await assert.rejects(pending,error=>error.code==='STALE_SESSION');assert.equal(f.client.user,null);assert.deepEqual(installed,[]);
 });

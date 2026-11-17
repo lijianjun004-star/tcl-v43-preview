@@ -959,6 +959,14 @@ button,a,summary,input,select,textarea,[contenteditable="true"]{touch-action:man
 .cloud-status.error{color:#b42318;background:#fff1f0;border:1px solid #f5b9b5;padding:12px;border-radius:10px}
 .cloud-register{margin-top:24px;padding-top:18px;border-top:1px solid #d9e1e9}
 .cloud-register summary{cursor:pointer;font-weight:600}
+.cloud-login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:22px 0 12px}
+.cloud-login-tabs button{min-width:0;min-height:54px;padding:10px 9px;border:1px solid #d9e1e9;border-radius:11px;background:#f6f8fa;color:#536779;font:inherit;font-size:14px;font-weight:700;line-height:1.5;cursor:pointer}
+.cloud-login-tabs button[aria-selected="true"]{border-color:#167d76;background:#eaf7f4;color:#0e605a}
+.cloud-login-tabs button:focus-visible{outline:3px solid #72bab5;outline-offset:2px}
+.cloud-login-tabs button:disabled{cursor:wait;opacity:.65}
+.cloud-workspace [role="tabpanel"][hidden]{display:none}
+.cloud-workspace .field small{display:block;color:#536779;line-height:1.6;margin-top:7px}
+.cloud-login-preservation{border-top:1px solid #e0e6ee;padding-top:16px}
 .cloud-submission-row{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;border:1px solid #d9e1e9;border-radius:12px;background:#fff;width:100%;padding:16px;color:#172d40;overflow-wrap:anywhere}
 .cloud-submission-row:hover,.cloud-submission-row:focus-visible{border-color:#167d76;background:#f0faf8}
 .cloud-submission-row span,.cloud-submission-row small{color:#536779}

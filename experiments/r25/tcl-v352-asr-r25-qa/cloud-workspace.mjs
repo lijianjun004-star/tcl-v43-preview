@@ -44,11 +44,11 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       ${operator ? publishForm() : practiceForm()}
       <section class="panel"><h2>${operator ? '我发布的作业' : '运营布置的作业'}</h2><p class="muted">${operator ? '主播主动提交前，只有加入和训练状态对你可见。' : '加入后开始练播，文字和录音仍先保存在这台设备。'}</p><div id="cloudAssignments" class="assignment-results"></div></section>
       <section class="panel"><h2>${operator ? '云端收件箱' : '我的云端提交与反馈'}</h2><p class="muted">${operator ? '这里只显示主动提交给你的记录。' : '已确认回执的记录可在其他设备登录后查看。'} ${workflow.getState().capabilities.media?'媒体只在主播明确选择后私有上传。':'当前只同步文字，录音录像没有上传。'}</p><div id="cloudSubmissions" class="question-list"></div></section>
-      ${user.role === 'admin' ? invitationForm() : ''}
+      ${operator ? invitationForm(user.role) : ''}
       <details class="panel"><summary>旧本机体验记录</summary><p class="muted">旧本机记录仍保留在原浏览器，尚未上传；正式账号使用独立空间，不会按姓名自动认领旧数据。</p><button id="cloudExportLegacy" class="btn soft" type="button">只读导出旧本机文字（不上传）</button></details>
       <section class="panel" id="cloudDetail" hidden></section>
       <section class="panel" id="cloudPending" hidden></section>
-      <details class="panel"><summary>账号安全 · 修改密码</summary><form id="cloudPasswordForm"><div class="field"><label for="cloudOldPassword">原密码</label><input id="cloudOldPassword" required type="password" autocomplete="current-password"></div><div class="field"><label for="cloudNewPassword">新密码（至少12位）</label><input id="cloudNewPassword" required type="password" minlength="12" maxlength="128" autocomplete="new-password"></div><button type="submit" class="btn soft">修改正式账号密码</button></form></details>
+      <details class="panel"><summary>账号安全 · 修改密码</summary><form id="cloudPasswordForm"><div class="field"><label for="cloudOldPassword">原密码</label><input id="cloudOldPassword" required type="password" autocomplete="current-password"></div><div class="field"><label for="cloudNewPassword">新密码（8–32位，含字母和数字）</label><input id="cloudNewPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password"></div><button type="submit" class="btn soft">修改密码</button></form></details>
     </section>`;
     bindTask(container, '#cloudSignOut', async () => { await onLogout(); }, '已退出账号');
     container.querySelector('#cloudLocalRecords')?.addEventListener('click', onLocalRecords);
@@ -71,12 +71,12 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
     };
     bindTask(container, '#cloudRefresh', refresh);
     if (operator) bindPublish(container, refresh); else bindPractice(container);
-    if (user.role === 'admin') bindInvitations(container);
+    if (operator) bindInvitations(container);
     container.querySelector('#cloudPasswordForm').addEventListener('submit', async event => {
       event.preventDefault(); const form = event.currentTarget, button = form.querySelector('button'); if (button.disabled) return;
       const oldInput = form.querySelector('#cloudOldPassword'), newInput = form.querySelector('#cloudNewPassword');
       const oldPassword = oldInput.value, newPassword = newInput.value; oldInput.value = ''; newInput.value = ''; button.disabled = true;
-      try { await workflow.changePassword(oldPassword, newPassword); status(container, '正式账号密码已更新'); }
+      try { await workflow.changePassword(oldPassword, newPassword); status(container, '密码已更新'); }
       catch (error) { if (button.isConnected) status(container, error.message, true); }
       finally { if (button.isConnected&&button.dataset.confirmed!=='1') button.disabled = false; }
     });
@@ -84,37 +84,48 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
   }
   function mountLogin(container, id) {
     const state = workflow.getState();
-    container.innerHTML = `<section class="name-login cloud-workspace" data-cloud-screen="${id}"><div class="name-login-card"><span class="eyebrow">TCL · 正式账号</span><h2>登录练播房</h2><p>账号身份由云端验证，作业、文字提交和反馈可以跨设备读取。录音录像仍先保存在这台设备。旧本机体验记录仍保留在原浏览器，尚未上传，也不会按姓名自动归属正式账号。</p><form id="cloudLoginForm"><div class="field"><label for="cloudUsername">账号</label><input id="cloudUsername" required maxlength="64" autocomplete="username"></div><div class="field"><label for="cloudPassword">密码</label><input id="cloudPassword" required type="password" maxlength="128" autocomplete="current-password"></div><button type="submit" class="btn primary wide">登录</button></form><p data-cloud-status class="cloud-status${state.error ? ' error' : ''}" role="status">${escape(state.error)}</p>
-      <details class="cloud-register"><summary>已有正式账号？绑定管理员邀请</summary><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">账号</label><input id="cloudRegisterName" required maxlength="64" autocomplete="username"></div><div class="field"><label for="cloudDisplayName">显示姓名</label><input id="cloudDisplayName" required maxlength="40" autocomplete="name"></div><div class="field"><label for="cloudRegisterPassword">账号密码</label><input id="cloudRegisterPassword" required type="password" maxlength="128" autocomplete="current-password"></div><div class="field"><label for="cloudInvitationCode">邀请口令</label><input id="cloudInvitationCode" required maxlength="128" autocomplete="off"></div><p class="muted">正式账号由管理员开通。邀请决定业务角色，不能自行选择运营或管理员身份。</p><button type="submit" class="btn primary">登录并绑定邀请</button></form></details></div></section>`;
-    const login = container.querySelector('#cloudLoginForm');
-    login.addEventListener('submit', async event => {
-      event.preventDefault(); const button = login.querySelector('button'); if (button.disabled) return;
-      const name = container.querySelector('#cloudUsername').value, input = container.querySelector('#cloudPassword'), password = input.value; input.value = ''; button.disabled = true;
-      try { status(container, '正在验证账号…'); await workflow.signIn(name, password); await onIdentityReady(); }
-      catch (error) { if (button.isConnected) status(container, error.message, true); }
-      finally { if (button.isConnected&&button.dataset.confirmed!=='1') button.disabled = false; }
-    });
-    const registration = container.querySelector('#cloudRegisterForm');
-    async function register(existing = false) {
-      const values = { username: container.querySelector('#cloudRegisterName').value.trim(), displayName: container.querySelector('#cloudDisplayName').value.trim(), password: container.querySelector('#cloudRegisterPassword').value, invitationCode: container.querySelector('#cloudInvitationCode').value.trim() };
-      if (!values.username || !values.password || !values.invitationCode || !values.displayName) return status(container, '请填写账号、显示姓名、邀请口令和账号密码', true);
-      container.querySelector('#cloudRegisterPassword').value = '';
-      const buttons = [...registration.querySelectorAll('button')]; if (buttons.some(button => button.disabled)) return; buttons.forEach(button => { button.disabled = true; });
-      try {
-        status(container, existing ? '正在登录并核验邀请…' : '正在通过官方账号服务注册…');
-        if (existing) {
-          try { await workflow.signIn(values.username, values.password); }
-          catch (error) { if (!['PROFILE_REQUIRED', 'NOT_REGISTERED', 'INVITE_REQUIRED'].includes(error.code)) throw error; }
-          await workflow.redeemInvitation(values.invitationCode, values.displayName);
-        } else await workflow.register(values);
-        await onIdentityReady();
-      } catch (error) { if (buttons[0].isConnected) status(container, error.message, true); }
-      finally { buttons.forEach(button => { if (button.isConnected&&button.dataset.confirmed!=='1') button.disabled = false; }); }
+    container.innerHTML = `<section class="name-login cloud-workspace" data-cloud-screen="${id}"><div class="name-login-card"><span class="eyebrow">TCL · 练播房</span><h2>用姓名进入练播房</h2><p>首次使用填写姓名、自己设置的密码和邀请码。以后在其他设备用同一姓名和密码登录，即可查看已提交记录与反馈。</p>
+      <div class="cloud-login-tabs" role="tablist" aria-label="加入或登录"><button id="cloudJoinTab" type="button" role="tab" aria-selected="true" aria-controls="cloudJoinPanel">首次使用邀请码加入</button><button id="cloudNameLoginTab" type="button" role="tab" aria-selected="false" aria-controls="cloudNameLoginPanel" tabindex="-1">姓名和密码登录</button></div>
+      <section id="cloudJoinPanel" role="tabpanel" aria-labelledby="cloudJoinTab"><form id="cloudRegisterForm"><div class="field"><label for="cloudRegisterName">姓名</label><input id="cloudRegisterName" required maxlength="40" autocomplete="name" placeholder="填写姓名，重名可加部门"></div><div class="field"><label for="cloudRegisterPassword">自己设置密码</label><input id="cloudRegisterPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password" aria-describedby="cloudJoinPasswordHint"><small id="cloudJoinPasswordHint">8–32位，建议大小写字母加数字，首位用字母或数字。</small></div><div class="field"><label for="cloudInvitationCode">邀请码</label><input id="cloudInvitationCode" required maxlength="128" autocomplete="off" placeholder="填写运营或管理员给你的邀请码"></div><p class="muted">邀请码决定你进入主播端还是运营端。姓名已使用时，请直接登录；同名同事可加部门区分。</p><button type="submit" class="btn primary wide">加入练播房</button><p class="muted">如果上次加入时断网，请保留相同姓名、邀请码，并填写首次设置的密码；再次点击会继续原操作。密码不会由本页保存。</p></form></section>
+      <section id="cloudNameLoginPanel" role="tabpanel" aria-labelledby="cloudNameLoginTab" hidden><form id="cloudLoginForm"><div class="field"><label for="cloudUsername">姓名</label><input id="cloudUsername" required maxlength="64" autocomplete="username" placeholder="填写加入时使用的姓名"></div><div class="field"><label for="cloudPassword">密码</label><input id="cloudPassword" required type="password" maxlength="128" autocomplete="current-password"></div><button type="submit" class="btn primary wide">登录练播房</button></form></section>
+      <p data-cloud-status class="cloud-status${state.error ? ' error' : ''}" role="status">${escape(state.error)}</p><p class="cloud-login-preservation">原有记录继续保留在原身份下。旧本机体验记录仍在原浏览器，尚未上传；不会按姓名自动合并。</p></div></section>`;
+    const login = container.querySelector('#cloudLoginForm'), registration = container.querySelector('#cloudRegisterForm');
+    const joinTab = container.querySelector('#cloudJoinTab'), loginTab = container.querySelector('#cloudNameLoginTab');
+    let busy = false;
+    function selectTab(join) {
+      if (busy) return;
+      for (const [tab, active] of [[joinTab, join], [loginTab, !join]]) { tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1; }
+      container.querySelector('#cloudJoinPanel').hidden = !join; container.querySelector('#cloudNameLoginPanel').hidden = join;
+      container.querySelector('#cloudRegisterPassword').value = ''; container.querySelector('#cloudPassword').value = '';
+      status(container, '');
     }
-    registration.addEventListener('submit', event => { event.preventDefault(); void register(true); });
+    joinTab.addEventListener('click', () => selectTab(true)); loginTab.addEventListener('click', () => selectTab(false));
+    for (const tab of [joinTab, loginTab]) tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || busy) return;
+      event.preventDefault(); const join = event.key === 'Home' || event.key !== 'End' && tab === loginTab;
+      selectTab(join); (join ? joinTab : loginTab).focus();
+    });
+    async function authenticate(form, run, message) {
+      if (busy) return; busy = true;
+      const buttons = [...container.querySelectorAll('button')]; buttons.forEach(button => { button.disabled = true; });
+      try { status(container, message); await run(); if (form.isConnected) await onIdentityReady(); }
+      catch (error) { if (form.isConnected) status(container, error.message || '姓名和密码尚未验证，请重试', true); }
+      finally { busy = false; buttons.forEach(button => { if (button.isConnected) button.disabled = false; }); }
+    }
+    login.addEventListener('submit', event => {
+      event.preventDefault(); if (busy) return;
+      const name = container.querySelector('#cloudUsername').value, input = container.querySelector('#cloudPassword'), password = input.value; input.value = '';
+      void authenticate(login, () => workflow.signIn(name, password), '正在验证姓名和密码…');
+    });
+    registration.addEventListener('submit', event => {
+      event.preventDefault(); if (busy) return;
+      const values = { name: container.querySelector('#cloudRegisterName').value.trim(), password: container.querySelector('#cloudRegisterPassword').value, inviteCode: container.querySelector('#cloudInvitationCode').value.trim() };
+      container.querySelector('#cloudRegisterPassword').value = '';
+      void authenticate(registration, () => workflow.register(values), '正在核验邀请码并建立登录身份，请稍候…');
+    });
   }
   function mountPending(container, id, user) {
-    container.innerHTML = `<section class="cloud-workspace panel" data-cloud-screen="${id}"><h2>账号已验证，请绑定邀请</h2><p>${escape(user.displayName)}，你的正式账号已登录，业务角色需要管理员邀请确认。</p><div class="field"><label for="cloudPendingCode">邀请口令</label><input id="cloudPendingCode" autocomplete="off" maxlength="128"></div><div class="field"><label for="cloudPendingName">显示姓名</label><input id="cloudPendingName" maxlength="40" value="${escape(user.displayName)}" autocomplete="name"></div><button id="cloudRedeemInvite" class="btn primary" type="button">核验并绑定邀请</button><button id="cloudPendingLogout" class="btn soft" type="button">退出账号</button><p data-cloud-status class="cloud-status" role="status">绑定完成前，不能读取作业或提交记录。</p><details><summary>修改账号密码</summary><form id="cloudPendingPasswordForm"><div class="field"><label for="cloudPendingOldPassword">原密码</label><input id="cloudPendingOldPassword" required type="password" autocomplete="current-password"></div><div class="field"><label for="cloudPendingNewPassword">新密码（至少12位）</label><input id="cloudPendingNewPassword" required type="password" minlength="12" autocomplete="new-password"></div><button type="submit" class="btn soft">修改密码</button></form></details></section>`;
+    container.innerHTML = `<section class="cloud-workspace panel" data-cloud-screen="${id}"><h2>账号已验证，请绑定邀请</h2><p>${escape(user.displayName)}，你的正式账号已登录，业务角色需要管理员邀请确认。</p><div class="field"><label for="cloudPendingCode">邀请口令</label><input id="cloudPendingCode" autocomplete="off" maxlength="128"></div><div class="field"><label for="cloudPendingName">显示姓名</label><input id="cloudPendingName" maxlength="40" value="${escape(user.displayName)}" autocomplete="name"></div><button id="cloudRedeemInvite" class="btn primary" type="button">核验并绑定邀请</button><button id="cloudPendingLogout" class="btn soft" type="button">退出账号</button><p data-cloud-status class="cloud-status" role="status">绑定完成前，不能读取作业或提交记录。</p><details><summary>修改账号密码</summary><form id="cloudPendingPasswordForm"><div class="field"><label for="cloudPendingOldPassword">原密码</label><input id="cloudPendingOldPassword" required type="password" autocomplete="current-password"></div><div class="field"><label for="cloudPendingNewPassword">新密码（8–32位，含字母和数字）</label><input id="cloudPendingNewPassword" required type="password" minlength="8" maxlength="32" autocomplete="new-password"></div><button type="submit" class="btn soft">修改密码</button></form></details></section>`;
     bindTask(container,'#cloudRedeemInvite',async()=>{
       const code=container.querySelector('#cloudPendingCode').value.trim();if(!code)throw new Error('请填写管理员提供的邀请口令');
       await workflow.redeemInvitation(code,container.querySelector('#cloudPendingName').value.trim());await onIdentityReady();
@@ -207,13 +218,13 @@ export function createCloudWorkspace({ workflow, boards, onIdentityReady, onLogo
       finally { if (button.isConnected&&button.dataset.confirmed!=='1') button.disabled = false; }
     }));
   }
-  function invitationForm() {
-    return '<section class="panel"><h2>邀请成员</h2><p class="muted">邀请口令交给对应成员本人。对方由管理员开通正式账号后，登录并绑定邀请，角色由云端核验。</p><div class="field"><label for="cloudInviteRole">邀请角色</label><select id="cloudInviteRole"><option value="anchor">主播</option><option value="operator">运营</option></select></div><button id="cloudCreateInvite" class="btn primary" type="button">生成一次性邀请口令</button><p id="cloudInviteResult" class="cloud-invitation" role="status"></p></section>';
+  function invitationForm(role) {
+    return `<section class="panel"><h2>邀请成员</h2><p class="muted">把邀请码交给对应成员本人。对方在“首次使用邀请码加入”填写姓名、自己设置的密码和邀请码，即可加入。邀请决定角色。</p><div class="field"><label for="cloudInviteRole">邀请角色</label><select id="cloudInviteRole"><option value="anchor">主播</option>${role==='admin'?'<option value="operator">运营</option>':''}</select></div><button id="cloudCreateInvite" class="btn primary" type="button">生成一次性邀请码</button><p id="cloudInviteResult" class="cloud-invitation" role="status"></p></section>`;
   }
   function bindInvitations(container) {
     bindTask(container, '#cloudCreateInvite', async () => {
       const data = await workflow.call('invites.create', { role: container.querySelector('#cloudInviteRole').value }, newId());
-      container.querySelector('#cloudInviteResult').textContent = `邀请口令：${data.invite.code}；有效期至 ${when(data.invite.expiresAt)}`;
+      container.querySelector('#cloudInviteResult').textContent = `邀请码：${data.invite.code}；有效期至 ${when(data.invite.expiresAt)}`;
     });
   }
   async function mountSubmissionPanel(container, { getSnapshot, getAttachments=()=>[], hasMedia, beforeSubmit, onConfirmed }) {

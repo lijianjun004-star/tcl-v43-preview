@@ -1,11 +1,15 @@
 {
   "apiBase": "",
-  "note": "正式账号、作业、提交与反馈使用CloudBase；旧知识库API未启用，本机历史记录保留且不自动上传。",
+  "note": "姓名登录、邀请码加入、作业、提交与反馈使用CloudBase；旧知识库API未启用，原有本机和云端历史数据保留。",
   "cloudbase": {
     "envId": "unknown-roadrunner-d7cap6e21f517",
     "region": "ap-shanghai",
     "functionName": "r25wf_api",
     "enabled": true,
-    "mediaBucket": "r25wf-private"
+    "mediaBucket": "r25wf-private",
+    "nameIdentity": {
+      "enabled": true,
+      "endpoint": "https://unknown-roadrunner-d7cap6e21f517-1519058345.ap-shanghai.app.tcloudbase.com/r25-name-identity"
+    }
   }
 }
