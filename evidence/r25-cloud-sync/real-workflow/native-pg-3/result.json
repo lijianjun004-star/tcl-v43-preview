@@ -1,0 +1,559 @@
+{
+  "scope": "REAL official SDK Auth + native PG RPC across isolated Chromium storage contexts; API contract layer, not product-UI acceptance",
+  "startedAt": "2026-11-17T00:36:42.494859+00:00",
+  "environmentId": "unknown-roadrunner-d7cap6e21f517",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "contractVersion": "r25wf-v1-frozen-20261117",
+  "sourceContractSha256": "10b1c479e919a561d59866346561211c2ddb78a120134f3d04fd747ad67baad8",
+  "deployedSchemaSha256": "7d501d19589ad30d12fef4dc3606611329bde807b48d82ad4c57dc86cd55da23",
+  "deploymentEvidence": {
+    "schemaRequestId": "6beb52dc",
+    "roleBootstrapRequestId": "1fd3543c",
+    "roles": {
+      "admin": "admin",
+      "operator": "operator",
+      "anchor": "anchor",
+      "outsider": "anchor"
+    }
+  },
+  "adapterBuild": {
+    "sdk": "@cloudbase/js-sdk",
+    "sdkVersion": "3.11.1",
+    "bundleBytes": 1572511,
+    "bundleSha256": "0356129249f805e0b25a45096a658934923d11f42a219d4405d5f315fb063e42",
+    "entrySha256": "ccfb00c2ed635d131f6006307ec83e90c3138ff5743d38e813b69bdb4d850d03",
+    "networkExecuted": false
+  },
+  "checks": [
+    {
+      "name": "operator_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "admin_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anonymous_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "real_principals_are_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_server_profile_matches_auth",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_server_profile_matches_auth",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anonymous_sdk_produced_no_successful_receipt",
+      "pass": true,
+      "detail": {
+        "errorCode": "TRANSPORT_ERROR",
+        "scope": "Client observation only; server authorization proved separately"
+      }
+    },
+    {
+      "name": "anonymous_direct_native_pg_http_is_server_denied",
+      "pass": true,
+      "detail": {
+        "httpStatus": 401,
+        "bodyCode": "MISSING_CREDENTIALS",
+        "endpointOrigin": "https://unknown-roadrunner-d7cap6e21f517.api.tcloudbasegateway.com",
+        "endpointPath": "/v1/rdb/rest/rpc/r25wf_api",
+        "authorizationHeaderSent": false,
+        "cookiesSent": false
+      }
+    },
+    {
+      "name": "operator_assignmentCreate_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_assignmentList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "unjoined_task_not_disclosed_to_anchor_list",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "client_role_fields_cannot_promote_anchor",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "anchor_assignmentJoin_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_assignmentJoin_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_assignmentList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "joined_anchor_reads_operator_task_from_real_api",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_submissionCreate_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_submissionCreate_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "same_operation_returns_same_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_submissionList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_has_exactly_one_real_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_submissionGet_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "original_two_turn_snapshot_metadata_and_manual_clear_preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "wrong_user_cannot_read_known_submission_id",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "outsider_submissionList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "wrong_user_list_excludes_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_feedbackCreate_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_feedbackCreate_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_feedbackList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_reads_one_persisted_operator_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "wrong_user_cannot_write_feedback",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "wrong_user_cannot_read_feedback",
+      "pass": true,
+      "detail": {
+        "errorCode": "FORBIDDEN"
+      }
+    },
+    {
+      "name": "same_idempotency_key_changed_payload_rejected",
+      "pass": true,
+      "detail": {
+        "errorCode": "IDEMPOTENCY_CONFLICT"
+      }
+    },
+    {
+      "name": "offline_request_has_no_confirmed_receipt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_submissionList_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "offline_attempt_does_not_appear_in_operator_inbox",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "operations": [
+    {
+      "actor": "operator",
+      "action": "me",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 1.65
+    },
+    {
+      "actor": "anchor",
+      "action": "me",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 1.34
+    },
+    {
+      "actor": "anonymous",
+      "action": "me",
+      "operationId": null,
+      "ok": false,
+      "errorCode": "TRANSPORT_ERROR",
+      "seconds": 0.005
+    },
+    {
+      "actor": "operator",
+      "action": "assignments.create",
+      "operationId": "1ea50894-0dc5-4b89-98d4-d0b1523d2822",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.532
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.501
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.create",
+      "operationId": "3f32d375-6eb3-4946-9578-478031167bfa",
+      "ok": false,
+      "errorCode": "FORBIDDEN",
+      "seconds": 0.631
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.join",
+      "operationId": "4f0d2a15-ef41-4470-a779-c7f281da2702",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.578
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.join",
+      "operationId": "4f0d2a15-ef41-4470-a779-c7f281da2702",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.798
+    },
+    {
+      "actor": "anchor",
+      "action": "assignments.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.455
+    },
+    {
+      "actor": "anchor",
+      "action": "submissions.create",
+      "operationId": "6ef6049e-5e91-4470-b5dd-a023e3dd3933",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.455
+    },
+    {
+      "actor": "anchor",
+      "action": "submissions.create",
+      "operationId": "6ef6049e-5e91-4470-b5dd-a023e3dd3933",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.742
+    },
+    {
+      "actor": "operator",
+      "action": "submissions.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.539
+    },
+    {
+      "actor": "operator",
+      "action": "submissions.get",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.629
+    },
+    {
+      "actor": "outsider",
+      "action": "submissions.get",
+      "operationId": null,
+      "ok": false,
+      "errorCode": "FORBIDDEN",
+      "seconds": 0.942
+    },
+    {
+      "actor": "outsider",
+      "action": "submissions.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.445
+    },
+    {
+      "actor": "operator",
+      "action": "feedback.create",
+      "operationId": "c92a18f5-c29d-409b-b2bb-57b966007191",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.481
+    },
+    {
+      "actor": "operator",
+      "action": "feedback.create",
+      "operationId": "c92a18f5-c29d-409b-b2bb-57b966007191",
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.518
+    },
+    {
+      "actor": "anchor",
+      "action": "feedback.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.536
+    },
+    {
+      "actor": "outsider",
+      "action": "feedback.create",
+      "operationId": "28af9c02-d810-40ff-a205-567e2c6ba19f",
+      "ok": false,
+      "errorCode": "FORBIDDEN",
+      "seconds": 0.528
+    },
+    {
+      "actor": "outsider",
+      "action": "feedback.list",
+      "operationId": null,
+      "ok": false,
+      "errorCode": "FORBIDDEN",
+      "seconds": 0.452
+    },
+    {
+      "actor": "anchor",
+      "action": "submissions.create",
+      "operationId": "6ef6049e-5e91-4470-b5dd-a023e3dd3933",
+      "ok": false,
+      "errorCode": "IDEMPOTENCY_CONFLICT",
+      "seconds": 0.469
+    },
+    {
+      "actor": "anchor",
+      "action": "submissions.create",
+      "operationId": "5d27c3c7-680e-4f02-9ab7-9b6df743938a",
+      "ok": false,
+      "errorCode": "TRANSPORT_ERROR",
+      "seconds": 0.004
+    },
+    {
+      "actor": "operator",
+      "action": "submissions.list",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 0.446
+    }
+  ],
+  "actors": {
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "independentContext": true
+    },
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "independentContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "independentContext": true
+    },
+    "admin": {
+      "uidSha256": "ffb6a83db4e60a2da03e51a37e6e64c595f1c1393ff20bee93917004b1866109",
+      "independentContext": true
+    }
+  },
+  "status": "INTERRUPTED_FIXTURE_FAILURE",
+  "notRun": [
+    "Real phones",
+    "Mainland network",
+    "ASR accuracy",
+    "Backend process restart",
+    "Private cloud media",
+    "Full product UI (separate UI driver required)"
+  ],
+  "runId": "r25-e2e-20261117T003642-e1e980",
+  "anonymousHttpProbe": {
+    "httpStatus": 401,
+    "bodyCode": "MISSING_CREDENTIALS",
+    "endpointOrigin": "https://unknown-roadrunner-d7cap6e21f517.api.tcloudbasegateway.com",
+    "endpointPath": "/v1/rdb/rest/rpc/r25wf_api",
+    "authorizationHeaderSent": false,
+    "cookiesSent": false
+  },
+  "assignmentId": "d02ffa8d-6960-41ac-900b-3bc0b8ce7321",
+  "submissionId": "578cc6c8-eafe-40ab-bc3d-5f3cf87297bc",
+  "fixtureFailure": {
+    "stage": "committed-response-loss fault injection",
+    "summary": "Playwright route.fetch failed; callback error included request headers. Authorization values redacted immediately; no raw credential copied to delivery.",
+    "testsBeforeInterruption": 48,
+    "operationsBeforeInterruption": 23
+  }
+}

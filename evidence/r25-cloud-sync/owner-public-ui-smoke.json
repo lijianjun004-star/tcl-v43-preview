@@ -1,0 +1,18 @@
+{
+  "scope": "Real product UI + native Auth/PG, owner accounts, no password change",
+  "checks": [
+    {
+      "alias": "admin",
+      "login": true,
+      "pageErrors": 0,
+      "noOverflow": true
+    },
+    {
+      "alias": "anchor",
+      "login": true,
+      "pageErrors": 0,
+      "noOverflow": true
+    }
+  ],
+  "pass": true
+}

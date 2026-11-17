@@ -1,0 +1,402 @@
+[
+  {
+    "path": "RESULTS.md",
+    "bytes": 7956,
+    "sha256": "f6062c564c6fa4699c4e8afee9753e431d9057e3d956067e26eb80c6aa978948"
+  },
+  {
+    "path": "SECRET-SCAN.json",
+    "bytes": 184,
+    "sha256": "f101f41a25d8f38578e2111c130055df8f8f7b19f8043ba846d1e1050b21c33d"
+  },
+  {
+    "path": "actual-public-ui-1/01-operator-task-published.png",
+    "bytes": 289745,
+    "sha256": "d991595003fa40e2e4b6ca3f81c81b73adb4f7452ca11c18689957f295d6c12f"
+  },
+  {
+    "path": "actual-public-ui-1/result.json",
+    "bytes": 7510,
+    "sha256": "8aa97961624b515d69f51ebf039e5d35c3507f816921896acc0728fecab67ea7"
+  },
+  {
+    "path": "actual-public-ui-1/run.log",
+    "bytes": 78,
+    "sha256": "f05ab54259e2d104c485c137db6da41baff6be2d2dd1f0f3212bd32dca49e95d"
+  },
+  {
+    "path": "actual-public-ui-2/01-operator-task-published.png",
+    "bytes": 355154,
+    "sha256": "e6b056a0787e8c7c46d4be1a7400687b690c59203c4dc345ad45960f5a01ca6b"
+  },
+  {
+    "path": "actual-public-ui-2/02-anchor-offline-not-delivered.png",
+    "bytes": 197542,
+    "sha256": "d6c2f89f0e8954db188bb90eb44ca17e54066548c5cc040d4e23467ad7e78515"
+  },
+  {
+    "path": "actual-public-ui-2/03-anchor-real-receipt.png",
+    "bytes": 202628,
+    "sha256": "0966b58ed09905f1414d604e212ff5570acce6e69d0ee54db9d56c813fd92613"
+  },
+  {
+    "path": "actual-public-ui-2/04-operator-inbox-and-feedback.png",
+    "bytes": 437966,
+    "sha256": "7371294d224a0eb30c32d4704000d9114cd5157b58de87f649433db54caf6177"
+  },
+  {
+    "path": "actual-public-ui-2/05-anchor-feedback-returned.png",
+    "bytes": 417161,
+    "sha256": "0fc2c794e5c10899250f9c159137303fb28f48655931eeeae1345c3464cf3eba"
+  },
+  {
+    "path": "actual-public-ui-2/06-anchor-refreshed-cloud-record.png",
+    "bytes": 417125,
+    "sha256": "1cf2133d7eba869b12730eca64ba5b126929cf32fa906c79d01f47e0e38f8609"
+  },
+  {
+    "path": "actual-public-ui-2/06-operator-refreshed-cloud-record.png",
+    "bytes": 438490,
+    "sha256": "13124e5d2626fd32d97c4d0b665b9ef8f31072b7f2e3e265cf964b8992d75f27"
+  },
+  {
+    "path": "actual-public-ui-2/POSTRUN-AUDIT.json",
+    "bytes": 493,
+    "sha256": "5baec2fb3967031c574bde1e425485587788259c3befbd619e7cfd7d64581156"
+  },
+  {
+    "path": "actual-public-ui-2/command.json",
+    "bytes": 614,
+    "sha256": "b5b28485968231371fd8a341e05710f6e5591248e48552ae5bedcd44795021c2"
+  },
+  {
+    "path": "actual-public-ui-2/deployment.json",
+    "bytes": 573,
+    "sha256": "11847c04d2f8147cd546d8fc71721e7d7ef957b943e05ac6e67d49d0dd92dc00"
+  },
+  {
+    "path": "actual-public-ui-2/result.json",
+    "bytes": 9847,
+    "sha256": "bd9a57ca5e70ab0caff90d00367ef7e059544504db9ac35bceb2afd050e8c5a8"
+  },
+  {
+    "path": "actual-public-ui-2/run.log",
+    "bytes": 121,
+    "sha256": "ac53a4ba230a68963a859510ca33182ff1b50a1bd20e6f2797a95ec6f66ca776"
+  },
+  {
+    "path": "auth-only-1/result.json",
+    "bytes": 3544,
+    "sha256": "e90da756ab2fafba64234f7fb94b82a158286508d8fd7d8664ba02462638c5e9"
+  },
+  {
+    "path": "auth-only-1/run.log",
+    "bytes": 119,
+    "sha256": "fba8b90a2dde1068145e5b4135bcf138072a51afb6d67f68ddc3080a6e1e6f59"
+  },
+  {
+    "path": "checkpoint-hotfix-local-1/FIXTURE-NOTE.md",
+    "bytes": 522,
+    "sha256": "a06ba9782251847bbd3ccc2a979cd4b191f158b6f31718108fa0b670d5595d9f"
+  },
+  {
+    "path": "checkpoint-hotfix-local-1/command.json",
+    "bytes": 447,
+    "sha256": "93c13cbd2207227cf37273274b15fc8ed5e42c92d74171819a9c77c3faa1d9d1"
+  },
+  {
+    "path": "checkpoint-hotfix-local-1/result.json",
+    "bytes": 3003,
+    "sha256": "ed5603390a4d5aeb3abf6bb6ce14d9cd9b6183d1ba30186c494788cbad978b13"
+  },
+  {
+    "path": "checkpoint-hotfix-local-1/run.log",
+    "bytes": 106,
+    "sha256": "9db215f89ce0250622d197d865b554edaaf09c54561e8a9b6ecec62c2e23c5f7"
+  },
+  {
+    "path": "checkpoint-hotfix-local-2/command.json",
+    "bytes": 447,
+    "sha256": "5b2ac4822f72454df722f7c42925d9efb3768bc99c697d0fdc82199b19344a7f"
+  },
+  {
+    "path": "checkpoint-hotfix-local-2/restored-auth-checkpoint-fixed.png",
+    "bytes": 68663,
+    "sha256": "d583f25ef68a4d8986c6c91abbead277f3827920966acde5226dcce06e87666b"
+  },
+  {
+    "path": "checkpoint-hotfix-local-2/result.json",
+    "bytes": 3527,
+    "sha256": "4d35bb2ba8e252b9267d421fff38d762177fc19e3629952df22aa2f4f17b4ad6"
+  },
+  {
+    "path": "checkpoint-hotfix-local-2/run.log",
+    "bytes": 134,
+    "sha256": "4b978ebd7ac1b25bd87a2124c3be4824e8afdf719d58f850d3dcc10d43dab919"
+  },
+  {
+    "path": "drivers/ACCEPTANCE.md",
+    "bytes": 10515,
+    "sha256": "5ac61153e038cea4ce227c913ba984affcbb3674bc9e594ba79365938146f9a2"
+  },
+  {
+    "path": "drivers/adapter-build.json",
+    "bytes": 284,
+    "sha256": "0da873c73873670f76acd37144741ea25a1af1898f489d4fe24a83052602b9b4"
+  },
+  {
+    "path": "drivers/browser-client.mjs",
+    "bytes": 3981,
+    "sha256": "ccfb00c2ed635d131f6006307ec83e90c3138ff5743d38e813b69bdb4d850d03"
+  },
+  {
+    "path": "drivers/build-browser-adapter.cjs",
+    "bytes": 1376,
+    "sha256": "31a1687d8127e49a5f5f6c8726195391afd4b0c67f0c9e86653c91789de1628e"
+  },
+  {
+    "path": "drivers/cdp_response_fault.py",
+    "bytes": 3417,
+    "sha256": "b449a057d86089178f8b1f20ec1dade81bf69613dbd45089257ede9108ba730c"
+  },
+  {
+    "path": "drivers/checkpoint_hotfix_real_auth.py",
+    "bytes": 9334,
+    "sha256": "44b1570b67a9b82e38b2981ed7a22e3543b3f2bec7a49d456db70c739cf245bc"
+  },
+  {
+    "path": "drivers/contract.json",
+    "bytes": 1639,
+    "sha256": "b2c929c59cb2b012bedb17909e9cc192ec42d2ad26d9a16d1932ad5745950477"
+  },
+  {
+    "path": "drivers/diagnose_restored_auth_checkpoint.py",
+    "bytes": 3562,
+    "sha256": "e3135f2d2f02d0d9b3e3c20ddf25da75c74cdfde767df2c16b899f8fc413cb8c"
+  },
+  {
+    "path": "drivers/run_fault_recovery.py",
+    "bytes": 3276,
+    "sha256": "4b133c744c20b3b956d0db951034e790e761f4199c4c52e326de83b5b40b792b"
+  },
+  {
+    "path": "drivers/run_native_pg_e2e.py",
+    "bytes": 18593,
+    "sha256": "5b6a5752adf6233229b49c1b01bec0dacbebfe1ab649ee810295ba89cd9e26cb"
+  },
+  {
+    "path": "drivers/run_product_ui_e2e.py",
+    "bytes": 18282,
+    "sha256": "f561c675df18714e4e35015edd557587fec82324e00aff66c5ea657e447b2ce8"
+  },
+  {
+    "path": "fault-recovery-1/result.json",
+    "bytes": 6122,
+    "sha256": "ecf1f39e8179cc4e05aaa906364ed1257e2ce7459302418400fba75ff6761c5b"
+  },
+  {
+    "path": "fault-recovery-1/run.log",
+    "bytes": 129,
+    "sha256": "2fc310fded69404e742b633aac3635cdd531cac42ca2299a1d5f5841ce348b10"
+  },
+  {
+    "path": "native-pg-1/result.json",
+    "bytes": 4845,
+    "sha256": "9bda4aae2b0e28f01d740b5e291ce72a4bb9c515be05c1dfed09df174b2b6c8e"
+  },
+  {
+    "path": "native-pg-1/run.log",
+    "bytes": 80,
+    "sha256": "00d45e6688eacd60aa6ebe0e2217ee8d1b76b275a81dff6977ef0b892ba30df9"
+  },
+  {
+    "path": "native-pg-2/result.json",
+    "bytes": 4905,
+    "sha256": "a53f3d93e56ce6664ef47a3c5e9e180edec8e2bf74ba9dc482be4aa9a1c259ec"
+  },
+  {
+    "path": "native-pg-2/run.log",
+    "bytes": 74,
+    "sha256": "9c68ca32889414810d46ec53cf7cd90a94d1dae02b93d3a6fc5cfc4fc622ce92"
+  },
+  {
+    "path": "native-pg-3/result.json",
+    "bytes": 13484,
+    "sha256": "5ae49c4dc8a1174a7903b5891531d618d9adb03637ba3847f4aa8d318ce65d36"
+  },
+  {
+    "path": "native-pg-3/run.log",
+    "bytes": 3193,
+    "sha256": "18c2534ddf71a807356c8c55dff45e60e0ed78bf2564183360a2bbac7abd7f15"
+  },
+  {
+    "path": "product-ui-1/01-operator-task-published.png",
+    "bytes": 167960,
+    "sha256": "94281b09de019fed4b51bf630a3115681064eb2c5a7d4c6a389de5ca19add273"
+  },
+  {
+    "path": "product-ui-1/result.json",
+    "bytes": 4614,
+    "sha256": "85ffaf9b8691842756ade5557ec1300f2595e6bac4925bd564da565043778001"
+  },
+  {
+    "path": "product-ui-1/run.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "product-ui-2/01-operator-task-published.png",
+    "bytes": 206531,
+    "sha256": "b75db7061919f3a8c196a048a440e3a1a0bc1d8d59607a395977c347416d916a"
+  },
+  {
+    "path": "product-ui-2/FIXTURE-NOTE.md",
+    "bytes": 509,
+    "sha256": "69ce48adecdebfee058a8991bdb743036e3d1f86b62dc54bca94afa965268c75"
+  },
+  {
+    "path": "product-ui-2/result.json",
+    "bytes": 5969,
+    "sha256": "4b4ab342498554e36e40b6a23d6cf9bdc83dde3d965164f1f8491c1f3e9717ae"
+  },
+  {
+    "path": "product-ui-2/run.log",
+    "bytes": 78,
+    "sha256": "f05ab54259e2d104c485c137db6da41baff6be2d2dd1f0f3212bd32dca49e95d"
+  },
+  {
+    "path": "product-ui-3/01-operator-task-published.png",
+    "bytes": 232332,
+    "sha256": "86066573e957a57da8d33f1ad2948f3d77f0b152119e10151cc267f81885a018"
+  },
+  {
+    "path": "product-ui-3/FIXTURE-NOTE.md",
+    "bytes": 399,
+    "sha256": "eb9731ecff2475009446a625ddf5b5710a127cadffdeb277c6912d1561463725"
+  },
+  {
+    "path": "product-ui-3/result.json",
+    "bytes": 5982,
+    "sha256": "eee346793724c54a35abfa3d6a5097492150c647f00b9a752779082bef70f352"
+  },
+  {
+    "path": "product-ui-3/run.log",
+    "bytes": 80,
+    "sha256": "00d45e6688eacd60aa6ebe0e2217ee8d1b76b275a81dff6977ef0b892ba30df9"
+  },
+  {
+    "path": "product-ui-4/01-operator-task-published.png",
+    "bytes": 270987,
+    "sha256": "55074a30af6b74583115c47cee9a48d74980ca94c4532ea10799b3c6c04dfab3"
+  },
+  {
+    "path": "product-ui-4/02-anchor-offline-not-delivered.png",
+    "bytes": 197556,
+    "sha256": "72ed0c988ae8f904fc5563b87c23f8ab2d3ff6df0a0f2ecc1f802486fa7dd525"
+  },
+  {
+    "path": "product-ui-4/03-anchor-real-receipt.png",
+    "bytes": 202500,
+    "sha256": "3850dd0702eded14959bad1d9abe4e6ec426cccaed47aab8a08c1f2929328e24"
+  },
+  {
+    "path": "product-ui-4/04-operator-inbox-and-feedback.png",
+    "bytes": 350296,
+    "sha256": "dbed7035586bae409cb5126d4f71bffba7d65b81ca4901cda697a6834e57bdcb"
+  },
+  {
+    "path": "product-ui-4/05-anchor-feedback-returned.png",
+    "bytes": 292854,
+    "sha256": "9decd84fc1ef689254936399090161681db077a20fbad817793022d4feb2af5b"
+  },
+  {
+    "path": "product-ui-4/06-anchor-refreshed-cloud-record.png",
+    "bytes": 268741,
+    "sha256": "5a0a3d24322991c4a9f8e838bee035bc0539b715952909fde5a885f2d050e112"
+  },
+  {
+    "path": "product-ui-4/06-operator-refreshed-cloud-record.png",
+    "bytes": 350228,
+    "sha256": "40a065a200e571f659104dbe63d228343f7c26159635a2d5b2defd80185e88cc"
+  },
+  {
+    "path": "product-ui-4/result.json",
+    "bytes": 8019,
+    "sha256": "c79a87104442f5ce8b364b61fa172f61120b01784808e8ebe2a6d908826504aa"
+  },
+  {
+    "path": "product-ui-4/run.log",
+    "bytes": 115,
+    "sha256": "fd0be5472bdab23ec5e7015f19e74ecfe590fe472a7706f3e337ddd2f255d723"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/01-operator-task-published.png",
+    "bytes": 329759,
+    "sha256": "505e40af90432f7b525dcf73a7569ba14592f2993e8526a522d84b7ff225cd21"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/02-anchor-offline-not-delivered.png",
+    "bytes": 197556,
+    "sha256": "72ed0c988ae8f904fc5563b87c23f8ab2d3ff6df0a0f2ecc1f802486fa7dd525"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/03-anchor-real-receipt.png",
+    "bytes": 202618,
+    "sha256": "e37621c98400e29f9890c0643de122dcbb98b14704ee8bcba79f0101cfe137b0"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/04-operator-inbox-and-feedback.png",
+    "bytes": 438300,
+    "sha256": "a8604bdfc68f96f9c0acebb713dda3186313931bd70dfb7c88875715914d625d"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/05-anchor-feedback-returned.png",
+    "bytes": 358715,
+    "sha256": "f524121e1880d60d17351e54ef47f58e03c086cd93a8bfcbaf9060d7665518af"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/06-anchor-refreshed-cloud-record.png",
+    "bytes": 358044,
+    "sha256": "516c662161536f08b2291038aee59eb0797f6a63f8f48a04940d14860ad6fe54"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/06-operator-refreshed-cloud-record.png",
+    "bytes": 438497,
+    "sha256": "13e9d0823c50a7096157de147343fef6d15047f7651188cdf0d4055ffc86d83c"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/command.json",
+    "bytes": 455,
+    "sha256": "f42c9e214cd2b7978317583acd6064de946fac05115a45f4a8e9e53510b4ac47"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/result.json",
+    "bytes": 8140,
+    "sha256": "9ca96fa3e91dd44e98e8e519726464af97912921a33e7e0d5c848706816f1ec6"
+  },
+  {
+    "path": "product-ui-hotfix-local-1/run.log",
+    "bytes": 128,
+    "sha256": "f8749f187c2883a60506a946074ba33c604641ca96a51eb269fab629a502742a"
+  },
+  {
+    "path": "public-restored-auth-diagnostic/OBSERVATION-NOTE.md",
+    "bytes": 341,
+    "sha256": "f9676828b74256218b9cb9c7982cdefe44f805118ae6ba4da16b76b70f5a2be6"
+  },
+  {
+    "path": "public-restored-auth-diagnostic/restored-login-first-save.png",
+    "bytes": 83703,
+    "sha256": "bfaaecb3a0a56448c4a60ef8cf26bee1d37e3e8dbc79863ab9a4e6ea0d50669f"
+  },
+  {
+    "path": "public-restored-auth-diagnostic/result.json",
+    "bytes": 1377,
+    "sha256": "4b03966ae0dd13867fca91a6ec6fe0232b43a928da3e9c7890115d94dd541be2"
+  },
+  {
+    "path": "public-restored-auth-diagnostic/run.log",
+    "bytes": 921,
+    "sha256": "08bdffcd5d6264a39cb13c1fcca6ef25bfaf69b647a1dcd2a3164ec6afb6a0fa"
+  }
+]

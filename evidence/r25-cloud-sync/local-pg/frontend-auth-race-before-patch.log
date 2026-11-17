@@ -1,0 +1,19 @@
+{
+  "scope": "localSDKmock-auth-race",
+  "status": "REPRODUCED",
+  "localUser": "B",
+  "nativeSdkUser": "A",
+  "actualRequestActor": "A",
+  "payload": {
+    "id": "synthetic-B-private",
+    "snapshot": {
+      "turns": [
+        {
+          "answer": "synthetic content owned by B"
+        }
+      ]
+    }
+  },
+  "confirmedOutboxOwner": "B",
+  "staleSignIn": "STALE_SESSION"
+}

@@ -1,0 +1,8 @@
+{
+  "sdk": "@cloudbase/js-sdk",
+  "sdkVersion": "3.11.1",
+  "bundleBytes": 1572511,
+  "bundleSha256": "0356129249f805e0b25a45096a658934923d11f42a219d4405d5f315fb063e42",
+  "entrySha256": "ccfb00c2ed635d131f6006307ec83e90c3138ff5743d38e813b69bdb4d850d03",
+  "networkExecuted": false
+}

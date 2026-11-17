@@ -1,0 +1,65 @@
+{
+  "scope": "Final recovery app copied byte-for-byte; only copied app-config.cloudbase.enabled=false to exercise preserved local demo/IndexedDB paths. Existing speech mocks/synthetic data remain; no real ASR/cloud/physical-phone claim. Source candidate kept enabled=true.",
+  "source_before": {
+    "app_sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+    "config_sha256": "3df42c4f593e9c10776631bac75d5526e1e2a00bcd4e14e2e51627bf7b8c3dea",
+    "cloud_enabled": true
+  },
+  "source_after": {
+    "app_sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+    "config_sha256": "3df42c4f593e9c10776631bac75d5526e1e2a00bcd4e14e2e51627bf7b8c3dea",
+    "cloud_enabled": true
+  },
+  "copied_app_sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "source_unchanged": true,
+  "results": [
+    {
+      "test": "record-cache.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-final-legacy-recovery-copy/experiments/r25/tests/record-cache.py"
+      ],
+      "started_at": "2026-11-17T01:18:17.014612+00:00",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "record-cache.py.log"
+    },
+    {
+      "test": "session_concurrency.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-final-legacy-recovery-copy/experiments/r25/tests/session_concurrency.py"
+      ],
+      "started_at": "2026-11-17T01:18:22.650502+00:00",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "session_concurrency.py.log"
+    },
+    {
+      "test": "session_smooth_recovery.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-final-legacy-recovery-copy/experiments/r25/tests/session_smooth_recovery.py"
+      ],
+      "started_at": "2026-11-17T01:18:38.180269+00:00",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "session_smooth_recovery.py.log"
+    },
+    {
+      "test": "browser_smooth_e2e.py",
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-final-legacy-recovery-copy/experiments/r25/tests/browser_smooth_e2e.py"
+      ],
+      "started_at": "2026-11-17T01:18:53.897618+00:00",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "browser_smooth_e2e.py.log"
+    }
+  ]
+}

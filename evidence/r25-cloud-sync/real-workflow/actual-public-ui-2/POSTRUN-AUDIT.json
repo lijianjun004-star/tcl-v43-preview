@@ -1,0 +1,12 @@
+{
+  "source": "Derived from recorded actual UI sequence and unmodified runner control flow",
+  "anchorProductLoginCount": 1,
+  "engineReloadRestoredWithoutManualRelogin": true,
+  "configurationOverride": false,
+  "sdkInjection": false,
+  "businessResponseMocks": false,
+  "enginePreferenceMethod": "actual published model selector UI",
+  "checksCount": 24,
+  "countExplanation": "23 existing product/UI checks plus one actual public model-selector check",
+  "noMoreCloudBusinessTests": true
+}

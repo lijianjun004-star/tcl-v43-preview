@@ -1,0 +1,156 @@
+{
+  "runId": "r25-media-20261117T003136-065fb3",
+  "startedAt": "2026-11-17T00:31:36.777363+00:00",
+  "scope": "REAL official stable SDK browser + native Auth/PG/Storage; synthetic 0.5s sine WAV, no ASR or hardware test",
+  "status": "FAIL",
+  "storageOnly": true,
+  "bucket": "r25wf-private",
+  "sdkBuild": {
+    "sdkVersion": "3.11.1",
+    "entrySha256": "2ff022e93d8396cdcdf8688133924f75cd4969d7f411c07130455f2c501be789",
+    "bundleSha256": "684f8b895fb8acd08ab2b9c23688cf824c3fce1e4c433660315e17e37953be10",
+    "networkExecuted": false
+  },
+  "fixture": {
+    "kind": "synthetic 440Hz mono PCM WAV",
+    "bytes": 16044,
+    "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+    "range0to99Sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6"
+  },
+  "actors": {
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "isolatedContext": true
+    },
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "isolatedContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "isolatedContext": true
+    },
+    "admin": {
+      "uidSha256": "ffb6a83db4e60a2da03e51a37e6e64c595f1c1393ff20bee93917004b1866109",
+      "isolatedContext": true
+    }
+  },
+  "checks": [
+    {
+      "name": "anchor_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "admin_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all_native_users_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_active_business_role",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_active_business_role",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_upload_r25-media-20261117T003136-065fb3-1.wav",
+      "pass": false,
+      "detail": {
+        "errorCode": "StorageApiError"
+      }
+    }
+  ],
+  "operations": [
+    {
+      "actor": "anchor",
+      "method": "rpc",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "operator",
+      "method": "rpc",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "method": "upload",
+      "ok": false,
+      "errorCode": "StorageApiError",
+      "status": 403,
+      "transportFailure": false
+    }
+  ],
+  "pageErrorCounts": {
+    "anchor": 0,
+    "operator": 0,
+    "outsider": 0,
+    "admin": 0,
+    "anonymous": 0
+  },
+  "rangeConfirmed": false,
+  "notRun": [
+    "Real microphone/camera/phone",
+    "Mainland network",
+    "MP4/AAC decoding",
+    "Long recordings",
+    "Human/TCL ASR accuracy",
+    "Physical audio/video seeking"
+  ],
+  "browserVersion": "156.0.8078.79",
+  "finishedAt": "2026-11-17T00:31:47.934595+00:00",
+  "failure": {
+    "type": "AssertionError",
+    "step": "anchor_upload_r25-media-20261117T003136-065fb3-1.wav"
+  }
+}

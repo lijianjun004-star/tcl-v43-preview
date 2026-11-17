@@ -1,0 +1,8 @@
+{
+  "scope": "Actual Chromium DOM and actual workspace module; controlled mocked RPC/media latency, no cloud calls",
+  "sourceSha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15",
+  "afterLateAContainsAnswerB": true,
+  "afterLateAContainsAnswerA": false,
+  "foreignMediaPlayers": 0,
+  "status": "PASS"
+}

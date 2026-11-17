@@ -1,0 +1,176 @@
+{
+  "scope": "localPGmock-auth",
+  "checks": [
+    {
+      "name": "media_policy_applies",
+      "pass": true
+    },
+    {
+      "name": "owner_can_insert_immutable_audio",
+      "pass": true
+    },
+    {
+      "name": "foreign_path_insert_blocked",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "new row violates row-level security policy \"r25wf_object_insert_guard\" for table \"objects\""
+      }
+    },
+    {
+      "name": "unbound_user_upload_blocked",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "new row violates row-level security policy \"r25wf_object_insert_guard\" for table \"objects\""
+      }
+    },
+    {
+      "name": "malformed_size_is_rejected",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "new row violates row-level security policy \"r25wf_object_insert_guard\" for table \"objects\""
+      }
+    },
+    {
+      "name": "oversize_upload_blocked",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "new row violates row-level security policy \"r25wf_object_insert_guard\" for table \"objects\""
+      }
+    },
+    {
+      "name": "mime_upload_blocked",
+      "pass": true,
+      "detail": {
+        "code": "42501",
+        "message": "new row violates row-level security policy \"r25wf_object_insert_guard\" for table \"objects\""
+      }
+    },
+    {
+      "name": "owner_reads_before_submission",
+      "pass": true
+    },
+    {
+      "name": "operator_cannot_read_unsubmitted",
+      "pass": true
+    },
+    {
+      "name": "uploaded_media_submission_commits",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "receiptId": "submission-media-A",
+          "submission": {
+            "id": "submission-media-A",
+            "late": false,
+            "media": [
+              {
+                "mime": "audio/wav",
+                "path": "000123/audio-A.wav",
+                "size": 20
+              }
+            ],
+            "snapshot": {
+              "turns": [
+                {
+                  "id": "m1",
+                  "answer": "本地媒体提交"
+                }
+              ]
+            },
+            "anchorUid": "000123",
+            "sessionId": "media-training",
+            "turnCount": 1,
+            "anchorName": "a",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "submittedAt": "2026-11-17T00:30:35.542+00:00",
+            "assignmentId": null,
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "receiving_operator_reads_media",
+      "pass": true
+    },
+    {
+      "name": "other_operator_cannot_read_media",
+      "pass": true
+    },
+    {
+      "name": "other_anchor_cannot_read_media",
+      "pass": true
+    },
+    {
+      "name": "anon_cannot_read_media",
+      "pass": true
+    },
+    {
+      "name": "owner_cannot_update_existing_object",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "owner_cannot_delete_existing_object",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "owner_cannot_overwrite_same_path",
+      "pass": true,
+      "detail": {
+        "code": "23505",
+        "message": "duplicate key value violates unique constraint \"objects_bucket_id_name_key\""
+      }
+    },
+    {
+      "name": "object_cannot_bind_two_submissions",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "MEDIA_ALREADY_ATTACHED",
+          "message": "该附件已绑定其他提交，不能重复使用"
+        }
+      }
+    },
+    {
+      "name": "request_size_must_match_storage",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "MEDIA_INVALID",
+          "message": "附件大小或格式与云端对象不一致"
+        }
+      }
+    },
+    {
+      "name": "media_commit_idempotent_receipt",
+      "pass": true
+    },
+    {
+      "name": "legacy_bucket_insert_unchanged",
+      "pass": true
+    },
+    {
+      "name": "anon_legacy_bucket_read_unchanged",
+      "pass": true
+    },
+    {
+      "name": "disabled_receiver_loses_media_access",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "cloudCalls": 0,
+  "actualStorageApi": false,
+  "mediaPolicySha256": "5b29f8df5c813191241ca834eff94c677b16b3e8ed3d0cec5c2bd36529c51d1f",
+  "status": "PASS"
+}

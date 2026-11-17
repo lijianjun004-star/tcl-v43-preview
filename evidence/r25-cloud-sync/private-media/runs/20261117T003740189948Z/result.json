@@ -1,0 +1,183 @@
+{
+  "runId": "r25-media-20261117T003740-4eccf7",
+  "startedAt": "2026-11-17T00:37:40.193811+00:00",
+  "scope": "Read-only inspection after ambiguous SDK remove success; no object writes. Native Auth + SDK info/download + fetch Range; synthetic WAV only.",
+  "status": "PASS_READ_ONLY_INSPECTION_WITH_RANGE",
+  "storageOnly": true,
+  "bucket": "r25wf-private",
+  "sdkBuild": {
+    "sdkVersion": "3.11.1",
+    "entrySha256": "f9857fc3783068ace7e16f1c2534412d9f188ae7b8abede49d204d171e8fe8bd",
+    "bundleSha256": "2619fa027f6e5f951a3d76765ad80a118865c273bb6d79ed32e35ad14a714b3f",
+    "networkExecuted": false
+  },
+  "fixture": {
+    "kind": "synthetic 440Hz mono PCM WAV",
+    "bytes": 16044,
+    "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+    "range0to99Sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6"
+  },
+  "actors": {
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "isolatedContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "isolatedContext": true
+    }
+  },
+  "checks": [
+    {
+      "name": "anchor_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "original_object_still_exists_with_exact_bytes_after_remove_api",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "errorCode": null,
+        "bytes": 16044,
+        "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+        "status": null
+      }
+    },
+    {
+      "name": "original_info_still_readable",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_known_path_read_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_PG_REQUEST_FAIL",
+        "status": 404
+      }
+    },
+    {
+      "name": "anonymous_known_path_read_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "StorageError",
+        "status": null
+      }
+    },
+    {
+      "name": "range_206_content_range_exact_100_bytes",
+      "pass": true,
+      "detail": {
+        "status": 206,
+        "bytes": 100,
+        "sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6",
+        "contentRange": "bytes 0-99/16044",
+        "acceptRanges": "bytes",
+        "errorCode": null
+      }
+    }
+  ],
+  "operations": [
+    {
+      "actor": "anchor",
+      "method": "download",
+      "ok": true,
+      "bytes": 16044,
+      "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+      "mime": "audio/wav"
+    },
+    {
+      "actor": "anchor",
+      "method": "info",
+      "ok": true
+    },
+    {
+      "actor": "outsider",
+      "method": "download",
+      "ok": false,
+      "errorCode": "STORAGE_PG_REQUEST_FAIL",
+      "status": 404,
+      "transportFailure": false,
+      "providerMessage": "Download failed with status 404"
+    },
+    {
+      "actor": "anonymous",
+      "method": "download",
+      "ok": false,
+      "errorCode": "StorageError",
+      "transportFailure": false,
+      "providerMessage": "[object Object]"
+    },
+    {
+      "actor": "anchor",
+      "method": "range",
+      "ok": true,
+      "status": 206,
+      "bytes": 100,
+      "sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6",
+      "contentRange": "bytes 0-99/16044",
+      "acceptRanges": "bytes",
+      "contentType": "audio/wav"
+    }
+  ],
+  "pageErrorCounts": {
+    "anchor": 0,
+    "outsider": 0,
+    "anonymous": 0
+  },
+  "rangeConfirmed": true,
+  "notRun": [
+    "Real microphone/camera/phone",
+    "Mainland network",
+    "MP4/AAC decoding",
+    "Long recordings",
+    "Human/TCL ASR accuracy",
+    "Physical audio/video seeking"
+  ],
+  "objectKeyTemplate": "<anchor_uid>/r25-media-20261117T003552-fbd020-1.wav",
+  "uploadedObjectInfo": {
+    "availableKeys": [
+      "bucketId",
+      "cacheControl",
+      "contentType",
+      "createdAt",
+      "etag",
+      "id",
+      "lastModified",
+      "metadata",
+      "name",
+      "size",
+      "version"
+    ],
+    "size": 16044,
+    "contentType": "audio/wav",
+    "metadata": {
+      "availableKeys": [],
+      "size": null,
+      "mimetype": null,
+      "contentType": null
+    },
+    "ownerUidSha256": null
+  },
+  "finishedAt": "2026-11-17T00:38:08.596483+00:00"
+}

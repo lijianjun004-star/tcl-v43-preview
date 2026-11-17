@@ -1,0 +1,59 @@
+{
+  "confirmed": true,
+  "version": "r25wf-v1-frozen-20261117",
+  "rpcName": "r25wf_api",
+  "actions": {
+    "me": "me",
+    "assignmentCreate": "assignments.create",
+    "assignmentList": "assignments.list",
+    "assignmentJoin": "assignments.join",
+    "submissionCreate": "submissions.create",
+    "submissionList": "submissions.list",
+    "submissionGet": "submissions.get",
+    "feedbackCreate": "feedback.create",
+    "feedbackList": "feedback.list"
+  },
+  "keys": {
+    "assignment": "assignment",
+    "submission": "submission",
+    "feedback": "feedback",
+    "user": "user",
+    "items": "items",
+    "id": "id"
+  },
+  "denialCodes": [
+    "AUTH_REQUIRED",
+    "NOT_REGISTERED",
+    "ACCOUNT_DISABLED",
+    "FORBIDDEN",
+    "NOT_FOUND"
+  ],
+  "idempotencyConflictCodes": [
+    "IDEMPOTENCY_CONFLICT"
+  ],
+  "payloadShapes": {
+    "assignmentCreate": "flat",
+    "submissionCreate": "snapshot",
+    "feedbackCreate": "flat",
+    "getIdField": "id",
+    "assignmentJoin": "joinCode"
+  },
+  "note": "Root confirmed live native PG schema and all four active role bindings; business test writes authorized. Media remains separate.",
+  "sourceContractSha256": "10b1c479e919a561d59866346561211c2ddb78a120134f3d04fd747ad67baad8",
+  "deployedSchemaSha256": "7d501d19589ad30d12fef4dc3606611329bde807b48d82ad4c57dc86cd55da23",
+  "deploymentEvidence": {
+    "schemaRequestId": "6beb52dc",
+    "roleBootstrapRequestId": "1fd3543c",
+    "roles": {
+      "admin": "admin",
+      "operator": "operator",
+      "anchor": "anchor",
+      "outsider": "anchor"
+    }
+  },
+  "providerDenialCodes": [
+    "42501",
+    "PGRST301",
+    "PGRST302"
+  ]
+}

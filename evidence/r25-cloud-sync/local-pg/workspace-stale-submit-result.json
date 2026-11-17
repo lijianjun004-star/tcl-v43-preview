@@ -1,0 +1,6 @@
+{
+  "scope": "real Chromium DOM, mocked cloud workflow; no network/Auth/database writes",
+  "sourceSha256": "7f56f64bcc81a4b311829a0ae65ac6af6707268e7fad3a3c45d414bdbde16a0c",
+  "sent": [],
+  "wrongActorSend": false
+}

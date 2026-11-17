@@ -1,0 +1,97 @@
+{
+  "status": "PASS_SYNTHETIC_WEBM_SUBMITTED_AND_RECIPIENT_PLAYBACK",
+  "scope": "REAL browser MediaRecorder using synthetic canvas+oscillator; real CloudBase upload/download; no real phone/camera/microphone",
+  "actors": {
+    "anchor": {
+      "uidSha256": "02b14bb227003c794b97d8eab6f1ba37e07c21f27602d6f56e579fb0f84e4046",
+      "isolatedContext": true
+    },
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "isolatedContext": true
+    }
+  },
+  "outerChecks": 9,
+  "videoAdapterBuild": {
+    "sdk": "@cloudbase/js-sdk",
+    "sdkVersion": "3.11.1",
+    "entrySha256": "d22a97b2968583929827f824796b7decc95ab06900d380418b5b781e3726a7e3",
+    "bundleSha256": "446daf92008e145e65f5db738cadc32c14b87e39b1dad52e4e5b7cd7d9d0d91c"
+  },
+  "owner": {
+    "scope": "REAL browser MediaRecorder using synthetic canvas+oscillator; real CloudBase upload/download; no real phone/camera/microphone",
+    "steps": [
+      {
+        "step": "native_session_restored",
+        "pass": true,
+        "detail": null
+      },
+      {
+        "step": "actual_media_recorder_produced_webm",
+        "pass": true,
+        "detail": {
+          "bytes": 74970,
+          "mime": "video/webm;codecs=vp8,opus",
+          "canvasFrames": 17
+        }
+      },
+      {
+        "step": "private_webm_upload",
+        "pass": true,
+        "detail": null
+      },
+      {
+        "step": "webm_byte_hash_roundtrip",
+        "pass": true,
+        "detail": {
+          "bytes": 74970,
+          "sha256": "a2720690e84931d85797c6cb4318f5edaf9c78bcdb3bfa486940b13aa36e5c40"
+        }
+      },
+      {
+        "step": "actual_webm_decoded_and_played_to_end",
+        "pass": true,
+        "detail": {
+          "width": 320,
+          "height": 180,
+          "decodedFrames": 16,
+          "droppedFrames": 0,
+          "durationSeconds": 1.56
+        }
+      }
+    ],
+    "status": "PASS_SYNTHETIC_WEBM_ROUNDTRIP_PLAYBACK",
+    "objectKeyTemplate": "<anchor_uid>/r25-media-20261117T004636-13f372-synthetic-video.webm"
+  },
+  "recipient": {
+    "scope": "Recipient native SDK download and Chromium Blob video playback of the already submitted synthetic WebM",
+    "steps": [
+      {
+        "step": "recipient_exact_video_sha256",
+        "pass": true,
+        "detail": {
+          "bytes": 74970,
+          "sha256": "a2720690e84931d85797c6cb4318f5edaf9c78bcdb3bfa486940b13aa36e5c40"
+        }
+      },
+      {
+        "step": "recipient_video_played_to_end",
+        "pass": true,
+        "detail": {
+          "width": 320,
+          "height": 180,
+          "decodedFrames": 16,
+          "droppedFrames": 0
+        }
+      }
+    ],
+    "status": "PASS_RECIPIENT_VIDEO_PLAYBACK"
+  },
+  "submissionId": "99789f32-3002-4791-9f38-409458cce663",
+  "assignmentId": "f096df28-d9c2-4a97-8656-15ca13c201ef",
+  "pageErrorCounts": {
+    "anchor": 0,
+    "operator": 0
+  },
+  "note": "Derived summary; original result.json retained unchanged. Its shared harness top-level WAV fixture was not used in this optional video run. Actual media provenance is video.steps and recipientVideo.steps."
+}

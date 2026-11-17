@@ -1,0 +1,274 @@
+{
+  "scope": "Actual candidate R25 UI + real CloudBase Auth/PG. Two isolated storage contexts, plus outsider. Text only; no API/SDK mocks.",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "environmentId": "unknown-roadrunner-d7cap6e21f517",
+  "configurationOverride": false,
+  "expectedAppSha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b",
+  "startedAt": "2026-11-17T00:50:55.109010+00:00",
+  "status": "PASS_PRODUCT_UI_REAL_CLOUD",
+  "checks": [
+    {
+      "name": "operator_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "actual_candidate_app_responses_match_frozen_source",
+      "pass": true,
+      "detail": [
+        {
+          "actor": "operator",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        },
+        {
+          "actor": "anchor",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        },
+        {
+          "actor": "outsider",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        }
+      ]
+    },
+    {
+      "name": "operator_published_real_cloud_task_with_join_code",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "unjoined_task_not_in_anchor_list",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "assignment_receiver_server_uid_selected",
+      "pass": true,
+      "detail": {
+        "selectedUidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+        "expectedUidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+        "disabled": true,
+        "optionCount": 4,
+        "errorState": "cloud-status",
+        "reason": "READY_OR_OTHER"
+      }
+    },
+    {
+      "name": "offline_ui_does_not_claim_delivery",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "offline_submission_is_persisted_as_pending_not_confirmed",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_does_not_receive_failed_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "online_retry_same_operation_receives_real_receipt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_ui_receives_one_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_reads_both_original_answers",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_ui_reads_persisted_operator_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_ui_does_not_list_other_submission",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_ui_does_not_list_unjoined_task",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_reload_still_reads_server_submission_and_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_reload_still_reads_server_submission_and_feedback",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "zero_product_page_errors",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no_model_download_or_inference_requests",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "actors": {
+    "operator": {
+      "independentContext": true,
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "reloadRequiredLogin": false
+    },
+    "anchor": {
+      "independentContext": true,
+      "uidSha256": "02b14bb227003c794b97d8eab6f1ba37e07c21f27602d6f56e579fb0f84e4046",
+      "reloadRequiredLogin": false
+    },
+    "outsider": {
+      "independentContext": true,
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da"
+    }
+  },
+  "pageErrors": [],
+  "modelRequests": [],
+  "productResponses": [
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    }
+  ],
+  "configReadbacks": [],
+  "notRun": [
+    "Physical devices",
+    "Mainland network",
+    "ASR accuracy",
+    "Backend process restart",
+    "Cloud media (separate suite)"
+  ],
+  "runId": "r25-ui-20261117T005055-5d5df",
+  "assignmentId": "d53eabd7-294c-481a-9421-cc2308a8496c",
+  "submissionScopeControls": {
+    "textCheckbox": 0,
+    "scopeRadios": 2
+  },
+  "receiverReadback": {
+    "selectedUidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+    "expectedUidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+    "disabled": true,
+    "optionCount": 4,
+    "errorState": "cloud-status",
+    "reason": "READY_OR_OTHER"
+  },
+  "offlineOperation": {
+    "operationId": "0ec5ab00-9ccc-450d-9069-9297ebb3055b",
+    "status": "pending",
+    "submissionId": "c2407e22-97a1-476e-b88d-1744848cee77",
+    "receiptId": null
+  },
+  "submissionId": "c2407e22-97a1-476e-b88d-1744848cee77",
+  "browser": "156.0.8078.79"
+}

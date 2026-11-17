@@ -1,0 +1,15 @@
+file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:6
+const fail = (code, message) => { throw new WorkflowError(code, message); };
+                                        ^
+
+WorkflowError: 正式账号会话已改变，旧账号请求结果不会显示或保存
+    at fail (file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:6:41)
+    at verifyNativeSession (file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:133:7)
+    at async call (file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:140:5)
+    at async file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:174:20
+    at async Object.durableWrite (file:///workspace/tcl-r25-cloud/experiments/r25/tcl-v352-asr-r25-qa/cloud-workflow.mjs:185:18)
+    at async file:///workspace/r25-backend-tests/local-pg/frontend-auth-race-probe.mjs:17:15 {
+  code: 'STALE_SESSION'
+}
+
+Node.js v24.22.1

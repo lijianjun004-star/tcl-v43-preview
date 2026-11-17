@@ -1,0 +1,122 @@
+{
+  "status": "PASS_REAL_AUTH_CHECKPOINT_HOTFIX",
+  "scope": "Real native Auth + actual model selector reload; read-only IndexedDB telemetry.\nThe telemetry delegates every native IDB call unchanged, records draft reads/puts,\nand never replaces Auth, SDK, responses, business RPC, or stored values.\n",
+  "url": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "expectedAppSha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "startedAt": "2026-11-17T01:12:40.643394+00:00",
+  "checks": [
+    {
+      "name": "real_native_login",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "actual_model_control_reload_restores_native_auth",
+      "pass": true,
+      "detail": {
+        "initialModel": "vosk",
+        "afterModel": "tiny"
+      }
+    },
+    {
+      "name": "first_text_save_after_automatic_auth_restore",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "first_saved_draft_contains_answer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "existing_draft_auto_auth_restore",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "existing_draft_initialization_is_readonly_token_and_json_unchanged",
+      "pass": true,
+      "detail": {
+        "draftReadCount": 1,
+        "draftPutCount": 0,
+        "firstReadMode": "readonly",
+        "correctUidPartitionKey": true,
+        "initialRowSha256": "564e9d39a580b5196d1c8df108438f90201e1e0d31e8f9cdf2b7aecf54dc36fb",
+        "afterInitRowSha256": "564e9d39a580b5196d1c8df108438f90201e1e0d31e8f9cdf2b7aecf54dc36fb",
+        "writeTokenUnchanged": true
+      }
+    },
+    {
+      "name": "existing_draft_resume_control_visible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_practice_after_restored_existing_draft_saves",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "explicit_new_practice_replaces_latest_draft_with_new_run",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_draft_reload_initialization_is_readonly",
+      "pass": true,
+      "detail": {
+        "draftReadCount": 1,
+        "draftPutCount": 0,
+        "firstReadMode": "readonly",
+        "correctUidPartitionKey": true,
+        "initialRowSha256": "b162a1b18d4b6b1cef2182c90d576bbdd46de113c7f6122ac5619ae220181b2c",
+        "afterInitRowSha256": "b162a1b18d4b6b1cef2182c90d576bbdd46de113c7f6122ac5619ae220181b2c",
+        "writeTokenUnchanged": true
+      }
+    },
+    {
+      "name": "new_draft_restores_saved_text_after_reload",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "actual_http_app_matches_candidate_hash",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "zero_product_page_errors",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no_model_requests",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "pageErrors": [],
+  "modelRequests": [],
+  "appResponses": [
+    {
+      "status": 200,
+      "sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16"
+    },
+    {
+      "status": 200,
+      "sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16"
+    },
+    {
+      "status": 200,
+      "sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16"
+    },
+    {
+      "status": 200,
+      "sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16"
+    }
+  ],
+  "configurationOverride": false,
+  "sdkInjection": false,
+  "businessMocks": false,
+  "browser": "156.0.8078.79"
+}

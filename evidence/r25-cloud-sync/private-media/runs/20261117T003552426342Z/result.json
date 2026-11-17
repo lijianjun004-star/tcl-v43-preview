@@ -1,0 +1,354 @@
+{
+  "runId": "r25-media-20261117T003552-fbd020",
+  "startedAt": "2026-11-17T00:35:52.428650+00:00",
+  "scope": "REAL official stable SDK browser + native Auth/PG/Storage; synthetic 0.5s sine WAV, no ASR or hardware test",
+  "status": "FAIL",
+  "storageOnly": true,
+  "bucket": "r25wf-private",
+  "sdkBuild": {
+    "sdkVersion": "3.11.1",
+    "entrySha256": "a80eb87f6e31b98a10e8fc56cd4e70b411c576c785305e6468677c956a69b324",
+    "bundleSha256": "fcafff097c1145d0f3353ed33b03c6c314734e2cd6ec5898cb1bc144923ffd85",
+    "networkExecuted": false
+  },
+  "fixture": {
+    "kind": "synthetic 440Hz mono PCM WAV",
+    "bytes": 16044,
+    "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+    "range0to99Sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6"
+  },
+  "actors": {
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "isolatedContext": true
+    },
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "isolatedContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "isolatedContext": true
+    },
+    "admin": {
+      "uidSha256": "ffb6a83db4e60a2da03e51a37e6e64c595f1c1393ff20bee93917004b1866109",
+      "isolatedContext": true
+    }
+  },
+  "checks": [
+    {
+      "name": "anchor_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "admin_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all_native_users_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_active_business_role",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_active_business_role",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_upload_r25-media-20261117T003552-fbd020-1.wav",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "uploaded_object_metadata_visible_via_storage_api",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "owner_download_exact_synthetic_wav",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "errorCode": null,
+        "bytes": 16044,
+        "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+        "status": null
+      }
+    },
+    {
+      "name": "operator_before_link_download_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_PG_REQUEST_FAIL",
+        "status": 404
+      }
+    },
+    {
+      "name": "operator_before_link_sign_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_OBJECT_NOT_FOUND",
+        "status": 404
+      }
+    },
+    {
+      "name": "outsider_before_link_download_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_PG_REQUEST_FAIL",
+        "status": 404
+      }
+    },
+    {
+      "name": "outsider_before_link_sign_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_OBJECT_NOT_FOUND",
+        "status": 404
+      }
+    },
+    {
+      "name": "anonymous_before_link_download_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "StorageError",
+        "status": null
+      }
+    },
+    {
+      "name": "anonymous_before_link_sign_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "StorageError",
+        "status": null
+      }
+    },
+    {
+      "name": "direct_postgrest_storage_row_forgery_denied",
+      "pass": true,
+      "detail": {
+        "status": 406,
+        "errorCode": "DATABASE_PGRST106"
+      }
+    },
+    {
+      "name": "owner_upsert_existing_object_denied",
+      "pass": true,
+      "detail": {
+        "errorCode": "STORAGE_ACCESS_DENIED",
+        "status": 403
+      }
+    },
+    {
+      "name": "owner_delete_immutable_object_denied",
+      "pass": false,
+      "detail": {
+        "errorCode": null,
+        "status": null
+      }
+    }
+  ],
+  "operations": [
+    {
+      "actor": "anchor",
+      "method": "rpc",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "operator",
+      "method": "rpc",
+      "action": "me",
+      "ok": true,
+      "errorCode": null
+    },
+    {
+      "actor": "anchor",
+      "method": "upload",
+      "ok": true
+    },
+    {
+      "actor": "anchor",
+      "method": "info",
+      "ok": true
+    },
+    {
+      "actor": "anchor",
+      "method": "download",
+      "ok": true,
+      "bytes": 16044,
+      "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+      "mime": "audio/wav"
+    },
+    {
+      "actor": "operator",
+      "method": "download",
+      "ok": false,
+      "errorCode": "STORAGE_PG_REQUEST_FAIL",
+      "status": 404,
+      "transportFailure": false,
+      "providerMessage": "Download failed with status 404"
+    },
+    {
+      "actor": "operator",
+      "method": "sign",
+      "ok": false,
+      "errorCode": "STORAGE_OBJECT_NOT_FOUND",
+      "status": 404,
+      "transportFailure": false,
+      "providerMessage": "Object not found For more information, please refer to [URL_REDACTED]"
+    },
+    {
+      "actor": "outsider",
+      "method": "download",
+      "ok": false,
+      "errorCode": "STORAGE_PG_REQUEST_FAIL",
+      "status": 404,
+      "transportFailure": false,
+      "providerMessage": "Download failed with status 404"
+    },
+    {
+      "actor": "outsider",
+      "method": "sign",
+      "ok": false,
+      "errorCode": "STORAGE_OBJECT_NOT_FOUND",
+      "status": 404,
+      "transportFailure": false,
+      "providerMessage": "Object not found For more information, please refer to [URL_REDACTED]"
+    },
+    {
+      "actor": "anonymous",
+      "method": "download",
+      "ok": false,
+      "errorCode": "StorageError",
+      "transportFailure": false,
+      "providerMessage": "[object Object]"
+    },
+    {
+      "actor": "anonymous",
+      "method": "sign",
+      "ok": false,
+      "errorCode": "StorageError",
+      "transportFailure": false,
+      "providerMessage": "[object Object]"
+    },
+    {
+      "actor": "anchor",
+      "method": "forgeStorageRow",
+      "ok": false,
+      "errorCode": "DATABASE_PGRST106",
+      "status": 406
+    },
+    {
+      "actor": "anchor",
+      "method": "upload",
+      "ok": false,
+      "errorCode": "STORAGE_ACCESS_DENIED",
+      "status": 403,
+      "transportFailure": false,
+      "providerMessage": "PG RLS error: new row violates row-level security policy (USING expression) for table \"objects\" For more information, please refer to [URL_REDACTED]"
+    },
+    {
+      "actor": "anchor",
+      "method": "remove",
+      "ok": true
+    }
+  ],
+  "pageErrorCounts": {
+    "anchor": 0,
+    "operator": 0,
+    "outsider": 0,
+    "admin": 0,
+    "anonymous": 0
+  },
+  "rangeConfirmed": false,
+  "notRun": [
+    "Real microphone/camera/phone",
+    "Mainland network",
+    "MP4/AAC decoding",
+    "Long recordings",
+    "Human/TCL ASR accuracy",
+    "Physical audio/video seeking"
+  ],
+  "browserVersion": "156.0.8078.79",
+  "uploadedObjectInfo": {
+    "availableKeys": [
+      "bucketId",
+      "cacheControl",
+      "contentType",
+      "createdAt",
+      "etag",
+      "id",
+      "lastModified",
+      "metadata",
+      "name",
+      "size",
+      "version"
+    ],
+    "size": 16044,
+    "contentType": "audio/wav",
+    "metadata": {
+      "availableKeys": [],
+      "size": null,
+      "mimetype": null,
+      "contentType": null
+    },
+    "ownerUidSha256": null
+  },
+  "objectKeyTemplate": "<anchor_uid>/r25-media-20261117T003552-fbd020-1.wav",
+  "finishedAt": "2026-11-17T00:36:19.297780+00:00",
+  "failure": {
+    "type": "AssertionError",
+    "step": "owner_delete_immutable_object_denied"
+  }
+}

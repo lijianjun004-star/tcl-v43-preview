@@ -1,0 +1,17 @@
+{
+  "stack": "error: column reference \"action\" is ambiguous\n    at pe.Oe (file:///workspace/r25-backend-tests/local-pg/node_modules/@electric-sql/pglite/dist/chunk-Y6PULSM7.js:1:18272)\n    at pe.tt (file:///workspace/r25-backend-tests/local-pg/node_modules/@electric-sql/pglite/dist/chunk-Y6PULSM7.js:1:15658)\n    at pe.parse (file:///workspace/r25-backend-tests/local-pg/node_modules/@electric-sql/pglite/dist/chunk-Y6PULSM7.js:1:14332)\n    at q.Ce (file:///workspace/r25-backend-tests/local-pg/node_modules/@electric-sql/pglite/dist/chunk-XZUEO4BZ.js:5:1759)\n    at file:///workspace/r25-backend-tests/local-pg/node_modules/@electric-sql/pglite/dist/chunk-XZUEO4BZ.js:5:1151\n    at wasm://wasm/022a9842:wasm-function[10951]:0x52a924\n    at wasm://wasm/022a9842:wasm-function[3597]:0x215883\n    at wasm://wasm/022a9842:wasm-function[3639]:0x21ccfb\n    at wasm://wasm/022a9842:wasm-function[3649]:0x21cf30\n    at wasm://wasm/022a9842:wasm-function[9933]:0x4d6fd7",
+  "message": "column reference \"action\" is ambiguous",
+  "length": 469,
+  "name": "error",
+  "severity": "ERROR",
+  "code": "42702",
+  "detail": "It could refer to either a PL/pgSQL variable or a table column.",
+  "internalPosition": "133",
+  "internalQuery": "INSERT INTO public.r25wf_rate_limits AS r(actor_uid,action,window_start,attempts) VALUES(v_actor,v_action,v_window,1)\n   ON CONFLICT(actor_uid,action,window_start) DO UPDATE SET attempts=r.attempts+1 RETURNING attempts",
+  "where": "PL/pgSQL function r25wf_api(text,jsonb,text) line 82 at SQL statement",
+  "file": "pl_comp.c",
+  "line": "1046",
+  "routine": "plpgsql_post_column_ref",
+  "query": "SELECT public.r25wf_api('invites.create','{\"role\":\"operator\",\"targetUid\":\"local-operator-A\",\"displayName\":\"opA\"}','debug-create')",
+  "params": []
+}

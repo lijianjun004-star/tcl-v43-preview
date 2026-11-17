@@ -1,0 +1,337 @@
+{
+  "scope": "Actual app functions in Chromium with real IndexedDB; synthetic identities, no SDK/Auth/cloud calls.\nDependencies outside checkpoint/partition logic are minimal UI stubs. Faults delay native read callback or abort its transaction.\n",
+  "appShaBefore": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "checks": [
+    {
+      "name": "automatic_partition_initializes_current_cursor",
+      "pass": true,
+      "detail": {
+        "userName": "A",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+        "cursor": {
+          "key": "draft-session:A",
+          "token": "token-A",
+          "known": true
+        },
+        "candidateOwner": "A",
+        "candidateToken": "token-A",
+        "saveState": {},
+        "messages": [],
+        "writeCount": 3,
+        "readCount": 1
+      }
+    },
+    {
+      "name": "automatic_partition_reads_existing_candidate",
+      "pass": true,
+      "detail": {
+        "userName": "A",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+        "cursor": {
+          "key": "draft-session:A",
+          "token": "token-A",
+          "known": true
+        },
+        "candidateOwner": "A",
+        "candidateToken": "token-A",
+        "saveState": {},
+        "messages": [],
+        "writeCount": 3,
+        "readCount": 1
+      }
+    },
+    {
+      "name": "same_partition_fastpath_initializes_missing_cursor",
+      "pass": true,
+      "detail": {
+        "userName": "A",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+        "cursor": {
+          "key": "draft-session:A",
+          "token": "token-A",
+          "known": true
+        },
+        "candidateOwner": "A",
+        "candidateToken": "token-A",
+        "saveState": {},
+        "messages": [],
+        "writeCount": 3,
+        "readCount": 2
+      }
+    },
+    {
+      "name": "first_save_after_automatic_restore_commits",
+      "pass": true,
+      "detail": {
+        "userName": "A",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+        "cursor": {
+          "key": "draft-session:A",
+          "token": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+          "known": true
+        },
+        "candidateOwner": "A",
+        "candidateToken": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+        "saveState": {
+          "run": "new-run-A",
+          "status": "saved",
+          "message": "已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。"
+        },
+        "messages": [],
+        "writeCount": 5,
+        "readCount": 3
+      }
+    },
+    {
+      "name": "known_same_partition_preserves_cursor_object_without_read",
+      "pass": true,
+      "detail": {
+        "before": {
+          "userName": "A",
+          "userRole": "anchor",
+          "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+          "cursor": {
+            "key": "draft-session:A",
+            "token": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+            "known": true
+          },
+          "candidateOwner": "A",
+          "candidateToken": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+          "saveState": {
+            "run": "new-run-A",
+            "status": "saved",
+            "message": "已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。"
+          },
+          "messages": [],
+          "writeCount": 5,
+          "readCount": 3
+        },
+        "after": {
+          "userName": "A",
+          "userRole": "anchor",
+          "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+          "cursor": {
+            "key": "draft-session:A",
+            "token": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+            "known": true
+          },
+          "candidateOwner": "A",
+          "candidateToken": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+          "saveState": {
+            "run": "new-run-A",
+            "status": "saved",
+            "message": "已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。"
+          },
+          "messages": [],
+          "writeCount": 5,
+          "readCount": 3
+        }
+      }
+    },
+    {
+      "name": "same_partition_does_not_adopt_external_writer_token",
+      "pass": true,
+      "detail": {
+        "userName": "A",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+        "cursor": {
+          "key": "draft-session:A",
+          "token": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+          "known": true
+        },
+        "candidateOwner": "A",
+        "candidateToken": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+        "saveState": {
+          "run": "new-run-A",
+          "status": "saved",
+          "message": "已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。"
+        },
+        "messages": [],
+        "writeCount": 5,
+        "readCount": 3
+      }
+    },
+    {
+      "name": "external_writer_conflict_is_rejected_without_puts",
+      "pass": true,
+      "detail": {
+        "state": {
+          "userName": "A",
+          "userRole": "anchor",
+          "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:A",
+          "cursor": {
+            "key": "draft-session:A",
+            "token": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+            "known": true
+          },
+          "candidateOwner": "A",
+          "candidateToken": "f519c243-fcd0-4ed1-aa23-02e33b0aa9f7",
+          "saveState": {
+            "status": "error",
+            "message": "其他标签已更新这份练播记录，本次未保存，已阻止覆盖。请先导出本页修改，再刷新并恢复最新版本"
+          },
+          "messages": [],
+          "writeCount": 5,
+          "readCount": 4
+        },
+        "row": {
+          "id": "draft-session:A",
+          "owner": "A",
+          "runId": "new-run-A",
+          "version": 1,
+          "snapshot": {
+            "id": "new-run-A",
+            "anchorName": "A",
+            "turns": [
+              {
+                "id": "new-turn-A",
+                "answer": "new input"
+              }
+            ]
+          },
+          "media": [],
+          "revision": 1,
+          "writeToken": "external-A-new-token"
+        }
+      }
+    },
+    {
+      "name": "late_A_read_cannot_replace_B_cursor",
+      "pass": true,
+      "detail": {
+        "userName": "B",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:B",
+        "cursor": {
+          "key": "draft-session:B",
+          "token": "token-B",
+          "known": true
+        },
+        "candidateOwner": "B",
+        "candidateToken": "token-B",
+        "saveState": {
+          "status": "error",
+          "message": "其他标签已更新这份练播记录，本次未保存，已阻止覆盖。请先导出本页修改，再刷新并恢复最新版本"
+        },
+        "messages": [],
+        "writeCount": 5,
+        "readCount": 6
+      }
+    },
+    {
+      "name": "late_A_read_cannot_install_A_candidate",
+      "pass": true,
+      "detail": {
+        "userName": "B",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:B",
+        "cursor": {
+          "key": "draft-session:B",
+          "token": "token-B",
+          "known": true
+        },
+        "candidateOwner": "B",
+        "candidateToken": "token-B",
+        "saveState": {
+          "status": "error",
+          "message": "其他标签已更新这份练播记录，本次未保存，已阻止覆盖。请先导出本页修改，再刷新并恢复最新版本"
+        },
+        "messages": [],
+        "writeCount": 5,
+        "readCount": 6
+      }
+    },
+    {
+      "name": "failed_lookup_never_marks_known",
+      "pass": true,
+      "detail": {
+        "userName": "C",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:C",
+        "cursor": {
+          "key": "draft-session:C",
+          "token": null,
+          "known": false
+        },
+        "candidateOwner": null,
+        "candidateToken": null,
+        "saveState": {
+          "status": "error",
+          "message": "其他标签已更新这份练播记录，本次未保存，已阻止覆盖。请先导出本页修改，再刷新并恢复最新版本"
+        },
+        "messages": [
+          "无法读取本机恢复记录：The transaction was aborted, so the request cannot be fulfilled."
+        ],
+        "writeCount": 5,
+        "readCount": 7
+      }
+    },
+    {
+      "name": "failed_lookup_refuses_checkpoint_save",
+      "pass": true,
+      "detail": {
+        "userName": "C",
+        "userRole": "anchor",
+        "partition": "tcl-specialty-v352-asr-r25-qa:cloud:independent-local-only:C",
+        "cursor": {
+          "key": "draft-session:C",
+          "token": null,
+          "known": false
+        },
+        "candidateOwner": null,
+        "candidateToken": null,
+        "saveState": {
+          "status": "error",
+          "message": "尚未读取本机恢复版本，请刷新后重新进入"
+        },
+        "messages": [
+          "无法读取本机恢复记录：The transaction was aborted, so the request cannot be fulfilled."
+        ],
+        "writeCount": 5,
+        "readCount": 7
+      }
+    },
+    {
+      "name": "failed_lookup_never_overwrites_saved_row",
+      "pass": true,
+      "detail": {
+        "id": "draft-session:C",
+        "version": 1,
+        "owner": "C",
+        "runId": "run-C",
+        "writeToken": "token-C",
+        "updatedAt": "local",
+        "snapshot": {
+          "id": "run-C",
+          "anchorName": "C",
+          "turns": [
+            {
+              "id": "turn-C",
+              "answer": "original C"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no_page_errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "source_unchanged",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "pageErrors": [],
+  "cloudCalls": 0,
+  "browser": "156.0.8078.79",
+  "appShaAfter": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "status": "PASS"
+}

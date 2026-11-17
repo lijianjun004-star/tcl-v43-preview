@@ -1,0 +1,19 @@
+{
+  "mode": "actual Chromium UI + native IndexedDB; synthetic text-only fixtures, no model/network services",
+  "app_sha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "checks": {
+    "different_question_conflict_atomic_and_unsaved_export": true,
+    "stale_conflicted_tab_cannot_submit_to_operator": true,
+    "same_question_conflict_rejected": true,
+    "stale_pagehide_does_not_overwrite": true,
+    "restore_reads_latest_metadata_not_cached_card": true,
+    "same_tab_rapid_saves_serialized_without_conflict": true,
+    "quota_aborts_records_and_checkpoint_together": true,
+    "retry_after_failed_transaction_uses_previous_token": true,
+    "old_run_cannot_replace_new_run_or_update_records": true,
+    "legacy_checkpoint_read_and_token_upgrade": true
+  },
+  "errors": [],
+  "source_unchanged": true,
+  "ok": true
+}

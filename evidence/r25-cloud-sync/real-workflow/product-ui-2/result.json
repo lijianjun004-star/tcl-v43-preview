@@ -1,0 +1,206 @@
+{
+  "scope": "Actual candidate R25 UI + real CloudBase Auth/PG. Two isolated storage contexts, plus outsider. Text only; no API/SDK mocks.",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "environmentId": "unknown-roadrunner-d7cap6e21f517",
+  "configurationOverride": false,
+  "expectedAppSha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b",
+  "startedAt": "2026-11-17T00:46:28.660300+00:00",
+  "status": "FAIL",
+  "checks": [
+    {
+      "name": "operator_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_initial_cookie_jar_empty",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_actual_product_login_and_server_refresh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "actual_candidate_app_responses_match_frozen_source",
+      "pass": true,
+      "detail": [
+        {
+          "actor": "operator",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        },
+        {
+          "actor": "anchor",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        },
+        {
+          "actor": "outsider",
+          "path": "/tcl-v352-asr-r25-qa/app.js",
+          "status": 200,
+          "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+        }
+      ]
+    },
+    {
+      "name": "operator_published_real_cloud_task_with_join_code",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "unjoined_task_not_in_anchor_list",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "actors": {
+    "operator": {
+      "independentContext": true,
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c"
+    },
+    "anchor": {
+      "independentContext": true,
+      "uidSha256": "02b14bb227003c794b97d8eab6f1ba37e07c21f27602d6f56e579fb0f84e4046"
+    },
+    "outsider": {
+      "independentContext": true,
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da"
+    }
+  },
+  "pageErrors": [],
+  "modelRequests": [],
+  "productResponses": [
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "operator",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    },
+    {
+      "actor": "anchor",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/app.js",
+      "status": 200,
+      "sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "d894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "outsider",
+      "path": "/tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15"
+    }
+  ],
+  "configReadbacks": [],
+  "notRun": [
+    "Physical devices",
+    "Mainland network",
+    "ASR accuracy",
+    "Backend process restart",
+    "Cloud media (separate suite)"
+  ],
+  "runId": "r25-ui-20261117T004628-e2289",
+  "assignmentId": "54dd4353-f64f-44e1-aec4-a41831a83f40",
+  "error": {
+    "type": "TimeoutError",
+    "summary": "UI verification step failed; raw exception omitted to protect credentials",
+    "frames": [
+      {
+        "file": "_sync_base.py",
+        "line": 115,
+        "function": "_sync"
+      },
+      {
+        "file": "_locator.py",
+        "line": 148,
+        "function": "check"
+      },
+      {
+        "file": "_frame.py",
+        "line": 908,
+        "function": "check"
+      },
+      {
+        "file": "_connection.py",
+        "line": 76,
+        "function": "send"
+      },
+      {
+        "file": "_connection.py",
+        "line": 632,
+        "function": "wrap_api_call"
+      }
+    ]
+  }
+}

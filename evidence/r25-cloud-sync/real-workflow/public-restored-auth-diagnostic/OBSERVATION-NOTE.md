@@ -1,0 +1,1 @@
+The diagnostic reproduced the product checkpoint bug using actual public Auth and UI. Its `modelRequests: []` field was not instrumented, and must not be interpreted as a measured no-model-request assertion. Actual UI suites separately instrument model URLs. No task, submission, or feedback action was performed in this focused diagnostic.

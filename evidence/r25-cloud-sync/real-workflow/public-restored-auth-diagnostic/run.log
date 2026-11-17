@@ -1,0 +1,14 @@
+{
+  "scope": "Focused real-public diagnostic: actual Auth login -> user model control reload -> first local text save.\nNo task creation, submission, feedback or model request; unsubmitted synthetic text only.\n",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "status": "REPRODUCED_PRODUCT_CHECKPOINT_INITIALIZATION_BUG",
+  "startedAt": "2026-11-17T01:03:19.060543+00:00",
+  "pageErrors": [],
+  "modelRequests": [],
+  "cloudBusinessWrites": "No task/submission/feedback actions performed",
+  "authAutomaticallyRestored": true,
+  "saveStatus": "error",
+  "expectedCursorFailureShown": true,
+  "displayedSaveMessage": "本机恢复保存失败：尚未读取本机恢复版本，请刷新后重新进入。当前修改仍在本页，请用下方按钮导出文字、下载录像，再刷新并恢复最新版本。 下载本页尚未保存的文字",
+  "browser": "156.0.8078.79"
+}

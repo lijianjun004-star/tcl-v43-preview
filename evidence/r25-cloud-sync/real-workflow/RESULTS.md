@@ -1,0 +1,39 @@
+# R25 real CloudBase workflow verification
+
+The published recovery version passed the complete actual public product workflow: 23 existing checks plus one actual model-selector/reload check (24 total). The localhost candidate also passed the real native Auth checkpoint regression (14 checks) and complete product workflow (23 checks). The earlier public failure remains recorded as a product defect, with its focused reproduction.
+
+Candidate `app.js`: `684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16`. The real browser read four HTTP 200 responses matching these exact bytes during the checkpoint regression. Browser: system Chromium, real official CloudBase SDK, production native Auth and native PostgreSQL RPC; the localhost UI uses actual production backend data. No SDK or business responses were mocked.
+
+| Evidence directory | Result | Scope and limits |
+| --- | --- | --- |
+| `auth-only-1` | PASS, 17 checks | Four isolated native Auth contexts; each session retains its own identity. Initial synthetic anchor was later retired. |
+| `native-pg-3` | 48 checks passed before interrupted fault fixture; whole run INTERRUPTED | Task/join, two-turn snapshot preservation, submit/inbox/feedback, wrong-user denial, stable-key replay, changed-payload conflict, offline no receipt/no server row. The interrupted run is not presented as a complete suite pass. |
+| `fault-recovery-1` | PASS, 20 checks | Real Chromium CDP response-stage drop after successful HTTP 200 commit; client remains unconfirmed, original context closes, fresh same-user login retries original key, operator sees exactly one submission. Current replacement synthetic anchor. |
+| `product-ui-4` | PASS, 23 checks | Original localhost app `888d4781…`, three isolated storage contexts, actual backend, complete text workflow and screenshots. |
+| `actual-public-ui-1` | FAIL after 10 checks | Published app `888d4781…`, no config/SDK/init injection. Real model preference UI reload restored native login, but first text save failed. This was a product defect. |
+| `public-restored-auth-diagnostic` | REPRODUCED | Same public native Auth reload followed by free text practice displays “尚未读取本机恢复版本”. No task/submission/feedback action. Its uninstrumented model-request field is explicitly qualified in the sidecar note. |
+| `checkpoint-hotfix-local-2` | PASS, 14 checks | App `684a244a…`; actual Vosk→Tiny UI reload, native login restores, first text save works. Existing draft startup reads use readonly transaction and perform zero draft puts; initial/final full JSON and writeToken match. Explicit new practice saves a new run, then reload and actual review details restore its answer. |
+| `product-ui-hotfix-local-1` | PASS, 23 checks | App `684a244a…`; actual operator task → anchor joins → two text answers → offline submission stays pending → retry obtains real receipt → operator reads both answers and adds feedback → anchor reads feedback → both refresh preserve server records; outsider cannot see task/submission. Zero product page errors and zero instrumented model requests. |
+| `actual-public-ui-2` | PASS, 24 checks, exit 0 | Same complete business workflow at the fixed public GitHub Pages URL, plus actual Vosk→Tiny selection/native confirmation/reload. No config/SDK/business/init injection or localhost proxy. Anchor logs in once; model reload automatically restores native Auth and first text saves successfully. Both final record refreshes also restore Auth without manual login. Four HTTP 200 app responses match the complete recovery SHA. Zero page errors and zero instrumented model requests; seven mobile screenshots. |
+
+Actual public URL: `https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/`. Root supplied completed successful Pages run `43994398610`, merge commit `961ee3f612111fbcd73fde063cb2e714fff37d5f`, CI `43994142565`, runtime version `r25-cloud-sync-recovery-20261117` before the run. The browser used the actual public site and production CloudBase. After successful completion, all contexts were closed in `browser.close()`, the process exited 0, and root was notified that synthetic fixtures could be cleaned. No further business tests are scheduled.
+
+The checkpoint regression adds local observational IndexedDB telemetry: native `get`/`put` methods are always called unchanged; no values, permissions, Auth, SDK, or network replies are replaced. Startup baseline is the first new-document readonly draft read. A prior document's legitimate `pagehide` save can advance its token; the comparison isolates initialization after that save. The full product UI run has no IndexedDB telemetry. Local full-UI text testing sets only its isolated engine preference to Tiny; the public runner uses the actual model selector and native confirmation/reload without an init script.
+
+## Preserved failures and driver corrections
+
+- `native-pg-1`: SDK refused anonymous use before making HTTP; an arbitrary transport error was not accepted as proof of server authorization.
+- `native-pg-2`: test gateway URL construction omitted protocol-relative host handling. Fixed only the driver. Direct official endpoint without Authorization independently returned HTTP 401 `MISSING_CREDENTIALS`; server evidence is retained in the core report and root's anonymous-response artifacts.
+- `native-pg-3`: the old Playwright `route.fetch` fault fixture failed/hung after all 48 business checks. Replaced by bounded real CDP response interception in the separate successful fault case. The earlier raw synthetic-session diagnostic was sanitized; that synthetic account/session was retired, SQL inactive, and native Auth blocked. Current tests use its replacement. Formal owner accounts were unaffected. No credential/token values are included.
+- `product-ui-1`: interrupted at root's account rotation request.
+- `product-ui-2`: driver assumed a text checkbox while server-enabled media capability correctly supplied the actual text-selection radio. Driver now uses the product's current text consent control.
+- `product-ui-3`: driver inspected receiver selection before real `operators.list` completed. Driver now waits for that request's visible completion and still strictly verifies the assigned server UID and disabled selection. Product receiver logic was unchanged.
+- `checkpoint-hotfix-local-1`: the real Auth/save/readonly cases passed; final driver assertion searched review-overview text for an answer shown in details. Driver now opens actual review details and reads its answer textarea. Original failure and explanation remain.
+
+## Backend and account timeline
+
+Initial deployed schema was `7d501d19589ad30d12fef4dc3606611329bde807b48d82ad4c57dc86cd55da23` (apply request `6beb52dc`, initial role binding `1fd3543c`). Root later applied the compatible `expectedActorUid` assertion patch, schema `576c6b7137e0fe89113597773b675b56b01baacd8c62a4b2d4c32b559f8b2f4e`. Contract metadata preserves its original schema reference; the reports are chronological and do not claim the earlier 48-check run was repeated on every subsequent schema. The successful fault/UI/hotfix cases use the replacement active synthetic anchor and current deployed backend. Evidence does not aggregate overlapping checks into one pass rate.
+
+Cloud roles/configuration and account lifecycle were managed by root. This verifier did not modify SQL/cloud configuration, create users, delete test data, push, merge, or deploy. Physical devices, mainland network, ASR accuracy, backend process restart, and private media are outside these runs; media is verified by a separate suite.
+
+Drivers are retained in `drivers/`; private credential JSON is excluded. `SECRET-SCAN.json` scans current and retired synthetic username/password values plus JWT token patterns without exposing those values. `EVIDENCE-MANIFEST.json` inventories hashes of included artifacts. Screenshots mask login inputs and identity text.

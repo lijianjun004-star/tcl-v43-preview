@@ -1,0 +1,14 @@
+{
+  "login": true,
+  "uid": "2122483580479414273",
+  "role": null,
+  "rdb": "function",
+  "storage": "function",
+  "pgStatus": 200,
+  "pgError": null,
+  "pgMessage": null,
+  "identity": {
+    "uid": "2122483580479414273",
+    "role": "authenticated"
+  }
+}

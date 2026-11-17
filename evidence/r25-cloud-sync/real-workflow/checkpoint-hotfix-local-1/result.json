@@ -1,0 +1,104 @@
+{
+  "status": "FAIL",
+  "scope": "Real native Auth + actual model selector reload; read-only IndexedDB telemetry.\nThe telemetry delegates every native IDB call unchanged, records draft reads/puts,\nand never replaces Auth, SDK, responses, business RPC, or stored values.\n",
+  "url": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "expectedAppSha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "startedAt": "2026-11-17T01:11:20.459203+00:00",
+  "checks": [
+    {
+      "name": "real_native_login",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "actual_model_control_reload_restores_native_auth",
+      "pass": true,
+      "detail": {
+        "initialModel": "vosk",
+        "afterModel": "tiny"
+      }
+    },
+    {
+      "name": "first_text_save_after_automatic_auth_restore",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "first_saved_draft_contains_answer",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "existing_draft_auto_auth_restore",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "existing_draft_initialization_is_readonly_token_and_json_unchanged",
+      "pass": true,
+      "detail": {
+        "draftReadCount": 1,
+        "draftPutCount": 0,
+        "firstReadMode": "readonly",
+        "correctUidPartitionKey": true,
+        "initialRowSha256": "ab65cec6da04a84ce97cb61e837233aa0a18164aff6d5886e67dc9ab16c14b43",
+        "afterInitRowSha256": "ab65cec6da04a84ce97cb61e837233aa0a18164aff6d5886e67dc9ab16c14b43",
+        "writeTokenUnchanged": true
+      }
+    },
+    {
+      "name": "existing_draft_resume_control_visible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_practice_after_restored_existing_draft_saves",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "explicit_new_practice_replaces_latest_draft_with_new_run",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "new_draft_reload_initialization_is_readonly",
+      "pass": true,
+      "detail": {
+        "draftReadCount": 1,
+        "draftPutCount": 0,
+        "firstReadMode": "readonly",
+        "correctUidPartitionKey": true,
+        "initialRowSha256": "f46911090289542199c410558234b4328537469959370381a712a435811f16c0",
+        "afterInitRowSha256": "f46911090289542199c410558234b4328537469959370381a712a435811f16c0",
+        "writeTokenUnchanged": true
+      }
+    },
+    {
+      "name": "new_draft_restores_saved_text_after_reload",
+      "pass": false,
+      "detail": null
+    }
+  ],
+  "pageErrors": [],
+  "modelRequests": [],
+  "appResponses": [],
+  "configurationOverride": false,
+  "sdkInjection": false,
+  "businessMocks": false,
+  "error": {
+    "type": "AssertionError",
+    "frames": [
+      {
+        "file": "checkpoint_hotfix_real_auth.py",
+        "line": 61,
+        "function": "main"
+      },
+      {
+        "file": "checkpoint_hotfix_real_auth.py",
+        "line": 26,
+        "function": "check"
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "scope": "localPGmock-auth+mockSDK",
+  "moduleShaBefore": "8b291f9d2c9a376a8c955327b0c2e12a25c5a1f495aae9801a787aeb8bbec549",
+  "checks": [
+    {
+      "name": "second_native_login_waits_for_first",
+      "pass": true
+    },
+    {
+      "name": "stale_login_rejected",
+      "pass": true
+    },
+    {
+      "name": "final_sdk_identity_matches_local_user",
+      "pass": true,
+      "detail": {
+        "uid": "B",
+        "user": "B",
+        "partition": "B"
+      }
+    },
+    {
+      "name": "new_partition_cannot_finish_before_old_callback",
+      "pass": true
+    },
+    {
+      "name": "late_partition_cannot_replace_new_user_partition",
+      "pass": true,
+      "detail": {
+        "user": "B",
+        "partition": "B"
+      }
+    },
+    {
+      "name": "real_sql_initializes_expected_local_actor",
+      "pass": true
+    },
+    {
+      "name": "drift_returns_stale_session",
+      "pass": true,
+      "detail": {
+        "code": "STALE_SESSION"
+      }
+    },
+    {
+      "name": "wire_retains_original_actor_assertion",
+      "pass": true,
+      "detail": {
+        "actor": "local-anchor-B",
+        "event": {
+          "action": "submissions.create",
+          "payload": {
+            "id": "race-must-not-commit",
+            "operatorId": "local-operator-A",
+            "sessionId": "race-session",
+            "snapshot": {
+              "turns": [
+                {
+                  "answer": "synthetic private content"
+                }
+              ]
+            },
+            "expectedActorUid": "000123"
+          },
+          "operationId": "dd1ef875-8b21-426f-8412-165a99613925"
+        }
+      }
+    },
+    {
+      "name": "drift_writes_zero_business_rows",
+      "pass": true,
+      "detail": [
+        {
+          "n": 0
+        }
+      ]
+    },
+    {
+      "name": "wrong_actor_never_gets_confirmed_outbox_receipt",
+      "pass": true
+    },
+    {
+      "name": "source_unchanged_during_probes",
+      "pass": true
+    }
+  ],
+  "cloudCalls": 0,
+  "moduleShaAfter": "8b291f9d2c9a376a8c955327b0c2e12a25c5a1f495aae9801a787aeb8bbec549",
+  "status": "PASS"
+}

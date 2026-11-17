@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/r25-backend-tests/checkpoint_hotfix_real_auth.py",
+    "--private-config",
+    "/workspace/r25-cloud-test-credentials.json",
+    "--out",
+    "/workspace/r25-backend-tests/results/checkpoint-hotfix-local-1"
+  ],
+  "exitCode": 1,
+  "stdoutStderr": "run.log",
+  "credentials": "Path only; private file excluded",
+  "runtimeAppSha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16"
+}

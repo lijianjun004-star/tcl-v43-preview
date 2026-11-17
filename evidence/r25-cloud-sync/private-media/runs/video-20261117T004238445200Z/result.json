@@ -1,0 +1,54 @@
+{
+  "runId": "r25-media-20261117T004238-7bee0b",
+  "startedAt": "2026-11-17T00:42:38.448691+00:00",
+  "scope": "REAL official stable SDK browser + native Auth/PG/Storage; synthetic 0.5s sine WAV, no ASR or hardware test",
+  "status": "CANCELLED_BY_ROOT",
+  "storageOnly": true,
+  "bucket": "r25wf-private",
+  "sdkBuild": {
+    "sdkVersion": "3.11.1",
+    "entrySha256": "6df63e6e45e3139b600bafadba56c4d40b1d0e474e8fa7f93fd992ffa06d21fd",
+    "bundleSha256": "187f872dcf02cffbe1524938ed6d26ac68626e9469dec7c0580566d53eea7978",
+    "networkExecuted": false
+  },
+  "fixture": {
+    "kind": "synthetic 440Hz mono PCM WAV",
+    "bytes": 16044,
+    "sha256": "79ce2885d02257acba5855d9b12ef22f38eb3ff313963432da94319a1bb0c55f",
+    "range0to99Sha256": "0ffc77afac02ac5d193dc61bef80aa676ec8bc66e129db52c29217cbe6d057d6"
+  },
+  "actors": {},
+  "checks": [
+    {
+      "name": "anchor_native_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_uid_matches_provisioned",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "operations": [],
+  "pageErrorCounts": {
+    "anchor": 0
+  },
+  "rangeConfirmed": false,
+  "notRun": [
+    "Real microphone/camera/phone",
+    "Mainland network",
+    "MP4/AAC decoding",
+    "Long recordings",
+    "Human/TCL ASR accuracy",
+    "Physical audio/video seeking"
+  ],
+  "cancellation": {
+    "reason": "Root requested pause until replacement native anchor is ready",
+    "processExitCode": 143,
+    "scope": "Optional run started before pause message arrived; no completed video result returned; object upload completion not established. No further old credentials or tokens will be read.",
+    "objectKeyTemplate": "<old_anchor_uid>/r25-media-20261117T004238-7bee0b-synthetic-video.webm"
+  }
+}

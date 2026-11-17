@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "python3",
+    "/workspace/r25-backend-tests/run_product_ui_e2e.py",
+    "--execute",
+    "--private-config",
+    "/workspace/r25-cloud-test-credentials.json",
+    "--browser-url",
+    "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+    "--out",
+    "/workspace/r25-backend-tests/results/actual-public-ui-2"
+  ],
+  "exitCode": 0,
+  "stdoutStderr": "run.log",
+  "credentials": "Private path only; private file excluded",
+  "browserContexts": "All closed by browser.close in finally; process completed",
+  "recordedAfterCompletion": "2026-11-17T01:20:39.708647+00:00"
+}

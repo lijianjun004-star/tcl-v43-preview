@@ -1,0 +1,197 @@
+{
+  "scope": "REAL official SDK Auth + native PG RPC across isolated Chromium storage contexts; API contract layer, not product-UI acceptance",
+  "startedAt": "2026-11-17T00:34:11.585194+00:00",
+  "environmentId": "unknown-roadrunner-d7cap6e21f517",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "contractVersion": "r25wf-v1-frozen-20261117",
+  "sourceContractSha256": "10b1c479e919a561d59866346561211c2ddb78a120134f3d04fd747ad67baad8",
+  "deployedSchemaSha256": "7d501d19589ad30d12fef4dc3606611329bde807b48d82ad4c57dc86cd55da23",
+  "deploymentEvidence": {
+    "schemaRequestId": "6beb52dc",
+    "roleBootstrapRequestId": "1fd3543c",
+    "roles": {
+      "admin": "admin",
+      "operator": "operator",
+      "anchor": "anchor",
+      "outsider": "anchor"
+    }
+  },
+  "adapterBuild": {
+    "sdk": "@cloudbase/js-sdk",
+    "sdkVersion": "3.11.1",
+    "bundleBytes": 1571926,
+    "bundleSha256": "8c7b4b7f12b114971ad2692dfca009188c983d20d007ac988c32e198eedf165f",
+    "entrySha256": "f67b0bbf4d419743a4d27bbfcea9798ca22be7a2d7d6be914da325e208aacb16",
+    "networkExecuted": false
+  },
+  "checks": [
+    {
+      "name": "operator_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "admin_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anonymous_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "real_principals_are_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_server_profile_matches_auth",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_me_confirmed",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_server_profile_matches_auth",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anonymous_sdk_produced_no_successful_receipt",
+      "pass": true,
+      "detail": {
+        "errorCode": "TRANSPORT_ERROR",
+        "scope": "Client observation only; server authorization proved separately"
+      }
+    }
+  ],
+  "operations": [
+    {
+      "actor": "operator",
+      "action": "me",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 1.204
+    },
+    {
+      "actor": "anchor",
+      "action": "me",
+      "operationId": null,
+      "ok": true,
+      "errorCode": null,
+      "seconds": 1.014
+    },
+    {
+      "actor": "anonymous",
+      "action": "me",
+      "operationId": null,
+      "ok": false,
+      "errorCode": "TRANSPORT_ERROR",
+      "seconds": 0.006
+    }
+  ],
+  "actors": {
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "independentContext": true
+    },
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "independentContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "independentContext": true
+    },
+    "admin": {
+      "uidSha256": "ffb6a83db4e60a2da03e51a37e6e64c595f1c1393ff20bee93917004b1866109",
+      "independentContext": true
+    }
+  },
+  "status": "FAIL",
+  "notRun": [
+    "Real phones",
+    "Mainland network",
+    "ASR accuracy",
+    "Backend process restart",
+    "Private cloud media",
+    "Full product UI (separate UI driver required)"
+  ],
+  "runId": "r25-e2e-20261117T003411-ae3934",
+  "error": {
+    "type": "URLError",
+    "summary": "<urlopen error no host given>"
+  }
+}

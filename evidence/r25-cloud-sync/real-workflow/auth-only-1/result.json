@@ -1,0 +1,138 @@
+{
+  "scope": "REAL CloudBase username/password Auth only; isolated browser storage contexts; no native business RPC or user creation",
+  "startedAt": "2026-11-17T00:21:12.034666+00:00",
+  "environmentId": "unknown-roadrunner-d7cap6e21f517",
+  "browserUrl": "http://127.0.0.1:8765/tcl-v352-asr-r25-qa/",
+  "contractVersion": "pending-native-r25wf-api-contract",
+  "adapterBuild": {
+    "sdk": "@cloudbase/js-sdk",
+    "sdkVersion": "3.11.1",
+    "bundleBytes": 1571551,
+    "bundleSha256": "a9c21e75a5ba62a89afacd31d69f55874bede61c8af8bfc0617ac1f99d3246c8",
+    "entrySha256": "55a2537f5b39a51826269b6eb8b9ff83ee5eff2b3e7b9e84bf3e94710fabf780",
+    "networkExecuted": false
+  },
+  "checks": [
+    {
+      "name": "operator_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "operator_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "anchor_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "outsider_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_initial_context_has_no_cookies",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_real_auth_login",
+      "pass": true,
+      "detail": {
+        "errorCode": null
+      }
+    },
+    {
+      "name": "admin_authenticated_uid_matches_provisioned_user",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all_authenticated_principals_are_distinct",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "operator_session_remains_own_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "anchor_session_remains_own_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "outsider_session_remains_own_after_other_logins",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "admin_session_remains_own_after_other_logins",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "operations": [],
+  "actors": {
+    "operator": {
+      "uidSha256": "b3c55a5bd0a9161ea558ea3e93b5513e523cbc09e136d397c24612d9bd53445c",
+      "independentContext": true
+    },
+    "anchor": {
+      "uidSha256": "45787259b1c2128c9c917244d2f675b67e84ca254e83a672f4765bea98d0f00b",
+      "independentContext": true
+    },
+    "outsider": {
+      "uidSha256": "dbe79fc81b5779332bf352e038129525068010798619f31d4787ee9e2f1b60da",
+      "independentContext": true
+    },
+    "admin": {
+      "uidSha256": "ffb6a83db4e60a2da03e51a37e6e64c595f1c1393ff20bee93917004b1866109",
+      "independentContext": true
+    }
+  },
+  "status": "PASS_AUTH_ONLY",
+  "notRun": [
+    "Business RPC and role bindings",
+    "Task/submission/feedback workflow",
+    "Full product UI",
+    "Private media",
+    "Real devices"
+  ],
+  "browser": "156.0.8078.79"
+}

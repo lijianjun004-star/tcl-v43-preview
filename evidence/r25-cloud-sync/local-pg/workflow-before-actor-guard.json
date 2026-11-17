@@ -1,0 +1,977 @@
+{
+  "scope": "localPGmock-auth",
+  "startedAt": "2026-11-17T00:29:28.947Z",
+  "checks": [
+    {
+      "name": "schema_applies",
+      "pass": true
+    },
+    {
+      "name": "admin_me",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "local-admin",
+            "uid": "local-admin",
+            "role": "admin",
+            "active": true,
+            "username": "local-admin",
+            "displayName": "本地管理员"
+          },
+          "registered": true,
+          "capabilities": {
+            "feedback": true,
+            "assignments": true,
+            "mediaBucket": "r25wf-private",
+            "submissions": true,
+            "privateMedia": false,
+            "questionBank": false,
+            "maxMediaBytes": 52428800,
+            "maxMediaFiles": 3,
+            "schemaVersion": 1,
+            "questionMetadataV2": false
+          }
+        }
+      }
+    },
+    {
+      "name": "pending_me",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "not-bound",
+            "uid": "not-bound",
+            "role": "pending",
+            "active": true,
+            "username": "not-bound",
+            "displayName": ""
+          },
+          "registered": false,
+          "capabilities": {
+            "feedback": true,
+            "assignments": true,
+            "mediaBucket": "r25wf-private",
+            "submissions": true,
+            "privateMedia": false,
+            "questionBank": false,
+            "maxMediaBytes": 52428800,
+            "maxMediaFiles": 3,
+            "schemaVersion": 1,
+            "questionMetadataV2": false
+          }
+        }
+      }
+    },
+    {
+      "name": "pending_has_no_role",
+      "pass": true,
+      "detail": {
+        "user": {
+          "id": "not-bound",
+          "uid": "not-bound",
+          "role": "pending",
+          "active": true,
+          "username": "not-bound",
+          "displayName": ""
+        },
+        "registered": false,
+        "capabilities": {
+          "feedback": true,
+          "assignments": true,
+          "mediaBucket": "r25wf-private",
+          "submissions": true,
+          "privateMedia": false,
+          "questionBank": false,
+          "maxMediaBytes": 52428800,
+          "maxMediaFiles": 3,
+          "schemaVersion": 1,
+          "questionMetadataV2": false
+        }
+      }
+    },
+    {
+      "name": "pending_cannot_create",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NOT_REGISTERED",
+          "message": "请先绑定管理员提供的角色邀请"
+        }
+      }
+    },
+    {
+      "name": "invite_opA",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "invite": {
+            "id": "fd73e4c9-964c-4b26-a261-b41d358dac8a",
+            "code": "3ea8f069ba5d4446b9cdabe304517b69",
+            "role": "operator",
+            "expiresAt": "2026-11-19T00:29:31.448+00:00",
+            "targetUid": "local-operator-A",
+            "displayName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "redeem_opA",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "local-operator-A",
+            "uid": "local-operator-A",
+            "role": "operator",
+            "active": true,
+            "username": "local-operator-A",
+            "displayName": "opA"
+          },
+          "registered": true
+        }
+      }
+    },
+    {
+      "name": "invite_opB",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "invite": {
+            "id": "f8c6c870-a395-408e-b996-2076f943fa77",
+            "code": "46ec26602b5e4bc989d8f3787c559d42",
+            "role": "operator",
+            "expiresAt": "2026-11-19T00:29:31.458+00:00",
+            "targetUid": "local-operator-B",
+            "displayName": "opB"
+          }
+        }
+      }
+    },
+    {
+      "name": "redeem_opB",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "local-operator-B",
+            "uid": "local-operator-B",
+            "role": "operator",
+            "active": true,
+            "username": "local-operator-B",
+            "displayName": "opB"
+          },
+          "registered": true
+        }
+      }
+    },
+    {
+      "name": "invite_a",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "invite": {
+            "id": "628bc1ef-519b-44d6-a438-23f98fe06057",
+            "code": "33ed9895cac244f992dfff38cf296be9",
+            "role": "anchor",
+            "expiresAt": "2026-11-19T00:29:31.464+00:00",
+            "targetUid": "000123",
+            "displayName": "a"
+          }
+        }
+      }
+    },
+    {
+      "name": "redeem_a",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "000123",
+            "uid": "000123",
+            "role": "anchor",
+            "active": true,
+            "username": "000123",
+            "displayName": "a"
+          },
+          "registered": true
+        }
+      }
+    },
+    {
+      "name": "invite_b",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "invite": {
+            "id": "67bd71e4-f36f-4b28-a65d-e443a6f128e3",
+            "code": "d4abc229ab514bc2b6e7220a6a3598d0",
+            "role": "anchor",
+            "expiresAt": "2026-11-19T00:29:31.467+00:00",
+            "targetUid": "local-anchor-B",
+            "displayName": "b"
+          }
+        }
+      }
+    },
+    {
+      "name": "redeem_b",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "local-anchor-B",
+            "uid": "local-anchor-B",
+            "role": "anchor",
+            "active": true,
+            "username": "local-anchor-B",
+            "displayName": "b"
+          },
+          "registered": true
+        }
+      }
+    },
+    {
+      "name": "numeric_uid_me",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "000123",
+            "uid": "000123",
+            "role": "anchor",
+            "active": true,
+            "username": "000123",
+            "displayName": "a"
+          },
+          "registered": true,
+          "capabilities": {
+            "feedback": true,
+            "assignments": true,
+            "mediaBucket": "r25wf-private",
+            "submissions": true,
+            "privateMedia": false,
+            "questionBank": false,
+            "maxMediaBytes": 52428800,
+            "maxMediaFiles": 3,
+            "schemaVersion": 1,
+            "questionMetadataV2": false
+          }
+        }
+      }
+    },
+    {
+      "name": "numeric_uid_is_text",
+      "pass": true,
+      "detail": {
+        "user": {
+          "id": "000123",
+          "uid": "000123",
+          "role": "anchor",
+          "active": true,
+          "username": "000123",
+          "displayName": "a"
+        },
+        "registered": true,
+        "capabilities": {
+          "feedback": true,
+          "assignments": true,
+          "mediaBucket": "r25wf-private",
+          "submissions": true,
+          "privateMedia": false,
+          "questionBank": false,
+          "maxMediaBytes": 52428800,
+          "maxMediaFiles": 3,
+          "schemaVersion": 1,
+          "questionMetadataV2": false
+        }
+      }
+    },
+    {
+      "name": "operator_cannot_invite_operator",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "此账号不能邀请该角色"
+        }
+      }
+    },
+    {
+      "name": "admin_cannot_invite_admin",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "此账号不能邀请该角色"
+        }
+      }
+    },
+    {
+      "name": "missing_operation_id",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "OPERATION_ID_REQUIRED",
+          "message": "写操作需要稳定的operation_id"
+        }
+      }
+    },
+    {
+      "name": "assignment_create",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "assignment": {
+            "id": "assignment-main",
+            "title": "本地跨设备作业",
+            "boardId": "01",
+            "deadline": null,
+            "joinCode": "a82b2a152ec2",
+            "platform": "京东",
+            "createdAt": "2026-11-17T00:29:31.476+00:00",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "same_idempotency_response",
+      "pass": true
+    },
+    {
+      "name": "idempotency_body_conflict",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "IDEMPOTENCY_CONFLICT",
+          "message": "同一operation_id不能提交不同内容"
+        }
+      }
+    },
+    {
+      "name": "anchor_assignments_before_join",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "items": [],
+          "nextCursor": null
+        }
+      }
+    },
+    {
+      "name": "anchor_sees_only_joined",
+      "pass": true,
+      "detail": {
+        "items": [],
+        "nextCursor": null
+      }
+    },
+    {
+      "name": "anchor_join",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "join": {
+            "joinedAt": "2026-11-17T00:29:31.486+00:00",
+            "anchorUid": "000123",
+            "assignmentId": "assignment-main"
+          },
+          "assignment": {
+            "id": "assignment-main",
+            "title": "本地跨设备作业",
+            "boardId": "01",
+            "deadline": null,
+            "joinCode": "a82b2a152ec2",
+            "platform": "京东",
+            "createdAt": "2026-11-17T00:29:31.476+00:00",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "join_owner_from_auth",
+      "pass": true,
+      "detail": {
+        "join": {
+          "joinedAt": "2026-11-17T00:29:31.486+00:00",
+          "anchorUid": "000123",
+          "assignmentId": "assignment-main"
+        },
+        "assignment": {
+          "id": "assignment-main",
+          "title": "本地跨设备作业",
+          "boardId": "01",
+          "deadline": null,
+          "joinCode": "a82b2a152ec2",
+          "platform": "京东",
+          "createdAt": "2026-11-17T00:29:31.476+00:00",
+          "operatorId": "local-operator-A",
+          "operatorUid": "local-operator-A",
+          "operatorName": "opA"
+        }
+      }
+    },
+    {
+      "name": "rejoin_own_assignment",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "join": {
+            "joinedAt": "2026-11-17T00:29:31.486+00:00",
+            "anchorUid": "000123",
+            "assignmentId": "assignment-main"
+          },
+          "assignment": {
+            "id": "assignment-main",
+            "title": "本地跨设备作业",
+            "boardId": "01",
+            "deadline": null,
+            "joinCode": "a82b2a152ec2",
+            "platform": "京东",
+            "createdAt": "2026-11-17T00:29:31.476+00:00",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "foreign_operator_progress",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取该作业进度"
+        }
+      }
+    },
+    {
+      "name": "record_training",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "training": {
+            "id": "training-A",
+            "boardId": "01",
+            "platform": "京东",
+            "anchorUid": "000123",
+            "finishedAt": "2026-11-17T00:29:31.493+00:00",
+            "assignmentId": "assignment-main",
+            "durationSeconds": 25
+          }
+        }
+      }
+    },
+    {
+      "name": "training_id_immutable",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "CONFLICT",
+          "message": "记录已存在或同一场次已提交，请查询云端后重试原操作"
+        }
+      }
+    },
+    {
+      "name": "unjoined_anchor_training_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NOT_JOINED",
+          "message": "请先加入该作业"
+        }
+      }
+    },
+    {
+      "name": "assignment_rejects_spoofed_receiver",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "接收运营必须是该作业发布者"
+        }
+      }
+    },
+    {
+      "name": "submit_assignment",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "receiptId": "submission-A",
+          "submission": {
+            "id": "submission-A",
+            "late": false,
+            "media": [],
+            "snapshot": {
+              "turns": [
+                {
+                  "id": "turn1",
+                  "sku": "001",
+                  "model": "Q10",
+                  "answer": "这是本地人工答案",
+                  "prompt": "介绍型号",
+                  "sourceRef": "本地行1"
+                },
+                {
+                  "id": "turn2",
+                  "answer": "人工回答2",
+                  "prompt": "安装"
+                }
+              ],
+              "anchorName": "伪造姓名"
+            },
+            "anchorUid": "000123",
+            "sessionId": "training-A",
+            "turnCount": 2,
+            "anchorName": "a",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "submittedAt": "2026-11-17T00:29:31.503+00:00",
+            "assignmentId": "assignment-main",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "server_locks_actor_receiver",
+      "pass": true,
+      "detail": {
+        "receiptId": "submission-A",
+        "submission": {
+          "id": "submission-A",
+          "late": false,
+          "media": [],
+          "snapshot": {
+            "turns": [
+              {
+                "id": "turn1",
+                "sku": "001",
+                "model": "Q10",
+                "answer": "这是本地人工答案",
+                "prompt": "介绍型号",
+                "sourceRef": "本地行1"
+              },
+              {
+                "id": "turn2",
+                "answer": "人工回答2",
+                "prompt": "安装"
+              }
+            ],
+            "anchorName": "伪造姓名"
+          },
+          "anchorUid": "000123",
+          "sessionId": "training-A",
+          "turnCount": 2,
+          "anchorName": "a",
+          "operatorId": "local-operator-A",
+          "operatorUid": "local-operator-A",
+          "submittedAt": "2026-11-17T00:29:31.503+00:00",
+          "assignmentId": "assignment-main",
+          "operatorName": "opA"
+        }
+      }
+    },
+    {
+      "name": "receiver_reads_submission",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "submission": {
+            "id": "submission-A",
+            "late": false,
+            "media": [],
+            "snapshot": {
+              "turns": [
+                {
+                  "id": "turn1",
+                  "sku": "001",
+                  "model": "Q10",
+                  "answer": "这是本地人工答案",
+                  "prompt": "介绍型号",
+                  "sourceRef": "本地行1"
+                },
+                {
+                  "id": "turn2",
+                  "answer": "人工回答2",
+                  "prompt": "安装"
+                }
+              ],
+              "anchorName": "伪造姓名"
+            },
+            "anchorUid": "000123",
+            "sessionId": "training-A",
+            "turnCount": 2,
+            "anchorName": "a",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "submittedAt": "2026-11-17T00:29:31.503+00:00",
+            "assignmentId": "assignment-main",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "snapshot_metadata_roundtrip",
+      "pass": true,
+      "detail": {
+        "submission": {
+          "id": "submission-A",
+          "late": false,
+          "media": [],
+          "snapshot": {
+            "turns": [
+              {
+                "id": "turn1",
+                "sku": "001",
+                "model": "Q10",
+                "answer": "这是本地人工答案",
+                "prompt": "介绍型号",
+                "sourceRef": "本地行1"
+              },
+              {
+                "id": "turn2",
+                "answer": "人工回答2",
+                "prompt": "安装"
+              }
+            ],
+            "anchorName": "伪造姓名"
+          },
+          "anchorUid": "000123",
+          "sessionId": "training-A",
+          "turnCount": 2,
+          "anchorName": "a",
+          "operatorId": "local-operator-A",
+          "operatorUid": "local-operator-A",
+          "submittedAt": "2026-11-17T00:29:31.503+00:00",
+          "assignmentId": "assignment-main",
+          "operatorName": "opA"
+        }
+      }
+    },
+    {
+      "name": "other_operator_no_submission",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "other_anchor_no_submission",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "operator_feedback",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "feedback": {
+            "id": "feedback-A",
+            "body": "请把型号讲清楚",
+            "createdAt": "2026-11-17T00:29:31.51+00:00",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA",
+            "submissionId": "submission-A"
+          }
+        }
+      }
+    },
+    {
+      "name": "anchor_reads_feedback",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "items": [
+            {
+              "id": "feedback-A",
+              "body": "请把型号讲清楚",
+              "createdAt": "2026-11-17T00:29:31.51+00:00",
+              "operatorUid": "local-operator-A",
+              "operatorName": "opA",
+              "submissionId": "submission-A"
+            }
+          ],
+          "nextCursor": null
+        }
+      }
+    },
+    {
+      "name": "feedback_visible_to_anchor",
+      "pass": true,
+      "detail": {
+        "items": [
+          {
+            "id": "feedback-A",
+            "body": "请把型号讲清楚",
+            "createdAt": "2026-11-17T00:29:31.51+00:00",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA",
+            "submissionId": "submission-A"
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    {
+      "name": "anchor_cannot_write_feedback",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "仅接收运营可以写反馈"
+        }
+      }
+    },
+    {
+      "name": "foreign_operator_cannot_write_feedback",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "FORBIDDEN",
+          "message": "无权读取其他人的提交或反馈"
+        }
+      }
+    },
+    {
+      "name": "operator_progress_metadata",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "items": [
+            {
+              "joinedAt": "2026-11-17T00:29:31.486+00:00",
+              "anchorUid": "000123",
+              "displayName": "a",
+              "lastTrainedAt": "2026-11-17T00:29:31.493+00:00",
+              "trainingCount": 1,
+              "submissionCount": 1
+            }
+          ],
+          "assignment": {
+            "id": "assignment-main",
+            "title": "本地跨设备作业",
+            "boardId": "01",
+            "deadline": null,
+            "joinCode": "a82b2a152ec2",
+            "platform": "京东",
+            "createdAt": "2026-11-17T00:29:31.476+00:00",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "progress_has_no_answers",
+      "pass": true,
+      "detail": {
+        "items": [
+          {
+            "joinedAt": "2026-11-17T00:29:31.486+00:00",
+            "anchorUid": "000123",
+            "displayName": "a",
+            "lastTrainedAt": "2026-11-17T00:29:31.493+00:00",
+            "trainingCount": 1,
+            "submissionCount": 1
+          }
+        ],
+        "assignment": {
+          "id": "assignment-main",
+          "title": "本地跨设备作业",
+          "boardId": "01",
+          "deadline": null,
+          "joinCode": "a82b2a152ec2",
+          "platform": "京东",
+          "createdAt": "2026-11-17T00:29:31.476+00:00",
+          "operatorId": "local-operator-A",
+          "operatorUid": "local-operator-A",
+          "operatorName": "opA"
+        }
+      }
+    },
+    {
+      "name": "empty_snapshot_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "LIMIT_EXCEEDED",
+          "message": "每场须1至200题"
+        }
+      }
+    },
+    {
+      "name": "too_many_turns_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "LIMIT_EXCEEDED",
+          "message": "每场须1至200题"
+        }
+      }
+    },
+    {
+      "name": "not_uploaded_media_rejected",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "MEDIA_NOT_AVAILABLE",
+          "message": "私有媒体尚未启用，请明确选择仅交文字或稍后重试"
+        }
+      }
+    },
+    {
+      "name": "direct_table_bypass_blocked",
+      "pass": true
+    },
+    {
+      "name": "anon_rpc_blocked",
+      "pass": true
+    },
+    {
+      "name": "reopen_persistent_submission",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "submission": {
+            "id": "submission-A",
+            "late": false,
+            "media": [],
+            "snapshot": {
+              "turns": [
+                {
+                  "id": "turn1",
+                  "sku": "001",
+                  "model": "Q10",
+                  "answer": "这是本地人工答案",
+                  "prompt": "介绍型号",
+                  "sourceRef": "本地行1"
+                },
+                {
+                  "id": "turn2",
+                  "answer": "人工回答2",
+                  "prompt": "安装"
+                }
+              ],
+              "anchorName": "伪造姓名"
+            },
+            "anchorUid": "000123",
+            "sessionId": "training-A",
+            "turnCount": 2,
+            "anchorName": "a",
+            "operatorId": "local-operator-A",
+            "operatorUid": "local-operator-A",
+            "submittedAt": "2026-11-17T00:29:31.503+00:00",
+            "assignmentId": "assignment-main",
+            "operatorName": "opA"
+          }
+        }
+      }
+    },
+    {
+      "name": "data_survives_pg_restart",
+      "pass": true,
+      "detail": {
+        "submission": {
+          "id": "submission-A",
+          "late": false,
+          "media": [],
+          "snapshot": {
+            "turns": [
+              {
+                "id": "turn1",
+                "sku": "001",
+                "model": "Q10",
+                "answer": "这是本地人工答案",
+                "prompt": "介绍型号",
+                "sourceRef": "本地行1"
+              },
+              {
+                "id": "turn2",
+                "answer": "人工回答2",
+                "prompt": "安装"
+              }
+            ],
+            "anchorName": "伪造姓名"
+          },
+          "anchorUid": "000123",
+          "sessionId": "training-A",
+          "turnCount": 2,
+          "anchorName": "a",
+          "operatorId": "local-operator-A",
+          "operatorUid": "local-operator-A",
+          "submittedAt": "2026-11-17T00:29:31.503+00:00",
+          "assignmentId": "assignment-main",
+          "operatorName": "opA"
+        }
+      }
+    },
+    {
+      "name": "idempotency_survives_pg_restart",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "productModified": false,
+  "cloudCalls": 0,
+  "schemaSha256": "7d501d19589ad30d12fef4dc3606611329bde807b48d82ad4c57dc86cd55da23",
+  "status": "PASS",
+  "finishedAt": "2026-11-17T00:29:31.727Z"
+}

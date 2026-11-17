@@ -1,0 +1,43 @@
+{
+  "scope": "Final app bytes; explicit copied test config cloudbase.enabled=false to validate preserved local demo without changing live candidate. Existing Whisper test mocks remain, not real cloud/ASR acceptance.",
+  "app_sha256": "888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b",
+  "candidate_app_identical": true,
+  "rows": [
+    {
+      "test": "record-cache.py",
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-legacy-copy/experiments/r25/tests/record-cache.py"
+      ]
+    },
+    {
+      "test": "session_concurrency.py",
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-legacy-copy/experiments/r25/tests/session_concurrency.py"
+      ]
+    },
+    {
+      "test": "session_smooth_recovery.py",
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-legacy-copy/experiments/r25/tests/session_smooth_recovery.py"
+      ]
+    },
+    {
+      "test": "browser_smooth_e2e.py",
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-I",
+        "/workspace/r25-cloud-legacy-copy/experiments/r25/tests/browser_smooth_e2e.py"
+      ]
+    }
+  ]
+}

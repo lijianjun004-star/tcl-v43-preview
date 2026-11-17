@@ -1,0 +1,28 @@
+{
+  "scope": "real Chromium DOM, mocked cloud workflow; no network/Auth/database writes",
+  "sourceSha256": "e748db824ddf0733ccbf5891a441d7ecb2e7ba8261644b72957759c3bd2e2fe0",
+  "sent": [
+    {
+      "actor": "anchor-B",
+      "action": "submissions.create",
+      "payload": {
+        "id": "private-session-A",
+        "sessionId": "private-session-A",
+        "assignmentId": null,
+        "operatorId": "operator-X",
+        "snapshot": {
+          "id": "private-session-A",
+          "anchorName": "anchor-A",
+          "turns": [
+            {
+              "answer": "A的私人回答"
+            }
+          ]
+        },
+        "media": []
+      },
+      "key": "private-session-A"
+    }
+  ],
+  "wrongActorSend": true
+}

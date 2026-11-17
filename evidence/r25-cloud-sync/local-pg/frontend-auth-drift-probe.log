@@ -1,0 +1,19 @@
+{
+  "scope": "localSDKmock-preflight-race",
+  "status": "REPRODUCED",
+  "requestAlreadySent": {
+    "actor": "A",
+    "payload": {
+      "id": "B-private",
+      "snapshot": {
+        "turns": [
+          {
+            "answer": "B synthetic private content"
+          }
+        ]
+      }
+    }
+  },
+  "laterClientError": "STALE_SESSION",
+  "localOutboxStatus": "pending"
+}

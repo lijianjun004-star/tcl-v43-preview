@@ -1,0 +1,11 @@
+{
+  "scope": "Finite text pattern scan only. No private configs, browser credentials, Authorization or actual signed URLs copied. Not proof of arbitrary hidden secret absence.",
+  "filesScanned": 24,
+  "patternNames": [
+    "jwt",
+    "private_key",
+    "provider_key",
+    "signed_url_query"
+  ],
+  "hits": []
+}

@@ -1,0 +1,11 @@
+{
+  "source": "Root supplied completed successful Pages deployment before execution",
+  "pagesRun": 43994398610,
+  "pagesConclusion": "success",
+  "mergeCommit": "961ee3f612111fbcd73fde063cb2e714fff37d5f",
+  "ciRun": 43994142565,
+  "expectedRuntimeVersion": "r25-cloud-sync-recovery-20261117",
+  "expectedAppSha256": "684a244a1f62e15d9dbfddc88e8f314eedb416fecfb4ca3419115e60c6d57e16",
+  "url": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "server": "Actual public GitHub Pages and production CloudBase native Auth/PG; no localhost proxy"
+}

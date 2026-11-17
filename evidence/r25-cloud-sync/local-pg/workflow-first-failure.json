@@ -1,0 +1,131 @@
+{
+  "scope": "localPGmock-auth",
+  "startedAt": "2026-11-17T00:28:23.073Z",
+  "checks": [
+    {
+      "name": "schema_applies",
+      "pass": true
+    },
+    {
+      "name": "admin_me",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "local-admin",
+            "uid": "local-admin",
+            "role": "admin",
+            "active": true,
+            "username": "local-admin",
+            "displayName": "本地管理员"
+          },
+          "registered": true,
+          "capabilities": {
+            "feedback": true,
+            "assignments": true,
+            "mediaBucket": "r25wf-private",
+            "submissions": true,
+            "privateMedia": false,
+            "questionBank": false,
+            "maxMediaBytes": 52428800,
+            "maxMediaFiles": 3,
+            "schemaVersion": 1,
+            "questionMetadataV2": false
+          }
+        }
+      }
+    },
+    {
+      "name": "pending_me",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "data": {
+          "user": {
+            "id": "not-bound",
+            "uid": "not-bound",
+            "role": "pending",
+            "active": true,
+            "username": "not-bound",
+            "displayName": ""
+          },
+          "registered": false,
+          "capabilities": {
+            "feedback": true,
+            "assignments": true,
+            "mediaBucket": "r25wf-private",
+            "submissions": true,
+            "privateMedia": false,
+            "questionBank": false,
+            "maxMediaBytes": 52428800,
+            "maxMediaFiles": 3,
+            "schemaVersion": 1,
+            "questionMetadataV2": false
+          }
+        }
+      }
+    },
+    {
+      "name": "pending_has_no_role",
+      "pass": true,
+      "detail": {
+        "user": {
+          "id": "not-bound",
+          "uid": "not-bound",
+          "role": "pending",
+          "active": true,
+          "username": "not-bound",
+          "displayName": ""
+        },
+        "registered": false,
+        "capabilities": {
+          "feedback": true,
+          "assignments": true,
+          "mediaBucket": "r25wf-private",
+          "submissions": true,
+          "privateMedia": false,
+          "questionBank": false,
+          "maxMediaBytes": 52428800,
+          "maxMediaFiles": 3,
+          "schemaVersion": 1,
+          "questionMetadataV2": false
+        }
+      }
+    },
+    {
+      "name": "pending_cannot_create",
+      "pass": true,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "NOT_REGISTERED",
+          "message": "请先绑定管理员提供的角色邀请"
+        }
+      }
+    },
+    {
+      "name": "invite_opA",
+      "pass": false,
+      "detail": {
+        "ok": false,
+        "error": {
+          "code": "INTERNAL_ERROR",
+          "message": "云端未确认完成，请保留本机内容并重试原操作"
+        }
+      }
+    }
+  ],
+  "errors": [
+    {
+      "message": "invite_opA: {\"ok\":false,\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"云端未确认完成，请保留本机内容并重试原操作\"}}",
+      "code": "ERR_ASSERTION",
+      "stack": "AssertionError [ERR_ASSERTION]: invite_opA: {\"ok\":false,\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"云端未确认完成，请保留本机内容并重试原操作\"}}\n    at check (file:///workspace/r25-backend-tests/local-pg/workflow-test.mjs:14:107)\n    at success (file:///workspace/r25-backend-tests/local-pg/workflow-test.mjs:24:30)\n    at invite (file:///workspace/r25-backend-tests/local-pg/workflow-test.mjs:26:60)\n    at async file:///workspace/r25-backend-tests/local-pg/workflow-test.mjs:36:43"
+    }
+  ],
+  "productModified": false,
+  "cloudCalls": 0,
+  "schemaSha256": "1eb9f4664ded37491727041ef163358e38cee20346b3a7211d7a358bfd2ec776",
+  "status": "FAIL",
+  "finishedAt": "2026-11-17T00:28:25.687Z"
+}
