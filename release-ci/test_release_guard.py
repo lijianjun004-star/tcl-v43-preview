@@ -1585,12 +1585,268 @@ class R25AdditiveReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(gate.GateFailure, 'current R2.4'):
                 gate.r25_rebuild_previous_stages(self.root, b'fixture', trusted)
 
-    def test_source_or_archive_only_changes_do_not_match_release_class(self):
-        for paths in (gate.R25_ARCHIVE + '\n',
+    def test_source_edits_do_not_match_release_class(self):
+        for paths in (gate.R25_ARCHIVE + '\nexperiments/r25/app.js\n',
                 gate.R25_ARCHIVE + '\n.github/workflows/pages.yml\nexperiments/r25/app.js\n'):
             with mock.patch.object(gate.subprocess, 'check_output', return_value=paths):
                 with self.assertRaises(gate.GateFailure):
                     gate.verify_pr('a' * 40, 'b' * 40)
+
+
+class R25CloudUpdateTests(unittest.TestCase):
+    """Frozen static release policy only; these fixtures do not test the cloud API."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.baseline = {'index.html': b'protected root',
+                         'tcl-v352-asr-r24-qa/app.js': b'protected R24'}
+        self.old_resources = {name: (b'export const old = 1;' if name.endswith(('.js', '.mjs'))
+                                    else b'old fixture') for name in gate.R25_ASSET_HASHES}
+        self.added = frozenset({'cloud-workflow.mjs', 'cloud-workspace.mjs',
+                               'cloudbase-adapter.mjs', 'vendor/cloudbase/cloudbase-sdk.mjs'})
+        self.cloud_resources = dict(self.old_resources)
+        for name in ('app.js', 'app-config.json', 'index.html', 'style.css'):
+            self.cloud_resources[name] = (b'export const cloud = 2;' if name.endswith('.js')
+                                           else b'cloud fixture')
+        for name in self.added:
+            self.cloud_resources[name] = b'export const cloudModule = true;'
+        self.before = 'name: Protected fixture\n' + gate.LAB_ANCHOR
+        self.workflow = self.before.replace(gate.LAB_ANCHOR, gate.r25_stage_step() + gate.LAB_ANCHOR)
+        self.zipbytes = b'protected older site.zip'
+        self.trusted = {name: b'base commit input' for name in gate.R25_TRUSTED_INPUTS}
+        protected_hashes = {name: gate.sha256(data) for name, data in self.baseline.items()}
+        patches = dict(
+            R25_ARCHIVE_B64_SHA='', R25_ARCHIVE_SHA='', R25_ASSET_HASHES={},
+            R25_CLOUD_ARCHIVE_B64_SHA='', R25_CLOUD_ARCHIVE_SHA='', R25_CLOUD_ASSET_HASHES={},
+            R25_CLOUD_FILE_COUNT=len(self.cloud_resources), R25_CLOUD_ADDED_FILES=self.added,
+            R25_CLOUD_CHANGED_FILES=frozenset(self.added | {
+                'app.js', 'app-config.json', 'index.html', 'style.css', 'static-manifest.json'}),
+            R25_BASELINE_WORKFLOW_SHA=gate.sha256(self.before.encode()),
+            LAB_BASELINE_ZIP_SHA256=gate.sha256(self.zipbytes),
+            R25_BASELINE_FILES=len(self.baseline),
+            R25_BASELINE_TREE_SHA=gate.sha256(json.dumps(
+                protected_hashes, sort_keys=True, separators=(',', ':')).encode()),
+        )
+        patcher = mock.patch.multiple(gate, **patches)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.old_encoded = self.freeze(self.old_resources, cloud=False)
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+
+    def freeze(self, resources, cloud=True, version=None, update_assets=True):
+        resources['static-manifest.json'] = json.dumps({
+            'version': version or (gate.R25_CLOUD_VERSION if cloud else gate.R25_VERSION),
+            'files': {name: gate.sha256(data) for name, data in resources.items()
+                      if name != 'static-manifest.json'},
+        }, sort_keys=True).encode()
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, value in sorted(resources.items()):
+                archive.writestr(gate.R25_DEST + '/' + name, value)
+        raw = data.getvalue()
+        encoded = base64.b64encode(raw) + b'\n'
+        prefix = 'R25_CLOUD_' if cloud else 'R25_'
+        setattr(gate, prefix + 'ARCHIVE_SHA', gate.sha256(raw))
+        setattr(gate, prefix + 'ARCHIVE_B64_SHA', gate.sha256(encoded))
+        if update_assets:
+            setattr(gate, prefix + 'ASSET_HASHES', {name: gate.sha256(value)
+                                                   for name, value in resources.items()})
+        return encoded
+
+    def make_site(self, path):
+        for name, data in self.baseline.items():
+            dest = path / name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(data)
+        return path
+
+    def rebuild_fixture(self, root, zipbytes, trusted):
+        self.assertEqual(zipbytes, self.zipbytes)
+        self.assertEqual(trusted, self.trusted)
+        return self.make_site(root / '_site')
+
+    def verify(self, old=None, new=None, workflow=None, zipbytes=None):
+        return gate.verify_r25_archive_update(
+            self.workflow if workflow is None else workflow,
+            self.old_encoded if old is None else old,
+            self.cloud_encoded if new is None else new,
+            self.zipbytes if zipbytes is None else zipbytes, self.trusted)
+
+    def test_both_frozen_snapshots_remain_readable(self):
+        self.assertEqual(gate.r25_resource_bytes(self.old_encoded), self.old_resources)
+        self.assertEqual(gate.r25_resource_bytes(self.cloud_encoded), self.cloud_resources)
+
+    def test_exact_update_and_reverse_preserve_all_older_assets(self):
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            update = self.verify()
+            rollback = self.verify(self.cloud_encoded, self.old_encoded)
+        self.assertEqual(update['direction'], 'update')
+        self.assertEqual(rollback['direction'], 'rollback')
+        self.assertEqual(update['protected_assets'], len(self.baseline))
+        self.assertEqual(rollback['protected_assets'], len(self.baseline))
+        self.assertEqual(update['total_assets'], len(self.baseline) + len(self.cloud_resources))
+        self.assertEqual(rollback['total_assets'], len(self.baseline) + len(self.old_resources))
+        expected = sorted(gate.R25_DEST + '/' + name for name in gate.R25_CLOUD_CHANGED_FILES)
+        self.assertEqual(update['changed'], expected)
+        self.assertEqual(rollback['changed'], expected)
+
+    def test_repeated_unknown_or_nonadjacent_versions_are_rejected(self):
+        for old, new in ((self.old_encoded, self.old_encoded),
+                         (self.cloud_encoded, self.cloud_encoded),
+                         (b'unreviewed older archive', self.cloud_encoded),
+                         (self.old_encoded, self.cloud_encoded + b'\n')):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact old/new snapshot pair'):
+                self.verify(old, new)
+
+    def test_workflow_must_be_identical_including_every_old_stage(self):
+        for workflow in (self.workflow + '# extra\n', self.before,
+                         self.workflow.replace('Vosk-first', 'Cloud'),
+                         self.workflow.replace(gate.r25_stage_step(), gate.r25_stage_step() * 2)):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact existing Pages workflow'):
+                self.verify(workflow=workflow)
+
+    def test_protected_site_zip_cannot_change(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'protected site.zip'):
+            self.verify(zipbytes=self.zipbytes + b'changed')
+
+    def test_fully_repinned_extra_resource_is_not_a_reviewed_addition(self):
+        self.cloud_resources['another-worker.mjs'] = b'export const surprise = true;'
+        gate.R25_CLOUD_FILE_COUNT += 1
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+            self.verify()
+
+    def test_fully_repinned_removal_of_old_resource_is_rejected(self):
+        del self.cloud_resources['whisper-worker.mjs']
+        gate.R25_CLOUD_FILE_COUNT -= 1
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed resource set'):
+            self.verify()
+
+    def test_fully_repinned_unapproved_existing_change_is_rejected(self):
+        self.cloud_resources['whisper-bridge.mjs'] = b'export const surprise = true;'
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+            self.verify()
+
+    def test_omitting_a_required_reviewed_change_is_rejected(self):
+        self.cloud_resources['app.js'] = self.old_resources['app.js']
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed scope'):
+            self.verify()
+
+    def test_cloud_archive_repacking_cannot_bypass_individual_asset_pin(self):
+        self.cloud_resources['cloud-workflow.mjs'] = b'export const surprise = true;'
+        self.cloud_encoded = self.freeze(self.cloud_resources, update_assets=False)
+        with self.assertRaisesRegex(gate.GateFailure, 'resource hash mismatch'):
+            gate.r25_resource_bytes(self.cloud_encoded)
+
+    def test_cloud_manifest_version_cannot_be_changed_by_repinning_hashes(self):
+        self.cloud_encoded = self.freeze(self.cloud_resources, version='unreviewed-cloud')
+        with self.assertRaisesRegex(gate.GateFailure, 'manifest version'):
+            gate.r25_resource_bytes(self.cloud_encoded)
+
+    def test_pending_cloud_policy_does_not_block_the_deployed_snapshot(self):
+        with mock.patch.object(gate, 'R25_CLOUD_ARCHIVE_SHA', 'PENDING_SOURCE_FREEZE'):
+            self.assertEqual(gate.r25_resource_bytes(self.old_encoded), self.old_resources)
+            with self.assertRaisesRegex(gate.GateFailure, 'not been frozen'):
+                gate.r25_resource_bytes(self.cloud_encoded)
+
+    def test_larger_resource_limit_applies_only_to_cloud_snapshot(self):
+        content = b'/*' + base64.b64encode(os.urandom(565_000)) + b'*/'
+        self.assertGreater(len(content), gate.R25_MAX_RESOURCE_BYTES)
+        self.cloud_resources['vendor/cloudbase/cloudbase-sdk.mjs'] = content
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        self.assertEqual(gate.r25_resource_bytes(self.cloud_encoded), self.cloud_resources)
+        self.old_resources['app.js'] = content
+        self.old_encoded = self.freeze(self.old_resources, cloud=False)
+        with self.assertRaisesRegex(gate.GateFailure, 'size invalid'):
+            gate.r25_resource_bytes(self.old_encoded)
+
+    def test_cloud_resource_size_remains_bounded_even_when_repinned(self):
+        content = b'/*' + base64.b64encode(os.urandom(750_001)) + b'*/'
+        self.assertGreater(len(content), gate.R25_CLOUD_MAX_RESOURCE_BYTES)
+        self.cloud_resources['vendor/cloudbase/cloudbase-sdk.mjs'] = content
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        with self.assertRaisesRegex(gate.GateFailure, 'size invalid'):
+            gate.r25_resource_bytes(self.cloud_encoded)
+
+    def test_invalid_new_javascript_never_stages_a_partial_route(self):
+        self.cloud_resources['cloud-workspace.mjs'] = b'function { invalid'
+        self.cloud_encoded = self.freeze(self.cloud_resources)
+        site = self.make_site(self.root / 'invalid-script')
+        archive = self.root / 'invalid-script.zip.b64'
+        archive.write_bytes(self.cloud_encoded)
+        with self.assertRaisesRegex(gate.GateFailure, 'syntax check'):
+            gate.stage_r25(site, archive)
+        self.assertFalse((site / gate.R25_DEST).exists())
+        self.assertEqual((site / 'index.html').read_bytes(), self.baseline['index.html'])
+
+    def test_older_asset_change_after_staging_is_rejected(self):
+        original = gate.stage_r25
+        def changing_stage(site, archive):
+            result = original(site, archive)
+            if Path(site).name == '_updated_site':
+                (Path(site) / 'index.html').write_bytes(b'corrupted older root')
+            return result
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            with mock.patch.object(gate, 'stage_r25', changing_stage):
+                with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
+                    self.verify()
+
+    def test_extra_final_tree_resource_outside_r25_is_rejected(self):
+        original = gate.stage_r25
+        def extra_stage(site, archive):
+            result = original(site, archive)
+            if Path(site).name == '_updated_site':
+                (Path(site) / 'surprise.html').write_bytes(b'unreviewed route')
+            return result
+        with mock.patch.object(gate, 'r25_rebuild_previous_stages', self.rebuild_fixture):
+            with mock.patch.object(gate, 'stage_r25', extra_stage):
+                with self.assertRaisesRegex(gate.GateFailure, 'final Pages trees'):
+                    self.verify()
+
+    def test_archive_only_pr_uses_only_base_commit_trusted_inputs(self):
+        base, head = 'a' * 40, 'b' * 40
+        calls = []
+        def output(command, **options):
+            calls.append(command)
+            if command[:2] == ['git', 'diff']:
+                return gate.R25_ARCHIVE + '\n'
+            self.assertEqual(command[:2], ['git', 'show'])
+            return command[2].encode()
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output):
+            with mock.patch.object(gate, 'verify_r25_archive_update') as verify:
+                self.assertEqual(gate.verify_pr(base, head), 0)
+        args = verify.call_args.args
+        self.assertEqual(args[0], base + ':.github/workflows/pages.yml')
+        self.assertEqual(args[1:4], ((base + ':' + gate.R25_ARCHIVE).encode(),
+            (head + ':' + gate.R25_ARCHIVE).encode(), (base + ':site.zip').encode()))
+        self.assertEqual(args[4], {name: (base + ':' + name).encode() for name in gate.R25_TRUSTED_INPUTS})
+        self.assertEqual([cmd[2] for cmd in calls if cmd[:2] == ['git', 'show'] and cmd[2].startswith(head + ':')],
+                         [head + ':' + gate.R25_ARCHIVE])
+
+    def test_archive_update_cannot_mix_with_ci_workflow_or_source_edits(self):
+        for path in ('release-ci/release_guard.py', 'AI_CONTEXT.md',
+                     'backend/schema.sql', 'experiments/r25/cloud-workflow.mjs'):
+            with mock.patch.object(gate.subprocess, 'check_output',
+                                   return_value=gate.R25_ARCHIVE + '\n' + path + '\n'):
+                with self.assertRaisesRegex(gate.GateFailure, 'split release, CI and unrelated'):
+                    gate.verify_pr('a' * 40, 'b' * 40)
+
+    def test_existing_route_update_cannot_also_change_pages_workflow(self):
+        def output(command, **options):
+            if command[:2] == ['git', 'diff']:
+                return gate.R25_ARCHIVE + '\n.github/workflows/pages.yml\n'
+            if command[:2] == ['git', 'ls-tree']:
+                return gate.R25_ARCHIVE + '\n'
+            return b'base commit trusted input'
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output):
+            with mock.patch.object(gate, 'verify_r25_archive_update') as verify:
+                with self.assertRaisesRegex(gate.GateFailure, 'only exact additive release or full route rollback'):
+                    gate.verify_pr('a' * 40, 'b' * 40)
+                verify.assert_not_called()
 
 
 if __name__=='__main__':

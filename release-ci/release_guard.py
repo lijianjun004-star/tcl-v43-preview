@@ -1170,6 +1170,57 @@ R25_ASSET_HASHES = {'app-config.json': '52a2881798fa934df390727eb8b71084c1e823bc
  'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
  'whisper-bridge.mjs': '47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee',
  'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+# A separately reviewed same-route cloud snapshot. Keep the deployed ASR pins
+# valid while this CI-only change is deployed, and for exact version rollback.
+R25_CLOUD_VERSION = 'r25-cloud-sync-20261117'
+R25_CLOUD_ARCHIVE_B64_SHA = 'f28f374a625196033492e678cac00bf70579fcb8d3cf9377c5fd3b4d6966b89e'
+R25_CLOUD_ARCHIVE_SHA = '226e91efc7a6503fd0ef824e6ff1ab7f736c285c62daf89193f3fb698ee32f13'
+R25_CLOUD_ASSET_HASHES = {'app-config.json': '3df42c4f593e9c10776631bac75d5526e1e2a00bcd4e14e2e51627bf7b8c3dea',
+ 'app.js': '888d4781eec3aa202c8d9627dabbc44678bcc8988b3bb195972c16f5ddf2f56b',
+ 'asr-glossary.mjs': 'cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245',
+ 'asr-normalize.mjs': '3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168',
+ 'cloud-workflow.mjs': 'd894b9133e96726be58d748bd604808018f963d6bb42c60eb14487b3aadfb364',
+ 'cloud-workspace.mjs': '98f6c09907a97d43d6ee8f4e1f58db184cde71d175eead66e089a6473263dd15',
+ 'cloudbase-adapter.mjs': 'a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524',
+ 'glossary-ui.mjs': 'a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f',
+ 'index.html': '86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470',
+ 'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+ 'lib/parser.js': '8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8',
+ 'lib/pdf.js': '3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b',
+ 'lib/qa-import.js': 'fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86',
+ 'lib/xls.js': '11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c',
+ 'lib/zip.js': '5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4',
+ 'r23-model-choice.js': 'b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec',
+ 'static-manifest.json': '0809a058ee286e12e37ab6d25ba15d5eb62c1ae8392caf52e623d56e0f2f22b2',
+ 'style.css': '31b61b22ed66caec4dd8ee993b55e5306c79f5f27c9ec47113ca47296cf99109',
+ 'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+ 'vendor/cloudbase/LICENSE': '92d7d7d2d4771b84f44e38dc59052faae8e3cd0a234a62de6180a1c6746c979e',
+ 'vendor/cloudbase/README.md': '48665329cfa0baee544a8c57f38eb1518c9809430ebb0647aa904061db9ac767',
+ 'vendor/cloudbase/cloudbase-sdk.mjs': 'df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675',
+ 'vendor/opencc/LICENSE': '960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e',
+ 'vendor/opencc/LICENSES/Apache-2.0.txt': 'b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308',
+ 'vendor/opencc/THIRD_PARTY_LICENSES.md': '42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806',
+ 'vendor/opencc/t2cn.mjs': 'b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6',
+ 'whisper-bridge.mjs': '47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee',
+ 'whisper-worker.mjs': '5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b'}
+R25_CLOUD_FILE_COUNT = 28
+R25_CLOUD_CHANGED_FILES = frozenset({'app-config.json',
+ 'app.js',
+ 'cloud-workflow.mjs',
+ 'cloud-workspace.mjs',
+ 'cloudbase-adapter.mjs',
+ 'static-manifest.json',
+ 'style.css',
+ 'vendor/cloudbase/LICENSE',
+ 'vendor/cloudbase/README.md',
+ 'vendor/cloudbase/cloudbase-sdk.mjs'})
+R25_CLOUD_ADDED_FILES = frozenset({'cloud-workflow.mjs',
+ 'cloud-workspace.mjs',
+ 'cloudbase-adapter.mjs',
+ 'vendor/cloudbase/LICENSE',
+ 'vendor/cloudbase/README.md',
+ 'vendor/cloudbase/cloudbase-sdk.mjs'})
+R25_CLOUD_MAX_RESOURCE_BYTES = 1_000_000
 R25_BASELINE_WORKFLOW_SHA = 'e69778fb93e39cd241f9f7fe8c4a8e714d330b5b8d2310605f5aff98130aaf14'
 R25_BASELINE_FILES = 217
 R25_BASELINE_TREE_SHA = '13df1a6bac7a368dac95b336f17c89c8fda8c8460a98e38c868bed84092a1cc6'
@@ -1204,19 +1255,27 @@ def r25_check_baseline(site):
 
 
 def r25_resource_bytes(encoded):
-    if len(encoded) > R25_MAX_ENCODED_BYTES or sha256(encoded) != R25_ARCHIVE_B64_SHA:
+    snapshots = (
+        (R25_ARCHIVE_B64_SHA, R25_ARCHIVE_SHA, R25_ASSET_HASHES,
+         R25_VERSION, 22, R25_MAX_RESOURCE_BYTES),
+        (R25_CLOUD_ARCHIVE_B64_SHA, R25_CLOUD_ARCHIVE_SHA, R25_CLOUD_ASSET_HASHES,
+         R25_CLOUD_VERSION, R25_CLOUD_FILE_COUNT, R25_CLOUD_MAX_RESOURCE_BYTES),
+    )
+    selected = [snapshot for snapshot in snapshots if snapshot[0] == sha256(encoded)]
+    if len(encoded) > R25_MAX_ENCODED_BYTES or len(selected) != 1:
         raise GateFailure('R2.5 exact encoded archive hash/size mismatch')
-    if len(R25_ASSET_HASHES) != 22 or not all(re.fullmatch('[0-9a-f]{64}', digest)
-            for digest in (R25_ARCHIVE_B64_SHA, R25_ARCHIVE_SHA, *R25_ASSET_HASHES.values())):
+    encoded_pin, zip_pin, asset_hashes, version, count, resource_limit = selected[0]
+    if count < 22 or len(asset_hashes) != count or not all(re.fullmatch('[0-9a-f]{64}', digest)
+            for digest in (encoded_pin, zip_pin, *asset_hashes.values())):
         raise GateFailure('R2.5 policy has not been frozen to reviewed content')
     try:
         raw = base64.b64decode(encoded.strip(), validate=True)
     except (ValueError, TypeError) as err:
         raise GateFailure('R2.5 invalid base64 archive') from err
-    if len(raw) > R25_MAX_RAW_BYTES or sha256(raw) != R25_ARCHIVE_SHA:
+    if len(raw) > R25_MAX_RAW_BYTES or sha256(raw) != zip_pin:
         raise GateFailure('R2.5 exact ZIP archive hash/size mismatch')
     _, resources = inspect_zip_bytes_for_autoqa(raw)
-    allowed = {R25_DEST + '/' + name for name in R25_ASSET_HASHES}
+    allowed = {R25_DEST + '/' + name for name in asset_hashes}
     if set(resources) != allowed:
         raise GateFailure('R2.5 static resource allowlist mismatch')
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
@@ -1225,17 +1284,17 @@ def r25_resource_bytes(encoded):
             raise GateFailure('R2.5 archive entry count mismatch')
         if any(stat.S_IFMT(info.external_attr >> 16) not in (0, stat.S_IFREG) for info in entries):
             raise GateFailure('R2.5 non-regular static resource')
-        if any(not info.file_size or info.file_size > R25_MAX_RESOURCE_BYTES for info in entries):
+        if any(not info.file_size or info.file_size > resource_limit for info in entries):
             raise GateFailure('R2.5 static resource size invalid')
     if sum(map(len, resources.values())) > R25_MAX_TOTAL_BYTES:
         raise GateFailure('R2.5 static resource total size exceeded')
-    data = {name: resources[R25_DEST + '/' + name] for name in R25_ASSET_HASHES}
-    for name, digest in R25_ASSET_HASHES.items():
+    data = {name: resources[R25_DEST + '/' + name] for name in asset_hashes}
+    for name, digest in asset_hashes.items():
         if sha256(data[name]) != digest:
             raise GateFailure('R2.5 resource hash mismatch: ' + name)
     manifest = json.loads(data['static-manifest.json'])
     expected = {name: sha256(value) for name, value in data.items() if name != 'static-manifest.json'}
-    if manifest.get('version') != R25_VERSION or manifest.get('files') != expected:
+    if manifest.get('version') != version or manifest.get('files') != expected:
         raise GateFailure('R2.5 manifest version/coverage/hash mismatch')
     return data
 
@@ -1315,7 +1374,7 @@ def verify_r25_rollback(before, after, removed_archive, zipbytes, trusted_inputs
         raise GateFailure('R2.5 rollback must restore exact protected workflow')
     if before != after.replace(LAB_ANCHOR, r25_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('R2.5 rollback must remove only exact R2.5 stage')
-    r25_resource_bytes(removed_archive)
+    resources = r25_resource_bytes(removed_archive)
     with tempfile.TemporaryDirectory() as temp:
         root = pathlib.Path(temp)
         site = r25_rebuild_previous_stages(root, zipbytes, trusted_inputs)
@@ -1326,8 +1385,58 @@ def verify_r25_rollback(before, after, removed_archive, zipbytes, trusted_inputs
         shutil.rmtree(site / R25_DEST)
         if r25_check_baseline(site) != original:
             raise GateFailure('R2.5 rollback changed older resources')
-    result = {'removed_files': len(R25_ASSET_HASHES), 'protected_assets': len(original)}
+    result = {'removed_files': len(resources), 'protected_assets': len(original)}
     print('R25_ROLLBACK_PASS', json.dumps(result, sort_keys=True))
+    return result
+
+
+def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trusted_inputs):
+    """Accept only the two frozen adjacent R25 snapshots and their exact reversal."""
+    pair = (sha256(old_encoded), sha256(new_encoded))
+    forward = (R25_ARCHIVE_B64_SHA, R25_CLOUD_ARCHIVE_B64_SHA)
+    if pair[0] == pair[1] or pair not in (forward, forward[::-1]):
+        raise GateFailure('R2.5 update requires the exact old/new snapshot pair')
+    if sha256(zipbytes) != LAB_BASELINE_ZIP_SHA256:
+        raise GateFailure('R2.5 update cannot change protected site.zip')
+    step = r25_stage_step()
+    if (workflow.count(step) != 1 or
+            sha256(workflow.replace(step, '', 1).encode()) != R25_BASELINE_WORKFLOW_SHA):
+        raise GateFailure('R2.5 update must retain the exact existing Pages workflow')
+    old_data, new_data = r25_resource_bytes(old_encoded), r25_resource_bytes(new_encoded)
+    added, removed = ((R25_CLOUD_ADDED_FILES, frozenset()) if pair == forward
+                      else (frozenset(), R25_CLOUD_ADDED_FILES))
+    if set(new_data) - set(old_data) != added or set(old_data) - set(new_data) != removed:
+        raise GateFailure('R2.5 update changed the exact reviewed resource set')
+    changed = {name for name in set(old_data) | set(new_data)
+               if old_data.get(name) != new_data.get(name)}
+    if changed != R25_CLOUD_CHANGED_FILES:
+        raise GateFailure('R2.5 update changed resources outside the exact reviewed scope')
+    with tempfile.TemporaryDirectory() as temp:
+        root = pathlib.Path(temp)
+        old_site = r25_rebuild_previous_stages(root, zipbytes, trusted_inputs)
+        r25_check_baseline(old_site)
+        protected = {path.relative_to(old_site).as_posix(): path.read_bytes()
+                     for path in old_site.rglob('*') if path.is_file()}
+        new_site = root / '_updated_site'
+        shutil.copytree(old_site, new_site)
+        for label, encoded, site in (('old', old_encoded, old_site), ('new', new_encoded, new_site)):
+            archive = root / (label + '-r25.zip.b64')
+            archive.write_bytes(encoded)
+            stage_r25(site, archive)
+            if any(not (site / name).is_file() or (site / name).is_symlink()
+                   or (site / name).read_bytes() != data for name, data in protected.items()):
+                raise GateFailure('R2.5 update modified an older Pages resource')
+        old_files, new_files = r25_tree_hashes(old_site), r25_tree_hashes(new_site)
+        actual_changed = {name for name in set(old_files) | set(new_files)
+                          if old_files.get(name) != new_files.get(name)}
+        if (set(new_files) - set(old_files) != {R25_DEST + '/' + name for name in added}
+                or set(old_files) - set(new_files) != {R25_DEST + '/' + name for name in removed}
+                or actual_changed != {R25_DEST + '/' + name for name in changed}):
+            raise GateFailure('R2.5 final Pages trees differ outside the exact update scope')
+    result = {'direction': 'update' if pair == forward else 'rollback',
+              'protected_assets': len(protected), 'total_assets': len(new_files),
+              'changed': sorted(actual_changed)}
+    print('R25_UPDATE_PASS', json.dumps(result, sort_keys=True))
     return result
 
 
@@ -1364,6 +1473,13 @@ def verify_pr(base, head):
             print('verify-pages-release PASS: exact R2.5 rollback; all older routes preserved')
         else:
             raise GateFailure('R2.5 release allows only exact additive release or full route rollback')
+    elif changed == {R25_ARCHIVE}:
+        verify_r25_archive_update(
+            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, R25_ARCHIVE), show(head, R25_ARCHIVE), show(base, 'site.zip'),
+            {path: show(base, path) for path in R25_TRUSTED_INPUTS},
+        )
+        print('verify-pages-release PASS: exact R2.5 same-route update/rollback; 217 older assets preserved')
     elif changed == {R24_ARCHIVE}:
         verify_r24_archive_update(
             show(base, '.github/workflows/pages.yml').decode('utf-8'),
