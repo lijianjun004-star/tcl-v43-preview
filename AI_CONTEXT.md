@@ -662,3 +662,5 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 最终本地前端54、后端20、ACL102、跨层集成1、Chromium原DOM7/恢复与跨页IndexedDB7、门禁162各自全通过；完整归档更新/回退保留217旧资源，总246。独立复核发现导入竞态后已修复。真实云/多连接数据库/手机/大陆网络未验收。
 - 版本r25-registration-recovery-20261117；ZIP365363d043f6aa88f43746373b9a1842c00d56e0a6b378073fc5b46eba3cc034，B64b7de6c8cc7e5fd718156af495711c6b122438a623674bc6c67ded20c44e905fb；29文件相对main只改五项，原app/ASR/旧数据不变。详见evidence/r25-registration-recovery/README.md与release-identity.json。
 - 后续按002→003→原身份函数→真实云验收→独立CI→仅一个B64归档的发行PR顺序。不得在003后重跑001/002覆盖恢复函数；前端回退保留兼容后台。按本次用户交接明确要求，正式合并或发布前交精确变更与验证结果确认；本轮未做云端写入、合并或发布。
+
+- 本轮交付已落地：实现16bd69e0fc09c0d754c33a5235edfa06c42172a8；独立CI草稿PR139 head d5d57ae5983c9ffd25ec60c2c4a4f0c967f44d82，Actions44101980262已success，仅两份门禁文件，替代旧138候选。正式合并及Pages仍未执行。私有修复包 https://drive.google.com/file/d/1g9w6i0WWdfJS0ZdK9Y5sim-ikiHVUjZo/view?usp=drivesdk ，13335690字节、SHA256 26a2f347521f542c28b445e620bf52acdee40cd3b2976505ff4fe8e6161cc11f；实际回下载SHA/CRC一致，资料中心父目录与shared=false已核验。包内51项校验与最终生产函数入口加载通过；详细状态见evidence/r25-registration-recovery/outcome.json。

@@ -1,0 +1,42 @@
+{
+  "taskId": "TCL-R25-REGISTRATION-RECOVERY-20261117",
+  "owner": "ChatGPT",
+  "executor": "Codex current session",
+  "domain": "software",
+  "sourceBaseline": "f5dee44471bb54c850118f9d94e1536e24df7ddc",
+  "fixCommit": "16bd69e0fc09c0d754c33a5235edfa06c42172a8",
+  "status": "FIXED_CANDIDATE_AWAITING_MERGE_PUBLISH_CONFIRMATION",
+  "ciPr": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/139",
+  "ciHead": "d5d57ae5983c9ffd25ec60c2c4a4f0c967f44d82",
+  "ciRun": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44101980262",
+  "ciConclusion": "success",
+  "artifact": "https://drive.google.com/file/d/1g9w6i0WWdfJS0ZdK9Y5sim-ikiHVUjZo/view?usp=drivesdk",
+  "artifactBytes": 13335690,
+  "artifactSha256": "26a2f347521f542c28b445e620bf52acdee40cd3b2976505ff4fe8e6161cc11f",
+  "artifactVerified": "Drive raw download SHA256 and CRC matched; metadata size,parent,shared=false verified",
+  "tests": {
+    "frontend": 54,
+    "backend": 20,
+    "acl": 102,
+    "crossLayerIntegration": 1,
+    "browserOriginal": 7,
+    "browserRecovery": 7,
+    "releaseGate": 162
+  },
+  "budget": {
+    "geminiNewRequests": 0,
+    "claudeNewRequests": 0,
+    "paidModelApiCalls": 0
+  },
+  "blockingItems": [
+    "Formal merge/publish requires user confirmation per current handoff",
+    "Real CloudBase migration/Auth/business/media acceptance not run",
+    "Physical phone/mainland network/multiconnection DB races not run"
+  ],
+  "onlineChanges": [
+    "Pushed isolated source and CI branches",
+    "Created draft CI PR139",
+    "Uploaded private review ZIP to existing Drive folder"
+  ],
+  "noProductionChanges": true
+}
