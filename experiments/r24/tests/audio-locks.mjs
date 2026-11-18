@@ -36,3 +36,18 @@ test('Vosk initialization timeout retains worker job and its blob URL; no duplic
  const model={KaldiRecognizer(){}};finish(model);await tick();
  assert.equal(await run(),model);assert.equal(calls,1);assert.equal(revoked,1);
 });
+
+test('quiet Vosk recovery rechecks a copy without changing normal input or admitting stationary samples',()=>{
+ const context=vm.createContext({Float32Array});
+ const trim=vm.runInContext(extract('function trimAsrSilence(','function calcChineseRatio(')+'\ntrimAsrSilence',context);
+ const wave=Float32Array.from({length:48000},(_,i)=>i>=8000&&i<40000?.004*Math.sin(i*.14):0);
+ const before=wave.slice();
+ assert.equal(trim(wave).hasSpeech,false);
+ assert.equal(trim(wave,16000,{recoverQuiet:true}).hasSpeech,true);
+ assert.deepEqual(wave,before);
+ const normal=wave.map(value=>value*10);
+ assert.deepEqual(trim(normal,16000,{recoverQuiet:true}).pcm,trim(normal).pcm);
+ const stationary=Float32Array.from({length:48000},(_,i)=>.004*Math.sin(i*.14));
+ assert.equal(trim(stationary,16000,{recoverQuiet:true}).hasSpeech,false);
+ assert.equal(trim(new Float32Array(48000),16000,{recoverQuiet:true}).hasSpeech,false);
+});

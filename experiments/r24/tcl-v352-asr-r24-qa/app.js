@@ -621,15 +621,18 @@ function normalizeWhisperChinese(raw){
   return s;
 }
 function normalizeInterfaceDecimals(input){
-  let extraChanges=0;
-  const out=String(input??'').replace(/\b(HDMI|USB|DP|Wi-?Fi)\s*([一二两三四五六七八九十](?:点[零〇○一二三四五六七八九]+)?)/giu,(whole,prefix,spoken)=>{
-    if(typeof spokenNumberValue!=='function')return whole;
+  let changes=0;
+  const text=String(input??'').replace(/\b(HDMI|USB|DP|Wi-?Fi)[ \t]*([零〇○一二两三四五六七八九十百千万点]+)/giu,(whole,prefix,spoken,offset,value)=>{
+    const tail=value.slice(offset+whole.length);
+    if(/^[\d几多来余左右上下约近]|^[到至或及与、～~—-][\d零〇○一二两三四五六七八九十百千万]/u.test(tail))return whole;
+    const groups=spoken.split('点',1)[0].split('万');
+    if(groups.length>2||groups.some(group=>/十.*[十百千]|百.*[百千]|千.*千/u.test(group)))return whole;
     const val=spokenNumberValue(spoken);
     if(val===null)return whole;
-    extraChanges++;
+    changes++;
     return prefix+val;
   });
-  return {text:out,changes:extraChanges};
+  return {text,changes};
 }
 // The enhanced model is selectable before recording; reloading changes the WASM engine
 // without ever running Tiny and Base concurrently on a mobile device.
@@ -723,10 +726,8 @@ async function r6WhisperDrain(){
         turn.rawTranscript=String(result?.text||'').trim();
         const rawCleaned=normalizeWhisperChinese(result?.text||'');
         const assessed=(typeof assessAsrText==='function'&&rawCleaned)?assessAsrText(rawCleaned):{text:rawCleaned,warnings:[]};
-        const baseNumeric=(typeof normalizeSpokenNumbers==='function'&&assessed.text)?normalizeSpokenNumbers(assessed.text):{text:assessed.text||'',changes:0};
-        const ifaceNumeric=normalizeInterfaceDecimals(baseNumeric.text);
-        const text=String(ifaceNumeric.text||'').trim();
-        const totalChanges=(baseNumeric.changes||0)+(ifaceNumeric.changes||0);
+        const numeric=(typeof normalizeSpokenNumbers==='function'&&assessed.text)?normalizeSpokenNumbers(assessed.text):{text:assessed.text||'',changes:0};
+        const text=String(numeric.text||'').trim();
         const manuallyChanged=startedWithManual||turn.manualEdited||turn.manualCleared||
           (task.asrRevision!==undefined&&(turn.asrRevision||0)!==task.asrRevision)||
           (turn.answer||'')!==baselineAnswer||(turn.transcript||'')!==baselineTranscript;
@@ -742,7 +743,7 @@ async function r6WhisperDrain(){
           turn.answer=text;
           turn.manualEdited=false;
           turn.manualCleared=false;
-          turn.asrWarnings=[...(assessed.warnings||[]),...(totalChanges?['已规范化'+totalChanges+'处明确的口述数值/型号，请重点核对']:[])];
+          turn.asrWarnings=[...(assessed.warnings||[]),...(numeric.changes?['已规范化'+numeric.changes+'处明确的口述数值/型号，请重点核对']:[])];
           if(turn.captureLimitReached)turn.asrWarnings.push('本题录音达到120秒上限，之后的内容未录入');
           const input=ELEM('answerText');
           if(activeTurn?.id===turn.id&&input)input.value=text;
@@ -970,7 +971,7 @@ async function transcribeQuestion(turnId,{queued=false}={}){
   try{
    const raw=await awaitBounded(decodeAudioCopy(audio),Number(window.__ASR_DECODE_TIMEOUT_MS)||60000,'单题音频解码');
    if(!valid())return;
-   const trimmed=trimAsrSilence(raw,16000);
+   const trimmed=trimAsrSilence(raw,16000,{recoverQuiet:true});
    if(!trimmed.hasSpeech)throw new Error('有效语音不足1秒');
    const inferP=recognizeVosk(voskModel,trimmed.pcm,valid);
    asrInferJob=inferP;inferP.finally(()=>{if(asrInferJob===inferP){asrInferJob=null;void r6WhisperDrain();void drainQuestionAsrQueue();}}).catch(()=>{});
@@ -1909,19 +1910,21 @@ function browserAsr(){
    const normalized=normalizeSpokenNumbers(assessed.text);
    const onLivePage=page==='training'&&roomPhase==='live'&&target.isConnected;
    const prev=turn.transcript||'',typed=onLivePage?target.value.trim():(turn.answer||'').trim();
-   const hasManualDraft=!!turn.manualCleared||!!typed&&typed!==prev;
+   const hasManualDraft=!!(turn.manualEdited||turn.manualCleared)||!!typed&&typed!==prev;
    // A newer browser result supersedes any still-running Vosk one-shot result.
    turn.asrRevision=(turn.asrRevision||0)+1;
    turn.rawTranscript=raw;turn.transcript=normalized.text;
-   if(hasManualDraft)turn.answer=typed;
-   else if(!turn.answer||turn.answer===prev||!typed||typed===prev)turn.answer=normalized.text;
-   if(onLivePage&&!turn.manualCleared&&(!typed||typed===prev)){target.value=normalized.text;const visible=ELEM('liveTextAnswer');if(visible&&!ELEM('textAnswerSheet')?.hidden&&(!visible.value.trim()||visible.value.trim()===prev))visible.value=normalized.text;}
+   if(hasManualDraft){
+    turn.answer=turn.manualCleared?'':typed||turn.answer||'';
+    turn.manualEdited=!turn.manualCleared;
+   }else turn.answer=normalized.text;
+   if(onLivePage&&!hasManualDraft){target.value=normalized.text;const visible=ELEM('liveTextAnswer');if(visible&&!ELEM('textAnswerSheet')?.hidden&&(!visible.value.trim()||visible.value.trim()===prev))visible.value=normalized.text;}
    turn.asrWarnings=[...(assessed.warnings||[]),...(normalized.changes?['数值已规范化，请核对原文']:[])];
    turn.compliance=complianceHints(turn.answer,turn.platform);
    turn.pointsHit=(turn.keyPoints||[]).filter((p,i)=>fuzzyPoint(p,turn.answer,turn.pointKeywords?.[i]||[]));
-   turn.asrStatus='浏览器语音识别已写入本题（可能调用在线服务，请人工校对）';
+   turn.asrStatus=hasManualDraft?'浏览器语音识别完成，已保留人工回答':'浏览器语音识别已写入本题（可能调用在线服务，请人工校对）';
    void saveTurn(turn);renderTurnStatus(turn);
-   status.textContent='识别文字已同步到本题：明确数字与型号已尽可能规范为阿拉伯数字；无法辨认的数字不会猜测，请听录音核对。';
+   status.textContent=hasManualDraft?'已保留你编辑或清空的本题回答。':'识别文字已同步到本题：明确数字与型号已尽可能规范为阿拉伯数字；无法辨认的数字不会猜测，请听录音核对。';
   };
   rec.onerror=e=>{if(!valid()||speechRecognizer!==rec)return;status.textContent='浏览器识别失败：'+e.error+'。请手动输入。';cancelSpeech();};
   rec.onend=()=>{if(speechRecognizer===rec){const noResult=!hadTextResult&&valid()&&roomPhase==='live';clearTimeout(speechFinishTimer);speechFinishTimer=null;speechFinishingRun='';speechRecognizer=null;speechSession++;if(noResult){status.textContent='浏览器未返回中文文字（可能不支持此识别服务或网络不可用）。请使用逐题录音并在复盘补转写，或手动输入。';toast('语音识别未得到文字，已保留手动回答入口');}}};
@@ -2004,6 +2007,13 @@ function trimAsrSilence(pcm,sampleRate=16000,opts={}){
  }
  const voicedSeconds=voicedSamples/sampleRate;
  if(voicedSeconds<minVoicedSeconds||!rawIntervals.length){
+  if(opts.recoverQuiet===true&&sampleRate===16000){
+   const boosted=quietVoskCopy(pcm);
+   if(boosted){
+    const retry=trimAsrSilence(boosted,sampleRate,{...opts,recoverQuiet:false});
+    if(retry.hasSpeech)return retry;
+   }
+  }
   return {hasSpeech:false,pcm:new Float32Array(0),segments:[],voicedSeconds,reason:'未检测到有效语音'};
  }
  const segments=[];
@@ -2017,6 +2027,33 @@ function trimAsrSilence(pcm,sampleRate=16000,opts={}){
   for(let i=seg.start;i<seg.end;i++){const v=pcm[i];out[pos++]=Number.isFinite(v)?v:0;}
  }
  return {hasSpeech:true,pcm:out,segments,voicedSeconds,reason:''};
+}
+// Only recover quiet audio that the usual Vosk gate rejected. Keep the same
+// minimum voiced duration and recheck a gain-adjusted copy, never the recording.
+function quietVoskCopy(pcm){
+ if(pcm.length<16000)return null;
+ const frames=[];
+ let peak=0;
+ for(let start=0;start<pcm.length;start+=480){
+  const end=Math.min(pcm.length,start+480);
+  let squareSum=0,crossings=0;
+  for(let i=start;i<end;i++){
+   const value=pcm[i];
+   if(!Number.isFinite(value))return null;
+   squareSum+=value*value;
+   peak=Math.max(peak,Math.abs(value));
+   if(i>start&&((value>=0)!==(pcm[i-1]>=0)))crossings++;
+  }
+  frames.push({rms:Math.sqrt(squareSum/(end-start)),crossingRate:crossings/Math.max(1,end-start-1)});
+ }
+ const levels=frames.map(frame=>frame.rms).sort((a,b)=>a-b);
+ const quiet=levels[Math.floor((levels.length-1)*.1)];
+ const speech=levels[Math.floor((levels.length-1)*.9)];
+ if(speech<.001||speech>=.008||speech<3*Math.max(quiet,1e-6))return null;
+ const rates=frames.filter(frame=>frame.rms>=Math.max(.001,speech*.5)).map(frame=>frame.crossingRate).sort((a,b)=>a-b);
+ if(rates[Math.floor(rates.length/2)]>.2)return null;
+ const gain=Math.min(8,.016/speech,.95/peak);
+ return Float32Array.from(pcm,value=>value*gain);
 }
 function calcChineseRatio(str){
  const chars=[...String(str||'').replace(/[\s\p{P}\p{S}]/gu,'')];
@@ -2099,13 +2136,12 @@ function spokenNumberValue(phrase){
  return integer+'.'+[...split[1]].map(c=>chars[c]).join('');
 }
 function normalizeSpokenNumbers(input){
- let changes=0;
+ let {text,changes}=normalizeInterfaceDecimals(input);
  const rewrite=(whole,phrase,suffix)=>{
   const parsed=spokenNumberValue(phrase);
   if(parsed===null||parsed===phrase)return whole;
   changes++;return parsed+suffix;
  };
- let text=String(input??'');
   // Exact YYYY years are digit-by-digit dictation, not an approximate range.
   text=text.replace(/([二两][零〇○][零〇○一二三四五六七八九][零〇○一二三四五六七八九])年/gu,(whole,phrase,offset,full)=>{
    const prev=full.slice(Math.max(0,offset-1),offset);
@@ -2116,10 +2152,11 @@ function normalizeSpokenNumbers(input){
   });
   // Within mixed alphanumeric model IDs (e.g. T七M Pro -> T7M Pro, Q十M Pro -> Q10M Pro, C十一K -> C11K, X十一H -> X11H, A七十三 -> A73, PS五 -> PS5).
   text=text.replace(/([A-Za-z][A-Za-z0-9]{0,12})([零〇○一二两三四五六七八九十百]{1,5})(?=[A-Za-z0-9]|\s+(?:Pro|Max|Ultra|Plus|Mini)\b)/gu,(whole,prefix,spoken)=>{
+   if(/^(?:HDMI|USB|DP|WiFi)$/i.test(prefix))return whole;
    const num=spokenNumberValue(spoken);if(num===null)return whole;
    changes++;return prefix+num;
   });
-  text=text.replace(/\b(PS|HDMI|WiFi|Wi-Fi|A|G|C|Q|T|X|V)([零〇○一二三四五六七八九十]{1,3})(?![零〇○一二两三四五六七八九十百千万点英寸匹元块秒分钟小时天年个月台套件个折倍级帧度瓦赫兹公斤千克升厘米毫米平方米平米])/gu,(whole,prefix,spoken)=>{
+  text=text.replace(/\b(PS|A|G|C|Q|T|X|V)([零〇○一二三四五六七八九十]{1,3})(?![零〇○一二两三四五六七八九十百千万点英寸匹元块秒分钟小时天年个月台套件个折倍级帧度瓦赫兹公斤千克升厘米毫米平方米平米])/gu,(whole,prefix,spoken)=>{
    const num=spokenNumberValue(spoken);if(num===null)return whole;
    changes++;return prefix+num;
   });
@@ -2454,16 +2491,21 @@ async function transcribeSessionVideo(engine='vosk'){
  if(!sessionVideoBlob||videoRecorderFinalizing)return toast('请先结束直播并等待原始录像封装完成');
  const board=selectedBoard,platform=activePlatform,source=sessionVideoBlob,session=++transcriptSeq;
  try{ensureDecodeBudget(source)}catch(e){if(ELEM('transcribeStatus'))ELEM('transcribeStatus').textContent=e.message;return toast(e.message)}
- const status=ELEM('transcribeStatus'),button=ELEM('transcribeVideoBtn'),wBtn=ELEM('transcribeWhisperBtn');
- if(!status||!button)return;
+ const status=ELEM('transcribeStatus'),button=ELEM('transcribeVideoBtn'),wBtn=ELEM('transcribeWhisperBtn'),editor=ELEM('postTranscript');
+ if(!status||!button||!editor)return;
+ const snapshot=lastSessionSnapshot?.id===runId?lastSessionSnapshot:null;
+ const originalDraft=editor.value,alreadyEdited=!!(snapshot&&originalDraft.trim()&&snapshot.postTranscriptManualEdited!==false);
+ let editedDuringRecognition=false;
+ const markEdited=()=>{editedDuringRecognition=true;};
+ editor.addEventListener('input',markEdited);
  transcriptBusy=true;button.disabled=true;if(wBtn)wBtn.disabled=true;
- const valid=()=>session===transcriptSeq&&source===sessionVideoBlob&&isRunPage()&&board===selectedBoard&&platform===activePlatform&&ELEM('transcribeStatus')===status;
+ const valid=()=>session===transcriptSeq&&source===sessionVideoBlob&&isRunPage()&&board===selectedBoard&&platform===activePlatform&&ELEM('transcribeStatus')===status&&ELEM('postTranscript')===editor&&(!snapshot||lastSessionSnapshot===snapshot);
  try{
   status.textContent='正在从原录像的独立数据副本解码音频（原文件及音画时间轴保持不变）…';
   const rawPcm=await awaitBounded(decodeAudioCopy(source),Number(window.__ASR_DECODE_TIMEOUT_MS)||60000,'原录像解码');
   asrActive(valid);
   if(rawPcm.length<16000)throw new Error('有效音频不足1秒，不能识别');
-  const trimmed=trimAsrSilence(rawPcm,16000);
+  const trimmed=trimAsrSilence(rawPcm,16000,{recoverQuiet:!useWhisper});
   if(!trimmed.hasSpeech){
    status.textContent='录后转写未执行：未检测到有效语音（有效人声不足1秒），未下载或调用识别模型。原视频未损坏。';
    return;
@@ -2503,12 +2545,22 @@ async function transcribeSessionVideo(engine='vosk'){
   const assessed=assessAsrText(rawText);
   if(!assessed.text)throw new Error('模型未返回有效中文内容');
   const numeric=normalizeSpokenNumbers(assessed.text);
-  ELEM('postTranscript').value=numeric.text;if(lastSessionSnapshot?.id===runId){lastSessionSnapshot.postTranscript=numeric.text;void persistSessionCheckpoint();}
+  const keepDraft=alreadyEdited||editedDuringRecognition||editor.value!==originalDraft;
+  if(!keepDraft)editor.value=numeric.text;
+  if(snapshot){
+   snapshot.postTranscript=editor.value;
+   snapshot.postTranscriptRaw=rawText;
+   snapshot.postTranscriptManualEdited=keepDraft;
+   if(keepDraft)snapshot.postTranscriptCandidate=numeric.text;
+   else delete snapshot.postTranscriptCandidate;
+   void persistSessionCheckpoint();
+  }
   const warnNote=assessed.warnings.length?`注意：${assessed.warnings.join('；')}。`:'';
-  status.textContent=`录后识别完成（引擎：${engineLabel}）。${warnNote}${numeric.changes?'已规范化'+numeric.changes+'处口述数字（请重点核对）！':''}请对照原视频校对数字、型号、价格和同音字；不会自动将整场文字错误分配到单题。本次未修改原始录像。`;
+  status.textContent=`录后识别完成（引擎：${engineLabel}）。${keepDraft?'已保留你编辑的整场文字。':''}${warnNote}${numeric.changes?'已规范化'+numeric.changes+'处口述数字（请重点核对）！':''}请对照原视频校对数字、型号、价格和同音字；不会自动将整场文字错误分配到单题。本次未修改原始录像。`;
  }catch(e){
   if(valid())status.textContent='录后转写未完成：'+(e.message||e)+'。原视频未损坏、可下载回放；可手动补录文字。';
  }finally{
+  editor.removeEventListener('input',markEdited);
   if(session===transcriptSeq){
    transcriptBusy=false;
    if(ELEM('transcribeVideoBtn'))ELEM('transcribeVideoBtn').disabled=!sessionVideoBlob;
@@ -2616,7 +2668,7 @@ function sessionReviewPage(){
  ELEM('reviewDetailsBack').onclick=backToReviewOverview;
  ELEM('reviewGoDetails').onclick=()=>showReviewStage('details');
  ELEM('reviewGoReplay').onclick=()=>showReviewStage('replay');
- {const pt=ELEM('postTranscript');if(pt){pt.value=snap.postTranscript||'';pt.oninput=()=>{snap.postTranscript=pt.value;void persistSessionCheckpoint()};}}
+ {const pt=ELEM('postTranscript');if(pt){pt.value=snap.postTranscript||'';pt.oninput=()=>{snap.postTranscript=pt.value;snap.postTranscriptManualEdited=true;void persistSessionCheckpoint()};}}
  ELEM('transcribeVideoBtn').onclick=()=>transcribeSessionVideo('vosk');
  ELEM('transcribeWhisperBtn').onclick=()=>transcribeSessionVideo('whisper');
  ELEM('preloadVoskBtn').onclick=preloadVoskModel;
