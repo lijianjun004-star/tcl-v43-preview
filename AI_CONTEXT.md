@@ -652,3 +652,12 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 实现冻结16bd69e0fc09c0d754c33a5235edfa06c42172a8。完整部署、验收、失败归因和工具源码在fix/r25-registration-recovery-20261117的证据冻结8b7780cf1cc6bc4ec64b705824b27b4c83c84da8：evidence/r25-registration-recovery/deployment/README.md与JSON。先前Drive修复包26a2f347…是候选交付快照，其“未部署”文字保留为历史，不代表当前状态。CloudBase官方插件0.2.5/32技能和CLI3.9.3已接入国内站，MCP需新会话加载，本轮通过官方管理SDK/CLI执行。
 - NOT RUN：物理iPhone/Android、真实大陆网络、原正式账号密码实际登录、真麦克风/相机/ASR准确率、PostgreSQL多连接竞争调度。本轮合成admin验证真实admin角色权限，不冒充原管理员密码登录；390px视口不是物理手机。原语音/模型边界不变。
 - 回退仅独立PR恢复邻近已审定前端归档，并保留002/003与兼容identity handler及恢复入口能力；不得恢复001/旧handler、删直接预约/UID、清本机数据或覆盖其他站点。后续先读实时main与原环境，不重复索取同范围发布批准。
+
+## R25 姓名进入练播房已上线（2026-11-18）
+
+任务 `TCL-R25-NAME-ENTRY-20261118`。用户要求“只要姓名 不要密码了”，并完成官方 CloudBase 设备授权。ChatGPT 统筹，Codex 实现、验收和发布。外部 Gemini/Claude 请求为 0，沿用原上海环境和 GitHub Pages。线上已升级到 `r25-name-entry-20261118`，此前“候选待授权”为历史状态。[固定练播房入口](https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/)
+
+- 主播和运营首次填姓名并选择身份。同一已绑定浏览器此后只需填姓名，已有身份使用原 UID 和角色。未绑定的原账号或新浏览器需验证原密码或用管理员核实本人后私发的设备码。管理员沿用原有账号认证。可主动解除本机绑定，已存作业继续归本人。管理工具按精确业务与原生身份发放设备码并更换该 UID 的原生凭据。设备码为私有凭据，其是否注销旧会话未做保证。[源码和验收说明](https://github.com/lijianjun004-star/tcl-v43-preview/blob/62749a8d402b6e60c51ac90f41d45d6a5e81ba68/evidence/r25-name-entry/deployment/README.md)
+- 源码实现 `74187916b067d238cb2437fc57376fd3bc85b9cb`。本地 Node 73 项，Chromium UI 13+7+7 项和实际 IndexedDB 3 项，发布门禁 172 项通过。候选使用实际 CloudBase 完成 39 项，覆盖管理员设备码恢复同一 UID；发行后的真实公开 UI 31 项通过。候选在正式域名仅替换本地静态文件，公开 UI 全部加载公网实际文件。两次验收均无页面异常或模型请求。四个合成账号已逐一查回为停用，未删除数据。原 14 表 19 行以及原 SQL 函数、权限复核通过。未运行原正式账号密码迁移、物理手机、大陆网络或本轮无关的录制、作业和媒体测试。
+- CI PR142 `0292791581d09491e61f1981b18cf5b678ad1c2f` 通过 `44248427525` 后合并为 `b2d5218528c8555d74a48b2140ab24c8d8ee84e8`。发行 PR143 `b5b1dbd29c590549c04114809f93b05ac3367319` 通过 `44252984028` 后合并为 `a27684948d69dd389d5200bdfe11a937f3327982`，仅替换 `experiments/r25-release/site-only.zip.b64`。发行 B64 SHA256 `d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a`。Pages `44253084908` 成功，公开 246 资源首轮 HTTP 200/哈希全对，零补读，217 个既有资源受保护。[发行 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/143) · [Pages 构建](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44253084908)
+- 相邻回退为已审定 `r25-registration-recovery-20261117` 归档。回退前核查本次后建立的姓名入口账号及登录恢复方案。验收证据冻结在 `62749a8d402b6e60c51ac90f41d45d6a5e81ba68` 的 `evidence/r25-name-entry/deployment/`。
