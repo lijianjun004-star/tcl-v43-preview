@@ -1667,6 +1667,8 @@ R24_PF_ARCHIVE = 'experiments/r24-paraformer-release/site-only.zip'
 R24_PF_DEST = 'tcl-r24-paraformer'
 R24_PF_VERSION = 'r24-paraformer-small-20261118-pages1'
 R24_PF_SITE_SHA = '7d8bcb0c67baba530982c40b22e09cef1f71bf0ed8e9b147d59d7e0f646f2f20'
+R24_PF_PAGES2_VERSION = 'r24-paraformer-small-20261118-pages2'
+R24_PF_PAGES2_SITE_SHA = '8c87b25af1b680e603e1ee72c914ed69de2b5baba385e82ff41e5e2be11aabbd'
 R24_PF_BASE_WORKFLOW_SHA = '9b43396eedbe3a833e18c5c635085e265741c33b97e3ef4d534c68a1082f4415'
 R24_PF_MODEL_PREFIX = 'sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small/'
 R24_PF_MODEL_URL = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/' + R24_PF_MODEL_PREFIX.rstrip('/') + '.tar.bz2'
@@ -1749,9 +1751,14 @@ def verify_r24_pf_rollback_workflow(before, after):
 
 
 def r24_pf_frontend(raw, site_sha=None, version=None):
+    if len(raw) > 1_500_000:
+        raise GateFailure('Paraformer frontend ZIP hash or size mismatch')
+    observed_sha = sha256(raw)
+    if site_sha is None and version is None and observed_sha == R24_PF_PAGES2_SITE_SHA:
+        site_sha, version = R24_PF_PAGES2_SITE_SHA, R24_PF_PAGES2_VERSION
     site_sha = R24_PF_SITE_SHA if site_sha is None else site_sha
     version = R24_PF_VERSION if version is None else version
-    if len(raw) > 1_500_000 or sha256(raw) != site_sha:
+    if observed_sha != site_sha:
         raise GateFailure('Paraformer frontend ZIP hash or size mismatch')
     _, resources = inspect_zip_bytes_for_autoqa(raw)
     if set(resources) != R24_PF_FRONTEND_FILES:
@@ -1768,6 +1775,18 @@ def r24_pf_frontend(raw, site_sha=None, version=None):
 
 def r24_pf_rc_frontend(raw):
     return r24_pf_frontend(raw, R24_PF_RC_SITE_SHA, R24_PF_RC_VERSION)
+
+
+def verify_r24_pf_archive_update(before, after):
+    pair = (sha256(before), sha256(after))
+    release = (R24_PF_SITE_SHA, R24_PF_PAGES2_SITE_SHA)
+    if pair not in (release, release[::-1]) or pair[0] == pair[1]:
+        raise GateFailure('Paraformer formal update requires the pinned forward or rollback archives')
+    old_files = r24_pf_frontend(before)
+    new_files = r24_pf_frontend(after)
+    changed = {name for name in old_files if old_files[name] != new_files[name]}
+    if changed != {'app.js', 'static-manifest.json'}:
+        raise GateFailure('Paraformer formal update may change only app.js and its manifest')
 
 
 def r24_pf_extract_model(model_archive, vendor):
@@ -1846,7 +1865,10 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'}:
+    if changed == {R24_PF_ARCHIVE}:
+        verify_r24_pf_archive_update(show(base, R24_PF_ARCHIVE), show(head, R24_PF_ARCHIVE))
+        print('verify-pages-release PASS: exact Paraformer formal same-route update/rollback')
+    elif changed == {R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'}:
         flags = [subprocess.check_output(
             ['git', 'ls-tree', '--name-only', ref, '--', R24_PF_RC_ARCHIVE], text=True).strip()
             for ref in (base, head)]
