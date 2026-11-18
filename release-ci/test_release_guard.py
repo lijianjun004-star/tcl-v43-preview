@@ -2365,6 +2365,39 @@ class R24ParaformerFrontendAndWorkflowTests(unittest.TestCase):
     def test_paraformer_frontend_accepts_exact_content_and_complete_model_coverage(self):
         self.assertEqual(self.inspect(self.resources), self.resources)
 
+    def formal_update_pair(self, other_changes=None):
+        files = dict(self.resources)
+        files['app.js'] += b'\n// device and terminology fixes'
+        files.update(other_changes or {})
+        files = self.with_manifest(files)
+        manifest = json.loads(files['static-manifest.json'])
+        manifest['version'] = gate.R24_PF_PAGES2_VERSION
+        files['static-manifest.json'] = json.dumps(manifest).encode()
+        before, after = self.zipped(self.resources), self.zipped(files)
+        pins = mock.patch.multiple(gate, R24_PF_SITE_SHA=gate.sha256(before),
+                                  R24_PF_PAGES2_SITE_SHA=gate.sha256(after))
+        return before, after, pins
+
+    def test_formal_paraformer_accepts_pinned_update_and_exact_rollback(self):
+        before, after, pins = self.formal_update_pair()
+        with pins:
+            gate.verify_r24_pf_archive_update(before, after)
+            gate.verify_r24_pf_archive_update(after, before)
+
+    def test_formal_paraformer_rejects_an_unpinned_or_identical_archive(self):
+        before, after, pins = self.formal_update_pair()
+        with pins:
+            for invalid in (after + b'different', before):
+                with self.subTest(invalid=invalid == before):
+                    with self.assertRaisesRegex(gate.GateFailure, 'pinned forward or rollback'):
+                        gate.verify_r24_pf_archive_update(before, invalid)
+
+    def test_formal_paraformer_rejects_changes_outside_app_and_manifest(self):
+        before, after, pins = self.formal_update_pair({'index.html': b'<!doctype html>Changed'})
+        with pins:
+            with self.assertRaisesRegex(gate.GateFailure, 'only app.js and its manifest'):
+                gate.verify_r24_pf_archive_update(before, after)
+
     def test_paraformer_frontend_rejects_unpinned_zip_even_when_content_is_valid(self):
         with mock.patch.object(gate, 'R24_PF_SITE_SHA', '0' * 64):
             with self.assertRaises(gate.GateFailure):
