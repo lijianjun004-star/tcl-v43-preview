@@ -15,6 +15,7 @@ import struct
 import zlib
 import subprocess
 import tempfile
+import tarfile
 from datetime import datetime, timezone
 from pathlib import PurePosixPath
 
@@ -1660,6 +1661,136 @@ def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
     return result
 
 
+# Formal Paraformer deployment is additive to the audited historical routes.
+# The small, reviewed frontend ZIP and upstream model pack have separate pins.
+R24_PF_ARCHIVE = 'experiments/r24-paraformer-release/site-only.zip'
+R24_PF_DEST = 'tcl-r24-paraformer'
+R24_PF_VERSION = 'r24-paraformer-small-20261118-pages1'
+R24_PF_SITE_SHA = '7d8bcb0c67baba530982c40b22e09cef1f71bf0ed8e9b147d59d7e0f646f2f20'
+R24_PF_BASE_WORKFLOW_SHA = '9b43396eedbe3a833e18c5c635085e265741c33b97e3ef4d534c68a1082f4415'
+R24_PF_MODEL_PREFIX = 'sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small/'
+R24_PF_MODEL_URL = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/' + R24_PF_MODEL_PREFIX.rstrip('/') + '.tar.bz2'
+R24_PF_MODEL_ARCHIVE_BYTES = 80_161_695
+R24_PF_MODEL_ARCHIVE_SHA = 'be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548'
+R24_PF_MODEL_MANIFEST_SHA = '9a9538a91e1ba4230577d1a4410fe4ac429039ced6478af15346e378cedc6df2'
+R24_PF_MODEL_FILES = {
+    'sherpa-onnx-asr.js': (41_274, 'ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9'),
+    'sherpa-onnx-wasm-main-vad-asr.js': (95_311, '3e0cbcad90833164f04097e51fbc99b8812dc03977382578fb73eba7f5d13ec4'),
+    'sherpa-onnx-wasm-main-vad-asr.wasm': (11_539_169, '2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3'),
+    'sherpa-onnx-wasm-main-vad-asr.data': (82_547_881, '9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f'),
+}
+R24_PF_FRONTEND_FILES = frozenset({
+    'app-config.json', 'app.js', 'asr-glossary.mjs', 'asr-normalize.mjs', 'glossary-ui.mjs',
+    'index.html', 'legacy-65.json', 'lib/parser.js', 'lib/pdf.js', 'lib/qa-import.js',
+    'lib/xls.js', 'lib/zip.js', 'paraformer-bridge.mjs', 'paraformer-worker.js',
+    'r23-model-choice.js', 'static-manifest.json', 'style.css', 'training-boards.json',
+    'vendor/opencc/LICENSE', 'vendor/opencc/LICENSES/Apache-2.0.txt',
+    'vendor/opencc/THIRD_PARTY_LICENSES.md', 'vendor/opencc/t2cn.mjs',
+    'vendor/paraformer/LICENSE-Silero-VAD.txt', 'vendor/paraformer/LICENSE-onnxruntime.txt',
+    'vendor/paraformer/LICENSE-sherpa-onnx.txt', 'vendor/paraformer/NOTICE.md',
+    'vendor/paraformer/THIRD_PARTY_NOTICES-onnxruntime.txt', 'vendor/paraformer/license-sources.json',
+    'vendor/paraformer/manifest.json', 'whisper-bridge.mjs', 'whisper-worker.mjs',
+})
+
+
+def r24_pf_stage_step():
+    return (
+        '      - name: Stage complete R2.4 Paraformer release\n'
+        '        run: |\n'
+        '          MODEL="$RUNNER_TEMP/r24-paraformer-model.tar.bz2"\n'
+        '          curl --fail --location --silent --show-error --retry 3 --max-time 120 '
+        '--max-filesize 80161695 --proto "=https" --proto-redir "=https" '
+        f'--output "$MODEL" "{R24_PF_MODEL_URL}"\n'
+        f'          python3 release-ci/release_guard.py --stage-r24-paraformer _site {R24_PF_ARCHIVE} "$MODEL"\n'
+    )
+
+
+def verify_r24_pf_release_workflow(before, after):
+    if sha256(before.encode()) != R24_PF_BASE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+        raise GateFailure('Paraformer requires the exact protected Pages workflow')
+    if after != before.replace(LAB_ANCHOR, r24_pf_stage_step() + LAB_ANCHOR, 1):
+        raise GateFailure('Paraformer release must add only its stage before Pages configuration')
+
+
+def verify_r24_pf_rollback_workflow(before, after):
+    verify_r24_pf_release_workflow(after, before)
+
+
+def r24_pf_frontend(raw):
+    if len(raw) > 1_500_000 or sha256(raw) != R24_PF_SITE_SHA:
+        raise GateFailure('Paraformer frontend ZIP hash or size mismatch')
+    _, resources = inspect_zip_bytes_for_autoqa(raw)
+    if set(resources) != R24_PF_FRONTEND_FILES:
+        raise GateFailure('Paraformer frontend resource allowlist mismatch')
+    if sha256(resources['vendor/paraformer/manifest.json']) != R24_PF_MODEL_MANIFEST_SHA:
+        raise GateFailure('Paraformer model manifest identity mismatch')
+    expected = {name: sha256(data) for name, data in resources.items() if name != 'static-manifest.json'}
+    expected.update({f'vendor/paraformer/{name}': pin for name, (_, pin) in R24_PF_MODEL_FILES.items()})
+    manifest = json.loads(resources['static-manifest.json'])
+    if manifest != {'version': R24_PF_VERSION, 'files': expected}:
+        raise GateFailure('Paraformer static manifest version, coverage or hash mismatch')
+    return resources
+
+
+def r24_pf_extract_model(model_archive, vendor):
+    if model_archive.stat().st_size != R24_PF_MODEL_ARCHIVE_BYTES:
+        raise GateFailure('Paraformer upstream archive size mismatch')
+    with model_archive.open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != R24_PF_MODEL_ARCHIVE_SHA:
+            raise GateFailure('Paraformer upstream archive hash mismatch')
+    written = set()
+    with tarfile.open(model_archive, 'r|bz2') as archive:
+        for entry in archive:
+            path = entry.name.removeprefix('./')
+            if not path.startswith(R24_PF_MODEL_PREFIX):
+                if entry.isdir() and path == R24_PF_MODEL_PREFIX.rstrip('/'):
+                    continue
+                raise GateFailure('Paraformer upstream archive root mismatch')
+            name = path[len(R24_PF_MODEL_PREFIX):]
+            if name not in R24_PF_MODEL_FILES:
+                continue
+            size, pin = R24_PF_MODEL_FILES[name]
+            if not entry.isfile() or entry.size != size or name in written:
+                raise GateFailure('Paraformer invalid upstream member: ' + name)
+            with archive.extractfile(entry) as source, (vendor / name).open('xb') as target:
+                shutil.copyfileobj(source, target, 1024 * 1024)
+            with (vendor / name).open('rb') as stream:
+                if hashlib.file_digest(stream, 'sha256').hexdigest() != pin:
+                    raise GateFailure('Paraformer upstream member hash mismatch: ' + name)
+            written.add(name)
+    if written != R24_PF_MODEL_FILES.keys():
+        raise GateFailure('Paraformer upstream archive is missing model resources')
+
+
+def stage_r24_pf(site_path, app_zip, model_archive):
+    site, app_zip, model_archive = map(pathlib.Path, (site_path, app_zip, model_archive))
+    output = site / R24_PF_DEST
+    if not site.is_dir() or site.is_symlink() or output.exists() or output.is_symlink():
+        raise GateFailure('Paraformer staging requires a site and a new route')
+    if app_zip.stat().st_size > 1_500_000:
+        raise GateFailure('Paraformer frontend ZIP exceeds size limit')
+    resources = r24_pf_frontend(app_zip.read_bytes())
+    before = r25_tree_hashes(site)
+    with tempfile.TemporaryDirectory(prefix='.r24-paraformer-', dir=site.parent) as folder:
+        staged = pathlib.Path(folder) / R24_PF_DEST
+        for name, data in resources.items():
+            path = staged / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        r24_pf_extract_model(model_archive, staged / 'vendor/paraformer')
+        if r25_tree_hashes(site) != before:
+            raise GateFailure('Paraformer staging changed a protected Pages resource')
+        staged.rename(output)
+    after = r25_tree_hashes(site)
+    added = set(resources) | {f'vendor/paraformer/{name}' for name in R24_PF_MODEL_FILES}
+    if ({name: digest for name, digest in after.items() if not name.startswith(R24_PF_DEST + '/')} != before
+            or set(after) - set(before) != {f'{R24_PF_DEST}/{name}' for name in added}):
+        raise GateFailure('Paraformer final Pages tree does not preserve the protected routes')
+    result = {'files': len(added), 'old_assets_unchanged': len(before), 'total_assets': len(after)}
+    print('R24_PARAFORMER_STAGE_PASS', json.dumps(result, sort_keys=True))
+    return result
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -1671,7 +1802,21 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R25_ARCHIVE, '.github/workflows/pages.yml'}:
+    if changed == {R24_PF_ARCHIVE, '.github/workflows/pages.yml'}:
+        flags = [subprocess.check_output(
+            ['git', 'ls-tree', '--name-only', ref, '--', R24_PF_ARCHIVE], text=True).strip()
+            for ref in (base, head)]
+        before, after = [show(ref, '.github/workflows/pages.yml').decode('utf-8') for ref in (base, head)]
+        if flags == ['', R24_PF_ARCHIVE]:
+            verify_r24_pf_release_workflow(before, after)
+            r24_pf_frontend(show(head, R24_PF_ARCHIVE))
+        elif flags == [R24_PF_ARCHIVE, '']:
+            verify_r24_pf_rollback_workflow(before, after)
+            r24_pf_frontend(show(base, R24_PF_ARCHIVE))
+        else:
+            raise GateFailure('Paraformer accepts only an exact additive release or full route rollback')
+        print('verify-pages-release PASS: exact isolated Paraformer release/rollback')
+    elif changed == {R25_ARCHIVE, '.github/workflows/pages.yml'}:
         archive_at_base = subprocess.check_output(
             ['git', 'ls-tree', '--name-only', base, '--', R25_ARCHIVE], text=True).strip()
         archive_at_head = subprocess.check_output(
@@ -1695,14 +1840,14 @@ def verify_pr(base, head):
             raise GateFailure('R2.5 release allows only exact additive release or full route rollback')
     elif changed == {R25_ARCHIVE}:
         verify_r25_archive_update(
-            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, '.github/workflows/pages.yml').decode('utf-8').replace(r24_pf_stage_step(), '', 1),
             show(base, R25_ARCHIVE), show(head, R25_ARCHIVE), show(base, 'site.zip'),
             {path: show(base, path) for path in R25_TRUSTED_INPUTS},
         )
         print('verify-pages-release PASS: exact R2.5 same-route update/rollback; 217 older assets preserved')
     elif changed == {R24_ARCHIVE}:
         verify_r24_archive_update(
-            show(base, '.github/workflows/pages.yml').decode('utf-8'),
+            show(base, '.github/workflows/pages.yml').decode('utf-8').replace(r24_pf_stage_step(), '', 1),
             show(base, R24_ARCHIVE), show(head, R24_ARCHIVE), show(base, 'site.zip'),
             {path: show(base, path) for path in R24_TRUSTED_INPUTS},
         )
@@ -1808,6 +1953,13 @@ def verify_pr(base, head):
 
 
 def main():
+    if len(sys.argv) == 5 and sys.argv[1] == '--stage-r24-paraformer':
+        try:
+            stage_r24_pf(sys.argv[2], sys.argv[3], sys.argv[4])
+            return 0
+        except (GateFailure, OSError, ValueError, KeyError, tarfile.TarError, zipfile.BadZipFile, zlib.error) as exc:
+            print(f'R24_PARAFORMER_STAGE_FAILED: {exc}', file=sys.stderr)
+            return 2
     if len(sys.argv) == 4 and sys.argv[1] == '--stage-r25':
         try:
             stage_r25(sys.argv[2], sys.argv[3])
