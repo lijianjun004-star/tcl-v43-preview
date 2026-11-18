@@ -18,7 +18,8 @@ for(const outcome of ['resolve','reject'])test(`pending Whisper wakes after time
  const window={__ASR_INFER_TIMEOUT_MS:25},sessionTurns=[],perQuestionAudio=new Map(),r6WhisperQueue=[],questionAsrQueue=[];
  const toast=()=>{},ELEM=()=>null,isRunPage=()=>true,r6WhisperPageAlive=()=>true,renderTurnStatus=()=>{},renderQuestionSummary=()=>{},drainQuestionAsrQueue=()=>{},saveTurn=async()=>true;
  const decodeAudioCopy=async()=>new Float32Array(16000),trimAsrSilence=pcm=>({hasSpeech:true,pcm}),recognizeVosk=()=>new Promise((resolve,reject)=>{finishVosk=resolve;failVosk=reject;});
- const normalizeWhisperChinese=text=>text,normalizeInterfaceDecimals=text=>({text,changes:0}),normalizeSpokenNumbers=text=>({text,changes:0}),assessAsrText=text=>({text,warnings:[]}),complianceHints=()=>[],saveCurrentTypedAnswer=()=>{},readR23ModelPreference=()=> 'base';
+ const normalizeWhisperChinese=text=>text,normalizeSpokenNumbers=text=>({text,changes:0}),assessAsrText=text=>({text,warnings:[]}),complianceHints=()=>[],saveCurrentTypedAnswer=()=>{};
+ const usesParaformer=false,asrModelLabel='Whisper Base',releaseVoskForParaformer=()=>{};
  const r6WhisperEngine=async()=>{whisperCalls++;return {text:'新题文字'}};r6WhisperEngine.isResourceBusy=()=>false;
  function add(id){sessionTurns.push({id,runId,boardId:'b',platform:'p',answer:'',transcript:'',keyPoints:[]});perQuestionAudio.set(id,{id,size:1000});}
  add('old');add('new');
