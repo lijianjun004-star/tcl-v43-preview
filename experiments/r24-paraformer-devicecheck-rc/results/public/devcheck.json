@@ -1,0 +1,62 @@
+[
+ {
+  "name": "A1 auto check reaches ready without second tap",
+  "pass": true,
+  "detail": "114ms {\"start\":\"开始练播\",\"dis\":false,\"chk\":\"✓ 摄像头和麦克风已就绪\"}"
+ },
+ {
+  "name": "A2 never shows legacy 准备中…",
+  "pass": true,
+  "detail": "[\"正在检查摄像头和麦克风… | 正在检测设备…\",\"✓ 摄像头和麦克风已就绪 | 开始练播\"]"
+ },
+ {
+  "name": "A3 camera preview live",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "name": "A4 manual recheck still reaches ready",
+  "pass": true,
+  "detail": "{\"start\":\"开始练播\",\"dis\":false,\"chk\":\"✓ 摄像头和麦克风已就绪\"}"
+ },
+ {
+  "name": "A5 no page errors",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "name": "B0 no media request before the tap",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "name": "B1 denied shows click-to-retry copy",
+  "pass": true,
+  "detail": "{\"start\":\"设备未就绪\",\"dis\":true,\"chk\":\"⚠ 设备未就绪，请点击「检测摄像头与麦克风」重试，或选仅文字练播\"}"
+ },
+ {
+  "name": "B2 after allowing, manual retry reaches ready",
+  "pass": true,
+  "detail": "{\"start\":\"开始练播\",\"dis\":false,\"chk\":\"✓ 摄像头和麦克风已就绪\"}"
+ },
+ {
+  "name": "B3 no page errors",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "name": "C1 text-only immediately after tap stays text mode",
+  "pass": true,
+  "detail": "{\"start\":\"开始练播\",\"dis\":false,\"chk\":\"⌨ 文字练播已就绪（不录音录像）\"}"
+ },
+ {
+  "name": "C2 cancelled auto check left no camera attached",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "name": "C3 no page errors",
+  "pass": true,
+  "detail": ""
+ }
+]

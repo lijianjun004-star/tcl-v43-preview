@@ -685,3 +685,14 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 
 - 用户同意修复"准备页不自动检测设备"，并选择**先出候选版、不合并不发布**。候选 `r24-paraformer-small-20261118-devicecheck-rc1` 只改 `app.js`/`static-manifest.json`，ZIP `e2909680…`。本地 Chromium：设备检测 12/12、再练一次自动就绪、真实 Paraformer 完整流程均 PASS。详见 `experiments/r24-paraformer-devicecheck-rc/README.md`。正式入口仍为 pages1。
 - Gemini 独立复验包（`85a1d565…`）已核对：0 P0/P1/P2、2 P3；manifest/模型哈希属实；P3-1 术语大小写顺序问题实跑复现；报告正文 19/19 与 JSON 21/21 计数不一致。详见 `evidence/r24-paraformer-gemini-recheck-20261118/RECEIPT.md`。P3-1 尚未修复。
+
+## R24 Paraformer 设备检测临时候选入口已上线（2026-11-18）
+
+任务 `TCL-R24-PARAFORMER-DEVICECHECK-RC-20261118`。用户选择"开临时候选入口"供手机试用，明确同意门禁 PR + 发布 PR 合并到 main；正式入口不变。Claude Code 执行，外部 Gemini 请求 0。
+
+- 候选入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-rc/ ，版本 `r24-paraformer-small-20261118-devicecheck-rc1`，前端 ZIP SHA256 `69a49036041c5b0286aef87bb799ade1f3ceb454cc2076b20891cf77ccdf1f17`（`experiments/r24-paraformer-rc-release/site-only.zip`）。点「检查设备，准备练播」/「再练一次」即在同一次点击内自动检测；未检测/失败提示"请点击「检测摄像头与麦克风」"。
+- 同源隔离：RC 使用 `tcl-specialty-r24-paraformer-rc1-v1`、`tcl-r24-paraformer-rc1-asr-model-v1`、`tcl-r24-paraformer-rc1-private-asr-terms-v1`；标题与身份页标注"候选版 RC1"。RC 记录不会出现在正式入口，反之亦然；正式入口转正时不应带上 rc1 键名。
+- 门禁 PR #153 head `25cde8792a3d11fad9db7b17ab438f6780165ee8`，CI `44355037715` success，Codex 审查无发现，合并 `435ffc363e70ff683256b5fab1b75a7fe4f72a19`。发布 PR #154 head `51d18f8d794514a570feebe3c3f45054ce2c6d1c`，CI `44356678669` success，Codex 无发现，合并 `290ab42c02acea6c03def38bb689db1e02d2fc79`。Pages `44357984051` success。门禁 211/211；本地全量 Pages stage 316 文件/193 MB。
+- 公网复验：RC 35/35 与正式 35/35 HTTP 200/哈希一致（正式未变）；旧 R24 app `63519c50…`、R25 app `7c83ce66…` 不变。Chromium 公网 RC：设备检测 12/12、再练一次自动就绪、同源隔离 PASS、真实 Paraformer 三题转写→复盘→刷新恢复→回放 PASS，pageerror 0、外部请求 0。首次公网模型下载可超过 120 秒。
+- NOT RUN：实体手机/微信/大陆网络/真人口播。Gemini P3-1（术语大小写顺序）未包含在 RC。
+- 撤销：独立 PR 删除 `experiments/r24-paraformer-rc-release/site-only.zip` 与 "Stage R2.4 Paraformer device-check candidate" 步骤，门禁要求 `pages.yml` 回到 SHA256 `b14e77bf…`。RC 存在期间，正式 Paraformer 路由整体撤销需先撤 RC。

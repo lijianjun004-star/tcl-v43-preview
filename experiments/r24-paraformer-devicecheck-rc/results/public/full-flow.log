@@ -1,0 +1,56 @@
+pf ready s 9
+== c10-live
+== 12-endconfirm
+transcribe wait s 3
+== c13-review
+== c14-details
+已保存本机恢复记录。刷新后重新输入同一姓名可恢复最近一场；未停止的录音片段不在其中。请另行下载备份，浏览器清理数据后无法恢复。
+‹
+返回复盘
+逐题复盘
+3 条弹幕 · 按题校正
+详情
+每道弹幕逐条查看
+
+识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。
+
+京东上的价格、优惠、送装和售后怎么合规确认？
+查看本题参考与来源
+—12.1秒
+对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了
+查看模型识别原文
+保存本题修改将整场文字填入本题
+已写入本题答案 · Paraformer-small（型号数字需人工核对）
+这类电视主要看哪些选择点？请把尺寸、画面体验、刷新率和接口的边界讲清楚。
+查看本题参考与来源
+—10.6秒
+介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢
+查看模型识别原文
+保存本题修改将整场文字填入本题
+已写入本题答案 · Paraformer-small（型号数字需人工核对）
+我家主要看电影、体育或玩游戏，选电视前你会先问我哪些关键信息？
+查看本题参考与来源
+—11.4秒
+对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢
+查看模型识别原文
+保存本题修改将整场文字填入本题
+已写入本题答案 · Paraformer-small（型号数字需人工核对）
+▶ 打开本场录像
+›
+TEXTAREAS ["","","对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了","介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢","对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢"]
+== c15-relogin
+== c16-restored
+RESTORED_HEAD 已恢复本机最近一场。浏览器清理会删除本机数据，请下载备份。 / ‹ / 练播复盘 / TCL 电视 · 京东 / 本场已结束 / 本场训练记录 / 练播完成！ / 本场复盘已生成。这里是客观数据，不是正式 AI 评分。 / 34秒 / 训练时长 / 3 / 弹幕题数 / 3 / 已有回答 / 0/12 / 要点覆盖 · 参考 / 01 录像回看 / 02 校正逐题回答 / 03 决定是否提交 / 下一步可以改进 / 训练建议 · 非自动评分 / 1 / 训练要点覆盖 0/12，可以针对遗漏点再练一次 / ▶ / 查看录像回放 / 独立播放页面 / › / ▤ / 逐题复盘详情 / 查看、修正回答 / › / 提交本次记录 / 由主播决定 / 不满意可以再练；满意后才提交给所选运营。 / 接收运营 / 提交这次完整记录 / 数据先保存在当前浏览器，不能代表已送达运营手机；需要跨设备使用时须接入真实后端。 / ↻ 不满意？再练一次
+RESTORED_TEXTAREAS ["","","对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想","介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢嗯对我做了介绍啊那么我想说的是呢","对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢对我做了介绍啊那么我想说"]
+== c17-replay
+MEDIA [{"tag":"VIDEO","id":"","src":"blob:https://lijianjun004-star","rs":4,"dur":null,"t":1.460735,"err":null},{"tag":"AUDIO","id":"","src":"blob:https://lijianjun004-star","rs":4,"dur":12.021,"t":1.460262,"err":null},{"tag":"AUDIO","id":"","src":"blob:https://lijianjun004-star","rs":4,"dur":10.461,"t":1.460462,"err":null},{"tag":"AUDIO","id":"","src":"blob:https://lijianjun004-star","rs":4,"dur":11.361,"t":1.46039,"err":null}]
+STORAGE {"idb":["tcl-specialty-r24-paraformer-rc1-v1"],"ls":[]}
+errs [
+  'reqfail blob:https://lijianjun004-star.github.io/9c457b47-739d-416b-b241-3dc106a267ee net::ERR_FILE_NOT_FOUND',
+  'console Failed to load resource: net::ERR_FILE_NOT_FOUND',
+  'reqfail blob:https://lijianjun004-star.github.io/6b6a6eab-f1ad-4123-a67e-fa8f9fb9ef52 net::ERR_FILE_NOT_FOUND',
+  'console Failed to load resource: net::ERR_FILE_NOT_FOUND',
+  'reqfail blob:https://lijianjun004-star.github.io/2c77cfd6-74cb-4e74-838b-715c0422386b net::ERR_ABORTED',
+  'reqfail blob:https://lijianjun004-star.github.io/b99c5c2e-6312-42f2-9eba-ec7efe700228 net::ERR_ABORTED',
+  'reqfail blob:https://lijianjun004-star.github.io/b99c5c2e-6312-42f2-9eba-ec7efe700228 net::ERR_ABORTED'
+] ext []
