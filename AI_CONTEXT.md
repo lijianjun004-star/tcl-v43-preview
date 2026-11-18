@@ -569,3 +569,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 移入 R25 的 Whisper Worker 超时释放和 OpenCC 词组规范化。R24 的 HTML、CSS、`app.js`、身份入口和存储格式逐字节沿用。最新 R25 的静态题库、话术和型号资料与 R24 相同。现有 R25 云端功能仍通过原独立入口使用。
 - 15 个 320／390／430 px 页面状态截图差异 0 像素。三题录制及复盘两版各 21 项通过，同隔离地址原版保存→候选恢复 23 项通过，4 个媒体对象哈希相同并实际播放。独立浏览器真实 Worker 超时 2/2，Node 18/18，真实 Base／Tiny 公开单样本均推理完成。实体手机、大陆网络和 TCL 口播准确率待验收。[复验与试用说明](evidence/r24-compatible-improvements-20261118/README.md)
 - 候选 ZIP SHA-256 `feaeb7e6e8bfe097c7c2da743488bf63405e5275a337d81127ecc0744da0ec63`，下载回读一致。当前线上仍是原 R24 和 R25；本轮无正式合并、部署、云端写入或真实用户数据操作。[候选试用 ZIP](https://drive.google.com/file/d/1HSuGJJm85JOhS3qzVAn4X9LyKWNYqeZR/view?usp=drivesdk)
+
+## R24 普通话转写复验候选（2026-11-18）
+
+任务 `TCL-R24-MANDARIN-ASR-20261118`。用户要求复验并调好普通话转文字。以 PR #146 的 `ed6243e51eaf9db235e4d6e73ccffcfed1e09604` 为基线。Codex 实测与独立复核，外部 Gemini／Claude 请求 0，正式发布待确认。
+
+- 独立候选 `r24-mandarin-asr-20261118` 在 Vosk 的拒绝路径为满足条件的低音量音频副本恢复增益。13 条真实录音由 12 条可进入识别提升至 13 条，新增一条 4/31 字符错误。8 个静音和噪声对照无识别文字。完整格式化接口版本号，保留疑似范围或坏格式，整场晚到识别和浏览器逐题结果保留人工校正与原始识别文字。
+- 实际 12 条公开录音上，原样输入 Base 49/222、Tiny 120/222、Vosk 38/222。保留既有模型选择，实验性统一裁边因个别样本漏句未采用。20 项 Node、27 项浏览器链路和 65 项界面对照通过，三种视口 15 状态截图差异 0 像素。实体手机、真实 TCL 现场语料和大陆网络尚未验收。[复验记录](evidence/r24-mandarin-asr-20261118/README.md)
+- 试用 ZIP SHA-256 `09fed941c3280525e48079ba1d4c77d0073f268de836e82e197c2588fe7d2bbe`，共 22 静态文件，Drive 回读一致。独立草稿中存放产品修复；未提交线上部署或操作用户历史数据。[候选 ZIP](https://drive.google.com/file/d/1jMxlm_RFSj8da5CEIMwwjmy-pkNAkBvQ/view?usp=drivesdk)

@@ -20,5 +20,9 @@ const complianceHints=text=>text?['test-risk']:[],fuzzyPoint=(point,text)=>text.
  row=vm.runInContext('saved.at(-1)',c);assert.equal(row.manualCleared,true);assert.equal(row.pointsHit.length,0);assert.equal(row.compliance.length,0);
  vm.runInContext("rec.onresult({results:[[{transcript:'清晰的屏幕'}]]});",c);
  assert.equal(vm.runInContext('target.value',c),'');assert.equal(vm.runInContext('visible.value',c),'');row=vm.runInContext('saved.at(-1)',c);assert.equal(row.answer,'');assert.equal(row.manualCleared,true);assert.equal(row.pointsHit.length,0);assert.equal(row.rawTranscript,'清晰的屏幕');
- console.log(JSON.stringify({status:'PASS',checks:3,mode:'actual app live-clear/Vosk/browser-result functions in Node VM; mocked model, decoder and persistence'},null,2));
+ vm.runInContext("turn.answer='已确认的上一段';turn.transcript=turn.answer;turn.manualCleared=false;turn.manualEdited=true;target.value=turn.answer;visible.value=turn.answer;rec.onresult({results:[[{transcript:'迟到的识别结果'}]]});",c);
+ row=vm.runInContext('saved.at(-1)',c);
+ assert.equal(row.answer,'已确认的上一段');assert.equal(row.rawTranscript,'迟到的识别结果');assert.equal(row.manualEdited,true);
+ assert.equal(vm.runInContext('target.value',c),row.answer);assert.equal(vm.runInContext('visible.value',c),row.answer);
+ console.log(JSON.stringify({status:'PASS',checks:4,mode:'actual app live-clear/Vosk/browser-result functions in Node VM; mocked model, decoder and persistence'},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});

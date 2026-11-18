@@ -18,6 +18,8 @@ const tick=()=>new Promise(r=>setImmediate(r));
  let count=cases.length;
  const body=source.slice(source.indexOf('function r6WhisperSubmit('),source.indexOf('globalThis.r6WhisperSubmit='));
  const normalize=source.slice(source.indexOf('function normalizeWhisperChinese('),source.indexOf('function normalizeInterfaceDecimals('));
+ const interfaces=source.slice(source.indexOf('function normalizeInterfaceDecimals('),source.indexOf('function readR23ModelPreference('));
+ const numbers=source.slice(source.indexOf('function spokenNumberValue('),source.indexOf('// ASR_GUARDS_END'));
  const valid=source.slice(source.indexOf('const r6WhisperValid='),source.indexOf('function r6WhisperCancelAll('));
  const context=vm.createContext({assert,toSimplified,canonicalizeTerms,asrGlossary,setTimeout,clearTimeout,console});
  vm.runInContext(`
@@ -27,10 +29,17 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const r6WhisperEngine=blob=>new Promise((resolve,reject)=>pending.push({blob,resolve,reject}));
  const renderTurnStatus=()=>{},ELEM=()=>null,complianceHints=()=>[],readR23ModelPreference=()=> 'tiny';
  let activeTurn=null,transcriptBusy=false,oneShotAsrJob=null,asrInferJob=null,voskLoadJob=null; const drainQuestionAsrQueue=()=>{}; const saveTurn=async t=>saved.push({...t});
- const normalizeInterfaceDecimals=text=>({text,changes:0});
  function add(id){const t={id,runId,boardId:'b',platform:'p',answer:'',transcript:'',keyPoints:[]};sessionTurns.push(t);perQuestionAudio.set(id,{size:10,id});return t;}
- `+valid+normalize+body,context);
+ `+valid+normalize+interfaces+numbers+body,context);
  const run=s=>vm.runInContext(s,context);
+ const numberCases=[
+  ['USB十二、DP十一、HDMI 二十一','USB12、DP11、HDMI21'],
+  ['HDMI二点一、USB三点零、Wi-Fi 六','HDMI2.1、USB3.0、Wi-Fi6'],
+  ['USB十几、DP两三、HDMI二到三','USB十几、DP两三、HDMI二到三'],
+  ['HDMI二点点一、DP二1、USB十十','HDMI二点点一、DP二1、USB十十'],
+  ['Q十M Pro 75英寸，SKU001230、HDMI 2.1','Q10M Pro 75英寸，SKU001230、HDMI 2.1'],
+ ];
+ for(const [raw,want] of numberCases){assert.equal(run(`normalizeSpokenNumbers(${JSON.stringify(raw)}).text`),want);count++;}
  run(source.slice(source.indexOf('function r6WhisperCancelAll('),source.indexOf('function r6WhisperSubmit(')));
  assert.equal(run(`normalizeWhisperChinese('感谢观看，这款电视支持HDMI。')`),'感谢观看，这款电视支持HDMI。');assert.equal(run(`normalizeWhisperChinese('谢谢观看！')`),'');count++;
  // First result becomes stale during inference; successor must still be processed.
