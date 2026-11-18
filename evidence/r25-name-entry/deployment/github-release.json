@@ -1,0 +1,59 @@
+{
+  "status": "GITHUB_PAGES_DEPLOYED_STATIC_VERIFIED",
+  "scope": "GitHub CI/release/Pages and public static bytes; root owns CloudBase/product UI acceptance and cleanup",
+  "entry": "https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/",
+  "version": "r25-name-entry-20261118",
+  "source_commit": "be3344243041539752e4135e2c21ef0b4a02ad28",
+  "ci_pr": {
+    "headRefOid": "0292791581d09491e61f1981b18cf5b678ad1c2f",
+    "mergeCommit": {
+      "oid": "b2d5218528c8555d74a48b2140ab24c8d8ee84e8"
+    },
+    "mergedAt": "2026-11-18T06:38:44Z",
+    "number": 142,
+    "state": "MERGED",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/142"
+  },
+  "release_pr": {
+    "headRefOid": "b5b1dbd29c590549c04114809f93b05ac3367319",
+    "mergeCommit": {
+      "oid": "a27684948d69dd389d5200bdfe11a937f3327982"
+    },
+    "mergedAt": "2026-11-18T06:40:31Z",
+    "number": 143,
+    "state": "MERGED",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/pull/143"
+  },
+  "ci_run": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44248427525",
+  "release_check": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44252984028",
+  "pages": {
+    "databaseId": 44253084908,
+    "headSha": "a27684948d69dd389d5200bdfe11a937f3327982",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44253084908"
+  },
+  "archive_zip_sha256": "41353b2031c058686c359a119427657cc4fd28dbb787bdf04eca3730e548a769",
+  "archive_b64_sha256": "d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a",
+  "changed_repository_files": [
+    "experiments/r25-release/site-only.zip.b64"
+  ],
+  "root_site_zip_and_workflow_unchanged": true,
+  "public_static": {
+    "status": "PASS_FIRST_PASS",
+    "resources": 246,
+    "protected_old": 217,
+    "r25_files": 29,
+    "first_pass_passed": 246,
+    "failed_first_pass": 0,
+    "bounded_rereads": 0,
+    "http_attempts": 250,
+    "anchors_pass": true,
+    "version_stable": true,
+    "evidence": "/workspace/tcl-r25-name-entry-release/evidence/r25-name-entry/public-resources/run-20261118T064110335903Z/result.json"
+  },
+  "not_run": [
+    "Physical phones",
+    "Mainland China network"
+  ]
+}

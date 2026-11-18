@@ -1,0 +1,943 @@
+{
+  "suite": "REAL_NAME_ENTRY_PRODUCT_AUTH",
+  "status": "PASS_WITH_NOT_RUN",
+  "startedAt": "2026-11-18T06:36:37.545149+00:00",
+  "mode": "candidate-static-at-existing-origin",
+  "version": "r25-name-entry-20261118",
+  "checks": [
+    {
+      "label": "operator_initial_name_only_no_visible_password",
+      "pass": true
+    },
+    {
+      "label": "operator_new_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "operator_new_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "operator_actual_private_device_identity_captured",
+      "pass": true
+    },
+    {
+      "label": "operator_real_me_matches_persisted_uid_role",
+      "pass": true
+    },
+    {
+      "label": "operator_registered_once",
+      "pass": true
+    },
+    {
+      "label": "operator_same_device_reenter_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "operator_same_device_reenter_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "operator_opposite_first_role_cannot_change_known_identity",
+      "pass": true
+    },
+    {
+      "label": "operator_reentry_actual_me_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "operator_fresh_same_name_requires_verification",
+      "pass": true
+    },
+    {
+      "label": "operator_fresh_does_not_register_duplicate",
+      "pass": true
+    },
+    {
+      "label": "operator_fresh_invalid_code_clears_without_login",
+      "pass": true
+    },
+    {
+      "label": "operator_fresh_has_no_device_credential",
+      "pass": true
+    },
+    {
+      "label": "anchor_initial_name_only_no_visible_password",
+      "pass": true
+    },
+    {
+      "label": "anchor_new_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "anchor_new_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "anchor_actual_private_device_identity_captured",
+      "pass": true
+    },
+    {
+      "label": "anchor_real_me_matches_persisted_uid_role",
+      "pass": true
+    },
+    {
+      "label": "anchor_registered_once",
+      "pass": true
+    },
+    {
+      "label": "anchor_same_device_reenter_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "anchor_same_device_reenter_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "anchor_opposite_first_role_cannot_change_known_identity",
+      "pass": true
+    },
+    {
+      "label": "anchor_reentry_actual_me_same_uid_role",
+      "pass": true
+    },
+    {
+      "label": "anchor_fresh_same_name_requires_verification",
+      "pass": true
+    },
+    {
+      "label": "anchor_fresh_does_not_register_duplicate",
+      "pass": true
+    },
+    {
+      "label": "anchor_fresh_invalid_code_clears_without_login",
+      "pass": true
+    },
+    {
+      "label": "anchor_fresh_has_no_device_credential",
+      "pass": true
+    },
+    {
+      "label": "management_recovers_exact_synthetic_uid",
+      "pass": true
+    },
+    {
+      "label": "anchor_device_code_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "anchor_device_code_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "device_code_preserves_exact_uid_and_role",
+      "pass": true
+    },
+    {
+      "label": "device_code_uses_no_registration",
+      "pass": true
+    },
+    {
+      "label": "anchor_recovered_name_reentry_expected_real_dashboard",
+      "pass": true
+    },
+    {
+      "label": "anchor_recovered_name_reentry_device_account_hides_password_form",
+      "pass": true
+    },
+    {
+      "label": "device_code_reentry_preserves_uid",
+      "pass": true
+    },
+    {
+      "label": "all_observed_static_bytes_match_frozen_candidate",
+      "pass": true
+    },
+    {
+      "label": "no_page_errors",
+      "pass": true
+    },
+    {
+      "label": "no_model_downloads",
+      "pass": true
+    }
+  ],
+  "pageErrors": [],
+  "modelRequests": 0,
+  "businessMocks": false,
+  "sdkInjection": false,
+  "configOverride": false,
+  "staticInterceptionOnly": true,
+  "assetResponses": [
+    {
+      "actor": "operator",
+      "asset": "index.html",
+      "status": 200,
+      "sha256": "86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470"
+    },
+    {
+      "actor": "operator",
+      "asset": "style.css",
+      "status": 200,
+      "sha256": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+    },
+    {
+      "actor": "operator",
+      "asset": "r23-model-choice.js",
+      "status": 200,
+      "sha256": "b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec"
+    },
+    {
+      "actor": "operator",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "operator",
+      "asset": "asr-glossary.mjs",
+      "status": 200,
+      "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+    },
+    {
+      "actor": "operator",
+      "asset": "glossary-ui.mjs",
+      "status": 200,
+      "sha256": "a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f"
+    },
+    {
+      "actor": "operator",
+      "asset": "asr-normalize.mjs",
+      "status": 200,
+      "sha256": "3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168"
+    },
+    {
+      "actor": "operator",
+      "asset": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee"
+    },
+    {
+      "actor": "operator",
+      "asset": "lib/parser.js",
+      "status": 200,
+      "sha256": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8"
+    },
+    {
+      "actor": "operator",
+      "asset": "lib/qa-import.js",
+      "status": 200,
+      "sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "3505674c002a486b8e1f955326d26c846e562f3fbe161a63ca0d6877f81707e5"
+    },
+    {
+      "actor": "operator",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "7233ce965c0b86cc48d78b7c1be7a96efbaeda9317164c961cd79f39c67378fd"
+    },
+    {
+      "actor": "operator",
+      "asset": "lib/zip.js",
+      "status": 200,
+      "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+    },
+    {
+      "actor": "operator",
+      "asset": "lib/pdf.js",
+      "status": 200,
+      "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+    },
+    {
+      "actor": "operator",
+      "asset": "lib/xls.js",
+      "status": 200,
+      "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+    },
+    {
+      "actor": "operator",
+      "asset": "vendor/opencc/t2cn.mjs",
+      "status": 200,
+      "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+    },
+    {
+      "actor": "operator",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "f11ab18c56edbc56f65e50e8a8fa12cb7e265be61ff0c75f8fc1a91b1698ba6a"
+    },
+    {
+      "actor": "operator",
+      "asset": "training-boards.json",
+      "status": 200,
+      "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+    },
+    {
+      "actor": "operator",
+      "asset": "legacy-65.json",
+      "status": 200,
+      "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+    },
+    {
+      "actor": "operator",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "9ac5a5b99b23805f7a20fd94f301bb89a490bf58df0a3db4825d477191e6ab98"
+    },
+    {
+      "actor": "operator",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "index.html",
+      "status": 200,
+      "sha256": "86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "style.css",
+      "status": 200,
+      "sha256": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "r23-model-choice.js",
+      "status": 200,
+      "sha256": "b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "glossary-ui.mjs",
+      "status": 200,
+      "sha256": "a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "asr-glossary.mjs",
+      "status": 200,
+      "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "asr-normalize.mjs",
+      "status": 200,
+      "sha256": "3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "lib/parser.js",
+      "status": 200,
+      "sha256": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "lib/qa-import.js",
+      "status": 200,
+      "sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "7233ce965c0b86cc48d78b7c1be7a96efbaeda9317164c961cd79f39c67378fd"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "3505674c002a486b8e1f955326d26c846e562f3fbe161a63ca0d6877f81707e5"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "lib/zip.js",
+      "status": 200,
+      "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "lib/xls.js",
+      "status": 200,
+      "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "vendor/opencc/t2cn.mjs",
+      "status": 200,
+      "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "lib/pdf.js",
+      "status": 200,
+      "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "f11ab18c56edbc56f65e50e8a8fa12cb7e265be61ff0c75f8fc1a91b1698ba6a"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "training-boards.json",
+      "status": 200,
+      "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "legacy-65.json",
+      "status": 200,
+      "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "9ac5a5b99b23805f7a20fd94f301bb89a490bf58df0a3db4825d477191e6ab98"
+    },
+    {
+      "actor": "operator_fresh",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "anchor",
+      "asset": "index.html",
+      "status": 200,
+      "sha256": "86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470"
+    },
+    {
+      "actor": "anchor",
+      "asset": "style.css",
+      "status": 200,
+      "sha256": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+    },
+    {
+      "actor": "anchor",
+      "asset": "r23-model-choice.js",
+      "status": 200,
+      "sha256": "b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec"
+    },
+    {
+      "actor": "anchor",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor",
+      "asset": "asr-normalize.mjs",
+      "status": 200,
+      "sha256": "3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168"
+    },
+    {
+      "actor": "anchor",
+      "asset": "lib/parser.js",
+      "status": 200,
+      "sha256": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8"
+    },
+    {
+      "actor": "anchor",
+      "asset": "lib/qa-import.js",
+      "status": 200,
+      "sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+    },
+    {
+      "actor": "anchor",
+      "asset": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee"
+    },
+    {
+      "actor": "anchor",
+      "asset": "glossary-ui.mjs",
+      "status": 200,
+      "sha256": "a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f"
+    },
+    {
+      "actor": "anchor",
+      "asset": "asr-glossary.mjs",
+      "status": 200,
+      "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "3505674c002a486b8e1f955326d26c846e562f3fbe161a63ca0d6877f81707e5"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "7233ce965c0b86cc48d78b7c1be7a96efbaeda9317164c961cd79f39c67378fd"
+    },
+    {
+      "actor": "anchor",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor",
+      "asset": "vendor/opencc/t2cn.mjs",
+      "status": 200,
+      "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+    },
+    {
+      "actor": "anchor",
+      "asset": "lib/zip.js",
+      "status": 200,
+      "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+    },
+    {
+      "actor": "anchor",
+      "asset": "lib/pdf.js",
+      "status": 200,
+      "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+    },
+    {
+      "actor": "anchor",
+      "asset": "lib/xls.js",
+      "status": 200,
+      "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+    },
+    {
+      "actor": "anchor",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "f11ab18c56edbc56f65e50e8a8fa12cb7e265be61ff0c75f8fc1a91b1698ba6a"
+    },
+    {
+      "actor": "anchor",
+      "asset": "training-boards.json",
+      "status": 200,
+      "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+    },
+    {
+      "actor": "anchor",
+      "asset": "legacy-65.json",
+      "status": 200,
+      "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+    },
+    {
+      "actor": "anchor",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "9ac5a5b99b23805f7a20fd94f301bb89a490bf58df0a3db4825d477191e6ab98"
+    },
+    {
+      "actor": "anchor",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "index.html",
+      "status": 200,
+      "sha256": "86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "style.css",
+      "status": 200,
+      "sha256": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "r23-model-choice.js",
+      "status": 200,
+      "sha256": "b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "asr-glossary.mjs",
+      "status": 200,
+      "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "glossary-ui.mjs",
+      "status": 200,
+      "sha256": "a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "asr-normalize.mjs",
+      "status": 200,
+      "sha256": "3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "lib/parser.js",
+      "status": 200,
+      "sha256": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "lib/qa-import.js",
+      "status": 200,
+      "sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "3505674c002a486b8e1f955326d26c846e562f3fbe161a63ca0d6877f81707e5"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "7233ce965c0b86cc48d78b7c1be7a96efbaeda9317164c961cd79f39c67378fd"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "lib/zip.js",
+      "status": 200,
+      "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "vendor/opencc/t2cn.mjs",
+      "status": 200,
+      "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "lib/xls.js",
+      "status": 200,
+      "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "lib/pdf.js",
+      "status": 200,
+      "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "f11ab18c56edbc56f65e50e8a8fa12cb7e265be61ff0c75f8fc1a91b1698ba6a"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "training-boards.json",
+      "status": 200,
+      "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "legacy-65.json",
+      "status": 200,
+      "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "9ac5a5b99b23805f7a20fd94f301bb89a490bf58df0a3db4825d477191e6ab98"
+    },
+    {
+      "actor": "anchor_fresh",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "index.html",
+      "status": 200,
+      "sha256": "86860ac49ae85c7338fb2946907d2a013b13a6824a128b447b10810cb2938470"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "style.css",
+      "status": 200,
+      "sha256": "da42bfe81a6a5edfba41f5e66d81ebe224759843c259a9ceb21aff634727690e"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "r23-model-choice.js",
+      "status": 200,
+      "sha256": "b4c113a63795930fe20168645e5a0b9203433eac486391bf0e1f41fc4683f3ec"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "app.js",
+      "status": 200,
+      "sha256": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "glossary-ui.mjs",
+      "status": 200,
+      "sha256": "a9bb72e929da66a8c6ee380c98b0c398e0da122bca9abde911f0c85267de874f"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "asr-normalize.mjs",
+      "status": 200,
+      "sha256": "3887eb1461728995541f9226fa1824559c22416a1f56624a8b1258dfff147168"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "asr-glossary.mjs",
+      "status": 200,
+      "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "lib/qa-import.js",
+      "status": 200,
+      "sha256": "fac35e52b9a5effd3642919cc0ce6f60dc744b166639ebe8564b67841ad1ff86"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "lib/parser.js",
+      "status": 200,
+      "sha256": "8603c685ac21f0486756af8599be4379b5f855118372d9224c8260e279c942f8"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "cloud-workflow.mjs",
+      "status": 200,
+      "sha256": "3505674c002a486b8e1f955326d26c846e562f3fbe161a63ca0d6877f81707e5"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "whisper-bridge.mjs",
+      "status": 200,
+      "sha256": "47c1c6f676d1189a2272cd0d72b2f5f3abed3a4a0efe82e5c591e70df1f053ee"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "cloud-workspace.mjs",
+      "status": 200,
+      "sha256": "7233ce965c0b86cc48d78b7c1be7a96efbaeda9317164c961cd79f39c67378fd"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "cloudbase-adapter.mjs",
+      "status": 200,
+      "sha256": "a5611a7d0d82ae574b587fe25863d07017823cfe82c78ce085e4833a3fad1524"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "lib/xls.js",
+      "status": 200,
+      "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "lib/zip.js",
+      "status": 200,
+      "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "lib/pdf.js",
+      "status": 200,
+      "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "vendor/opencc/t2cn.mjs",
+      "status": 200,
+      "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "name-identity.mjs",
+      "status": 200,
+      "sha256": "f11ab18c56edbc56f65e50e8a8fa12cb7e265be61ff0c75f8fc1a91b1698ba6a"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "training-boards.json",
+      "status": 200,
+      "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "legacy-65.json",
+      "status": 200,
+      "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "app-config.json",
+      "status": 200,
+      "sha256": "9ac5a5b99b23805f7a20fd94f301bb89a490bf58df0a3db4825d477191e6ab98"
+    },
+    {
+      "actor": "anchor_recovered",
+      "asset": "vendor/cloudbase/cloudbase-sdk.mjs",
+      "status": 200,
+      "sha256": "df0dc3e681ecc72e238ebd79b1099344457aca3f51beaa37b6fa704954cdb675"
+    }
+  ],
+  "identityActions": {
+    "operator": {
+      "resolve": 1,
+      "register": 1,
+      "status": 0,
+      "other": 0
+    },
+    "operator_fresh": {
+      "resolve": 1,
+      "register": 0,
+      "status": 0,
+      "other": 0
+    },
+    "anchor": {
+      "resolve": 1,
+      "register": 1,
+      "status": 0,
+      "other": 0
+    },
+    "anchor_fresh": {
+      "resolve": 1,
+      "register": 0,
+      "status": 0,
+      "other": 0
+    },
+    "anchor_recovered": {
+      "resolve": 0,
+      "register": 0,
+      "status": 0,
+      "other": 0
+    }
+  },
+  "notRun": [
+    "Physical mobile devices and mainland network",
+    "Original user password or account changes",
+    "Media hardware, models, private attachments, assignments and submissions"
+  ],
+  "realMeEvents": {
+    "operator": [
+      {
+        "uidSha256": "794a95b8d89fdb069f5629b3f6573f7f81fe4606cda84eac842c4ada3172f5e8",
+        "role": "operator",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "794a95b8d89fdb069f5629b3f6573f7f81fe4606cda84eac842c4ada3172f5e8",
+        "role": "operator",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "794a95b8d89fdb069f5629b3f6573f7f81fe4606cda84eac842c4ada3172f5e8",
+        "role": "operator",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "794a95b8d89fdb069f5629b3f6573f7f81fe4606cda84eac842c4ada3172f5e8",
+        "role": "operator",
+        "sameUid": true
+      }
+    ],
+    "operator_fresh": [],
+    "anchor": [
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      }
+    ],
+    "anchor_fresh": [],
+    "anchor_recovered": [
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      },
+      {
+        "uidSha256": "4eb389a5236d613ddf01aa0495d52cb7f1859b8855e4bf0cfb0e9ce60b88c660",
+        "role": "anchor",
+        "sameUid": true
+      }
+    ]
+  },
+  "browser": "156.0.8078.79",
+  "contextsClosed": true,
+  "finishedAt": "2026-11-18T06:37:28.962778+00:00"
+}
