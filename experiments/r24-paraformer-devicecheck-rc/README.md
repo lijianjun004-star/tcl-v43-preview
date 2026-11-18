@@ -1,6 +1,6 @@
 # R24 Paraformer 设备检测候选版 `r24-paraformer-small-20261118-devicecheck-rc1`
 
-**状态：仅候选，未合并、未发布。** 正式入口 `/tcl-r24-paraformer/` 仍是 `pages1`；`release-ci/`、Pages 工作流和 main 发布包都没有改动。
+**状态：** 用户选择"开临时候选入口"后，以独立路由 `/tcl-r24-paraformer-rc/` 走门禁 PR #153 + 发布 PR 上线（见下方"临时候选入口"）。正式入口 `/tcl-r24-paraformer/` 保持 `pages1` 不变。
 
 ## 问题
 进入准备页后，设备检测不会自动开始，界面却一直显示"正在检查摄像头和麦克风…/准备中…"，必须再点一次"检测摄像头与麦克风"才能开播（旧 R24 入口也一样）。
@@ -34,3 +34,17 @@
 - Gemini P3-1（术语大小写与数字转换顺序）未包含在本候选版中，见 `evidence/r24-paraformer-gemini-recheck-20261118/RECEIPT.md`。
 - 已知但未修改：未就绪时摄像头占位区"摄像头未就绪"等文字与浮层文字重叠（旧版既有）。
 - 发布需另行批准：要更新 `release_guard.py` 的固定哈希、拆分门禁 PR 和发布 PR，再部署 Pages。
+
+## 临时候选入口 `/tcl-r24-paraformer-rc/`
+同源部署需隔离本机数据，所以 RC 包 = 设备检测补丁 + `patch_rc_namespace.py`：
+
+| 项 | 正式 | RC |
+|---|---|---|
+| IndexedDB / 通知频道 | `tcl-specialty-r24-paraformer-v1` | `tcl-specialty-r24-paraformer-rc1-v1` |
+| 模型偏好 localStorage | `tcl-r24-paraformer-asr-model-v1` | `tcl-r24-paraformer-rc1-asr-model-v1` |
+| 术语表 localStorage | `tcl-r24-paraformer-private-asr-terms-v1` | `tcl-r24-paraformer-rc1-private-asr-terms-v1` |
+| 标识 | — | `<title>` 与身份选择页标注"候选版 RC1" |
+
+模型 CacheStorage 按网址区分条目、不删除其他条目，保持共用名。RC 前端 ZIP `rc-route-site-only.zip` SHA256 `69a49036041c5b0286aef87bb799ade1f3ceb454cc2076b20891cf77ccdf1f17`（变更 app.js、glossary-ui.mjs、index.html、r23-model-choice.js、static-manifest.json）。
+
+本地 RC 路由：设备检测 12/12、再练一次、真实 Paraformer 完整流程 PASS；`tests/isolation.js` 同源隔离 PASS（RC 看不到正式入口记录，两库并存）。门禁 211/211；模拟发布/撤销 PR 均 PASS；真实模型包本地全量 Pages stage 316 文件/193 MB。
