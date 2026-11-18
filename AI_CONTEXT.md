@@ -680,3 +680,8 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - Chromium（390×844 移动模拟，虚拟摄像头 + 公开 HF `sherpa-onnx-paraformer-zh-small-2024-03-09/test_wavs/0.wav` 循环作麦克风）：姓名进入→准备 Paraformer 就绪→检测设备→开播自动录音→3 题切题→结束复盘全部通过；3 题均由 Paraformer-small 写入答案（“对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢…”，因音源循环而重复）。刷新后同名进入出现“恢复本场复盘”，恢复后 3 题文字保留、3 段单题音频（12.0/10.5/11.4 s）及整场录像 readyState=4 可播放。pageerror 0，外部域请求 0；IndexedDB 仅 `tcl-specialty-r24-paraformer-v1`，localStorage 空。备用 Vosk `live-practice-room/voice/vosk.js` HTTP 200。
 - 观察（非阻塞）：进入准备页不会自动检测设备，界面却显示“正在检查摄像头和麦克风…/准备中…”，需手动点“检测摄像头与麦克风”才能开播；旧 R24 入口同样表现，属既有交互问题非本次回归。复盘与回放时控制台有 blob URL `ERR_FILE_NOT_FOUND/ABORTED`（已撤销的旧 blob），未影响播放。
 - NOT RUN：实体 iPhone/Android/微信内置浏览器、大陆网络、真人口播与 TCL 术语准确率、Whisper Tiny/Base 及 Vosk 实际回退转写。
+
+## R24 Paraformer 设备检测候选版 + Gemini 复验接收（2026-11-18）
+
+- 用户同意修复"准备页不自动检测设备"，并选择**先出候选版、不合并不发布**。候选 `r24-paraformer-small-20261118-devicecheck-rc1` 只改 `app.js`/`static-manifest.json`，ZIP `e2909680…`。本地 Chromium：设备检测 12/12、再练一次自动就绪、真实 Paraformer 完整流程均 PASS。详见 `experiments/r24-paraformer-devicecheck-rc/README.md`。正式入口仍为 pages1。
+- Gemini 独立复验包（`85a1d565…`）已核对：0 P0/P1/P2、2 P3；manifest/模型哈希属实；P3-1 术语大小写顺序问题实跑复现；报告正文 19/19 与 JSON 21/21 计数不一致。详见 `evidence/r24-paraformer-gemini-recheck-20261118/RECEIPT.md`。P3-1 尚未修复。
