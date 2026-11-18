@@ -585,3 +585,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - `r24-paraformer-small-20261118` 在现有逐题和整场主转写采用 Paraformer-small int8。原 HTML、CSS、角色及姓名流程不变。已明确保存 Base／Tiny 的用户保留选择，备用 Vosk 继续可用。录音在浏览器本机处理，无付费 API。核心网页资源约 252 MB 降到 94 MB，压缩试用包 78,164,570 字节。[含模型试用包](https://drive.google.com/file/d/100VIWY8a81Zurvs1PbP200nwHyTSyE-j/view?usp=drivesdk)
 - 同条件桌面 Chromium 完整进程树的推理峰值 PSS 1556→896 MiB，约少 42.4%，冷加载 PSS 1487→863 MiB。两款官方 WASM 初始地址容量均 512 MiB。缩小 Paraformer 初始地址容量的实验未降低渲染进程实际驻留峰值，采用未改动的官方运行时。12 条同 PCM 的浏览器实测字错率 Paraformer 10/222、SenseVoice 4/222。390 px 对照 33/33，原生录制复盘 22/22，Node 20/20；实体手机和 TCL 现场语音未验收。[复验及下载说明](evidence/r24-paraformer-small-20261118/README.md)
 - 原始资源可用 `experiments/r24/stage_paraformer_assets.py` 重建。静态包 35 文件逐项和 CRC 复核通过，完整 ZIP SHA-256 `39d350415347f834ad3ca7a82711766a88bea1027e7bffd9b4e6015d6f69e60a`。小型 ONNX 转换仓库许可字段未确认，基础模型 Apache 2.0 来源及差异记录于资源报告。本轮提交候选草稿，未修改线上部署、CloudBase 或真实历史记录。
+
+## R24 私有试用反馈修复（2026-11-18）
+
+任务 `TCL-R24-PARAFORMER-TRIAL-FIX1-20261118`。在 PR #149 的候选分支修复试用反馈，正式发布待确认。Codex 实测和独立复核，外部 Gemini／Claude 请求 0。
+
+- 题库搜索加入参考要点。缺型号的杜比、噪音和刷新率等参数题待补型号再出题；通用流程题继续可用。固定价格教学题使用当前练播平台。题库原件、历史卡、已有问答、样式、角色与姓名入口保持原状。
+- 开播准备页可以就绪校验 Paraformer；单题结束后自动转写。单题补转写使用同一个模型，首次准备失败后可重试并保留音频与人工编辑。约 94 MB 的首次模型资源大小不变。
+- 私有试用站首版已授权读回并核对 38 项静态资产，包括四个模型分片、WASM 和运行脚本。实体手机和用户登录会话中的转写仍待验收。[试用与复验记录](evidence/r24-paraformer-small-20261118/README.md#私有试用反馈修复)

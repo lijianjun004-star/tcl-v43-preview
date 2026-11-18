@@ -12,7 +12,7 @@ assert(start>=0&&end>start);
 let clock=1000,id=0,renders=[],timers=new Map(),onProgress;
 const blob={},task={turnId:'synthetic-turn',runId:'synthetic-run',boardId:'01',platform:'京东',cancelSeq:0,audioRevision:1,blob};
 const turn={id:task.turnId,runId:task.runId,boardId:task.boardId,platform:task.platform,audioRevision:1};
-const ctx={globalThis:null,Date,JSON,URL,Blob,Math,performance:{now:()=>clock},ELEM:()=>null,readR23ModelPreference:()=> 'base',sessionTurns:[turn],runId:task.runId,perQuestionAudio:new Map([[turn.id,blob]]),isRunPage:()=>true,reviewParked:false,renderTurnStatus:t=>renders.push({at:clock,status:t.asrStatus}),createLocalWhisper:options=>{onProgress=options.onProgress;return {}},setTimeout:(fn,ms)=>{timers.set(++id,{fn,at:clock+ms});return id},clearTimeout:i=>timers.delete(i)};
+const ctx={globalThis:null,Date,JSON,URL,Blob,Math,performance:{now:()=>clock},ELEM:()=>null,usesParaformer:false,preferredAsr:'base',sessionTurns:[turn],runId:task.runId,perQuestionAudio:new Map([[turn.id,blob]]),isRunPage:()=>true,reviewParked:false,renderTurnStatus:t=>renders.push({at:clock,status:t.asrStatus}),createLocalWhisper:options=>{onProgress=options.onProgress;return {}},setTimeout:(fn,ms)=>{timers.set(++id,{fn,at:clock+ms});return id},clearTimeout:i=>timers.delete(i)};
 ctx.globalThis=ctx;vm.createContext(ctx);vm.runInContext(app.slice(start,end),ctx);ctx.syntheticTask=task;vm.runInContext('r6WhisperQueue.push(syntheticTask)',ctx);
 function advance(ms){clock+=ms;for(const [i,t]of [...timers])if(t.at<=clock){timers.delete(i);t.fn();}}
 const checks={};

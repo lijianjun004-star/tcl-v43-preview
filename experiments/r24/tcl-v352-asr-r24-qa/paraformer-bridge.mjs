@@ -81,6 +81,7 @@ export function createLocalParaformer({ onProgress = () => {}, onDiagnostic = ()
     worker = null; ready = null;
     if (unhealthy) failure = error;
     if (current) { current.terminate(); emit('worker-released'); }
+    if (unhealthy) emit('model-error', { message: String(error?.message || error).slice(0, 220) });
     for (const job of pending.values()) { clearTimeout(job.timer); job.cleanup(); job.reject(error); }
     pending.clear();
   }
@@ -112,8 +113,15 @@ export function createLocalParaformer({ onProgress = () => {}, onDiagnostic = ()
   async function ensureReady(signal, callEpoch) {
     assertCurrent(callEpoch, signal);
     if (ready) return ready;
-    if (typeof Worker !== 'function') throw new Error('当前浏览器不支持后台识别 Worker，可使用备用识别或手动填写');
-    const current = new Worker(new URL('./paraformer-worker.js', import.meta.url), { name: 'tcl-paraformer' });
+    let current;
+    try {
+      if (typeof Worker !== 'function') throw new Error('当前浏览器不支持后台识别 Worker');
+      current = new Worker(new URL('./paraformer-worker.js', import.meta.url), { name: 'tcl-paraformer' });
+    } catch (cause) {
+      const error = new Error('Paraformer 无法创建后台识别：' + String(cause?.message || cause).slice(0, 140));
+      stopWorker(error);
+      throw error;
+    }
     worker = current;
     current.addEventListener('message', event => {
       if (worker !== current || callEpoch !== epoch) return;

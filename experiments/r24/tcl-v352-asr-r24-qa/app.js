@@ -212,17 +212,19 @@ const getEntries=()=>[...defaultEntries(),...localEntries];
 // only when this category/platform has no published answer-bearing source rows.
 function practiceEntriesFor(board,platform){
  const source=localEntries.filter(e=>e.kind!=='seed'&&matchEntry(e,board,platform)&&String(e.answer||'').trim()&&!modelRequiredForQuestion(e));
- return source.length?source:defaultEntries().filter(e=>matchEntry(e,board,platform));
+ // Only the fixed built-in price exercise adopts the selected platform. Keep
+ // source files, stable IDs, teaching points and reviewed material unchanged.
+ return source.length?source:defaultEntries().filter(e=>matchEntry(e,board,platform)).map(e=>({...e,question:e.question.replace(/^(?:京东\/天猫(?:\/抖音)?|抖音)(上的价格、优惠、送装和售后怎么合规确认？)$/,(_,suffix)=>platform+suffix)}));
 }
 function practicePoolLabel(board,platform){const rows=practiceEntriesFor(board,platform);return `${rows.length} 道${rows[0]?.kind==='seed'?'教学示例（暂无已审核资料）':'已审核资料题'}`;}
 function questionSnapshot(q){return {questionId:q.id||'',question:q.question||'',referenceAnswer:q.answer||'',source:q.source||'',kind:q.kind||'',model:q.model||'',sku:q.sku||'',sourceRef:q.sourceRef||'',sourceLocators:[...(q.sourceLocators||[])]};}
 function turnReferenceSnapshot(turn){return {questionId:turn.questionId||'',question:turn.question??turn.trainingHint??turn.prompt??'',referenceAnswer:turn.referenceAnswer||'',source:turn.source||'',kind:turn.kind||'',model:turn.model||'',sku:turn.sku||'',sourceRef:turn.sourceRef||'',sourceLocators:[...(turn.sourceLocators||[])]};}
 function missingModelHint(q){
- if(q.model||!/(?:这台|这款|该款|该型号)/.test(q.question||''))return '';
+ if(String(q.model||'').trim()||!/(?:这台|这款|该款|该型号|本款|此款|该台|(?:这个|这部|该|本|此)(?:电视|空调|冰箱|洗衣机|显示器|门锁|产品|设备|型号))/.test(q.question||''))return '';
  // A visibly named model in the original question does not require duplicating
  // it into a new column. Technology tokens alone are not a product model.
  const tokens=String(q.question||'').match(/[A-Za-z0-9][A-Za-z0-9.+/-]*[A-Za-z0-9]/g)||[];
- if(tokens.some(x=>!/^SKU(?:[-_]|\d)/i.test(x)&&x!==String(q.sku||'').trim()&&/[A-Za-z]/.test(x)&&/\d/.test(x)&&!/^(?:(?:HDMI|HDR|USB|WIFI|WLAN|BT|DDR|VRR|MEMC|DOLBY|DP|HDCP|H)\d*(?:[.+/-]\d+)*[+]?|\d+(?:K|HZ|W|KW|L|GB|TB|NITS|BIT|MBPS))$/i.test(x))||/(?:TCL|雷鸟)[\u3400-\u9fff]{1,6}\d+/i.test(q.question||''))return '';
+ if(tokens.some(x=>!/^SKU(?:[-_]|\d)/i.test(x)&&x!==String(q.sku||'').trim()&&/[A-Za-z]/.test(x)&&/\d/.test(x)&&!/^(?:(?:HDMI|HDR|USB|WIFI|WLAN|BT|DDR|VRR|MEMC|DOLBY|DP|HDCP|H)\d*(?:[.+/-]\d+)*[+]?|(?:\d+(?:K|HZ|W|KW|L|GB|TB|NITS|BIT|MBPS))+)$/i.test(x))||/(?:TCL|雷鸟)[\u3400-\u9fff]{1,6}\d+/i.test(q.question||''))return '';
  return '待补型号：问题使用了“这台/这款”等指代，请结合资料核实；SKU不会自动当作型号。';
 }
 function questionMetadataHtml(q){
@@ -647,10 +649,20 @@ const preferredAsr=readR23ModelPreference();
 const usesParaformer=preferredAsr==='paraformer';
 const asrModelLabel=usesParaformer?'Paraformer-small':preferredAsr==='base'?'Whisper Base':'Whisper Tiny';
 const asrDiagnostics=[];
+let paraformerState='idle',paraformerNote='';
 let whisperProgressTimer=null,whisperProgressKey='',whisperProgressLastAt=0;
 globalThis.exportAsrDiagnostics=()=>JSON.stringify({version:'r24-qa',events:asrDiagnostics},null,2);
 ELEM('asrDiagnosticsBtn')?.addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([exportAsrDiagnostics()],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='tcl-r24-asr-diagnostics.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-const asrOptions={onDiagnostic:event=>{asrDiagnostics.push({...event,time:Date.now(),question:sessionTurns.findIndex(t=>t.id===r6WhisperQueue[0]?.turnId)+1});if(asrDiagnostics.length>200)asrDiagnostics.shift();},onProgress:note=>{
+const asrOptions={onDiagnostic:event=>{
+  asrDiagnostics.push({...event,time:Date.now(),question:sessionTurns.findIndex(t=>t.id===r6WhisperQueue[0]?.turnId)+1});
+  if(asrDiagnostics.length>200)asrDiagnostics.shift();
+  if(!usesParaformer)return;
+  if(event.stage==='model-download')setParaformerPreparation('loading','正在读取并校验模型资源…');
+  if(event.stage==='model-ready')setParaformerPreparation('ready');
+  if(event.stage==='worker-released')setParaformerPreparation('idle');
+  if(event.stage==='model-error')setParaformerPreparation('error',event.message);
+},onProgress:note=>{
+  if(usesParaformer&&paraformerState==='loading')setParaformerPreparation('loading',note);
   const cur=r6WhisperQueue[0];
   const target=cur&&sessionTurns.find(t=>t.id===cur.turnId);
   if(target&&r6WhisperValid(cur,target)){
@@ -663,7 +675,7 @@ const asrOptions={onDiagnostic:event=>{asrDiagnostics.push({...event,time:Date.n
     const wait=150-(performance.now()-whisperProgressLastAt);if(wait<=0)show();else whisperProgressTimer=setTimeout(show,wait);
   }
 }};
-const r6WhisperEngine=usesParaformer?createLocalParaformer(asrOptions):createLocalWhisper({...asrOptions,modelPreset:preferredAsr});
+const r6WhisperEngine=usesParaformer?createLocalParaformer({...asrOptions,loadTimeoutMs:600000}):createLocalWhisper({...asrOptions,modelPreset:preferredAsr});
 const r6WhisperQueue=[];
 let r6WhisperRunning=false;
 let r6WhisperCancelSeq=0;
@@ -713,6 +725,15 @@ function r6WhisperSubmit(turnId,blob){
   turn.asrStatus='原始录音已保存，等待本机转写（首次下载模型可能较慢）'+(turn.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
   renderTurnStatus(turn);
   void r6WhisperDrain();
+}
+function retryLocalQuestion(turnId){
+  if(!usesParaformer)return transcribeQuestion(turnId);
+  const turn=sessionTurns.find(t=>t.id===turnId),audio=perQuestionAudio.get(turnId);
+  if(!turn||!audio||turn.runId!==runId||!isRunPage())return toast('当前题目没有可补转写的音频');
+  if(recorderPending||recorderFinalizing||(recordingTurn===turn&&currentRecorder?.state==='recording'))return toast('请先结束本题录音，再补转写');
+  if(r6WhisperQueue.some(task=>task.turnId===turnId))return toast('本题已在等待转写');
+  r6WhisperEngine.resetFailure();
+  r6WhisperSubmit(turnId,audio);
 }
 async function r6WhisperDrain(){
   if(r6WhisperRunning||transcriptBusy||oneShotAsrJob||asrInferJob||voskLoadJob)return;
@@ -782,7 +803,7 @@ async function r6WhisperDrain(){
         if(finishedIndex>=0)r6WhisperQueue.splice(finishedIndex,1);
       }
     }
-  }finally{r6WhisperRunning=false;void drainQuestionAsrQueue();}
+  }finally{r6WhisperRunning=false;renderQuestionSummary();void drainQuestionAsrQueue();}
 }
 globalThis.r6WhisperSubmit=r6WhisperSubmit;
 // ---------- END isolated ASR AutoQA ----------
@@ -849,7 +870,7 @@ const saveTurn=async(turn)=>{
 };
 function liveTurnStatusText(turn){
  if(deviceCheck.mode==='text')return turn.asrStatus||'文字练播';
- const model=voskUi.state==='loading'||voskUi.state==='init'?' · 备用 Vosk 准备中':'';
+ const model=usesParaformer&&paraformerState==='loading'?' · Paraformer 准备中':voskUi.state==='loading'||voskUi.state==='init'?' · 备用 Vosk 准备中':'';
  return (turn.asrStatus||'等待回答')+model;
 }
 function renderTurnStatus(turn,opts={}){
@@ -898,7 +919,7 @@ function createQuestionSummaryRow(turn){
  const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
  copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
  entry.actions=cell('状态');entry.status=document.createElement('div');entry.actions.append(entry.status);
- const retry=document.createElement('button');retry.type='button';retry.className='btn soft';retry.onclick=()=>voskModel?transcribeQuestion(entry.turn.id):preloadVoskModel();entry.retry=retry;entry.actions.append(retry);
+ const retry=document.createElement('button');retry.type='button';retry.className='btn soft';retry.onclick=()=>retryLocalQuestion(entry.turn.id);entry.retry=retry;entry.actions.append(retry);
  return entry;
 }
 function updateQuestionSummaryRow(entry,turn){
@@ -916,7 +937,7 @@ function updateQuestionSummaryRow(entry,turn){
   if(blob){const player=document.createElement('audio');player.controls=true;player.preload='none';player.className='audio-player';player.setAttribute('aria-label','回听本题录音：'+turn.prompt);const url=URL.createObjectURL(blob);player.src=url;entry.audio={url,player,blob};reviewQuestionAudioUrls.push(entry.audio);entry.actions.insertBefore(player,entry.retry);}
  }
  entry.retry.hidden=!blob||!!turn.transcript;
- setNodeText(entry.retry,voskModel?'补转写':'准备Vosk并补转写');
+ setNodeText(entry.retry,usesParaformer?'用 Paraformer 补转写':voskModel?'补转写':'准备 Vosk 并补转写');
  entry.retry.disabled=!!oneShotAsrJob||!!transcriptBusy||!!voskLoadJob||!!r6WhisperRunning;
 }
 function renderQuestionSummary(){
@@ -1231,7 +1252,7 @@ ELEM('view').innerHTML=`
     <div class="barrage" id="barrage" role="log" aria-live="polite" aria-label="模拟观众弹幕"><div class="chat-line system"><strong>训练提示</strong><span>准备完成后，点击下方「开始练播」。</span></div></div>
     <div class="live-foot"><div class="chat-ghost">说点什么… <span>模拟弹幕</span></div><span class="danmu-bubble" aria-hidden="true">•••</span></div>
     <button class="prep-exit" id="prepExit" type="button" aria-label="返回训练板块">‹ 返回</button>
-    <div class="pre-live-actions" id="preLiveActions"><span class="pre-live-label">${currentAssignment()?`运营作业：${ESC(currentAssignment().title)} · ${ESC(currentAssignment().operatorName)}`:'自由练播 · 摄像头画面仅自己可见'}</span><div class="pre-live-heading">${ESC(b.category)} · ${ESC(activePlatform)}</div><p class="prep-check-status" id="prepCheckStatus" role="status" aria-live="polite">请检查摄像头和麦克风…</p><div class="prep-recheck-actions"><button type="button" id="prepQuickRecheck" class="btn soft">↻ 重新检查设备</button><button type="button" id="prepQuickText" class="btn soft">仅文字练播</button></div><div data-vosk-widget="dark" aria-label="中文语音模型状态"></div><button class="btn primary pre-start-btn" id="startScene" type="button" disabled>准备中…</button><button class="prep-more-toggle" id="prepMore" type="button" aria-expanded="false" aria-controls="prepMoreSheet">${ICON.more}<span>换板块 · 弹幕间隔 · 设备</span></button><p class="prep-simulation-hint">模拟练播 · 单场最长 8 分钟 · 首次逐题转写需加载本机模型</p><p id="preLiveVoskTip" hidden>Vosk 可在「更多工具」手动准备，录后仍可补转写。</p><button id="preloadBeforeStart" hidden type="button">预下载模型</button><button id="preBack" hidden type="button">返回</button></div>
+    <div class="pre-live-actions" id="preLiveActions"><span class="pre-live-label">${currentAssignment()?`运营作业：${ESC(currentAssignment().title)} · ${ESC(currentAssignment().operatorName)}`:'自由练播 · 摄像头画面仅自己可见'}</span><div class="pre-live-heading">${ESC(b.category)} · ${ESC(activePlatform)}</div><p class="prep-check-status" id="prepCheckStatus" role="status" aria-live="polite">请检查摄像头和麦克风…</p><div class="prep-recheck-actions"><button type="button" id="prepQuickRecheck" class="btn soft">↻ 重新检查设备</button><button type="button" id="prepQuickText" class="btn soft">仅文字练播</button></div><div data-vosk-widget="dark" aria-label="中文语音模型状态"></div><button class="btn primary pre-start-btn" id="startScene" type="button" disabled>准备中…</button><button class="prep-more-toggle" id="prepMore" type="button" aria-expanded="false" aria-controls="prepMoreSheet">${ICON.more}<span>换板块 · 弹幕间隔 · 设备</span></button><p class="prep-simulation-hint">模拟练播 · 单场最长 8 分钟 · ${usesParaformer?'录音结束或切题后转写 · 模型首次约 94 MB':'首次逐题转写需加载本机模型'}</p><p id="preLiveVoskTip" hidden>Vosk 可在「更多工具」手动准备，录后仍可补转写。</p><button id="preloadBeforeStart" hidden type="button">预下载模型</button><button id="preBack" hidden type="button">返回</button></div>
     <section class="phone-tools-sheet" id="prepMoreSheet" role="dialog" aria-modal="false" aria-label="开播前更多工具" hidden>
       <div class="phone-tools-heading"><h3>更多工具</h3><button type="button" id="prepMoreClose" aria-label="关闭更多工具">✕</button></div>
       <div class="phone-tools-group"><h4>训练内容</h4><div class="phone-tool-grid"><button type="button" id="prepChangeBoard">更换训练板块</button>${categoryPlatformChoices(b).map(x=>`<button type="button" data-prep-platform="${ESC(x.boardId)}" data-p="${ESC(x.platform)}" ${x.selected?'aria-current="true"':''}>${ESC(x.label)}</button>`).join('')}</div></div>
@@ -1251,14 +1272,14 @@ ELEM('view').innerHTML=`
       <div id="cameraDetails" class="scene-tip">将按摄像头真实比例显示：接近 9:16 的竖屏画面铺满，其他比例完整显示；不允许浏览器裁切放大。</div></details><div id="checkSummary" class="scene-tip">正在自动检测设备；如浏览器要求，请允许摄像头和麦克风权限。</div><details class="hub-device-details"><summary>弹幕频率及高级设备操作</summary><div class="interval-setting"><label for="barrageInterval">自动弹幕间隔</label><select id="barrageInterval"><option value="30000">30 秒</option><option value="60000">1 分钟</option><option value="120000">2 分钟</option></select><small>按此间隔自动出现观众闲聊/投诉弹幕；回答完一题请点「下一条弹幕」换题。</small></div>
       <div class="toolbar"><button class="btn primary" id="runDeviceCheck">重新检测设备</button><button class="btn" id="cameraBtn">手动开关摄像头</button></div></details>
       <div class="toolbar"><button class="btn primary" id="enterPrep" disabled>设备就绪，下一步 →</button><button class="btn soft" id="textFallback">仅文字模拟练播</button></div>
-      <p class="scene-tip" id="voskBeforeLive">建议开播前预下载/校验 Vosk 中文模型（约48MB）；未就绪也可练播，录音将暂存本页并支持补转写。</p><p class="scene-tip">手机真实摄像头和麦克风通常需要 HTTPS 及用户授权；设备检测失败不会伪装成通过。仅文字模式会明确关闭录音功能。</p>
+      <p class="scene-tip" id="voskBeforeLive">${usesParaformer?'可在开播准备页提前加载 Paraformer（首次约 94 MB）。本题结束录音、切题或结束练播后转写。':'未就绪也可练播，原录音可在复盘中补转写。'}</p><p class="scene-tip">手机真实摄像头和麦克风通常需要 HTTPS 及用户授权；设备检测失败不会伪装成通过。仅文字模式会明确关闭录音功能。</p>
     </div>
     <div class="panel compact-panel learning-panel"><div class="q-meta"><span class="pill" id="questionStage">弹幕问题</span><span class="pill" id="questionSource">教学示例</span></div>
       <div class="training-question" id="currentQuestion">开始模拟直播后，训练弹幕会出现在直播画面中。</div><div class="scene-tip" id="trainingHint"></div>
       <div class="toolbar"><button class="btn dark" id="nextQuestion">下一条弹幕 →</button><button class="btn soft" id="speakQuestion">🔊 免费中文朗读</button><button class="btn soft" id="showReference">查看参考回答</button></div><div id="referenceBox" class="tintbox hidden"></div></div>
     <div class="panel compact-panel review-panel"><div class="train-headline"><h2>③ 回答与复盘</h2><button class="ghost-btn review-close" id="closeReview">返回直播画面 ×</button></div><p class="scene-tip">开播后自动开始整场音视频录制，单题录音用于回听；支持系统自带免费中文弹幕朗读（需手动触发，可能依赖系统语音包）。结束直播后可尝试从视频副本中识别文字。原录像不转码、不重排时间轴。</p>
       <div class="toolbar"><button class="btn primary" id="recordBtn">开始录音</button><button class="btn" id="recordStopBtn" disabled>结束录音</button></div>
-      <div id="recordStatus" class="scene-tip">尚未录音</div><div id="turnStatus" class="scene-tip">等待本题</div><div id="turnHints" class="scene-tip">逐题合规及要点提示将在录后出现。</div><button class="btn soft" id="retryQuestionAsr" type="button">本题补转写（需先预下载Vosk）</button><div id="audioHolder"></div>
+      <div id="recordStatus" class="scene-tip">尚未录音</div><div id="turnStatus" class="scene-tip">等待本题</div><div id="turnHints" class="scene-tip">逐题合规及要点提示将在录后出现。</div><button class="btn soft" id="retryQuestionAsr" type="button">本题补转写</button><div id="audioHolder"></div>
       <div class="field" style="margin-top:12px"><label>我的回答（可编辑）</label><textarea id="answerText" rows="4" placeholder="说完后记录答案，对照参考话术复盘。"></textarea></div>
       <div class="toolbar"><button class="btn primary" id="submitAnswer">保存本次练习</button></div><div id="scoreBox"></div></div>
   </div>
@@ -1270,11 +1291,11 @@ ELEM('showAllBoards').onclick=()=>{const panel=ELEM('boardQuickPanel');panel.cla
 document.querySelectorAll('[data-switch-board]').forEach(el=>el.onclick=()=>quickSwitchBoard(el.dataset.switchBoard));
 document.querySelectorAll('#platforms button').forEach(el=>el.onclick=()=>{if(el.dataset.boardP!==selectedBoard){quickSwitchBoard(el.dataset.boardP,el.dataset.p);return}if(!canLeaveRecording())return;resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();if(answerAudioURL){URL.revokeObjectURL(answerAudioURL);answerAudioURL=''}activePlatform=el.dataset.p;roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};trainingHome()});
 ELEM('runDeviceCheck').onclick=checkDevices;ELEM('prepQuickRecheck').onclick=()=>{if(roomPhase==='ready')returnToCheck();void checkDevices()};ELEM('prepQuickText').onclick=enableTextOnly;ELEM('enterPrep').onclick=showReadyRoom;ELEM('textFallback').onclick=enableTextOnly;
-ELEM('startScene').onclick=startScene;ELEM('preloadBeforeStart').onclick=preloadVoskModel;ELEM('preBack').onclick=returnToCheck;ELEM('focusClose').onclick=requestFinishScene;
+ELEM('startScene').onclick=startScene;ELEM('preloadBeforeStart').onclick=preparePracticeModel;ELEM('preBack').onclick=returnToCheck;ELEM('focusClose').onclick=requestFinishScene;
 ELEM('prepExit').onclick=()=>{closeDrawer();nav('home')};
 ELEM('prepMore').onclick=()=>togglePhoneSheet('prepMoreSheet','prepMore');ELEM('prepMoreClose').onclick=closeDrawer;
 ELEM('prepChangeBoard').onclick=()=>{if(activeAssignmentId&&!window.confirm('更换板块将退出当前运营作业，改为自由训练，是否继续？'))return;closeDrawer();nav('catalog')};ELEM('prepRecheck').onclick=()=>{closeDrawer();if(roomPhase==='ready')returnToCheck();if(roomPhase!=='check')return;deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};updateDeviceStates();void checkDevices()};
-ELEM('prepTextOnly').onclick=()=>{enableTextOnly();closeDrawer()};ELEM('prepPreloadVosk').onclick=()=>preloadVoskModel();
+ELEM('prepTextOnly').onclick=()=>{enableTextOnly();closeDrawer()};ELEM('prepPreloadVosk').onclick=preparePracticeModel;
 document.querySelectorAll('[data-prep-platform]').forEach(btn=>{if(activeAssignmentId)btn.disabled=true;btn.onclick=()=>{if(activeAssignmentId)return toast('运营作业的训练板块和平台不可更换');const original=[...document.querySelectorAll('#platforms button')].find(x=>x.dataset.boardP===btn.dataset.prepPlatform&&x.dataset.p===btn.dataset.p);if(original)original.click()}});
 ELEM('prepBarrageInterval').value=String(barrageIntervalMs);
 ELEM('prepBarrageInterval').onchange=e=>{const base=ELEM('barrageInterval');base.value=e.target.value;base.dispatchEvent(new Event('change',{bubbles:true}))};
@@ -1283,7 +1304,7 @@ ELEM('liveToolText').onclick=()=>{closeDrawer();toggleTextAnswer(true)};
 ELEM('liveToolSpeak').onclick=()=>{closeDrawer();speakCurrentQuestion()};
 ELEM('liveToolRecord').onclick=()=>{closeDrawer();ELEM('focusMic').click()};
 ELEM('liveToolReference').onclick=()=>{if(!activeTurn)return toast('请先等待一条弹幕');const box=ELEM('liveReferenceBox');box.innerHTML=referenceHtml(activeTurn);box.hidden=!box.hidden;};
-ELEM('liveToolRetry').onclick=()=>{closeDrawer();if(activeTurn)void transcribeQuestion(activeTurn.id);else toast('请先等待一条弹幕')};
+ELEM('liveToolRetry').onclick=()=>{closeDrawer();if(activeTurn)void retryLocalQuestion(activeTurn.id);else toast('请先等待一条弹幕')};
 ELEM('liveToolVosk').onclick=()=>preloadVoskModel();
  // iOS Safari may require a fresh user gesture after MediaRecorder stops asynchronously.
  // Phase 1: close and preserve current question audio; phase 2: start Web Speech on a new tap.
@@ -1324,7 +1345,7 @@ let lastNextTap=-Infinity;const nextByTap=()=>{const now=performance.now();if(no
 ELEM('nextQuestion').onclick=nextByTap;ELEM('focusNext').onclick=nextByTap;ELEM('speakQuestion').onclick=speakCurrentQuestion;ELEM('focusSpeak').onclick=speakCurrentQuestion;ELEM('showReference').onclick=showReference;
 ELEM('liveQExpand').onclick=()=>{const text=ELEM('liveQText'),btn=ELEM('liveQExpand'),expanded=btn.getAttribute('aria-expanded')!=='true';text.classList.toggle('r3-expanded',expanded);btn.setAttribute('aria-expanded',String(expanded));btn.textContent=expanded?'收起问题 ↑':'查看完整问题 ↓';if(expanded)text.setAttribute('tabindex','0');else text.removeAttribute('tabindex');};
 const intervalSelect=ELEM('barrageInterval');if(intervalSelect){intervalSelect.value=String(barrageIntervalMs);intervalSelect.onchange=async()=>{barrageIntervalMs=Number(intervalSelect.value)||60000;for(const id of ['prepBarrageInterval','liveBarrageInterval'])if(ELEM(id))ELEM(id).value=String(barrageIntervalMs);await savePref('barrageIntervalMs',barrageIntervalMs);toast('自动弹幕间隔已设置为 '+(barrageIntervalMs/1000)+' 秒');if(roomPhase==='live')scheduleChatQuestion();};}
-ELEM('answerText').oninput=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('answerText').onchange=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('submitAnswer').onclick=submitAnswer;ELEM('retryQuestionAsr').onclick=()=>activeTurn&&transcribeQuestion(activeTurn.id);ELEM('closeReview').onclick=toggleLiveDrawer;
+ELEM('answerText').oninput=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('answerText').onchange=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('submitAnswer').onclick=submitAnswer;ELEM('retryQuestionAsr').onclick=()=>activeTurn&&retryLocalQuestion(activeTurn.id);ELEM('closeReview').onclick=toggleLiveDrawer;
 ELEM('focusMic').onclick=()=>{if(questionTransition||finishingSession)return toast('正在整理本题录音，请稍候');if(deviceCheck.mode==='text')return toggleTextAnswer();if(currentRecorder?.state==='recording')stopRecord();else void startRecord();};
 ELEM('liveTextAnswer').oninput=syncTextAnswer;ELEM('liveTextSave').onclick=()=>{syncTextAnswer();toggleTextAnswer(false);toast('已保存本题文字回答');};ELEM('liveTextClose').onclick=()=>toggleTextAnswer(false);
 ELEM('questionCount').textContent=practicePoolLabel(b,activePlatform);
@@ -1845,9 +1866,8 @@ async function startRecord({automatic=false}={}){
     turnAtStart.durationSeconds=turnAtStart.durationSeconds??Math.round(Math.max(0,performance.now()-(turnAtStart.startedAt||performance.now()))/100)/10;
     turnAtStart.transcript='';turnAtStart.rawTranscript='';turnAtStart.compliance=[];turnAtStart.pointsHit=[];turnAtStart.asrWarnings=[];
     if(cleared){turnAtStart.answer='';turnAtStart.manualEdited=false;turnAtStart.manualCleared=true;}else if(manual){turnAtStart.answer=currentText;turnAtStart.manualEdited=true;turnAtStart.manualCleared=false;turnAtStart.compliance=complianceHints(currentText,turnAtStart.platform);turnAtStart.pointsHit=(turnAtStart.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,currentText,turnAtStart.pointKeywords?.[i]||[]));}else{turnAtStart.answer='';turnAtStart.manualEdited=false;turnAtStart.manualCleared=false;if(answerEl&&activeTurn?.id===turnAtStart.id)answerEl.value='';}
-    turnAtStart.asrStatus=(voskModel?'待自动转写':'Vosk未就绪：音频保留在本页，先预下载模型后补转写')+(turnAtStart.captureLimitReached?'（仅录入前120秒，后续未录音）':'');
     perQuestionAudio.set(turnAtStart.id,blob);
-if(turnAtStart)r6WhisperSubmit(turnAtStart.id,blob);
+    r6WhisperSubmit(turnAtStart.id,blob);
     if(recordingTurn===turnAtStart)recordingTurn=null;
     /* The selected local model uses the original per-question recording. */void saveTurn(turnAtStart).then(()=>{if(runId===turnAtStart.runId&&isRunPage())renderTurnStatus(turnAtStart)});renderTurnStatus(turnAtStart);
    }
@@ -2453,6 +2473,32 @@ async function recognizeVosk(model,pcm,valid=()=>true){
 // 进度显示在所有 [data-vosk-widget] 位置（首页、开播预览、工具面板、复盘页）。
 let voskUi={state:'idle',files:0,bytes:0,msg:'',attempt:1},voskAutoTried=false;
 const VOSK_FILE_TOTAL=VOSK_PART_NAMES.length+1;
+function setParaformerPreparation(state,note=''){
+ if(state===paraformerState&&note===paraformerNote)return;
+ paraformerState=state;paraformerNote=note;
+ renderParaformerPreparation();
+ const status=ELEM('liveTurnStatus');
+ if(status&&activeTurn)status.textContent=liveTurnStatusText(activeTurn);
+}
+function renderParaformerPreparation(){
+ const widget=document.querySelector('[data-vosk-widget="dark"]'),button=ELEM('prepPreloadVosk');
+ const loading=paraformerState==='loading',ready=paraformerState==='ready',failed=paraformerState==='error';
+ const label=ready?'✓ Paraformer 已就绪':loading?'正在准备 Paraformer…':failed?'重试准备 Paraformer':'准备 Paraformer';
+ if(button){button.textContent=label;button.disabled=loading||ready;}
+ if(!widget)return;
+ const detail=loading||failed?paraformerNote:ready?'本题录音结束或切题后转写。':'首次约 94 MB，可提前加载；录音结束或切题后转写。';
+ widget.innerHTML=`<div class="r2-model dark ${ready?'ready':loading?'busy':failed?'error':'idle'}"><b>普通话 · Paraformer-small</b><small role="status">${ESC(detail)}</small><button type="button" class="btn soft"${loading||ready?' disabled':''}>${label}</button></div>`;
+ widget.querySelector('button').onclick=preparePracticeModel;
+}
+async function preparePracticeModel(){
+ if(!usesParaformer)return preloadVoskModel();
+ if(paraformerState==='loading'||paraformerState==='ready')return;
+ if(voskLoadJob||oneShotAsrJob||asrInferJob||transcriptBusy||r6WhisperRunning)return toast('请等待当前转写处理完成');
+ if(!r6WhisperEngine.resetFailure())return;
+ releaseVoskForParaformer();
+ try{await r6WhisperEngine.preload();}
+ catch(e){if(paraformerState==='error')toast('Paraformer 准备失败：'+String(e.message||e).slice(0,100));}
+}
 function voskWidgetHtml(kind){
  const st=voskModel?'ready':voskUi.state,pct=Math.min(100,Math.round(voskUi.files/VOSK_FILE_TOTAL*100)),mb=(voskUi.bytes/1048576).toFixed(0);
  if(st==='ready')return `<div class="r2-model ready ${kind}"><span class="r2-model-dot"></span><b>备用 Vosk 已就绪</b><small>可用于录后转文字，结果请核对</small></div>`;
@@ -2461,10 +2507,11 @@ function voskWidgetHtml(kind){
  return `<div class="r2-model idle ${kind}"><b>备用 Vosk 中文识别</b><small>逐题使用 ${asrModelLabel}${usesParaformer?'，首次约94 MB':'，首次转写需联网'}。备用 Vosk 约42MiB，可在需要时手动准备。</small><button type="button" class="btn soft" data-vosk-action>准备备用 Vosk</button></div>`;
 }
 function renderVoskWidgets(){
- document.querySelectorAll('[data-vosk-widget]').forEach(el=>{el.innerHTML=voskWidgetHtml(el.dataset.voskWidget||'');el.querySelectorAll('[data-vosk-action]').forEach(btn=>btn.onclick=()=>preloadVoskModel());});
+ document.querySelectorAll('[data-vosk-widget]').forEach(el=>{if(usesParaformer&&el.dataset.voskWidget==='dark')return;el.innerHTML=voskWidgetHtml(el.dataset.voskWidget||'');el.querySelectorAll('[data-vosk-action]').forEach(btn=>btn.onclick=()=>preloadVoskModel());});
+ if(usesParaformer)renderParaformerPreparation();
  if(activeTurn&&ELEM('liveTurnStatus'))ELEM('liveTurnStatus').textContent=liveTurnStatusText(activeTurn);
  const st=voskModel?'ready':voskUi.state,label=st==='ready'?'✓ 中文识别已就绪':st==='loading'?`下载中 ${Math.round(voskUi.files/VOSK_FILE_TOTAL*100)}%`:st==='init'?'正在启动模型…':st==='error'?'重试下载中文模型':'下载中文识别模型';
- for(const id of ['prepPreloadVosk','liveToolVosk']){const el=ELEM(id);if(el){el.textContent=label;el.disabled=st==='loading'||st==='init';}}
+ for(const id of usesParaformer?['liveToolVosk']:['prepPreloadVosk','liveToolVosk']){const el=ELEM(id);if(el){el.textContent=usesParaformer&&!voskModel&&st==='idle'?'准备备用 Vosk':label;el.disabled=st==='loading'||st==='init';}}
 }
 async function autoLoadCachedVosk(){
  if(usesParaformer||voskAutoTried||voskModel||voskLoadJob||voskUi.state!=='idle')return;voskAutoTried=true;
@@ -2724,7 +2771,7 @@ async function submitSessionRecord(operatorName){
  finally{submissionSaving=false;}
 }
 // V3.4.9：搜索时只刷新结果列表，不重建输入框，连续输入和中文输入法组合输入不会失焦。
-function libraryRows(){return getEntries().filter(e=>e.status==='published'&&(!librarySearch||norm(e.question+' '+e.answer+' '+e.category+' '+e.platform+' '+(e.model||'')+' '+(e.sku||'')+' '+(e.sourceRef||'')).includes(norm(librarySearch)))&&(selectedLibraryBoard==='all'||e.boardId===selectedLibraryBoard||e.scope==='category'&&e.category===boardById(selectedLibraryBoard).category));}
+function libraryRows(){return getEntries().filter(e=>e.status==='published'&&(!librarySearch||norm([e.question,e.answer,e.category,e.platform,e.model,e.sku,e.sourceRef,...(e.keyPoints||[])].filter(Boolean).join(' ')).includes(norm(librarySearch)))&&(selectedLibraryBoard==='all'||e.boardId===selectedLibraryBoard||e.scope==='category'&&e.category===boardById(selectedLibraryBoard).category));}
 function libraryCardHtml(q){return `<div class="q-card"><div class="q-meta"><span class="pill">${ESC(q.category)}</span><span class="pill">${ESC(q.platform||'公共')}</span><span class="pill ${q.kind==='seed'?'warn':'good'}">${q.kind==='seed'?'教学示例':modelRequiredForQuestion(q)?'待补型号 · 暂不出题':'已审核回答'}</span></div><h3>${q.danmuType?`<span class="pill">${ESC(q.danmuType)}</span> `:''}${ESC(q.question)}</h3>${questionMetadataHtml(q)}${q.intent?`<p class="r2-intent"><b>消费者意图：</b>${ESC(q.intent)}</p>`:''}<p class="r2-answer">${ESC(q.answer||'暂无审核完成的参考答案，先思考自己会如何回答。')}</p><div class="q-meta">${(q.keyPoints||[]).map(k=>`<span class="pill">${ESC(k)}</span>`).join('')}</div></div>`;}
 let libraryVisibleCount=8;
 function renderLibraryList(){const list=ELEM('libraryList'),count=ELEM('libraryCount'),more=ELEM('libraryMore');if(!list)return;const rows=libraryRows(),visible=Math.min(rows.length,libraryVisibleCount);list.innerHTML=rows.slice(0,visible).map(libraryCardHtml).join('')||'<div class="empty compact">没有找到相关问答，试试其他关键词或板块。</div>';if(count)count.textContent=`已显示 ${visible} / ${rows.length} 条`;if(more){more.hidden=visible>=rows.length;more.textContent=`再显示 ${Math.min(8,rows.length-visible)} 条`;}}
@@ -2750,7 +2797,7 @@ function normalizedImportScope(row,ctx){
  return {...row,category,platform,boardId:board.id,scope:ctx.scope==='category'||platform==='全部平台'?'category':'board',model:String(row.model||''),sku:String(row.sku||''),sourceRef:String(row.sourceRef||''),sourceLocators:[...(row.sourceLocators||[])]};
 }
 function importRowHasPII(row){return containsPII([row.question,row.answer,row.intent,row.danmuType,row.model,row.sku,row.category,row.platform,row.sourceRef,row.source,...(row.keyPoints||[]),...(row.sourceLocators||[])].filter(Boolean).join('\n'));}
-function modelRequiredForQuestion(row){return !!missingModelHint(row)&&/(?:刷新率|接口|HDMI|HDR|分区|峰值|亮度|尺寸|容量|功率|能效|制冷量|参数|型号对比|支持.*(?:功能|技术)|对比.*(?:型号|产品|款))/i.test(row.question||'');}
+function modelRequiredForQuestion(row){return !!missingModelHint(row)&&/(?:刷新率|分辨率|响应时间|接口|HDMI|HDR|杜比|DOLBY|投屏|蓝牙|WIFI|WLAN|\d+\s*(?:Hz|nits|dB|匹|升|寸)|分区|峰值|亮度|尺寸|容量|功率|能效|制冷量|噪[音声]|耗电|保鲜|参数|型号对比|支持.*(?:功能|技术)|对比.*(?:型号|产品|款))/i.test(row.question||'');}
 function importReviewState(row){if(importRowHasPII(row))row.reviewStatus='sensitive';return row;}
 // R24 import lifecycle: snapshots, cancellation and atomic local batches.
 let importEpoch=0,importParsing=false,importSaving=false,importPreview=null;

@@ -45,3 +45,11 @@
 解压到独立目录，执行 `python3 -m http.server 8877 --bind 127.0.0.1`，然后在 Chrome 打开 `http://127.0.0.1:8877/tcl-v352-asr-r24-qa/`。[含模型试用包](https://drive.google.com/file/d/100VIWY8a81Zurvs1PbP200nwHyTSyE-j/view?usp=drivesdk)
 
 本次保持独立候选，没有合并或正式部署。线上原版以及用户本机记录保持原状。[上一候选回滚包](https://drive.google.com/file/d/1jMxlm_RFSj8da5CEIMwwjmy-pkNAkBvQ/view?usp=drivesdk)
+
+## 私有试用反馈修复
+
+`r24-paraformer-small-20261118-fix1` 修复知识点搜索、产品规格题型号检查和固定教学价格题的平台措辞。合并后的候选在桌面 Chromium 通过 17 项题库 UI 回归，涵盖导入、审核、知识库和三题轮换。使用公开普通话 WAV 经浏览器原生设备模拟录制，验证实际 Paraformer 加载、逐题识别、回放及下载失败后的补转写。正式 R24 和 R25 入口、题库资料和历史记录保持原状。
+
+私有试用站首版已通过同源授权 GET 核对 38 项静态文件。四个模型分片拼接后共 82,547,881 字节，SHA-256 为 `9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f`。本次采用同一模型与同一试用入口。试用站登录由托管平台负责，练播房进入仍填写姓名。[私有试用](https://tcl-r24-paraformer-trial-20261118.lijianjun004.chatgpt.site/)
+
+修复版离线 ZIP 共 35 个静态文件，78,211,525 字节，SHA-256 为 `7a4dcf26b589609571abfe25cb56c8d937e164a29f3cf4abae04aec8a7f0cda5`。实体手机麦克风和用户登录会话仍待验证。[同一模型的首版回滚包](https://drive.google.com/file/d/100VIWY8a81Zurvs1PbP200nwHyTSyE-j/view?usp=drivesdk)
