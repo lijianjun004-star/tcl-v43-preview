@@ -1,0 +1,39 @@
+{
+  "version": "paraformer-small-int8-sherpa-1.12.20",
+  "source": {
+    "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small.tar.bz2",
+    "assetId": 329855920,
+    "bytes": 80161695,
+    "sha256": "be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548"
+  },
+  "runtime": {
+    "threads": 1,
+    "simd": true,
+    "model": "Paraformer-small int8 (2024-03-09)",
+    "modelFile": "/paraformer.onnx",
+    "tokensFile": "/tokens.txt",
+    "sampleRate": 16000
+  },
+  "files": {
+    "runtime": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.js",
+      "bytes": 95311,
+      "sha256": "3e0cbcad90833164f04097e51fbc99b8812dc03977382578fb73eba7f5d13ec4"
+    },
+    "wasm": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.wasm",
+      "bytes": 11539169,
+      "sha256": "2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3"
+    },
+    "api": {
+      "file": "sherpa-onnx-asr.js",
+      "bytes": 41274,
+      "sha256": "ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9"
+    },
+    "data": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.data",
+      "bytes": 82547881,
+      "sha256": "9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f"
+    }
+  }
+}

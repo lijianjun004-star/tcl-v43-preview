@@ -18,6 +18,15 @@ for(const field of ['model','sku','sourceRef','category','platform'])assert.equa
 run("const q={id:'id1',question:'原问题',answer:'来源答案',kind:'uploaded',model:'Q10L/Plus+',sku:'AbC',source:'资料来源',sourceRef:'规范版次',sourceLocators:['sheet2行']};const frozen=questionSnapshot(q);q.answer='新答案';q.sourceLocators.push('新行');const turn={...frozen,id:'turn1',prompt:'关于型号：原问题',keyPoints:['来源要点'],pointKeywords:[['原词']]};const record=sessionTurnRecord(turn,'测试人');");const rec=json(run('record'));assert.equal(rec.referenceAnswer,'来源答案');assert.equal(rec.question,'原问题');assert.equal(rec.prompt,'关于型号：原问题');assert.deepEqual(rec.sourceLocators,['sheet2行']);assert.deepEqual(rec.keyPoints,['来源要点']);run("turn.keyPoints.push('后来要点');turn.pointKeywords[0].push('后来词');");assert.deepEqual(json(run('record.keyPoints')),['来源要点']);assert.deepEqual(json(run('record.pointKeywords')),[['原词']]);checks++;
 run("localEntries=[{id:'old',status:'published',kind:'uploaded',scope:'board',boardId:'01',category:'TCL 电视',platform:'京东',question:'这款电视刷新率多少？',answer:'旧资料'}]");assert.equal(run("practiceEntriesFor(boardById('01'),'京东')[0].kind"),'seed');assert.match(run("questionMetadataHtml(localEntries[0])"),/待补型号/);checks++;
 assert.match(run("referenceHtml({kind:'uploaded',referenceAnswer:'旧答案<script>',sourceRef:'来源<script>',sourceLocators:['旧行'],keyPoints:['要点']})"),/旧答案&lt;script&gt;/);assert.ok(!run("referenceHtml({kind:'uploaded',referenceAnswer:'旧答案<script>'})").includes('<script>'));checks++;
+for(const question of ['这台电视支持杜比视界吗？','这台空调噪音有多大？','这个电视的刷新率是多少？','这款4K120Hz电视刷新率是多少？']){
+ assert.equal(run(`modelRequiredForQuestion({question:${JSON.stringify(question)}})`),true);
+}
+assert.equal(run("modelRequiredForQuestion({question:'这款怎么预约安装？'})"),false);checks++;
+run("localEntries=[]");
+assert.equal(run("practiceEntriesFor(boardById('16'),'京东').find(x=>x.question.includes('价格')).question"),'京东上的价格、优惠、送装和售后怎么合规确认？');checks++;
+vm.runInContext(slice('const norm=','\n')+"let librarySearch='观看距离与空间',selectedLibraryBoard='01';"+slice('function libraryRows()','function libraryCardHtml('),c);
+assert.equal(run('libraryRows().length'),1);
+assert.match(run("libraryRows()[0].keyPoints.join('、')"),/观看距离与空间/);checks++;
 // The real cloud-import branch must reject before archiveSource/fetch. The source
 // metadata schema is intentionally local-only until the backend is updated.
 const cloud=vm.createContext({console});
