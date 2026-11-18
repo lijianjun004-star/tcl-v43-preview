@@ -561,3 +561,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 交付补充：新版ZIP https://drive.google.com/file/d/1gsHgLaY-hbKgo_AiFqcmasVTaW0JTwCT/view?usp=drivesdk ，14019103字节/739文件，SHA256 4fb9e2d46a92b7ccc72716ccef78c3725a3bf6db2b30120d4359d81259519dee。包含产品mainf6ee029与源码证据9b1cd74；CRC/逐文件manifest通过，Drive元数据大小/名称/目录回读一致，shared=false。替代旧题库包，后续仅文档元数据提交不反复重打包。总控文档第14节同步本轮交付和最新Argon无实质结果。
 
 文档PR122 headc89607aa30d90f19cac26b742ea511c3a7ce73e4检查43952285750成功后合并到6cb913b6bce432136014788f3f3b009128152bf9；最后Pages43952442350成功，app重新HTTP200/hash仍63519c。仅文档变化，不改变已验证产品或交付包。
+
+## R24 原界面兼容优化候选（2026-11-18）
+
+任务 `TCL-R24-COMPATIBLE-IMPROVEMENTS-20261118`。用户明确保留 R24 界面和选角色后只填姓名，可移植新版兼容改进。基线为历史 R24 源码 `9963a554b3eedae0635826a73ce1e1813ca70bdc`，候选独立审查，正式发布待确认。Codex 实测及内部复核，外部 Gemini／Claude 请求 0。
+
+- 移入 R25 的 Whisper Worker 超时释放和 OpenCC 词组规范化。R24 的 HTML、CSS、`app.js`、身份入口和存储格式逐字节沿用。最新 R25 的静态题库、话术和型号资料与 R24 相同。现有 R25 云端功能仍通过原独立入口使用。
+- 15 个 320／390／430 px 页面状态截图差异 0 像素。三题录制及复盘两版各 21 项通过，同隔离地址原版保存→候选恢复 23 项通过，4 个媒体对象哈希相同并实际播放。独立浏览器真实 Worker 超时 2/2，Node 18/18，真实 Base／Tiny 公开单样本均推理完成。实体手机、大陆网络和 TCL 口播准确率待验收。[复验与试用说明](evidence/r24-compatible-improvements-20261118/README.md)
+- 候选 ZIP SHA-256 `feaeb7e6e8bfe097c7c2da743488bf63405e5275a337d81127ecc0744da0ec63`，下载回读一致。当前线上仍是原 R24 和 R25；本轮无正式合并、部署、云端写入或真实用户数据操作。[候选试用 ZIP](https://drive.google.com/file/d/1HSuGJJm85JOhS3qzVAn4X9LyKWNYqeZR/view?usp=drivesdk)

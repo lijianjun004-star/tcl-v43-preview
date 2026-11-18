@@ -51,7 +51,7 @@ test('Worker unavailable fails explicitly, while injected Node pipelines remain 
   assert.equal((await injected.transcribePreparedAudio(audio())).text, 'test');
 });
 
-test('Worker inference timeout never starts a second inference or releases unhealthy lock', async () => {
+test('Worker inference timeout releases the stopped Worker and rejects queued Whisper requests', async () => {
   const workers = installWorker((message, worker) => {
     if (message.type !== 'infer') worker.receive({ id: message.id, type: 'result', result: null });
   });
@@ -60,10 +60,25 @@ test('Worker inference timeout never starts a second inference or releases unhea
   assert.ok(results.every(result => result.status === 'rejected'));
   assert.equal(workers.length, 1);
   assert.equal(workers[0].messages.filter(m => m.type === 'infer').length, 1);
+  assert.equal(workers[0].terminated, true);
   const infer = workers[0].messages.find(m => m.type === 'infer');
   workers[0].receive({ id: infer.id, type: 'result', result: { text: 'late' } });
   await assert.rejects(engine.transcribePreparedAudio(audio()), /禁止/);
-  assert.equal(engine.isResourceBusy(), true);
+  assert.equal(engine.isResourceBusy(), false);
+});
+
+test('Worker model load timeout stops the download without starting a competing mirror load', async () => {
+  const workers = installWorker((message, worker) => {
+    if (message.type === 'init') worker.receive({ id: message.id, type: 'result', result: null });
+  });
+  const engine = createLocalWhisper({ loadTimeoutMs: 50 });
+  await assert.rejects(engine.transcribePreparedAudio(audio()), /超时/);
+  assert.equal(workers.length, 1);
+  assert.deepEqual(workers[0].messages.map(message => message.type), ['init', 'load']);
+  assert.equal(workers[0].terminated, true);
+  assert.equal(engine.isResourceBusy(), false);
+  await assert.rejects(engine.transcribePreparedAudio(audio()), /停用本页 Whisper/);
+  assert.equal(workers.length, 1);
 });
 
 test('Worker error rejects pending inference and cannot fall back to page inference', async () => {

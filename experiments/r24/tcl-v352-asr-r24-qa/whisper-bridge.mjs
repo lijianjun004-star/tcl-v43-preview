@@ -24,8 +24,8 @@ const MIRROR_HF_HOST = 'https://hf-mirror.com/';
 
 // Only model loading/inference runs in this Worker. Keep WebAudio on the page:
 // AudioContext/OfflineAudioContext are not available in every Worker runtime.
-// Requests deliberately outlive caller timeouts; the engine below retains its
-// unhealthy/resource lock until the page reloads, just as for local WASM work.
+// The bridge can terminate its dedicated Worker after a timed-out request.
+// A page-level injected pipeline does not have that cancellation mechanism.
 function createWorkerPipelineModule(progress_callback) {
   if (typeof globalThis.Worker !== 'function') {
     throw new Error('当前浏览器不支持后台语音识别 Worker，请使用新版 Safari/Chrome 或手动填写回答');
@@ -61,7 +61,7 @@ function createWorkerPipelineModule(progress_callback) {
     catch (error) { pending.delete(id); fail(error); reject(failed); }
   });
   const env = { remoteHost: PRIMARY_HF_HOST };
-  return request('init').then(() => ({
+  const ready = request('init').then(() => ({
     env,
     pipeline: async (_task, model, options) => {
       await request('load', { model, revision: options.revision, host: env.remoteHost });
@@ -73,6 +73,7 @@ function createWorkerPipelineModule(progress_callback) {
       };
     },
   }));
+  return { ready, dispose: () => fail('已释放') };
 }
 
 function withBoundedTimeout(promise, ms, label, signal) {
@@ -192,11 +193,21 @@ export function createLocalWhisper({
   let cachedPipe = null;
   let loadingPipePromise = null;
   let workerModule = null;
-  // A timeout does not terminate WASM inference or an in-flight model load.
-  // Once timed out, fail closed: no further jobs may re-enter this singleton.
-  // The caller will use the Vosk fallback or report a recoverable error.
+  // A timed-out Whisper instance stays closed. Only a stopped Worker lets the
+  // caller release its resource lock and use the existing Vosk controls.
   let unhealthyReason = '';
   let currentInference = null;
+  let workerReleased = false;
+
+  function releaseWorker() {
+    if (!workerModule) return;
+    workerModule.dispose();
+    workerModule = null;
+    cachedPipe = null;
+    currentInference = null;
+    workerReleased = true;
+    emit('worker-released');
+  }
 
   async function ensurePipeline(signal) {
     if (unhealthyReason) throw new Error(unhealthyReason);
@@ -210,7 +221,7 @@ export function createLocalWhisper({
         return cachedPipe;
       }
       if (!workerModule) workerModule = createWorkerPipelineModule(progress_callback);
-      const mod = await withBoundedTimeout(workerModule, perAttemptMs, '启动后台语音识别运行时', signal);
+      const mod = await withBoundedTimeout(workerModule.ready, perAttemptMs, '启动后台语音识别运行时', signal);
       const { pipeline, env } = mod;
       try {
         if (env) env.remoteHost = globalThis.__WHISPER_FORCE_MIRROR ? MIRROR_HF_HOST : PRIMARY_HF_HOST;
@@ -248,6 +259,7 @@ export function createLocalWhisper({
     } catch (error) {
       if (/超时|cancelled/i.test(String(error?.message || error))) {
         unhealthyReason = 'Whisper 模型加载已超时/取消，已停用本页 Whisper 以防资源重入；请改用 Vosk 或重新打开测试页';
+        releaseWorker();
       }
       throw error;
     } finally {
@@ -298,6 +310,7 @@ export function createLocalWhisper({
     } catch (error) {
       if (/超时|cancelled/i.test(String(error?.message || error))) {
         unhealthyReason = 'Whisper 推理已超时/取消，可能仍在运行；本页禁止新的 Whisper 推理，请切换 Vosk 或重新打开';
+        releaseWorker();
       }
       throw error;
     }
@@ -313,8 +326,6 @@ export function createLocalWhisper({
     return transcribePreparedAudio(audio, { signal });
   };
   transcribe.transcribePreparedAudio = transcribePreparedAudio;
-  // Timeout cannot terminate WASM. Callers must not start another engine while
-  // this page still owns potentially active work; preserve media and reload.
-  transcribe.isResourceBusy = () => !!(unhealthyReason || loadingPipePromise || currentInference);
+  transcribe.isResourceBusy = () => !!(loadingPipePromise || currentInference || (unhealthyReason && !workerReleased));
   return transcribe;
 }
