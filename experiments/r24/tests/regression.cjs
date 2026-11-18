@@ -18,6 +18,8 @@ const tick=()=>new Promise(r=>setImmediate(r));
  let count=cases.length;
  const body=source.slice(source.indexOf('function r6WhisperSubmit('),source.indexOf('globalThis.r6WhisperSubmit='));
  const normalize=source.slice(source.indexOf('function normalizeWhisperChinese('),source.indexOf('function normalizeInterfaceDecimals('));
+ const assessment=source.slice(source.indexOf('function calcChineseRatio('),source.indexOf('function spokenNumberValue('));
+ const norm=source.slice(source.indexOf('const norm='),source.indexOf('const containsPII='));
  const interfaces=source.slice(source.indexOf('function normalizeInterfaceDecimals('),source.indexOf('function readR23ModelPreference('));
  const numbers=source.slice(source.indexOf('function spokenNumberValue('),source.indexOf('// ASR_GUARDS_END'));
  const valid=source.slice(source.indexOf('const r6WhisperValid='),source.indexOf('function r6WhisperCancelAll('));
@@ -27,10 +29,11 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const sessionTurns=[],perQuestionAudio=new Map(),r6WhisperQueue=[],pending=[],saved=[];
  const r6WhisperPageAlive=()=>alive;
  const r6WhisperEngine=blob=>new Promise((resolve,reject)=>pending.push({blob,resolve,reject}));
- const renderTurnStatus=()=>{},ELEM=()=>null,complianceHints=()=>[],readR23ModelPreference=()=> 'tiny';
+ const renderTurnStatus=()=>{},ELEM=()=>null,complianceHints=()=>[],releaseVoskForSenseVoice=()=>{};
+ let usesSenseVoice=false,asrModelLabel='Whisper Tiny';
  let activeTurn=null,transcriptBusy=false,oneShotAsrJob=null,asrInferJob=null,voskLoadJob=null; const drainQuestionAsrQueue=()=>{}; const saveTurn=async t=>saved.push({...t});
  function add(id){const t={id,runId,boardId:'b',platform:'p',answer:'',transcript:'',keyPoints:[]};sessionTurns.push(t);perQuestionAudio.set(id,{size:10,id});return t;}
- `+valid+normalize+interfaces+numbers+body,context);
+ `+norm+valid+normalize+assessment+interfaces+numbers+body,context);
  const run=s=>vm.runInContext(s,context);
  const numberCases=[
   ['USB十二、DP十一、HDMI 二十一','USB12、DP11、HDMI21'],
@@ -42,6 +45,9 @@ const tick=()=>new Promise(r=>setImmediate(r));
  for(const [raw,want] of numberCases){assert.equal(run(`normalizeSpokenNumbers(${JSON.stringify(raw)}).text`),want);count++;}
  run(source.slice(source.indexOf('function r6WhisperCancelAll('),source.indexOf('function r6WhisperSubmit(')));
  assert.equal(run(`normalizeWhisperChinese('感谢观看，这款电视支持HDMI。')`),'感谢观看，这款电视支持HDMI。');assert.equal(run(`normalizeWhisperChinese('谢谢观看！')`),'');count++;
+ assert.equal(run(`normalizeWhisperChinese('谢谢观看！',false)`),'谢谢观看！');count++;
+ const repeated='我要查询账户余额。'.repeat(8);
+ assert.equal(run(`assessAsrText(${JSON.stringify(repeated)},false).text`),repeated);count++;
  // First result becomes stale during inference; successor must still be processed.
  run(`add('one');add('two');add('three');for(const t of sessionTurns)r6WhisperSubmit(t.id,perQuestionAudio.get(t.id));sessionTurns[0].audioRevision=1;pending[0].resolve({text:'旧结果'});`);
  await tick();assert.equal(run('pending.length'),2);count++;

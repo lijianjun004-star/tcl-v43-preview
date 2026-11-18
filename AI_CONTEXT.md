@@ -577,3 +577,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 独立候选 `r24-mandarin-asr-20261118` 在 Vosk 的拒绝路径为满足条件的低音量音频副本恢复增益。13 条真实录音由 12 条可进入识别提升至 13 条，新增一条 4/31 字符错误。8 个静音和噪声对照无识别文字。完整格式化接口版本号，保留疑似范围或坏格式，整场晚到识别和浏览器逐题结果保留人工校正与原始识别文字。
 - 实际 12 条公开录音上，原样输入 Base 49/222、Tiny 120/222、Vosk 38/222。保留既有模型选择，实验性统一裁边因个别样本漏句未采用。20 项 Node、27 项浏览器链路和 65 项界面对照通过，三种视口 15 状态截图差异 0 像素。实体手机、真实 TCL 现场语料和大陆网络尚未验收。[复验记录](evidence/r24-mandarin-asr-20261118/README.md)
 - 试用 ZIP SHA-256 `09fed941c3280525e48079ba1d4c77d0073f268de836e82e197c2588fe7d2bbe`，共 22 静态文件，Drive 回读一致。独立草稿中存放产品修复；未提交线上部署或操作用户历史数据。[候选 ZIP](https://drive.google.com/file/d/1jMxlm_RFSj8da5CEIMwwjmy-pkNAkBvQ/view?usp=drivesdk)
+
+## R24 SenseVoiceSmall 免费识别候选（2026-11-18）
+
+任务 `TCL-R24-SENSEVOICE-20261118`。用户批准继续执行，选择同批字错率最低且无需付费 API 的模型。SenseVoiceSmall int8 与 Qwen3-ASR 0.6B int8 同为 4/222，浏览器方案采用资源较小的 SenseVoice。基线为 PR #147 的 `d83b3ec325ea85aa54a0c3fe25f128783177d214`。Codex 实测及内部独立复核，外部 Gemini／Claude 请求 0，正式发布待用户确认。
+
+- 新候选 `r24-sensevoice-20261118` 在既有逐题和整场主转写中默认采用 SenseVoice。旧 Base／Tiny 明确选择保留，备用 Vosk 继续可用。原 R24 HTML、CSS、角色与姓名进入流程沿用。本机单线程 Worker 使用固定 sherpa-onnx v1.12.20 资产，权重与原生实测逐字节一致；文件及整包 SHA-256 验证，音频留在本机，无付费模型调用。
+- Chromium 实跑同一 12 条公开人声 4/222，16 项通过。390 px 界面 31 项、录制复盘与手工清空保持 22 项、资源失败重试 10 项均通过。长语音保留 8 次重复，仍有 3/96 字符错误；数字静音和 440 Hz 纯音返回空且不加载模型。实体手机、TCL 现场话术、大陆网络未实测。[完整复验](evidence/r24-sensevoice-20261118/README.md)
+- 资源通过 `experiments/r24/stage_sensevoice_assets.py` 复现，模型大文件独立打包。38 静态文件试用 ZIP SHA-256 `596faaab42c2cff73c0619e8b2637e2553c8ce42d97daeec6546fc75d1759dc8`。候选独立审阅，本轮未改线上部署、CloudBase 或用户历史数据。[资源复现](experiments/r24/SENSEVOICE-ASSETS.md)

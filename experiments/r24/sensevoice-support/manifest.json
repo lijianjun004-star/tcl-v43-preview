@@ -1,0 +1,56 @@
+{
+  "version": "sensevoice-small-int8-sherpa-1.12.20",
+  "source": {
+    "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en_ja_ko_cantonese-sense_voice_small.tar.bz2",
+    "bytes": 165723573,
+    "sha256": "b3d47b2dbfef23c09b2fd20dc4eb82b6a07c763c9b0197e92dea736bc981eb5b"
+  },
+  "runtime": {
+    "threads": 1,
+    "simd": true,
+    "model": "SenseVoiceSmall int8",
+    "modelFile": "/sense-voice.onnx",
+    "tokensFile": "/tokens.txt",
+    "language": "zh",
+    "useInverseTextNormalization": true
+  },
+  "files": {
+    "runtime": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.js",
+      "bytes": 95318,
+      "sha256": "980e66026930e2149bc30cab72eda8c40dce11921b11a7bbf00f5b79ff4b8e82"
+    },
+    "wasm": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.wasm",
+      "bytes": 11539169,
+      "sha256": "2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3"
+    },
+    "api": {
+      "file": "sherpa-onnx-asr.js",
+      "bytes": 41274,
+      "sha256": "ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9"
+    },
+    "data": {
+      "file": "sherpa-onnx-wasm-main-vad-asr.data",
+      "bytes": 240193589,
+      "sha256": "4c063aa4af215b02b6c127f3b7be8ae8405ff1285a18117e746f4abe53e5b3be",
+      "parts": [
+        {
+          "file": "sherpa-onnx-wasm-main-vad-asr.data.part00.bin",
+          "bytes": 83886080,
+          "sha256": "8d13f976762cd97d4cbcd8842f9165552e8323b6fd55c44264ca6c31e98eae69"
+        },
+        {
+          "file": "sherpa-onnx-wasm-main-vad-asr.data.part01.bin",
+          "bytes": 83886080,
+          "sha256": "8ffe22b109870b4ebace50f9f17506e0de58e9eceaa357b4d372346d44f7bd0a"
+        },
+        {
+          "file": "sherpa-onnx-wasm-main-vad-asr.data.part02.bin",
+          "bytes": 72421429,
+          "sha256": "69b1f38b38ef37b3f7d4aea5d2e6ab0796ec4e36c588293098b0396ee1592fe2"
+        }
+      ]
+    }
+  }
+}

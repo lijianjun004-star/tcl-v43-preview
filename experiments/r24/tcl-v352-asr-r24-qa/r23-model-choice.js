@@ -3,7 +3,21 @@
   const key='tcl-r24-asr-model';
   const selector=document.getElementById('r23ModelChoice');
   if(!selector)return;
-  const get=()=>{try{return localStorage.getItem(key)==='tiny'?'tiny':'base';}catch{return 'base';}};
+  const choices={
+    sensevoice:'普通话 SenseVoiceSmall · 默认',
+    base:'增强 Base · 更大模型',
+    tiny:'轻量 Tiny · 低内存',
+  };
+  const get=()=>{
+    try {
+      const value=localStorage.getItem(key);
+      if(Object.hasOwn(choices,value))return value;
+    }catch{}
+    return 'sensevoice';
+  };
+  selector.add(new Option(choices.sensevoice,'sensevoice'),0);
+  const tip=document.querySelector('#r23ModelBox small');
+  if(tip)tip.textContent='默认 SenseVoiceSmall，首次约 252 MB。低内存设备可选 Tiny。切换会刷新页面。';
   selector.value=get();
   selector.addEventListener('change',()=>{
     if(document.body.classList.contains('room-live') || document.body.dataset.page==='training' ||
@@ -12,10 +26,11 @@
       window.alert('请先完成并保存当前练播，再在首页切换模型，防止正在录制的声音丢失。');
       return;
     }
-    const value=selector.value==='base'?'base':'tiny';
+    const value=selector.value;
+    if(!Object.hasOwn(choices,value)){selector.value=get();return;}
     if(value===get())return;
-    const note=value==='base'?'启用 Whisper Base 增强识别，下载与内存占用会增加。':'切回 Whisper Tiny 轻量识别。';
-    if(!window.confirm(note+' 切换后刷新本页，是否继续？')){selector.value=get();return;}
+    const download=value==='sensevoice'?' 首次需要约 252 MB 资源。':'';
+    if(!window.confirm('切换为'+choices[value]+'。'+download+' 切换后刷新本页，是否继续？')){selector.value=get();return;}
     try {localStorage.setItem(key,value);} catch(err){selector.value=get();window.alert('浏览器不允许保存本机模型设置。');return;}
     window.location.reload();
   });

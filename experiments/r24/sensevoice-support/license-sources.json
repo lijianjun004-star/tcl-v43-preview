@@ -1,0 +1,29 @@
+{
+  "LICENSE-sherpa-onnx.txt": {
+    "url": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/v1.12.20/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  "LICENSE-SenseVoice-model.txt": {
+    "url": "https://raw.githubusercontent.com/modelscope/FunASR/58830eca4012644aac0c3218c3ccc7d98f003fda/MODEL_LICENSE",
+    "bytes": 5306,
+    "sha256": "7dba975a2069691db4992b0592d70828b330d2f8a30a71450f4e152a554e84f8"
+  },
+  "LICENSE-Silero-VAD.txt": {
+    "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v5.1/LICENSE",
+    "bytes": 1075,
+    "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b"
+  },
+  "LICENSE-onnxruntime.txt": {
+    "url": "https://raw.githubusercontent.com/csukuangfj/onnxruntime/8372c86e7f15ed0d8d47e1e0afc115c30db39252/LICENSE",
+    "note": "Supplementary upstream source notices; the pinned prebuilt WASM distribution did not include license files. This source snapshot is not claimed to be the build commit.",
+    "bytes": 1073,
+    "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+  },
+  "THIRD_PARTY_NOTICES-onnxruntime.txt": {
+    "url": "https://raw.githubusercontent.com/csukuangfj/onnxruntime/8372c86e7f15ed0d8d47e1e0afc115c30db39252/ThirdPartyNotices.txt",
+    "note": "Supplementary upstream source notices; the pinned prebuilt WASM distribution did not include license files. This source snapshot is not claimed to be the build commit.",
+    "bytes": 299762,
+    "sha256": "cc63920441c5681cfb1663caf1de1858349b517fc1bed9ca669a85bc526cd13e"
+  }
+}
