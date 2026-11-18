@@ -2717,6 +2717,237 @@ class R24PFStageTinyFixtureTests(unittest.TestCase):
         self.assertFalse(list(self.root.glob('.r24-paraformer-*')))
 
 
+
+class R24ParaformerRCTests(unittest.TestCase):
+    """Temporary device-check RC route: own ZIP pin, version and route; official route untouched."""
+
+    def setUp(self):
+        self.model_pins = {name: (len(data), gate.sha256(data)) for name, data in {
+            'sherpa-onnx-asr.js': b'api', 'sherpa-onnx-wasm-main-vad-asr.js': b'loader',
+            'sherpa-onnx-wasm-main-vad-asr.wasm': b'\x00asm', 'sherpa-onnx-wasm-main-vad-asr.data': b'data',
+        }.items()}
+        self.base_resources = {
+            'index.html': b'<!doctype html><title>RC fixture</title>',
+            'app.js': b'const rc = "auto device check";',
+            'vendor/paraformer/manifest.json': b'{"fixed-model-manifest":true}',
+        }
+        self.constants = mock.patch.multiple(
+            gate,
+            R24_PF_MODEL_FILES=self.model_pins,
+            R24_PF_FRONTEND_FILES=frozenset(self.base_resources) | {'static-manifest.json'},
+            R24_PF_MODEL_MANIFEST_SHA=gate.sha256(self.base_resources['vendor/paraformer/manifest.json']),
+            R24_PF_VERSION='official-fixture-v1',
+            R24_PF_RC_VERSION='rc-fixture-v1',
+        )
+        self.constants.start()
+        self.addCleanup(self.constants.stop)
+        self.before = ('name: fixture\n' + gate.r24_pf_stage_step() + gate.LAB_ANCHOR + 'tail: unchanged\n')
+        pin = mock.patch.object(gate, 'R24_PF_RC_BASE_WORKFLOW_SHA', gate.sha256(self.before.encode()))
+        pin.start()
+        self.addCleanup(pin.stop)
+        self.after = self.before.replace(gate.LAB_ANCHOR, gate.r24_pf_rc_stage_step() + gate.LAB_ANCHOR, 1)
+
+    def zipped(self, version):
+        resources = dict(self.base_resources)
+        coverage = {name: gate.sha256(data) for name, data in resources.items()}
+        coverage.update({'vendor/paraformer/' + name: pin for name, (_, pin) in self.model_pins.items()})
+        resources['static-manifest.json'] = json.dumps({'version': version, 'files': coverage}).encode()
+        out = io.BytesIO()
+        with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in resources.items():
+                archive.writestr(name, data)
+        return out.getvalue()
+
+    def test_rc_frontend_accepts_only_its_own_pin_and_version(self):
+        raw = self.zipped('rc-fixture-v1')
+        with mock.patch.object(gate, 'R24_PF_RC_SITE_SHA', gate.sha256(raw)):
+            self.assertEqual(set(gate.r24_pf_rc_frontend(raw)), set(self.base_resources) | {'static-manifest.json'})
+        with mock.patch.object(gate, 'R24_PF_RC_SITE_SHA', '0' * 64):
+            with self.assertRaisesRegex(gate.GateFailure, 'ZIP hash'):
+                gate.r24_pf_rc_frontend(raw)
+
+    def test_rc_and_official_versions_cannot_be_swapped(self):
+        official = self.zipped('official-fixture-v1')
+        with mock.patch.object(gate, 'R24_PF_RC_SITE_SHA', gate.sha256(official)):
+            with self.assertRaisesRegex(gate.GateFailure, 'version'):
+                gate.r24_pf_rc_frontend(official)
+        rc = self.zipped('rc-fixture-v1')
+        with mock.patch.object(gate, 'R24_PF_SITE_SHA', gate.sha256(rc)):
+            with self.assertRaisesRegex(gate.GateFailure, 'version'):
+                gate.r24_pf_frontend(rc)
+
+    def test_rc_stage_step_is_distinct_and_pinned_to_rc_inputs(self):
+        step = gate.r24_pf_rc_stage_step()
+        self.assertNotEqual(step, gate.r24_pf_stage_step())
+        self.assertIn('--stage-r24-paraformer-rc _site ' + gate.R24_PF_RC_ARCHIVE, step)
+        self.assertIn(gate.R24_PF_MODEL_URL, step)
+        self.assertNotIn(gate.r24_pf_stage_step(), step)
+
+    def test_rc_workflow_accepts_exact_addition_and_exact_rollback(self):
+        gate.verify_r24_pf_rc_release_workflow(self.before, self.after)
+        gate.verify_r24_pf_rc_rollback_workflow(self.after, self.before)
+
+    def test_rc_workflow_rejects_unpinned_base_wrong_place_and_extra_edits(self):
+        with mock.patch.object(gate, 'R24_PF_RC_BASE_WORKFLOW_SHA', '0' * 64):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact protected Pages workflow'):
+                gate.verify_r24_pf_rc_release_workflow(self.before, self.after)
+        cases = (
+            self.before.replace(gate.LAB_ANCHOR, gate.LAB_ANCHOR + gate.r24_pf_rc_stage_step(), 1),
+            self.after.replace('tail: unchanged', 'tail: changed'),
+            self.after.replace(gate.r24_pf_stage_step(), '', 1),
+            self.before.replace(gate.LAB_ANCHOR, gate.r24_pf_stage_step() + gate.LAB_ANCHOR, 1),
+        )
+        for after in cases:
+            with self.subTest(after=after[:60]):
+                with self.assertRaisesRegex(gate.GateFailure, 'add only its stage'):
+                    gate.verify_r24_pf_rc_release_workflow(self.before, after)
+        with self.assertRaisesRegex(gate.GateFailure, 'exact protected Pages workflow'):
+            gate.verify_r24_pf_rc_rollback_workflow(self.after, self.after.replace('tail: unchanged', 'x'))
+
+    def pr_output(self, changed, flags):
+        def output(command, **options):
+            if command[:2] == ['git', 'diff']:
+                return '\n'.join(changed) + '\n'
+            if command[:2] == ['git', 'ls-tree']:
+                return flags[command[3]]
+            self.assertEqual(command[:2], ['git', 'show'])
+            return command[2].encode()
+        return output
+
+    def test_verify_pr_rc_release_uses_rc_checks_on_head_archive(self):
+        base, head = 'a' * 40, 'b' * 40
+        output = self.pr_output([gate.R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'],
+                                {base: '', head: gate.R24_PF_RC_ARCHIVE + '\n'})
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \
+                mock.patch.object(gate, 'verify_r24_pf_rc_release_workflow') as workflow, \
+                mock.patch.object(gate, 'r24_pf_rc_frontend') as frontend, \
+                mock.patch.object(gate, 'verify_r24_pf_release_workflow') as official, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gate.verify_pr(base, head), 0)
+        workflow.assert_called_once_with(base + ':.github/workflows/pages.yml', head + ':.github/workflows/pages.yml')
+        frontend.assert_called_once_with((head + ':' + gate.R24_PF_RC_ARCHIVE).encode())
+        official.assert_not_called()
+
+    def test_verify_pr_rc_rollback_checks_removed_base_archive(self):
+        base, head = 'a' * 40, 'b' * 40
+        output = self.pr_output([gate.R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'],
+                                {base: gate.R24_PF_RC_ARCHIVE + '\n', head: ''})
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \
+                mock.patch.object(gate, 'verify_r24_pf_rc_rollback_workflow') as workflow, \
+                mock.patch.object(gate, 'r24_pf_rc_frontend') as frontend, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gate.verify_pr(base, head), 0)
+        workflow.assert_called_once_with(base + ':.github/workflows/pages.yml', head + ':.github/workflows/pages.yml')
+        frontend.assert_called_once_with((base + ':' + gate.R24_PF_RC_ARCHIVE).encode())
+
+    def test_verify_pr_rc_rejects_in_place_update_and_mixed_paths(self):
+        base, head = 'a' * 40, 'b' * 40
+        both = self.pr_output([gate.R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'],
+                              {base: gate.R24_PF_RC_ARCHIVE + '\n', head: gate.R24_PF_RC_ARCHIVE + '\n'})
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=both):
+            with self.assertRaisesRegex(gate.GateFailure, 'Paraformer RC accepts only'):
+                gate.verify_pr(base, head)
+        for extra in ('release-ci/release_guard.py', gate.R24_PF_ARCHIVE, 'experiments/r24/x.js'):
+            mixed = self.pr_output([gate.R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml', extra], {})
+            with self.subTest(extra=extra), mock.patch.object(gate.subprocess, 'check_output', side_effect=mixed):
+                with self.assertRaisesRegex(gate.GateFailure, 'Unexpected PR paths'):
+                    gate.verify_pr(base, head)
+
+    def test_same_route_archive_updates_ignore_both_paraformer_stages(self):
+        base, head = 'a' * 40, 'b' * 40
+        plain = 'name: older stages\n' + gate.LAB_ANCHOR + 'tail\n'
+        with_both = plain.replace(gate.LAB_ANCHOR, gate.r24_pf_stage_step() + gate.r24_pf_rc_stage_step() + gate.LAB_ANCHOR, 1)
+        for archive, verifier in ((gate.R25_ARCHIVE, 'verify_r25_archive_update'), (gate.R24_ARCHIVE, 'verify_r24_archive_update')):
+            def output(command, archive=archive, **options):
+                if command[:2] == ['git', 'diff']:
+                    return archive + '\n'
+                if command[2] == base + ':.github/workflows/pages.yml':
+                    return with_both.encode()
+                return command[2].encode()
+            with self.subTest(archive=archive), mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \
+                    mock.patch.object(gate, verifier) as verify, contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(gate.verify_pr(base, head), 0)
+                self.assertEqual(verify.call_args.args[0], plain)
+
+
+class R24ParaformerRCStageTests(unittest.TestCase):
+    make_archive = R24PFStageTinyFixtureTests.make_archive
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='r24-pf-rc-stage-test-')
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.site = self.root / 'site'
+        self.old_files = {
+            'index.html': b'immutable historical root',
+            gate.R24_PF_DEST + '/app.js': b'official Paraformer route',
+            gate.R24_PF_DEST + '/vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.data': b'official model',
+        }
+        for name, content in self.old_files.items():
+            path = self.site / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        self.app = self.root / 'rc-frontend.zip'
+        self.app.write_bytes(b'rc frontend bytes')
+        self.resources = {'index.html': b'<title>RC</title>', 'app.js': b'rc app',
+                          'vendor/paraformer/NOTICE.md': b'license evidence'}
+        self.model_bytes = {
+            'sherpa-onnx-asr.js': b'api', 'sherpa-onnx-wasm-main-vad-asr.js': b'loader',
+            'sherpa-onnx-wasm-main-vad-asr.wasm': b'\0asm', 'sherpa-onnx-wasm-main-vad-asr.data': b'payload',
+        }
+        pins = {name: (len(data), hashlib.sha256(data).hexdigest()) for name, data in self.model_bytes.items()}
+        for patcher in (mock.patch.object(gate, 'R24_PF_MODEL_FILES', pins),
+                        mock.patch.object(gate, 'r24_pf_rc_frontend', return_value=self.resources),
+                        mock.patch.object(gate, 'r24_pf_frontend', side_effect=AssertionError('official check must not run'))):
+            self.mocked = patcher.start()
+            self.addCleanup(patcher.stop)
+        self.archive = self.make_archive()
+
+    def stage(self):
+        raw = self.archive.read_bytes()
+        with mock.patch.multiple(gate, R24_PF_MODEL_ARCHIVE_BYTES=len(raw),
+                                 R24_PF_MODEL_ARCHIVE_SHA=hashlib.sha256(raw).hexdigest()), \
+                contextlib.redirect_stdout(io.StringIO()):
+            return gate.stage_r24_pf_rc(self.site, self.app, self.archive)
+
+    def test_rc_stage_adds_only_rc_route_and_keeps_official_route(self):
+        before = gate.r25_tree_hashes(self.site)
+        result = self.stage()
+        target = self.site / gate.R24_PF_RC_DEST
+        actual = {p.relative_to(target).as_posix(): p.read_bytes() for p in target.rglob('*') if p.is_file()}
+        expected = dict(self.resources)
+        expected.update({'vendor/paraformer/' + n: d for n, d in self.model_bytes.items()})
+        self.assertEqual(actual, expected)
+        self.assertEqual(result['old_assets_unchanged'], len(before))
+        for name, content in self.old_files.items():
+            self.assertEqual((self.site / name).read_bytes(), content, name)
+        gate.r24_pf_rc_frontend.assert_called_once_with(b'rc frontend bytes')
+
+    def test_rc_stage_refuses_existing_rc_route(self):
+        (self.site / gate.R24_PF_RC_DEST).mkdir()
+        with self.assertRaisesRegex(gate.GateFailure, 'new route'):
+            self.stage()
+        self.assertEqual(list((self.site / gate.R24_PF_RC_DEST).iterdir()), [])
+
+
+class R24ParaformerRCRepositoryStateTests(unittest.TestCase):
+    """The checked-in RC archive and Pages workflow must agree with the RC pins."""
+
+    def test_repository_rc_archive_and_workflow_are_consistent(self):
+        repo = HERE.parent
+        workflow = (repo / '.github/workflows/pages.yml').read_text(encoding='utf-8')
+        archive = repo / gate.R24_PF_RC_ARCHIVE
+        step = gate.r24_pf_rc_stage_step()
+        if archive.exists():
+            self.assertEqual(workflow.count(step), 1)
+            base = workflow.replace(step, '', 1)
+            gate.verify_r24_pf_rc_release_workflow(base, workflow)
+            resources = gate.r24_pf_rc_frontend(archive.read_bytes())
+            self.assertEqual(set(resources), gate.R24_PF_FRONTEND_FILES)
+        else:
+            self.assertNotIn(step, workflow)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
