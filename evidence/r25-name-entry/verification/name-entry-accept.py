@@ -7,7 +7,7 @@ static product files at the exact existing Pages path; all cloud calls are real.
 from pathlib import Path
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
-import argparse, hashlib, json, os, uuid
+import argparse, hashlib, json, os, subprocess, uuid
 
 SITE = Path('/workspace/tcl-r25-name-entry/experiments/r25/tcl-v352-asr-r25-qa')
 URL = 'https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r25-qa/'
@@ -28,6 +28,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--execute', action='store_true')
     parser.add_argument('--public', action='store_true')
+    parser.add_argument('--recover-test-device', action='store_true')
     parser.add_argument('--private-dir')
     args = parser.parse_args()
     if not args.execute:
@@ -185,6 +186,29 @@ def main():
                     # An unverified fresh context must never acquire a local device key for the known account.
                     fresh_row = fresh.evaluate('''async env=>{const dbName='r25-name-identity:'+encodeURIComponent(env);if(!(await indexedDB.databases()).some(d=>d.name===dbName))return {deviceRows:0};const db=await new Promise(resolve=>{const req=indexedDB.open(dbName);req.onsuccess=()=>resolve(req.result);});try{return await new Promise(resolve=>{const req=db.transaction('operations','readonly').objectStore('operations').getAll();req.onsuccess=()=>resolve({deviceRows:req.result.filter(r=>r.deviceKey).length});});}finally{db.close();}}''', ENV)
                     check(fresh_actor + '_has_no_device_credential', fresh_row['deviceRows'] == 0)
+                if args.recover_test_device:
+                    # The helper only accepts the two exact synthetic fixture identities.
+                    helper = Path(__file__).with_name('name-entry-fixture.cjs')
+                    outcome = subprocess.run(['node', str(helper), '--rotate-anchor', str(directory)], capture_output=True, text=True, timeout=45)
+                    check('management_recovers_exact_synthetic_uid', outcome.returncode == 0 and 'SYNTHETIC_ANCHOR_DEVICE_CODE_READY' in outcome.stdout)
+                    account = next(a for a in fixture['accounts'] if a['alias'] == 'anchor')
+                    original = account['uid']
+                    recovered = page_for(browser, 'anchor_recovered', account)
+                    recovered.locator('#cloudLegacyAccountDetails > summary').click()
+                    recovered.locator('#cloudDeviceCodeDetails > summary').click()
+                    code_file = directory / 'anchor-device-code.txt'
+                    device_code = code_file.read_text().strip()
+                    recovered.locator('#cloudDeviceCode').fill(device_code)
+                    recovered.locator('#cloudBindDevice').click()
+                    dashboard(recovered, account, 'anchor_device_code')
+                    row = retain_local_account(recovered, account)
+                    check('device_code_preserves_exact_uid_and_role', row and row['uid'] == original and row['role'] == 'anchor')
+                    check('device_code_uses_no_registration', report['identityActions']['anchor_recovered']['register'] == 0)
+                    recovered.locator('#cloudSignOut').click()
+                    recovered.locator('#cloudNameEntryForm').wait_for(timeout=60000)
+                    enter(recovered, account, 'operator')
+                    dashboard(recovered, account, 'anchor_recovered_name_reentry')
+                    check('device_code_reentry_preserves_uid', retain_local_account(recovered, account)['uid'] == original)
                 for actor, name, response in static_responses:
                     digest = hashlib.sha256(response.body()).hexdigest()
                     report['assetResponses'].append({'actor': actor, 'asset': name, 'status': response.status, 'sha256': digest})
