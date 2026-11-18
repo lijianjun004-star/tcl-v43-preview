@@ -671,3 +671,12 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 线上 GET 核对 35/35 新资源和 52/52 旧资源，包括完整的 Paraformer-small 权重和 WASM。模型由固定的官方 sherpa-onnx v1.12.20 包构建，包 SHA-256 `be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548`。实际转写在浏览器中进行，首次准备约 94 MB。
 - Chromium 正式 HTTPS 33/33，覆盖姓名进入、权限、实际模型加载和普通话原生录音转写、回放及刷新恢复。使用公开 WAV 和浏览器虚拟设备。完整暂存版本地三题 13/13。同源双路径数据隔离 27/27。实体手机和真实口播尚待验证。
 - 回滚走独立 PR，仅去除 PR #151 新增的 Pages 步骤和前端 ZIP。保持原 R24、R25 以及浏览器数据路径。小型 ONNX 转换的单独许可字段仍未找到，确切模型来源及组件许可保存在随包 NOTICE 和 license-sources。
+
+## R24 Paraformer 正式入口公网复验（2026-11-18）
+
+任务 `TCL-R24-PARAFORMER-RECHECK-20261118`。用户要求复验正式入口；Claude Code 云端会话执行，只读复验，无产品/发布/工作流变更，外部模型请求 0。本环境无《00-先读我.md》离线包，离线包流程 NOT RUN。
+
+- 公网资源：35/35 HTTP 200，字节数与 SHA256 全部等于 main `experiments/r24-paraformer-release/site-only.zip`（`7d8bcb0c…`）解包及 release_guard 固定的 4 个 sherpa-onnx 模型文件哈希（含 82.5 MB `.data`、11.5 MB `.wasm`）。
+- Chromium（390×844 移动模拟，虚拟摄像头 + 公开 HF `sherpa-onnx-paraformer-zh-small-2024-03-09/test_wavs/0.wav` 循环作麦克风）：姓名进入→准备 Paraformer 就绪→检测设备→开播自动录音→3 题切题→结束复盘全部通过；3 题均由 Paraformer-small 写入答案（“对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢…”，因音源循环而重复）。刷新后同名进入出现“恢复本场复盘”，恢复后 3 题文字保留、3 段单题音频（12.0/10.5/11.4 s）及整场录像 readyState=4 可播放。pageerror 0，外部域请求 0；IndexedDB 仅 `tcl-specialty-r24-paraformer-v1`，localStorage 空。备用 Vosk `live-practice-room/voice/vosk.js` HTTP 200。
+- 观察（非阻塞）：进入准备页不会自动检测设备，界面却显示“正在检查摄像头和麦克风…/准备中…”，需手动点“检测摄像头与麦克风”才能开播；旧 R24 入口同样表现，属既有交互问题非本次回归。复盘与回放时控制台有 blob URL `ERR_FILE_NOT_FOUND/ABORTED`（已撤销的旧 blob），未影响播放。
+- NOT RUN：实体 iPhone/Android/微信内置浏览器、大陆网络、真人口播与 TCL 术语准确率、Whisper Tiny/Base 及 Vosk 实际回退转写。
