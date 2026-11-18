@@ -661,3 +661,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 源码实现 `74187916b067d238cb2437fc57376fd3bc85b9cb`。本地 Node 73 项，Chromium UI 13+7+7 项和实际 IndexedDB 3 项，发布门禁 172 项通过。候选使用实际 CloudBase 完成 39 项，覆盖管理员设备码恢复同一 UID；发行后的真实公开 UI 31 项通过。候选在正式域名仅替换本地静态文件，公开 UI 全部加载公网实际文件。两次验收均无页面异常或模型请求。四个合成账号已逐一查回为停用，未删除数据。原 14 表 19 行以及原 SQL 函数、权限复核通过。未运行原正式账号密码迁移、物理手机、大陆网络或本轮无关的录制、作业和媒体测试。
 - CI PR142 `0292791581d09491e61f1981b18cf5b678ad1c2f` 通过 `44248427525` 后合并为 `b2d5218528c8555d74a48b2140ab24c8d8ee84e8`。发行 PR143 `b5b1dbd29c590549c04114809f93b05ac3367319` 通过 `44252984028` 后合并为 `a27684948d69dd389d5200bdfe11a937f3327982`，仅替换 `experiments/r25-release/site-only.zip.b64`。发行 B64 SHA256 `d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a`。Pages `44253084908` 成功，公开 246 资源首轮 HTTP 200/哈希全对，零补读，217 个既有资源受保护。[发行 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/143) · [Pages 构建](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44253084908)
 - 相邻回退为已审定 `r25-registration-recovery-20261117` 归档。回退前核查本次后建立的姓名入口账号及登录恢复方案。验收证据冻结在 `62749a8d402b6e60c51ac90f41d45d6a5e81ba68` 的 `evidence/r25-name-entry/deployment/`。
+
+## R24 姓名进入冻结版复验（2026-11-18）
+
+任务 `TCL-R24-FROZEN-RECHECK-20261118`。用户指定 `r24-review-stability-20261116` 为固定基线，按原 UI 及主播／运营角色选择后仅填姓名的方式进入本机练播。Codex 实测及内部复核，外部 Gemini／Claude 请求 0。保持原 R24 入口，任何正式发布须经用户确认。
+
+- 冻结源码 `97d343d0af910506931385b59bc547f217887d60`。原发行 PR #121 合并 `f6ee029dd2b23265a5504847ab4bcdce6ce56347`，Pages `43951625263` 成功。本次核验 main `b6e2ec8736bbb48d995202b9b8567902326a915d`，Pages `44253745220` 成功。原安装 ZIP SHA-256 `8c569a3f9b2adee09cc6ca668b121ab2390321eb76ad5e12c011acc7b3778b1a`。36 个交接清单条目通过，冻结 22 文件与现网逐字节相同，独立完整公网 246/246 首轮 HTTP 200 且哈希匹配，无补读。R24 已是固定基线，无需重新部署。[R24 固定入口](https://lijianjun004-star.github.io/tcl-v43-preview/tcl-v352-asr-r24-qa/) · [Pages 记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44253745220)
+- Chromium 姓名进入、三题练播、真实 MediaRecorder 和 IndexedDB（虚拟设备）、模拟 ASR、人工编辑、结束复盘与刷新恢复通过。刷新前后逐题录音及整场录像都实际解码播放。历史门禁 92 项及窄屏 90 项通过。真实 Base、Tiny 在一段公开普通话录音均完成推理，单样本字符错误分别为 3/22 与 11/22。实体手机、物理麦克风／摄像头、大陆网络及 TCL 讲解词准确率未验收。独立题库复跑保留一次 HTTP 304 无响应体的附加哈希断言失败，31 项业务检查通过。[完整复验记录](evidence/r24-frozen-recheck-20261118/README.md)
+- 草稿只记录复验。产品、上线状态、R25、CloudBase 及用户历史数据无变更。原版回滚 ZIP 下载回读与原始安装包相同。[原版回滚 ZIP](https://drive.google.com/file/d/1PTeS3N7K29v0iZ9gmiMywN_c3ThFqomo/view?usp=drivesdk)
