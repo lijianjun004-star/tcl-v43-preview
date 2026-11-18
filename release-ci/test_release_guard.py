@@ -2384,6 +2384,22 @@ class R24ParaformerFrontendAndWorkflowTests(unittest.TestCase):
             gate.verify_r24_pf_archive_update(before, after)
             gate.verify_r24_pf_archive_update(after, before)
 
+    def test_formal_paraformer_pages3_is_adjacent_only_to_pages2(self):
+        before, middle, pins = self.formal_update_pair()
+        with pins:
+            files = gate.r24_pf_frontend(middle)
+            files['app.js'] += b'\n// keep text mode when switching board'
+            files = self.with_manifest(files)
+            manifest = json.loads(files['static-manifest.json'])
+            manifest['version'] = gate.R24_PF_PAGES3_VERSION
+            files['static-manifest.json'] = json.dumps(manifest).encode()
+            after = self.zipped(files)
+            with mock.patch.object(gate, 'R24_PF_PAGES3_SITE_SHA', gate.sha256(after)):
+                gate.verify_r24_pf_archive_update(middle, after)
+                gate.verify_r24_pf_archive_update(after, middle)
+                with self.assertRaisesRegex(gate.GateFailure, 'pinned forward or rollback'):
+                    gate.verify_r24_pf_archive_update(before, after)
+
     def test_formal_paraformer_rejects_an_unpinned_or_identical_archive(self):
         before, after, pins = self.formal_update_pair()
         with pins:

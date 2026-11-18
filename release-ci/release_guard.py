@@ -1669,6 +1669,8 @@ R24_PF_VERSION = 'r24-paraformer-small-20261118-pages1'
 R24_PF_SITE_SHA = '7d8bcb0c67baba530982c40b22e09cef1f71bf0ed8e9b147d59d7e0f646f2f20'
 R24_PF_PAGES2_VERSION = 'r24-paraformer-small-20261118-pages2'
 R24_PF_PAGES2_SITE_SHA = '8c87b25af1b680e603e1ee72c914ed69de2b5baba385e82ff41e5e2be11aabbd'
+R24_PF_PAGES3_VERSION = 'r24-paraformer-small-20261118-pages3'
+R24_PF_PAGES3_SITE_SHA = 'f145335dbb737c0048164e9ca873050012a28530b9cff0322f761e9849cf2781'
 R24_PF_BASE_WORKFLOW_SHA = '9b43396eedbe3a833e18c5c635085e265741c33b97e3ef4d534c68a1082f4415'
 R24_PF_MODEL_PREFIX = 'sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small/'
 R24_PF_MODEL_URL = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/' + R24_PF_MODEL_PREFIX.rstrip('/') + '.tar.bz2'
@@ -1754,8 +1756,12 @@ def r24_pf_frontend(raw, site_sha=None, version=None):
     if len(raw) > 1_500_000:
         raise GateFailure('Paraformer frontend ZIP hash or size mismatch')
     observed_sha = sha256(raw)
-    if site_sha is None and version is None and observed_sha == R24_PF_PAGES2_SITE_SHA:
-        site_sha, version = R24_PF_PAGES2_SITE_SHA, R24_PF_PAGES2_VERSION
+    later_versions = {
+        R24_PF_PAGES2_SITE_SHA: R24_PF_PAGES2_VERSION,
+        R24_PF_PAGES3_SITE_SHA: R24_PF_PAGES3_VERSION,
+    }
+    if site_sha is None and version is None and observed_sha in later_versions:
+        site_sha, version = observed_sha, later_versions[observed_sha]
     site_sha = R24_PF_SITE_SHA if site_sha is None else site_sha
     version = R24_PF_VERSION if version is None else version
     if observed_sha != site_sha:
@@ -1779,8 +1785,9 @@ def r24_pf_rc_frontend(raw):
 
 def verify_r24_pf_archive_update(before, after):
     pair = (sha256(before), sha256(after))
-    release = (R24_PF_SITE_SHA, R24_PF_PAGES2_SITE_SHA)
-    if pair not in (release, release[::-1]) or pair[0] == pair[1]:
+    adjacent = ((R24_PF_SITE_SHA, R24_PF_PAGES2_SITE_SHA),
+                (R24_PF_PAGES2_SITE_SHA, R24_PF_PAGES3_SITE_SHA))
+    if pair[0] == pair[1] or not any(pair in (release, release[::-1]) for release in adjacent):
         raise GateFailure('Paraformer formal update requires the pinned forward or rollback archives')
     old_files = r24_pf_frontend(before)
     new_files = r24_pf_frontend(after)
