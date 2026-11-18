@@ -671,3 +671,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 线上 GET 核对 35/35 新资源和 52/52 旧资源，包括完整的 Paraformer-small 权重和 WASM。模型由固定的官方 sherpa-onnx v1.12.20 包构建，包 SHA-256 `be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548`。实际转写在浏览器中进行，首次准备约 94 MB。
 - Chromium 正式 HTTPS 33/33，覆盖姓名进入、权限、实际模型加载和普通话原生录音转写、回放及刷新恢复。使用公开 WAV 和浏览器虚拟设备。完整暂存版本地三题 13/13。同源双路径数据隔离 27/27。实体手机和真实口播尚待验证。
 - 回滚走独立 PR，仅去除 PR #151 新增的 Pages 步骤和前端 ZIP。保持原 R24、R25 以及浏览器数据路径。小型 ONNX 转换的单独许可字段仍未找到，确切模型来源及组件许可保存在随包 NOTICE 和 license-sources。
+
+## R24 Paraformer 正式入口设备与术语修复（2026-11-18）
+
+用户在收到 RC1 复验结论后授权部署。正式入口升级至 `r24-paraformer-small-20261118-pages3`。原网址、R24 界面和姓名进入沿用。[正式入口](https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer/)
+
+- 点「检查设备，准备练播」后开始检测。检查等待期间防止重检连点，取消后丢弃旧授权回复、释放迟到流并阻止后续申请。从文字练播通过目录更换板块时保留文字模式。明确点重新检测可以重新申请硬件。
+- 保留原先的术语识别和数字守卫，口述数字有明确转换时再按已保存词表匹配，覆盖逐题、补转写、系统识别及整场路径。原文和人工改答保护沿用。同网址升级使用原正式数据库、频道和偏好键，历史记录和缓存继续可读。
+- RC1 原候选经 PR #154 在独立入口发布。正式部署先经门禁 PR #155 和发布 PR #156，再经门禁 PR #157 及发布 PR #158 补齐目录与迟到相机回退条件。最终合并 `6b4a2825dc8e64a161bcee5c5bbcb95509bd9ee8`，正式前端归档 SHA-256 `dec534aac5467b07fba730e422f14200d26e3293fd1f964bf1c4ff88d8f33fa5`，app SHA-256 `37eb6128081571861c712c9c1e5d07c75fb498d08091e8f2ee94a48c00ef19ec`。[最终发布 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/158) · [Pages 部署](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44368973680)
+- 整站 316 项资源中仅正式入口的 app.js 与 static-manifest.json 改变，模型、旧 R24/R25 与 RC1 保留。最后门禁 215 项通过。同 URL 保存与恢复 19/19、最终受控 Chromium 权限 7/7、术语定向 73/73、完整暂存原生模拟设备三题 13/13。正式入口已回读精确 pages3 版本清单。实体手机仍待验收。
+- 回滚仅通过独立 PR 恢复已部署的相邻 pages2，归档 SHA-256 `8c87b25af1b680e603e1ee72c914ed69de2b5baba385e82ff41e5e2be11aabbd`。按固定规则可从 pages2 再回到 pages1。回滚前后沿用既有存储键。
