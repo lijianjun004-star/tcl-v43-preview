@@ -7,7 +7,8 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const asrGlossary={getTerms:()=>['TCL','HDMI','T7M Pro']};
  const {toSimplified}=await import(path.join(root,'asr-normalize.mjs'));
  const cases=[
-  ['這款電視支援語音辨識','这款电视支援语音辨识'],
+  ['這款電視支援語音辨識','这款电视支持语音辨识'],
+  ['記憶體 4GB、硬碟 256GB，HDMI 2.1','内存 4GB、硬盘 256GB，HDMI 2.1'],
   ['我們今天介紹這台電視的優惠價格','我们今天介绍这台电视的优惠价格'],
   ['頭髮乾燥，乾坤與皇后','头发干燥，乾坤与皇后'],
   ['T7M Pro HDMI 2.1 144Hz 65英寸 2500元','T7M Pro HDMI 2.1 144Hz 65英寸 2500元'],
