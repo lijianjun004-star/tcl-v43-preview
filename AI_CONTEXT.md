@@ -696,3 +696,4 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 公网复验：RC 35/35 与正式 35/35 HTTP 200/哈希一致（正式未变）；旧 R24 app `63519c50…`、R25 app `7c83ce66…` 不变。Chromium 公网 RC：设备检测 12/12、再练一次自动就绪、同源隔离 PASS、真实 Paraformer 三题转写→复盘→刷新恢复→回放 PASS，pageerror 0、外部请求 0。首次公网模型下载可超过 120 秒。
 - NOT RUN：实体手机/微信/大陆网络/真人口播。Gemini P3-1（术语大小写顺序）未包含在 RC。
 - 撤销：独立 PR 删除 `experiments/r24-paraformer-rc-release/site-only.zip` 与 "Stage R2.4 Paraformer device-check candidate" 步骤，门禁要求 `pages.yml` 回到 SHA256 `b14e77bf…`。RC 存在期间，正式 Paraformer 路由整体撤销需先撤 RC。
+- 复验交付包 `TCL-R24-Paraformer-RC1-DeviceCheck-Recheck-20261118.zip`：79,131,592 字节，48 项，SHA256 `e6cf1c5785387cadda39d17882f6ac2952e2f008bc99e53121369ec4ae23bb8d`；含公网取回并核对的 RC 35 文件、`serve.py`（显式 .mjs/.wasm MIME）、`00-先读我.md`、`01-复制给Gemini的复验任务.txt`、pages1 前端包+两补丁+`reproduce_rc.py`（31/31 复现 PASS）、证据摘要。包内 serve.py 本地实跑设备检测 12/12、再练一次 PASS。仅经会话文件直接交付，未上传 Drive 或仓库。
