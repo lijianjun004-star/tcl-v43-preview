@@ -661,3 +661,13 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 源码实现 `74187916b067d238cb2437fc57376fd3bc85b9cb`。本地 Node 73 项，Chromium UI 13+7+7 项和实际 IndexedDB 3 项，发布门禁 172 项通过。候选使用实际 CloudBase 完成 39 项，覆盖管理员设备码恢复同一 UID；发行后的真实公开 UI 31 项通过。候选在正式域名仅替换本地静态文件，公开 UI 全部加载公网实际文件。两次验收均无页面异常或模型请求。四个合成账号已逐一查回为停用，未删除数据。原 14 表 19 行以及原 SQL 函数、权限复核通过。未运行原正式账号密码迁移、物理手机、大陆网络或本轮无关的录制、作业和媒体测试。
 - CI PR142 `0292791581d09491e61f1981b18cf5b678ad1c2f` 通过 `44248427525` 后合并为 `b2d5218528c8555d74a48b2140ab24c8d8ee84e8`。发行 PR143 `b5b1dbd29c590549c04114809f93b05ac3367319` 通过 `44252984028` 后合并为 `a27684948d69dd389d5200bdfe11a937f3327982`，仅替换 `experiments/r25-release/site-only.zip.b64`。发行 B64 SHA256 `d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a`。Pages `44253084908` 成功，公开 246 资源首轮 HTTP 200/哈希全对，零补读，217 个既有资源受保护。[发行 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/143) · [Pages 构建](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44253084908)
 - 相邻回退为已审定 `r25-registration-recovery-20261117` 归档。回退前核查本次后建立的姓名入口账号及登录恢复方案。验收证据冻结在 `62749a8d402b6e60c51ac90f41d45d6a5e81ba68` 的 `evidence/r25-name-entry/deployment/`。
+
+## R24 Paraformer 正式 Pages 独立入口（2026-11-18）
+
+任务 `TCL-R24-PARAFORMER-PAGES-20261118`。用户确认将 Paraformer 修复版发布到 GitHub Pages。正式版本 `r24-paraformer-small-20261118-pages1`，在新增目录使用原 R24 界面和姓名进入。独立的浏览器数据库、通知频道、模型偏好和术语键保持旧 R24/R25 数据隔离。[正式试用入口](https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer/)
+
+- 以草稿 PR #149 的 `5b9ea0cc3dddac1024aa4ed7662fd5dbdcd206eb` 为 Fix1 源码，加入已测的存储隔离。改进包括参考要点搜索、缺具体型号的规格题审核、当前平台价格题、Paraformer 预加载和逐题补转写。HTML、CSS、题库原件和历史卡保持一致。
+- 门禁 PR #150 合并 `1bd856aac651211cc78e60bc562e90b3ea0d69d3`，本机门禁 199/199。正式发布 PR #151 合并 `e4d266462ba545aa1885886fbf03d6ee0690d41f`。部署仅新增独立阶段和前端 ZIP，原 246 项资源逐字节保留，新增 35 项。[发布 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/151) · [Pages 部署](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44323605833)
+- 线上 GET 核对 35/35 新资源和 52/52 旧资源，包括完整的 Paraformer-small 权重和 WASM。模型由固定的官方 sherpa-onnx v1.12.20 包构建，包 SHA-256 `be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548`。实际转写在浏览器中进行，首次准备约 94 MB。
+- Chromium 正式 HTTPS 33/33，覆盖姓名进入、权限、实际模型加载和普通话原生录音转写、回放及刷新恢复。使用公开 WAV 和浏览器虚拟设备。完整暂存版本地三题 13/13。同源双路径数据隔离 27/27。实体手机和真实口播尚待验证。
+- 回滚走独立 PR，仅去除 PR #151 新增的 Pages 步骤和前端 ZIP。保持原 R24、R25 以及浏览器数据路径。小型 ONNX 转换的单独许可字段仍未找到，确切模型来源及组件许可保存在随包 NOTICE 和 license-sources。
