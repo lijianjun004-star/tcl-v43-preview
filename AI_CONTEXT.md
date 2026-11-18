@@ -683,3 +683,9 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - 实现冻结16bd69e0fc09c0d754c33a5235edfa06c42172a8。完整部署、验收、失败归因和工具源码在fix/r25-registration-recovery-20261117的证据冻结8b7780cf1cc6bc4ec64b705824b27b4c83c84da8：evidence/r25-registration-recovery/deployment/README.md与JSON。先前Drive修复包26a2f347…是候选交付快照，其“未部署”文字保留为历史，不代表当前状态。CloudBase官方插件0.2.5/32技能和CLI3.9.3已接入国内站，MCP需新会话加载，本轮通过官方管理SDK/CLI执行。
 - NOT RUN：物理iPhone/Android、真实大陆网络、原正式账号密码实际登录、真麦克风/相机/ASR准确率、PostgreSQL多连接竞争调度。本轮合成admin验证真实admin角色权限，不冒充原管理员密码登录；390px视口不是物理手机。原语音/模型边界不变。
 - 回退仅独立PR恢复邻近已审定前端归档，并保留002/003与兼容identity handler及恢复入口能力；不得恢复001/旧handler、删直接预约/UID、清本机数据或覆盖其他站点。后续先读实时main与原环境，不重复索取同范围发布批准。
+
+## R25 姓名入口候选（2026-11-18，待真云验收）
+
+用户要求“只要姓名 不要密码了”。本轮实现主播和运营姓名入口及受信任浏览器免输入密码，后台仍用随机设备凭据和官方 Auth 保留原 UID、角色及业务权限。新浏览器已存在姓名需原账号验证或管理员核验身份后签发设备码，管理员保留原认证。新增设备码管理工具的停用/签发能力不面向公开 API，未修改线上账号。放行原有历史数据和私有附件访问仍以官方 session/业务角色为准。
+
+冻结 `r25-name-entry-20261118`，B64 `d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a`。Node 73、Chromium 13+7+7、发布门禁 172 项通过，完整更新回退保护原 217 个资源。CloudBase 管理会话过期，设备授权已向用户发出。未运行本轮真云测试或发布。线上仍是 `r25-registration-recovery-20261117`。具体版本/验收边界见 `evidence/r25-name-entry/README.md`。

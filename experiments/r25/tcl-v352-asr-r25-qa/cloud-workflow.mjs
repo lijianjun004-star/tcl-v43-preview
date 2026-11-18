@@ -42,7 +42,7 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
   const personIdentity=nameIdentity||createNameIdentityClient({config:config.nameIdentity||{},envId:config.envId});
   const activeWrites = new Map();let nativeAuthChain=Promise.resolve(),nativeMutationDepth=0,authSubscription;
   const mutateNativeAuth=task=>{const execute=async()=>{nativeMutationDepth++;try{return await task();}finally{nativeMutationDepth--;}};const run=nativeAuthChain.then(execute,execute);nativeAuthChain=run.then(()=>{},()=>{});return run;};
-  const state = { configured: isCloudConfigured(config), user: null, error: '', initialized: false, capabilities: { media: false } };
+  const state = { configured: isCloudConfigured(config), user: null, error: '', initialized: false, deviceCredential: false, capabilities: { media: false } };
   function snapshot() { return { ...state, user: user ? { ...user } : null }; }
   async function sdk() {
     if (!state.configured) fail('DISABLED', '当前为本机体验');
@@ -82,7 +82,8 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
   }
   async function setIdentity(next, currentSession, errorMessage = '') {
     const old = user?.uid, oldRole = user?.role, epoch = identityEpoch;
-    user = next; session = currentSession || null; state.user = next; state.error = errorMessage;if(!next)state.capabilities={media:false};
+    user = next; session = currentSession || null; state.user = next; state.error = errorMessage;
+    if (!next) { state.capabilities = { media: false }; state.deviceCredential = false; }
     if (old !== next?.uid || oldRole !== next?.role) {
       if (operationStore) await operationStore.close?.();
       operationStore = next ? operationStoreFactory({ envId: config.envId, uid: next.uid }) : null;
@@ -96,7 +97,7 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
       catch(error){if(next&&epoch===identityEpoch&&user?.uid===next.uid){++identityEpoch;await setIdentity(null,null,error.message||'姓名登录会话已改变，请重新登录');}throw error;}
     }
   }
-  async function acceptSession(epoch, expectedUid) {
+  async function acceptSession(epoch, expectedUid, deviceRole, rememberDevice) {
     const current = await readSession();
     if (epoch !== identityEpoch) fail('STALE_SESSION', '登录状态已改变');
     if (expectedUid && current?.uid !== expectedUid) fail('IDENTITY_MISMATCH', '姓名对应的登录身份尚未确认，请重新登录');
@@ -107,10 +108,21 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     if (!profile?.uid || !['anchor', 'operator', 'admin', 'pending'].includes(profile.role) || String(profile.uid) !== current.uid) {
       fail('IDENTITY_MISMATCH', '云端账号身份未验证，请退出后重新登录');
     }
+    if (deviceRole && profile.role !== deviceRole) fail('IDENTITY_MISMATCH', '设备绑定的账号身份已变更，请联系管理员核对');
+    const displayName = profile.displayName || profile.username || '已登录用户';
+    let deviceCredential = Boolean(deviceRole);
+    if (!deviceCredential && ['anchor', 'operator'].includes(profile.role) && personIdentity.isDeviceAccount) {
+      try { deviceCredential = await personIdentity.isDeviceAccount(displayName, current.uid); } catch { /* The authenticated SDK session can still be used. */ }
+    }
     if (epoch !== identityEpoch) fail('STALE_SESSION', '登录状态已改变');
     await verifyAcceptedSession(current.uid,epoch);
+    if (rememberDevice) {
+      await rememberDevice({ uid: current.uid, role: profile.role, displayName });
+      await verifyAcceptedSession(current.uid,epoch);
+    }
     state.capabilities={media:data.capabilities?.privateMedia===true};
-    await setIdentity({ ...profile, uid:String(profile.uid), displayName: profile.displayName || profile.username || '已登录用户' }, current);
+    state.deviceCredential = deviceCredential;
+    await setIdentity({ ...profile, uid:String(profile.uid), displayName }, current);
     await verifyAcceptedSession(current.uid,epoch);
     if(epoch!==identityEpoch||user?.uid!==current.uid)fail('STALE_SESSION','登录状态已改变，旧身份应用结果已忽略');
     return user;
@@ -140,6 +152,38 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
       if(resolved.uid&&(await readSession())?.uid!==resolved.uid)fail('IDENTITY_MISMATCH','姓名对应的登录身份尚未确认，请重新登录');
       return acceptSession(epoch,resolved.uid);
     });
+  }
+  async function authenticateDevice(loadCredential) {
+    const epoch = ++identityEpoch;
+    activeWrites.clear();
+    await setIdentity(null, null);
+    return mutateNativeAuth(async () => {
+      if (epoch !== identityEpoch) fail('STALE_SESSION', '进入请求已被新的账号操作替代');
+      const credential = await loadCredential();
+      if (epoch !== identityEpoch) fail('STALE_SESSION', '进入请求已被新的账号操作替代');
+      if (!credential.uid || !['anchor', 'operator'].includes(credential.role)) {
+        fail('IDENTITY_MISMATCH', '设备绑定的账号身份尚未确认');
+      }
+      await sdk();
+      if (epoch !== identityEpoch) fail('STALE_SESSION', '进入请求已被新的账号操作替代');
+      await sdkApp.__r25Auth.signIn(credential.username, credential.password);
+      const signedIn = await readSession();
+      try { return await acceptSession(epoch, credential.uid, credential.role, credential.remember); }
+      catch (error) {
+        // Failed verifications must not leave a reusable SDK session behind.
+        if (epoch === identityEpoch && signedIn?.uid && (await readSession())?.uid === signedIn.uid) {
+          try { await sdkApp.__r25Auth.signOut(); }
+          finally { await setIdentity(null, null); }
+        }
+        throw error;
+      }
+    });
+  }
+  function enterWithName({ name, role = 'anchor' } = {}) {
+    return authenticateDevice(() => personIdentity.enterWithName({ name, role }));
+  }
+  function bindDevice(code) {
+    return authenticateDevice(() => personIdentity.prepareDeviceBinding(code));
   }
   async function register({name,username,password,role='anchor'}={}) {
     if(!['anchor','operator'].includes(role))fail('INVALID_ROLE','请选择主播或运营注册');
@@ -176,6 +220,15 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     ++identityEpoch; activeWrites.clear();
     await setIdentity(null, null);
     if (sdkApp) await mutateNativeAuth(()=>sdkApp.__r25Auth.signOut());
+  }
+  function forgetDevice() {
+    const profile = user, epoch = identityEpoch;
+    if (!profile || !state.deviceCredential) fail('AUTH_REQUIRED', '此登录没有保存设备绑定');
+    return mutateNativeAuth(async () => {
+      await verifyNativeSession(profile.uid, epoch);
+      await personIdentity.forgetDevice(profile.displayName, profile.uid);
+      if (identityEpoch === epoch) state.deviceCredential = false;
+    });
   }
   async function verifyNativeSession(owner,epoch) {
     const actual=await readSession();
@@ -270,5 +323,5 @@ export function createCloudWorkflow({ config = {}, sdkFactory, operationStoreFac
     if (epoch !== identityEpoch) fail('STALE_SESSION', '账号已切换');
     return rows.filter(row => row.status === 'pending').map(copy);
   }
-  return { initialize, signIn, register, restoreRegistration: code => personIdentity.restoreRecovery(code), redeemInvitation, signOut, changePassword, call, listAll, durableWrite, pendingOperations, uploadMedia, downloadMedia, refreshIdentity, getState: snapshot, get user() { return user ? { ...user } : null; } };
+  return { initialize, signIn, enterWithName, bindDevice, register, restoreRegistration: code => personIdentity.restoreRecovery(code), redeemInvitation, signOut, forgetDevice, changePassword, call, listAll, durableWrite, pendingOperations, uploadMedia, downloadMedia, refreshIdentity, getState: snapshot, get user() { return user ? { ...user } : null; } };
 }

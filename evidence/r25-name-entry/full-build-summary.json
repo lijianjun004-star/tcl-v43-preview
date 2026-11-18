@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "baselineMain": "5573b9901181539aeeee5b6b67367cc86366a203",
+  "scope": "Actual complete frozen static stages and exact forward/reverse archive verification; no cloud or browser acceptance",
+  "update": {
+    "direction": "update",
+    "protected_assets": 217,
+    "total_assets": 246,
+    "changed": [
+      "tcl-v352-asr-r25-qa/app-config.json",
+      "tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "tcl-v352-asr-r25-qa/name-identity.mjs",
+      "tcl-v352-asr-r25-qa/static-manifest.json"
+    ]
+  },
+  "rollback": {
+    "direction": "rollback",
+    "protected_assets": 217,
+    "total_assets": 246,
+    "changed": [
+      "tcl-v352-asr-r25-qa/app-config.json",
+      "tcl-v352-asr-r25-qa/cloud-workflow.mjs",
+      "tcl-v352-asr-r25-qa/cloud-workspace.mjs",
+      "tcl-v352-asr-r25-qa/name-identity.mjs",
+      "tcl-v352-asr-r25-qa/static-manifest.json"
+    ]
+  },
+  "tree": {
+    "count": 246,
+    "protected": 217,
+    "sha256": "e684c3fb2499a23bd614265995277061fffb615b7c1d03ef93ff64578a2da242"
+  },
+  "archive": {
+    "b64": "d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a",
+    "zip": "41353b2031c058686c359a119427657cc4fd28dbb787bdf04eca3730e548a769"
+  }
+}

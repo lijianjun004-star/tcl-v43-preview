@@ -39,16 +39,17 @@ try:
                 window.workspace=createCloudWorkspace({workflow:wf,boards:[],onIdentityReady:async()=>identityReady++,onLogout:async()=>{},onStart:async()=>{}});
                 await workspace.mount(document.querySelector('#mount'));
             }''')
-            page.locator('summary', has_text='注册中断').click()
+            page.locator('#cloudLegacyAccountDetails > summary').click()
+            page.locator('#cloudRegistrationRecoveryDetails > summary').click()
             assert page.locator('#cloudRecoveryCode').get_attribute('type') == 'password'
             assert page.locator('#cloudRecoveryCode').get_attribute('autocomplete') == 'off'
             checks.append('recovery code input is masked and excludes autofill')
-            page.fill('#cloudRegisterPassword', 'Original123!')
             page.fill('#cloudRecoveryCode', 'SYNTHETIC-RECOVERY-CODE')
             page.click('#cloudRecoveryForm button')
             page.wait_for_function("document.querySelector('#cloudRegisterName').value==='原注册运营'")
             assert page.locator('#cloudRecoveryCode').input_value() == ''
             assert page.locator('#cloudRegisterRole').input_value() == 'operator'
+            assert page.locator('#cloudRegisterRole').is_disabled()
             assert page.locator('#cloudRegisterPassword').input_value() == ''
             assert page.evaluate("identityReady===0 && calls.length===1 && calls[0].action==='restore'")
             assert '首次设置的密码' in page.locator('[data-cloud-status]').inner_text()
@@ -60,6 +61,7 @@ try:
             assert page.locator('#cloudRecoveryCode').input_value() == ''
             assert page.locator('#cloudRegisterName').input_value() == '原注册运营'
             assert page.locator('#cloudRegisterRole').input_value() == 'operator'
+            assert page.locator('#cloudRegisterRole').is_disabled()
             assert page.evaluate("identityReady===0 && !calls.some(c=>c.action==='register'||c.action==='signIn')")
             checks.append('failed recovery stays a failure, preserves form identity and never registers or signs in')
             # Actual shared IndexedDB, separate pages, delayed old-tab success response.

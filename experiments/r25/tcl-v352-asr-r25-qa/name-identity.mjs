@@ -1,4 +1,5 @@
-// Names resolve to the same immutable native Auth UID. Passwords are never persisted here.
+// Names resolve to immutable native Auth UIDs. A device key is private to this
+// browser and produces a random native credential. User-entered passwords are never stored.
 export class NameIdentityError extends Error {
   constructor(code, message) { super(message); this.name = 'NameIdentityError'; this.code = code; }
 }
@@ -15,6 +16,8 @@ export function validateJoinPassword(password) {
 }
 const nativeUsername = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.@-]{0,63}$/.test(value);
 const hex = bytes => [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+const isDeviceKey = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+const verifyDevice = () => error('DEVICE_VERIFICATION_REQUIRED', '此姓名已有账号。请用原设备进入，或展开原账号验证。');
 
 function createRegistrationStore(envId) {
   let database;
@@ -58,7 +61,9 @@ function createRegistrationStore(envId) {
       request.onsuccess = () => {
         const current = request.result;
         // A late response in an old tab must never overwrite an imported recovery secret.
-        if (expected === null ? current === undefined : current?.operationId === expected.operationId && current?.operationSecret === expected.operationSecret) {
+        const sameAttempt = current && current.operationId === expected?.operationId &&
+          current.operationSecret === expected?.operationSecret && current.deviceKey === expected?.deviceKey;
+        if (expected === null ? current === undefined : sameAttempt) {
           store.put(value, key); saved = true;
         }
       };
@@ -96,10 +101,11 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(name.toLowerCase()));
     return `r25-name-join:${encodeURIComponent(envId || '')}:${hex(new Uint8Array(digest))}`;
   }
-  async function reservationFor(name, role) {
+  async function reservationFor(name, role, deviceEntry) {
     const key = await keyFor(name);
     try {
       const value = { name, role, operationId: crypto.randomUUID(), operationSecret: hex(crypto.getRandomValues(new Uint8Array(32))), createdAt: new Date().toISOString(), state: 'pending' };
+      if (deviceEntry) value.deviceKey = hex(crypto.getRandomValues(new Uint8Array(32)));
       const result = await registry.reserve(key, value);
       if (result.value?.name?.toLowerCase() !== name.toLowerCase() || !result.value.operationId || !/^[0-9a-f]{64}$/.test(result.value.operationSecret)) error('REGISTRATION_STORAGE', '本机加入重试信息无法确认，请联系管理员核对');
       return { key, ...result };
@@ -121,6 +127,66 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
   }
   async function saveReservation(key, value, expected) {
     if (!await registry.save(key, value, expected)) error('REGISTRATION_STORAGE_CHANGED', '本机恢复信息已在其他页面改变，请关闭旧页面后重试');
+  }
+  async function devicePassword(deviceKey) {
+    const bytes = new TextEncoder().encode(`TCL-R25-device-v1:${deviceKey}`);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return `Aa1!${hex(new Uint8Array(digest)).slice(0, 28)}`;
+  }
+  async function enterWithName({ name: inputName, role = 'anchor' }) {
+    const name = normalizePersonName(inputName);
+    const previous = await registry.get(await keyFor(name));
+    if (isDeviceKey(previous?.deviceKey) && previous.state === 'ready' && previous.uid && nativeUsername(previous.username)) {
+      return { username: previous.username, uid: previous.uid, role: previous.role, password: await devicePassword(previous.deviceKey) };
+    }
+    if (previous && !isDeviceKey(previous.deviceKey)) verifyDevice();
+    if (!previous) {
+      // An unused name can register. A known identity never receives a new credential.
+      try { await resolve(name); } catch (failure) {
+        if (failure.code === 'NOT_FOUND') return register({ name, role }, { deviceEntry: true });
+        if (failure.code === 'NAME_PENDING') verifyDevice();
+        throw failure;
+      }
+      verifyDevice();
+    }
+    return register({ name, role }, { deviceEntry: true });
+  }
+  async function isDeviceAccount(name, uid) {
+    const row = await registry.get(await keyFor(normalizePersonName(name)));
+    return row?.uid === uid && isDeviceKey(row.deviceKey);
+  }
+  async function forgetDevice(name, uid) {
+    const key = await keyFor(normalizePersonName(name));
+    const previous = await registry.get(key);
+    if (previous?.uid !== uid || !isDeviceKey(previous.deviceKey)) verifyDevice();
+    const next = { ...previous };
+    delete next.deviceKey;
+    await saveReservation(key, next, previous);
+  }
+  async function prepareDeviceBinding(code) {
+    let binding;
+    try {
+      const token = String(code || '').trim();
+      if (token.length > 4096 || !/^R25DEVICE1\.[A-Za-z0-9_-]+$/.test(token)) throw new Error();
+      const encoded = token.slice('R25DEVICE1.'.length).replace(/-/g, '+').replace(/_/g, '/');
+      binding = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(encoded), c => c.charCodeAt(0))));
+      if (Object.keys(binding).sort().join(',') !== 'deviceKey,envId,name,role,uid,username,version' ||
+          binding.version !== 1 || binding.envId !== envId || !['anchor', 'operator'].includes(binding.role) ||
+          typeof binding.name !== 'string' || normalizePersonName(binding.name) !== binding.name ||
+          !nativeUsername(binding.username) || typeof binding.uid !== 'string' || !/^[A-Za-z0-9_.:-]{1,128}$/.test(binding.uid) ||
+          !isDeviceKey(binding.deviceKey)) throw new Error();
+    } catch { error('INVALID_DEVICE_CODE', '设备码无效，请联系管理员核对'); }
+    const { username, uid, role, name, deviceKey } = binding;
+    const key = await keyFor(name), previous = await registry.get(key);
+    return {
+      username, uid, role, password: await devicePassword(deviceKey),
+      async remember(profile) {
+        if (profile.uid !== uid || profile.role !== role || normalizePersonName(profile.displayName) !== name) {
+          error('IDENTITY_MISMATCH', '设备码对应的账号尚未核对成功');
+        }
+        await saveReservation(key, { name, username, uid, role, deviceKey, state: 'ready' }, previous || null);
+      }
+    };
   }
   async function restoreRecovery(code) {
     let value;
@@ -145,16 +211,23 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
     if (status.role !== role || !['reserved', 'ready'].includes(status.state) ||
         status.state === 'reserved' && status.requiresPassword !== true) error('INVALID_IDENTITY_RESPONSE', '恢复身份尚未确认，本机原信息已保留');
     if (status.state === 'ready' && !ready(status).uid) error('INVALID_IDENTITY_RESPONSE', '恢复身份尚未确认，本机原信息已保留');
-    await saveReservation(key, { name, role, operationId, operationSecret, state: status.state, recoveredAt: new Date().toISOString() }, previous || null);
-    return { name, role, state: status.state };
+    const sameOperation = previous?.operationId === operationId;
+    const deviceKey = sameOperation && isDeviceKey(previous.deviceKey) ? previous.deviceKey : undefined;
+    const account = status.state === 'ready' ? ready(status) : {};
+    await saveReservation(key, { ...account, name, role, operationId, operationSecret, state: status.state, ...(deviceKey ? { deviceKey } : {}), recoveredAt: new Date().toISOString() }, previous || null);
+    return { name, role, state: status.state, ...(deviceKey ? { deviceCredential: true } : {}) };
   }
-  async function register({ name: inputName, password, role = 'anchor' }) {
-    const name = normalizePersonName(inputName, { registration: true }); validateJoinPassword(password);
+  async function register({ name: inputName, password, role = 'anchor' }, { deviceEntry = false } = {}) {
+    const name = normalizePersonName(inputName, { registration: true });
+    if (!deviceEntry) validateJoinPassword(password);
     if (!['anchor', 'operator'].includes(role)) error('INVALID_ROLE', '请选择主播或运营注册，管理员账号不能自行注册');
     if (!enabled) error('IDENTITY_UNAVAILABLE', '姓名加入服务正在准备，请稍后重试');
-    const reservation = await reservationFor(name, role);
+    const reservation = await reservationFor(name, role, deviceEntry);
+    if (deviceEntry && !isDeviceKey(reservation.value.deviceKey)) verifyDevice();
+    if (deviceEntry) password = await devicePassword(reservation.value.deviceKey);
     const legacyRecovery = reservation.value.role == null;
     const proof = { name: reservation.value.name, operationId: reservation.value.operationId, operationSecret: reservation.value.operationSecret };
+    const expected = { ...proof, deviceKey: reservation.value.deviceKey };
     if (reservation.existing) {
       try {
         // Discover the server's canonical role with the same high-entropy proof.
@@ -170,12 +243,17 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
         if (!['anchor', 'operator'].includes(status.role)) error('INVALID_IDENTITY_RESPONSE', '注册身份尚未确认，本机原信息已保留');
         if (status.role !== reservation.value.role) {
           reservation.value = { ...reservation.value, role: status.role };
-          await saveReservation(reservation.key, reservation.value, proof);
+          await saveReservation(reservation.key, reservation.value, expected);
         }
-        if (status.role !== role) error('REGISTRATION_CONFLICT', `该姓名已在服务端预约为${status.role === 'operator' ? '运营' : '主播'}，请使用原身份继续；更正身份请联系管理员`);
+        if (deviceEntry) role = status.role;
+        else if (status.role !== role) error('REGISTRATION_CONFLICT', `该姓名已在服务端预约为${status.role === 'operator' ? '运营' : '主播'}，请使用原身份继续；更正身份请联系管理员`);
         if (status.state === 'ready') {
           const data = ready(status);
           if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
+          if (deviceEntry) {
+            await saveReservation(reservation.key, { ...reservation.value, ...data }, expected);
+            return { ...data, role, password };
+          }
           return data;
         }
         if (status.state !== 'reserved' || status.requiresPassword !== true) error('REGISTRATION_PENDING', '加入尚未确认，请稍后继续原操作');
@@ -186,16 +264,21 @@ export function createNameIdentityClient({ config = {}, envId, fetchImpl = globa
         // A racing original request is still protected by the SQL role guard;
         // the next roleless status reads back whichever role actually committed.
         reservation.value = { ...reservation.value, role };
-        await saveReservation(reservation.key, reservation.value, proof);
+        await saveReservation(reservation.key, reservation.value, expected);
       }
     }
-    const result = await request({ action: 'register', ...proof, role, password });
+    let result;
+    try { result = await request({ action: 'register', ...proof, role, password }); }
+    catch (failure) {
+      if (deviceEntry && ['NAME_TAKEN', 'NAME_PENDING'].includes(failure.code)) verifyDevice();
+      throw failure;
+    }
     if (result.role !== role) error('REGISTRATION_CONFLICT', '注册角色尚未确认，请保留原角色并联系管理员');
     const data = ready(result);
     if (!data.uid) error('INVALID_IDENTITY_RESPONSE', '加入身份尚未确认，请稍后继续原操作');
     // Conditional writes keep late old-tab responses from restoring retired secrets.
-    await saveReservation(reservation.key, { ...reservation.value, state: 'ready', uid: data.uid, username: data.username }, proof);
-    return data;
+    await saveReservation(reservation.key, { ...reservation.value, state: 'ready', uid: data.uid, username: data.username }, expected);
+    return deviceEntry ? { ...data, role, password } : data;
   }
-  return { enabled, resolve, register, restoreRecovery };
+  return { enabled, resolve, register, restoreRecovery, enterWithName, isDeviceAccount, prepareDeviceBinding, forgetDevice };
 }

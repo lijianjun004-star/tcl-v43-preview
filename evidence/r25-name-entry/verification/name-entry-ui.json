@@ -1,0 +1,19 @@
+{
+  "passed": 13,
+  "checks": [
+    "default entry has one name field, first-use role and no visible password or recovery controls",
+    "primary name entry sends only trimmed name and role, device dashboard has no password-change form",
+    "explicit device removal confirms recovery requirement then forgets binding before logout",
+    "known-device success renders workflow authoritative operator despite different first-use selection",
+    "unverified device keeps name and exposes device-code or original-account verification without signup",
+    "failed device-code validation clears code and never reports successful entry",
+    "verified device code calls bindDevice then mounts authoritative device account",
+    "original administrator password verification stays inside alternate entry and retains password settings",
+    "R25REC1 recovery reveals original manual continuation with locked name and role, no automatic enrollment",
+    "restored legacy registration continues original workflow.register with first password",
+    "recovery with surviving same-operation device key returns to primary without password or automatic entry",
+    "busy name entry ignores duplicate submits and restores UI only after authoritative success",
+    "all name, device, legacy and recovery UI transitions have no page errors"
+  ],
+  "scope": "Chromium product DOM/events with synthetic workflow; no cloud/native Auth calls"
+}

@@ -1,0 +1,131 @@
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (11.681055ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (67.600568ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (8.094328ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (127.080665ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (43.131634ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 330.168919
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (366.576891ms)
+✔ hardened R2: late inference is not re-entered after timeout (303.415037ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (283.520358ms)
+✔ hardened R2: clean sequential recognitions still work (62.841048ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1072.312333
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.005s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (10.192644ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (64.295156ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (7.795372ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (106.377722ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (45.205743ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 303.406721
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (367.319877ms)
+✔ hardened R2: late inference is not re-entered after timeout (306.032101ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (283.814133ms)
+✔ hardened R2: clean sequential recognitions still work (64.561681ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1082.670997
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+{'base_sha256': '37cae0f8674e108041eeab317ca5632fa32456cd4bcdbccf2fc142f40bc1a298', 'pilot_sha256': '140c62f254b886ecf53868b57acadd1164164b3ab6f20fe498b79a44340d93de', 'pilot_files': 13, 'source_preserved': True}
+test_all_hooks_present_exactly_once (__main__.BuildTests.test_all_hooks_present_exactly_once) ... ok
+test_build_file_isolation (__main__.BuildTests.test_build_file_isolation) ... ok
+test_model_normalization_and_vosk_fallback_present (__main__.BuildTests.test_model_normalization_and_vosk_fallback_present) ... ok
+test_preserve_manual_and_revision (__main__.BuildTests.test_preserve_manual_and_revision) ... ok
+test_reject_duplicate_anchor (__main__.BuildTests.test_reject_duplicate_anchor) ... ok
+test_reject_repatch (__main__.BuildTests.test_reject_repatch) ... ok
+test_reject_wrong_source (__main__.BuildTests.test_reject_wrong_source) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+OK
+✔ WB-1: prepareAudio resamples 48kHz audio to 16kHz and computes RMS (10.027343ms)
+✔ WB-2: prepareAudio times out cleanly when WebKit decodeAudioData hangs (64.132316ms)
+✔ WB-3: createLocalWhisper rejects silence (rms < 0.001) without invoking model pipeline (4.894004ms)
+✔ WB-4: createLocalWhisper passes chunk_length_s=30 and stride_length_s=5 for 60s–120s long audio (97.580674ms)
+✔ WB-5: createLocalWhisper single-flight lock prevents duplicate concurrent pipeline loads (45.898069ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 287.354885
+✔ original Gemini R2 reproduced: timeout permits overlapping inference (368.096521ms)
+✔ hardened R2: late inference is not re-entered after timeout (303.514188ms)
+✔ hardened R2: timed-out model loader fails closed, no second load (281.788336ms)
+✔ hardened R2: clean sequential recognitions still work (63.76343ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1073.793927
+R21_STAGE_PASS {"app_sha256": "86ca65f2c0f898e0953193c1489ae6221c06aa3dea57b7187113465249d727e4", "existing_assets_preserved": 168, "files": 13, "mocked_browser_test": false}
+R23_STAGE_PASS {"files": 14, "old_assets_unchanged": 181, "app_sha": "3507523677b209f157449ede0d285a967cb0f7117f807ecc4d7697ac7f3f2add", "browser_mock_e2e": false}
+R24_STAGE_PASS {"app_sha": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816", "files": 22, "old_assets_unchanged": 195}
+R25_STAGE_PASS {"app_sha": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e", "files": 29, "old_assets_unchanged": 217, "total_assets": 246}
+R25_STAGE_PASS {"app_sha": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e", "files": 29, "old_assets_unchanged": 217, "total_assets": 246}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 217, "total_assets": 246}
+R24_STAGE_PASS {"app_sha": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816", "files": 22, "old_assets_unchanged": 195}
+R25_STAGE_PASS {"app_sha": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e", "files": 29, "old_assets_unchanged": 217, "total_assets": 246}
+R25_STAGE_PASS {"app_sha": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e", "files": 29, "old_assets_unchanged": 217, "total_assets": 246}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 217, "total_assets": 246}
+R24_STAGE_PASS {"app_sha": "63519c50a5325056819bdaaffbcdbd59270fd47dbac6ac796f728b6cef9e1816", "files": 22, "old_assets_unchanged": 195}
+R25_STAGE_PASS {"app_sha": "7c83ce664b2290be4d0d5326ef63ff7e3ca41f23436d3665e8f63a9ccf49ff1e", "files": 29, "old_assets_unchanged": 217, "total_assets": 246}
+NAME_ENTRY_FULL_BUILD_PASS {"status": "PASS", "baselineMain": "5573b9901181539aeeee5b6b67367cc86366a203", "scope": "Actual complete frozen static stages and exact forward/reverse archive verification; no cloud or browser acceptance", "update": {"direction": "update", "protected_assets": 217, "total_assets": 246, "changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"]}, "rollback": {"direction": "rollback", "protected_assets": 217, "total_assets": 246, "changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"]}, "tree": {"count": 246, "protected": 217, "sha256": "e684c3fb2499a23bd614265995277061fffb615b7c1d03ef93ff64578a2da242"}, "archive": {"b64": "d7d18bd64f466356015f3a73c3e61a5961a04776f885995708601cb42455751a", "zip": "41353b2031c058686c359a119427657cc4fd28dbb787bdf04eca3730e548a769"}}

@@ -1,0 +1,92 @@
+............................................................................................................verify-pages-release PASS: exact R2.4 static bundle; all preceding stages preserved
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 3, "old_assets_unchanged": 4}
+verify-pages-release PASS: exact R2.4 same-route update/rollback; old pages unchanged
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/parser.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "update", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/parser.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "update", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 5, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "f4918c8ac9858f83b2c0307536179d6bd283bc7c20ba34b53074721f43611f4a", "files": 5, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/lib/qa-import.js", "tcl-v352-asr-r24-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 4, "total_assets": 9}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "1245f954c74f45507f32fb0d53c1b91e19a53fcea9ddec6369cc99ce41c5fb8e", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css"], "direction": "update", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "1245f954c74f45507f32fb0d53c1b91e19a53fcea9ddec6369cc99ce41c5fb8e", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css"], "direction": "rollback", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 7, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "update", "protected_assets": 4, "total_assets": 12}
+R24_STAGE_PASS {"app_sha": "295b2d86bc7f65e97df35186aa7159acef2c8588fbeccb0bc6f547a019e707e5", "files": 8, "old_assets_unchanged": 4}
+R24_STAGE_PASS {"app_sha": "0c5dc25e91a87f3cd310be8a7a255e3278ac202fa73339db4b4aecb4120b4228", "files": 7, "old_assets_unchanged": 4}
+R24_UPDATE_PASS {"changed": ["tcl-v352-asr-r24-qa/app.js", "tcl-v352-asr-r24-qa/static-manifest.json", "tcl-v352-asr-r24-qa/style.css", "tcl-v352-asr-r24-qa/whisper-bridge.mjs", "tcl-v352-asr-r24-qa/whisper-worker.mjs"], "direction": "rollback", "protected_assets": 4, "total_assets": 11}
+R25_STAGE_PASS {"app_sha": "2891320f35346524f47f79b031d358bb976b003f8ac1716abb6d66281fde6156", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_RELEASE_PASS {"app_sha": "2891320f35346524f47f79b031d358bb976b003f8ac1716abb6d66281fde6156", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_STAGE_PASS {"app_sha": "2891320f35346524f47f79b031d358bb976b003f8ac1716abb6d66281fde6156", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_ROLLBACK_PASS {"protected_assets": 2, "removed_files": 22}
+R25_STAGE_PASS {"app_sha": "2891320f35346524f47f79b031d358bb976b003f8ac1716abb6d66281fde6156", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+verify-pages-release PASS: exact R2.5 same-route update/rollback; 217 older assets preserved
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "fc734fde79928aadf76769e169b343811a04810247320b1f92f109e0ba319d4e", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json", "tcl-v352-asr-r25-qa/style.css"], "direction": "update", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "fc734fde79928aadf76769e169b343811a04810247320b1f92f109e0ba319d4e", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json", "tcl-v352-asr-r25-qa/style.css"], "direction": "rollback", "protected_assets": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS................................................................
+----------------------------------------------------------------------
+Ran 172 tests in 44.063s
+
+OK
+ {"app_sha": "fc734fde79928aadf76769e169b343811a04810247320b1f92f109e0ba319d4e", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "fc734fde79928aadf76769e169b343811a04810247320b1f92f109e0ba319d4e", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "98652bfc644d8a3280c7568bd65568823ef13926f51ef4b15454af9dc549dec7", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/cloudbase-adapter.mjs", "tcl-v352-asr-r25-qa/index.html", "tcl-v352-asr-r25-qa/static-manifest.json", "tcl-v352-asr-r25-qa/style.css", "tcl-v352-asr-r25-qa/vendor/cloudbase/cloudbase-sdk.mjs"], "direction": "update", "protected_assets": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "98652bfc644d8a3280c7568bd65568823ef13926f51ef4b15454af9dc549dec7", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/app.js", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/cloudbase-adapter.mjs", "tcl-v352-asr-r25-qa/index.html", "tcl-v352-asr-r25-qa/static-manifest.json", "tcl-v352-asr-r25-qa/style.css", "tcl-v352-asr-r25-qa/vendor/cloudbase/cloudbase-sdk.mjs"], "direction": "rollback", "protected_assets": 2, "total_assets": 24}
+R25_STAGE_PASS {"app_sha": "98652bfc644d8a3280c7568bd65568823ef13926f51ef4b15454af9dc549dec7", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "fc734fde79928aadf76769e169b343811a04810247320b1f92f109e0ba319d4e", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "98652bfc644d8a3280c7568bd65568823ef13926f51ef4b15454af9dc549dec7", "files": 22, "old_assets_unchanged": 2, "total_assets": 24}
+R25_STAGE_PASS {"app_sha": "338c2109c0424a8a77610a6817554dc474bb91583c9b4506a0073b6d3826a3c0", "files": 26, "old_assets_unchanged": 2, "total_assets": 28}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/app-config.json", "tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "update", "protected_assets": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_STAGE_PASS {"app_sha": "1b80b8106d329cc616744b603c085c520b771d32933b5ea0b75e328b4e64ffeb", "files": 27, "old_assets_unchanged": 2, "total_assets": 29}
+R25_UPDATE_PASS {"changed": ["tcl-v352-asr-r25-qa/cloud-workflow.mjs", "tcl-v352-asr-r25-qa/cloud-workspace.mjs", "tcl-v352-asr-r25-qa/name-identity.mjs", "tcl-v352-asr-r25-qa/static-manifest.json"], "direction": "rollback", "protected_assets": 2, "total_assets": 29}
