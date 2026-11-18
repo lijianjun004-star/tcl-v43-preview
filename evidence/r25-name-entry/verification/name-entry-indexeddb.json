@@ -1,0 +1,1 @@
+{"checks": ["actual IndexedDB supplies the original UID and role on a new tab", "independent browser storage cannot use the public name to claim identity", "forgetting the device disables name-only reentry in real browser storage"], "passed": 3, "scope": "Chromium IndexedDB and synthetic identity HTTP responses, zero cloud calls"}
