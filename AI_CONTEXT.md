@@ -681,3 +681,11 @@ PR104发布CI实际失败（run43917220462：Unexpected PR paths），旧门禁4
 - RC1 原候选经 PR #154 在独立入口发布。正式部署先经门禁 PR #155 和发布 PR #156，再经门禁 PR #157 及发布 PR #158 补齐目录与迟到相机回退条件。最终合并 `6b4a2825dc8e64a161bcee5c5bbcb95509bd9ee8`，正式前端归档 SHA-256 `dec534aac5467b07fba730e422f14200d26e3293fd1f964bf1c4ff88d8f33fa5`，app SHA-256 `37eb6128081571861c712c9c1e5d07c75fb498d08091e8f2ee94a48c00ef19ec`。[最终发布 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/158) · [Pages 部署](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/44368973680)
 - 整站 316 项资源中仅正式入口的 app.js 与 static-manifest.json 改变，模型、旧 R24/R25 与 RC1 保留。最后门禁 215 项通过。同 URL 保存与恢复 19/19、最终受控 Chromium 权限 7/7、术语定向 73/73、完整暂存原生模拟设备三题 13/13。正式入口已回读精确 pages3 版本清单。实体手机仍待验收。
 - 回滚仅通过独立 PR 恢复已部署的相邻 pages2，归档 SHA-256 `8c87b25af1b680e603e1ee72c914ed69de2b5baba385e82ff41e5e2be11aabbd`。按固定规则可从 pages2 再回到 pages1。回滚前后沿用既有存储键。
+
+## R24 Paraformer pages3 腾讯云静态入口（2026-11-19）
+
+用户授权把现有 R24 pages3 同步到腾讯云 CloudBase 国内站。使用原上海环境 `unknown-roadrunner-d7cap6e21f517` 已在线的静态托管，单独发布到 `tcl-r24-paraformer/`。正式版本 `r24-paraformer-small-20261118-pages3`，GitHub Pages 仍使用原正式入口和原资源。[腾讯云入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-paraformer/) · [GitHub Pages 入口](https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer/)
+
+- 部署来源为 PR #158 的精确完整静态树，35 项共 95,492,830 字节。目标前缀上传前为空，CloudBase CLI 上传 35/35并校验通过。公网 HTTPS 对所有 35 个文件重算 SHA-256，与 GitHub Pages 正式发布资源一致。app SHA-256 `37eb6128081571861c712c9c1e5d07c75fb498d08091e8f2ee94a48c00ef19ec`，模型与运行文件沿用已核验原版本。
+- 默认测试域名首访由腾讯云显示「风险提醒」，等倒计时结束点「确定访问」进入。 Chromium 已实际点确认并完成 13/13，覆盖姓名进入、权限、真实 Paraformer 模型加载、三题录音转写和回放，使用模拟设备与公开音频。实体手机和真实大陆设备网络仍待复验。
+- R24 仍使用本机存储，两个域名的浏览器记录各自保存。CloudBase 仅增加静态目录，数据库、函数、域名绑定和其他项目配置均沿用。若撤下此镜像，仅处理该静态目录。
