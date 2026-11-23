@@ -282,14 +282,22 @@ export function toExchangePackage(a) {
 
 /**
  * A non-speech or noisy recording can be transcribed as one or two characters
- * repeated (observed live: "谢谢谢谢…", "不不不谢谢…"). Such text is not an answer.
+ * repeated (observed live: "谢谢谢谢…", "不不不谢谢…", "啊啊啊啊啊不拜"). Such text is not an answer.
  * Punctuation, symbols and whitespace are ignored before counting characters.
  */
 export function isDegenerateAnswer(value) {
   const chars = Array.from(String(value ?? '').normalize('NFKC').replace(/[\s\p{P}\p{S}]/gu, ''));
   const distinct = new Set(chars).size;
-  // Count-based only: long genuine answers naturally have a low distinct/length ratio.
-  return (chars.length >= 4 && distinct <= 2) || (chars.length >= 8 && distinct <= 3);
+  // Count-based: long genuine answers naturally have a low distinct/length ratio.
+  if ((chars.length >= 4 && distinct <= 2) || (chars.length >= 8 && distinct <= 3)) return true;
+  // One non-digit character repeated >=4 times in a row covering over half the text
+  // (observed live: "啊啊啊啊啊不拜"); digits are exempt so "10000元" stays valid.
+  let run = 0, longest = 0;
+  for (let i = 0; i < chars.length; i++) {
+    run = i > 0 && chars[i] === chars[i - 1] && !/\p{Nd}/u.test(chars[i]) ? run + 1 : 1;
+    longest = Math.max(longest, run);
+  }
+  return longest >= 4 && longest * 2 > chars.length;
 }
 
 /** Late against the frozen deadline, by the receipt's own (device-clock) submission time. */

@@ -32,7 +32,12 @@ def degenerate(value):
     """Python mirror of assignment-excel.mjs isDegenerateAnswer()."""
     chars = [c for c in unicodedata.normalize('NFKC', value or '') if not (c.isspace() or unicodedata.category(c)[0] in 'PS')]
     d = len(set(chars))
-    return (len(chars) >= 4 and d <= 2) or (len(chars) >= 8 and d <= 3)
+    if (len(chars) >= 4 and d <= 2) or (len(chars) >= 8 and d <= 3): return True
+    run = longest = 0
+    for i, c in enumerate(chars):
+        run = run + 1 if i and c == chars[i - 1] and unicodedata.category(c) != 'Nd' else 1
+        longest = max(longest, run)
+    return longest >= 4 and longest * 2 > len(chars)
 
 
 def xlsx(path, rows, header=HDR):
