@@ -1,0 +1,54 @@
+name: R24 Excel QA2 public Pages eight-file smoke
+on:
+  push:
+    branches: [fix/r24-excel-operator-search-20261123]
+    paths: [.github/workflows/r24-excel-qa2-public-smoke.yml]
+permissions:
+  contents: read
+jobs:
+  http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ac64863acdb3238ee2efaa3765c14b24659b9e43
+          persist-credentials: false
+      - name: Verify eight public resources against exact released ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import quote
+          from urllib.request import Request,urlopen
+          import hashlib,json,time,zipfile
+          archive=Path('experiments/r24-paraformer-excel-release/site-only.zip').read_bytes()
+          assert hashlib.sha256(archive).hexdigest()=='a99012ad503baedd404a1c8ed6e4ffb304a07372e6641ec9367a42343035a9d6'
+          with zipfile.ZipFile('experiments/r24-paraformer-excel-release/site-only.zip') as z:
+              files={name:z.read(name) for name in z.namelist() if not name.endswith('/')}
+          manifest=json.loads(files['static-manifest.json'])
+          assert manifest['version']=='r24-paraformer-excel-assignment-20261123-qa2-operator-search'
+          names=['index.html','style.css','app.js','assignment-excel.mjs','static-manifest.json','training-boards.json','legacy-65.json','vendor/paraformer/manifest.json']
+          base='https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/'
+          for name in names:
+              expected=hashlib.sha256(files[name]).hexdigest()
+              if name!='static-manifest.json': assert manifest['files'][name]==expected,name
+              url=base+quote(name,safe='/')+'?v=ac64863'
+              error=None
+              for attempt in range(5):
+                  try:
+                      with urlopen(Request(url,headers={'Cache-Control':'no-cache','User-Agent':'TCL-qa2-readonly-check'}),timeout=22) as response:
+                          body=response.read(2_000_000)
+                          status=response.status
+                      actual=hashlib.sha256(body).hexdigest()
+                      assert status==200 and actual==expected,(name,status,actual,expected)
+                      print(json.dumps({'name':name,'status':status,'bytes':len(body),'sha256_match':True},ensure_ascii=False))
+                      error=None
+                      break
+                  except Exception as exc:
+                      error=exc
+                      if attempt<4:time.sleep(2)
+              if error:raise SystemExit(f'Public file verification failed: {name}: {error}')
+          print('PUBLIC_QA2_HTTP_SMOKE_PASS',len(names),'files')
+          PY
