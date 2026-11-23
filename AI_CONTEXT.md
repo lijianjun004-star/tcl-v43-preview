@@ -1,8 +1,28 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-17。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-23。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
+
+## 最新状态：R24 Excel 专属作业独立 QA 已部署（2026-11-23）
+
+本节优先于下方历史章节中的“当前”措辞。继续工作仍须核对实时 main、PR、Actions 和公网版本。本轮按用户“继续 GitHub 部署”与已确认的作业逻辑执行；外部 Gemini 请求为 0。
+
+- 新入口：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，版本 `r24-paraformer-excel-assignment-20261123-qa1`。原正式 R24 Paraformer pages3、历史 R24、R25 姓名入口和腾讯云镜像保留；没有重复发布已被后续版本覆盖的旧 PR。
+- [完整复验包（约 97 MB）](https://github.com/lijianjun004-star/tcl-v43-preview/releases/download/r24-excel-qa-20261123/R24_Excel_QA_20261123.zip)，包含模型、源码、测试证据及回滚说明；[发行页](https://github.com/lijianjun004-star/tcl-v43-preview/releases/tag/r24-excel-qa-20261123)。完整包 SHA256：`30233880a3d03fb9c6b8c260c4bada17d706b6465ca4911fa543af97a133db2a`。发布后已下载回读并验证哈希，[交付运行 45137820122](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45137820122)成功。
+- 完整操作与范围：[本次交接说明](experiments/r24-paraformer-excel-release/README.md)。冻结实现源码 `ceee762ef092837e17ab680bdb41c0d1ba55e229` 位于 `fix/r24-excel-assignment-deploy-20261123` 的 `experiments/r24-paraformer-excel-assignment/`。早期原型 README、TEST_REPORT、CODEX_TASK 的未构建／未发布状态为历史记录，不代表本轮结果。
+- [CI PR161](https://github.com/lijianjun004-star/tcl-v43-preview/pull/161) 合并 `fdee0d03fd715deec69c354ac5823d94bbc4d6e0`；[最终 ZIP pin PR163](https://github.com/lijianjun004-star/tcl-v43-preview/pull/163) 合并 `24e3173292a23bb66fa7de4911be7a977ecd9e96`，门禁 229 项通过。发行只包含新 ZIP 和一个新增 Pages 阶段；反向回滚与旧 R24/R25 发布规则保留。
+- [发行 PR162](https://github.com/lijianjun004-star/tcl-v43-preview/pull/162) 的精确 head `0726d5ae3dc400c0d276e4189ae33b67df358a7e` 经 [45136262772](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45136262772) 成功后合并为 `1ff721925f826717fb63a8594766e35a812d08ab`。[Pages 45136397011](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45136397011) 完成且成功。不是仅凭合并状态判定上线。
+- 发行归档 `experiments/r24-paraformer-excel-release/site-only.zip` SHA256 `29c2ac4c491b54c467aa31fcdfa68c0b882dbaf227b5869d977c81b11737396c`；app SHA256 `bb652c23ee3523e3415f4fbe5941b94c8765c0940063e8d5c47583903ff1ab82`。官方 pages3 输入 ZIP 为 `dec534aac5467b07fba730e422f14200d26e3293fd1f964bf1c4ff88d8f33fa5`。
+- 新目录 32 项前端加 4 项固定模型，共 36 项；旧 316 项构建时逐字节保留。公网 352/352 HTTP 200 且逐文件 SHA 全对；首次351项，校验器为一个中文文件名正确编码后补核1项。原 index.html、style.css、公开训练题库、历史卡均不变。
+- [最终 QA 45135920009](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45135920009)：Node 78/78（纯模块69、UI生命周期9）、正式源码构建9/9、Chromium作业与媒体54/54、独立真实Paraformer模型13/13，零跳过。全流程使用实际 XLSX/XLS 合成表、原生模拟录音设备；三题音频完整回放、整场视频可播放；模型层单独使用实际 Worker/WASM 与固定公开普通话样本。桌面模拟不等于真机或业务语料准确率。
+- 修复了原候选的漏题／空答／重复题／型号SKU错配、预览与身份异步竞态、冻结快照缺失和回执覆盖风险；QA 数据库、频道、术语、模型偏好及缓存隔离。真实浏览器发现切题时旧播放器追读已撤销 Blob URL，已最小修复为先取消加载再释放地址，原始录音数据保留。原700ms防连点未修改。
+
+**当前业务范围：** 运营本机创建、预览、发布固定题目与接收名单，人工发 JSON；主播按名单姓名导入、逐题练播、全部有效回答后明确提交并人工返还文字回执；运营导入后标记“回执待核实”。Excel 不进入公共题库，修改原表不覆盖历史作业；京东／天猫沿原共享规则，抖音独立。
+
+**未交付／未验收：** 自动跨设备分配、登录即收件、提交直达运营、集中实时状态、媒体／进度同步及新增服务端身份认证；真实业务 Excel、物理 iPhone/Android、大陆网络和真人 TCL 口播。姓名与哈希不能证明本人，未收到回执也不代表主播未完成。R25 后台不等于本 QA 已接入；本轮没有改 CloudBase。
+
+下一步先取得一份运营现用 Excel 验证格式，不要求运营为系统重做模板；自动后台和原正式 R24 入口升级需另行完成与验收。回滚通过新 PR 仅删除 `Stage isolated R2.4 Excel assignment preview` 阶段和对应新 ZIP，保留其他归档、站点和浏览器数据，不恢复整份历史工作流。
 
 ## 项目和固定目标
 
