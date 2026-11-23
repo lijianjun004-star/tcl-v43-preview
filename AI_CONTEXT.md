@@ -4,9 +4,21 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
-## 最新状态：R24 Excel QA2 恢复按运营姓名搜索、自主领取（2026-11-23）
+## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
-本节优先于下方 QA1 历史发布章节。当前固定测试网址：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa2-operator-search`；原正式 R24、R25、CloudBase、历史页面/数据不变。**QA2 并未接入共享后台**，跨手机仍须人工传 JSON 作业和文字回执。
+本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
+
+- 来源：Claude 对线上 QA2 的独立复验与 Gemini QA2-P2 包复核。P1：截止后的人工回执导入运营端丢失逾期标记；无人声麦克风被真实 Paraformer 识别为“谢谢谢谢…”等重复字并自动写成答案。P2：真实模型断言过弱、折叠按钮展开后竖排、列表截断无总数、重复导入提示不清、QA2 证据 `receipt-wrong-version.json` 被冲突回执覆盖。Gemini 包本身未采用：版本号未换、其 patcher 日志 `Ran 0 tests … FAILED`、折叠按钮仍竖排、带 `__pycache__`。
+- 修复：运营端按冻结截止时间与回执提交时间显示“逾期提交 · 回执待核实”（回执格式不变，QA2 回执可导入）；`isDegenerateAnswer` 拒绝重复字型噪音答案，数字不计入（Codex 审查指出“1000”曾被误判，已修）；固定样本逐字转写断言；折叠按钮内联取消旋转；列表总数与重复导入提示。ASR 识别代码、index.html、style.css 均未改。
+- 源码 [PR169](https://github.com/lijianjun004-star/tcl-v43-preview/pull/169)（目标为 QA2 源码分支，未合并）最终提交 `42c3c3f1c88447c4872e30d2affcc2c3043e9f98`；[CI 45165873336](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45165873336)：Node 87/87、补丁 11/11、真实 Paraformer 逐字转写、Chromium E2E 57/57、新增对抗套件 59/59（含真实模型噪音段）。
+- [门禁 PR170](https://github.com/lijianjun004-star/tcl-v43-preview/pull/170) 233 项 PASS，合并 `69e3673b7065d9165400284a2ea8c60bff0ce9c9`：固定 QA3 ZIP `65ce635c9987c033d0963502a88ee56795a5afcdd0308ca5bab116e3b04eeaa9`、app.js `d6b9f4891e409f330e928659e2bcde59a398bf3ccef1d088be4af3562a5f478a`、assignment-excel.mjs `9dcbdb352cdaf01d597186a8b3ca9614b9b7c0fcf8b902597737f641216b77da`，只允许 QA1↔QA2、QA2↔QA3 三文件切换。[发行 PR171](https://github.com/lijianjun004-star/tcl-v43-preview/pull/171) 合并 `68f518bac95f5b379bfe2731e066e696e974764f`；[Pages 45168679946](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45168679946) 成功。
+- 部署后线上核验：测试站 36/36 文件 SHA 一致；正式 R24 pages3 31/31、R25 29/29 未变；原版 Chromium E2E 57/57 与对抗套件 59/59 直接跑线上：运营端显示“逾期提交 · 回执待核实”，折叠按钮展开为横排，真实模型把无人声识别为“谢谢谢谢…”后提交被拦截、人工改写后回执正确；请求只到 github.io，无页面错误或失败资源。
+- 回滚：提交只把 `experiments/r24-paraformer-excel-release/site-only.zip` 换回 QA2 `a99012ad…` 的发行 PR，门禁允许。
+- 仍 NOT RUN：真实 TCL Excel、实体 iPhone/Android、中国大陆网络、真人 TCL 口播准确率、共享后台/跨设备自动同步。噪音规则只拦截重复字型幻觉，“啦呀啦啊”“我是我是一的问的”这类非重复幻觉仍需运营人工核对。
+
+## 历史状态：R24 Excel QA2 恢复按运营姓名搜索、自主领取（2026-11-23）
+
+本节为 QA2 历史记录（已被上方 QA3 取代），优先于下方 QA1 历史发布章节。当时固定测试网址：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa2-operator-search`；原正式 R24、R25、CloudBase、历史页面/数据不变。**QA2 并未接入共享后台**，跨手机仍须人工传 JSON 作业和文字回执。
 
 - 用户纠正业务逻辑：**运营发布 Excel 作业不需指定主播，所有主播输入运营姓名主动搜索和领取**；主播姓名仅标识领取与提交人。实现为新作业 `assignedTo: []`（明确公开），旧指定名单作业仍保持受限，删除字段和篡改哈希不能假冒公开作业。运营导入公开作业回执后能显示实际提交人。
 - 已验证源码提交 `33fdfa6298bba31cba2b98f5e12231acd0d09718`；[源码 PR165](https://github.com/lijianjun004-star/tcl-v43-preview/pull/165) 与独立分支。当前前端 ZIP SHA-256 `a99012ad503baedd404a1c8ed6e4ffb304a07372e6641ec9367a42343035a9d6`；app.js SHA `8af5310dbe54250c6a19dbe25f00cfc0d103a4b29fe0242bf2995522cd3f82f9`；assignment-excel.mjs SHA `e7bb2a73a2e63b35e687d7a0e4c3d4e996f0dd5330e312d055cbe79e373763af`。
