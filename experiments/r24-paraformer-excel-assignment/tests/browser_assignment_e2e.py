@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""Real UI / IndexedDB / MediaRecorder tests; ASR worker alone is an explicit stub.
+
+No successful business responses, application state, or database rows are injected.
+Run against the staged official and candidate sites with the same origin.
+"""
+import argparse
+import asyncio
+import hashlib
+import json
+import math
+import struct
+import time
+import traceback
+import wave
+from pathlib import Path
+from urllib.parse import urlparse
+
+from openpyxl import Workbook
+import xlwt
+from playwright.async_api import async_playwright, expect
+
+QA = '/tcl-r24-paraformer-excel-qa/'
+OFFICIAL = '/tcl-r24-paraformer/'
+DB = 'tcl-specialty-r24-paraformer-excel-qa-v1'
+OPERATOR = '合成验收运营'
+ANCHOR = '合成文字主播'
+MEDIA_ANCHOR = '合成媒体主播'
+QUESTIONS = [f'请介绍 TEST-A{i} 的合成测试功能？' for i in range(1, 4)]
+ANSWERS = [f'人工回答第{i}题：TEST-A{i} 为合成型号，信息仅用于流程测试。' for i in range(1, 4)]
+MOCK_WORKER = """
+// Explicit ASR-only fixture. This does not mock media, UI, storage or submission.
+let n=0;
+self.addEventListener('message', ({data:m}) => {
+ if(!m || !Number.isSafeInteger(m.id)) return;
+ const result=m.type==='load'?{heapBytes:1024}:{text:'合成识别候选'+(++n)+'请人工核对',heapBytes:1024};
+ setTimeout(()=>self.postMessage({id:m.id,type:'result',result}),80);
+});
+"""
+
+
+def fixtures(folder):
+    folder.mkdir(parents=True, exist_ok=True)
+    rows = [['题目', '参考答案', '型号', 'SKU', '评分要点']]
+    rows += [[q, f'合成参考答案{i}，应说明测试信息。', f'TEST-A{i}', f'00000{i}', '合成测试；信息核对'] for i, q in enumerate(QUESTIONS, 1)]
+    wb = Workbook(); ws = wb.active; ws.title = '运营原样作业'
+    for row in rows: ws.append(row)
+    path = folder / 'three_questions.xlsx'; wb.save(path)
+    legacy = xlwt.Workbook(); legacy_sheet = legacy.add_sheet('合成旧版作业')
+    for ri, row in enumerate(rows):
+        for ci, value in enumerate(row): legacy_sheet.write(ri, ci, value)
+    legacy.save(str(folder / 'three_questions.xls'))
+    bad = Workbook(); sheet = bad.active
+    for row in rows[:2]: sheet.append(row)
+    sheet.append(['', '缺少题目的有答案行', '', '', ''])
+    bad.save(folder / 'missing_question.xlsx')
+    wav = folder / 'synthetic_mic.wav'
+    with wave.open(str(wav), 'wb') as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(48000)
+        samples = []
+        for i in range(48000 * 6):
+            t = i / 48000
+            x = (.18 * math.sin(2 * math.pi * 211 * t) + .09 * math.sin(2 * math.pi * 443 * t)) * (.65 + .35 * math.sin(2 * math.pi * 4.2 * t))
+            samples.append(struct.pack('<h', int(32767 * x)))
+        w.writeframes(b''.join(samples))
+    return path, wav
+
+
+class Audit:
+    def __init__(self, args):
+        self.args = args; self.out = Path(args.evidence); self.out.mkdir(parents=True, exist_ok=True)
+        self.rows = []; self.errors = []; self.requests = []; self.responses = []; self.contexts = []
+        self.xlsx, self.wav = fixtures(self.out / 'fixtures')
+        self.base = args.base_url.rstrip('/')
+
+    def check(self, name, condition, detail=None):
+        row = {'name': name, 'pass': bool(condition), 'detail': detail}
+        self.rows.append(row); print(json.dumps(row, ensure_ascii=False), flush=True)
+        if not condition: raise AssertionError(name + ': ' + str(detail))
+
+    async def context(self, browser, width=390, mock_asr=False):
+        ctx = await browser.new_context(viewport={'width': width, 'height': 844}, permissions=['camera', 'microphone'], accept_downloads=True)
+        if mock_asr:
+            await ctx.route('**/paraformer-worker.js', lambda route: route.fulfill(status=200, content_type='text/javascript', body=MOCK_WORKER))
+        self.contexts.append(ctx)
+        return ctx
+
+    async def page(self, ctx, path=QA):
+        p = await ctx.new_page(); p.set_default_timeout(20000)
+        p.on('pageerror', lambda e: self.errors.append({'url': p.url, 'error': str(e)}))
+        p.on('console', lambda msg: self.errors.append({'url': p.url, 'console': msg.text, 'location': msg.location}) if msg.type == 'error' and urlparse(msg.location.get('url', '')).path != '/favicon.ico' else None)
+        p.on('request', lambda r: self.requests.append({'url': r.url, 'method': r.method, 'type': r.resource_type}))
+        p.on('response', lambda r: self.responses.append({'url': r.url, 'status': r.status}) if r.status >= 400 and urlparse(r.url).path != '/favicon.ico' else None)
+        p.on('dialog', lambda d: d.accept())
+        await p.goto(self.base + path, wait_until='networkidle')
+        await expect(p.locator('[data-role-pick="anchor"]')).to_be_visible()
+        return p
+
+    async def login(self, p, role, name):
+        await p.locator(f'[data-role-pick="{role}"]').click()
+        await p.locator('#simpleName').fill(name)
+        await p.locator('#simpleLogin').click()
+        await expect(p.locator('#switchIdentity')).to_be_visible()
+
+    async def db(self, p, store='prefs', key=None):
+        return await p.evaluate("""async ({name,store,key}) => {
+          const names=await indexedDB.databases(); if(!names.some(x=>x.name===name)) return null;
+          return await new Promise((resolve,reject)=>{ const r=indexedDB.open(name);
+            r.onerror=()=>reject(r.error);r.onsuccess=()=>{const d=r.result;
+              const t=d.transaction(store,'readonly');const q=key===null?t.objectStore(store).getAll():t.objectStore(store).get(key);
+              q.onsuccess=()=>resolve(q.result??null);q.onerror=()=>reject(q.error);t.oncomplete=()=>d.close();
+            };});
+        }""", {'name': DB, 'store': store, 'key': key})
+
+    async def pref(self, p, name):
+        row = await self.db(p, key=name)
+        return row.get('value', []) if row else []
+
+    async def screenshot(self, p, name):
+        await p.screenshot(path=str(self.out / (name + '.png')), full_page=True)
+
+    async def no_overflow(self, p, name):
+        dims = await p.evaluate('({width:innerWidth,scroll:document.documentElement.scrollWidth})')
+        self.check(name, dims['scroll'] <= dims['width'] + 1, dims)
+
+    async def open_import(self, p, package):
+        fold = p.locator('#assignmentFold')
+        if await fold.get_attribute('open') is None: await fold.locator('summary').click()
+        await p.locator('#assignmentPackageImport').set_input_files(str(package))
+
+    async def join(self, p, text=True):
+        await p.locator('[data-join-assignment]').first.click()
+        await expect(p.locator('#startScene')).to_be_visible()
+        if text:
+            if await p.locator('#prepQuickText').is_visible(): await p.locator('#prepQuickText').click()
+        else: await p.locator('#prepQuickRecheck').click()
+        await expect(p.locator('#startScene')).to_be_enabled(timeout=30000)
+        await p.locator('#startScene').click()
+        await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[0])
+
+    async def answer(self, p, i, media=False):
+        await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[i])
+        if media:
+            # Real browser capture proceeds on a synthetic --use-file-for-fake-audio-capture device.
+            await p.wait_for_timeout(1800)
+            await p.locator('#focusReview').click()
+            await p.locator('#liveToolText').click()
+        else: await p.locator('#focusMic').click()
+        await p.locator('#liveTextAnswer').fill(ANSWERS[i])
+        await p.locator('#liveTextSave').click()
+        if i < 2:
+            await p.locator('#focusNext').click()
+            await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[i + 1])
+
+    async def finish(self, p):
+        await p.locator('#focusClose').click()
+        await expect(p.locator('#submitSession')).to_be_visible(timeout=30000)
+
+    async def download(self, p, trigger, filename):
+        async with p.expect_download(timeout=30000) as info: await trigger()
+        d = await info.value; target = self.out / filename
+        await d.save_as(str(target))
+        return target, json.loads(target.read_text())
+
+    async def import_receipt(self, operator, path):
+        await operator.locator('[data-ops-tab="tracking"]').click()
+        await operator.locator('#assignmentReceiptImport').set_input_files(str(path))
+
+    async def run(self, browser):
+        # No layout rewrite: real static resources, role-gateway geometry at three widths.
+        for width in (320, 390, 430):
+            ctx = await self.context(browser, width); old = await self.page(ctx, OFFICIAL); new = await self.page(ctx)
+            for resource in ('index.html', 'style.css', 'training-boards.json', 'legacy-65.json'):
+                a = await ctx.request.get(self.base + OFFICIAL + resource); b = await ctx.request.get(self.base + QA + resource)
+                self.check(f'{width}: unchanged {resource}', await a.body() == await b.body())
+            geometry = """() => [...document.querySelectorAll('.role-grid,.role-card')].map(e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})"""
+            self.check(f'{width}: original gateway geometry', await old.evaluate(geometry) == await new.evaluate(geometry))
+            await self.no_overflow(new, f'{width}: gateway no overflow')
+            await self.screenshot(new, f'gateway-{width}')
+            await self.login(new, 'operator', OPERATOR)
+            await self.no_overflow(new, f'{width}: operator no overflow')
+            await self.screenshot(new, f'operator-{width}')
+            await ctx.close()
+
+        operator_ctx = await self.context(browser); operator = await self.page(operator_ctx)
+        await self.login(operator, 'operator', OPERATOR)
+        await operator.locator('#assignmentTitle').fill('合成三题专属作业')
+        await operator.locator('#assignmentBoard').select_option('01')
+        await operator.locator('#assignmentPlatform').select_option('京东')
+        await operator.locator('#assignmentRecipients').fill(ANCHOR + '，' + MEDIA_ANCHOR)
+        await operator.locator('#publishAssignment').click()
+        self.check('publishing without Excel blocked', not await self.pref(operator, 'assignments'))
+        await operator.locator('#assignmentExcelFile').set_input_files(str(self.out / 'fixtures/missing_question.xlsx'))
+        await operator.locator('#assignmentExcelPreviewBtn').click()
+        await expect(operator.locator('#assignmentExcelPreview')).to_contain_text('失败')
+        self.check('incomplete Excel not silently truncated', not await self.pref(operator, 'assignments'))
+        await operator.locator('#assignmentExcelFile').set_input_files(str(self.out / 'fixtures/three_questions.xls'))
+        await operator.locator('#assignmentExcelPreviewBtn').click()
+        await expect(operator.locator('#assignmentExcelPreview')).to_contain_text('3 道')
+        self.check('actual legacy XLS parses three rows without publishing', not await self.pref(operator, 'assignments'))
+        await operator.locator('#assignmentExcelFile').set_input_files(str(self.xlsx))
+        await operator.locator('#assignmentExcelPreviewBtn').click()
+        await expect(operator.locator('#assignmentExcelPreview')).to_contain_text('3 道')
+        self.check('preview does not publish', not await self.pref(operator, 'assignments'))
+        await operator.locator('#assignmentTitle').fill('合成三题专属作业修订')
+        await operator.locator('#publishAssignment').click()
+        self.check('changing preview fields invalidates publication', not await self.pref(operator, 'assignments'))
+        await operator.locator('#assignmentExcelPreviewBtn').click()
+        await expect(operator.locator('#assignmentExcelPreview')).to_contain_text('3 道')
+        await operator.locator('#publishAssignment').click()
+        await expect(operator.locator('[data-export-assignment]')).to_be_visible()
+        items = await self.db(operator, 'items')
+        self.check('assignment Excel leaves public question store empty', items == [], items)
+        pkg_path, pkg = await self.download(operator, lambda: operator.locator('[data-export-assignment]').click(), 'assignment.json')
+        assignment = pkg['assignment']; self.check('frozen Excel order and SKU', [q['question'] for q in assignment['questions']] == QUESTIONS and assignment['questions'][0]['sku'] == '000001', assignment)
+        await self.screenshot(operator, 'published-assignment')
+
+        wrong_ctx = await self.context(browser); wrong = await self.page(wrong_ctx)
+        await self.login(wrong, 'anchor', '未被分配的合成主播'); await self.open_import(wrong, pkg_path)
+        await expect(wrong.locator('#toast')).to_contain_text('不匹配')
+        self.check('unassigned anchor import rejected', not await self.pref(wrong, 'assignments'))
+        await wrong_ctx.close()
+
+        # Incomplete and wrong-version submission are negative tests; no row injection.
+        anchor_ctx = await self.context(browser); anchor = await self.page(anchor_ctx)
+        await self.login(anchor, 'anchor', ANCHOR); await self.open_import(anchor, pkg_path)
+        await expect(anchor.locator('[data-join-assignment]').first).to_be_visible()
+        self.check('assigned pending task visible before joining', assignment['id'] in await anchor.locator('#view').inner_html())
+        await self.join(anchor); await self.finish(anchor)
+        await anchor.locator('#submitSession').click()
+        await expect(anchor.locator('#toast')).to_contain_text('全部题目')
+        self.check('missing two questions cannot submit', not await self.pref(anchor, 'submissions'))
+        await anchor.locator('#reviewRetry').click()
+        if await anchor.locator('#tclRestartYes').is_visible(): await anchor.locator('#tclRestartYes').click()
+        await expect(anchor.locator('#startScene')).to_be_visible()
+        if await anchor.locator('#prepQuickText').is_visible(): await anchor.locator('#prepQuickText').click()
+        await expect(anchor.locator('#startScene')).to_be_enabled()
+        await anchor.locator('#startScene').click()
+        for i in range(3): await self.answer(anchor, i)
+        await anchor.locator('#focusNext').click()
+        await expect(anchor.locator('#liveQText')).to_have_text(QUESTIONS[2])
+        await self.finish(anchor)
+        await anchor.locator('#reviewDetails').click()
+        editors = anchor.locator('textarea[aria-label="编辑本题回答"]')
+        self.check('review includes all three exact questions', await editors.count() == 3)
+        edited = ANSWERS[0] + ' 已人工校正。'
+        await editors.nth(0).fill(edited); await anchor.get_by_role('button', name='保存本题修改', exact=True).nth(0).click()
+        await anchor.locator('#reviewDetailsBack').click()
+        receipt_path, receipt = await self.download(anchor, lambda: anchor.locator('#submitSession').click(), 'receipt-text.json')
+        self.check('submission preserves exact question order', [t['question'] for t in receipt['turns']] == QUESTIONS)
+        self.check('manual edit persists into explicit submission', receipt['turns'][0]['answer'] == edited)
+        self.check('local submit does not auto-send operator', not await self.pref(operator, 'submissions'))
+        await anchor.reload(wait_until='networkidle')
+        if await anchor.locator('[data-role-pick="anchor"]').count(): await self.login(anchor, 'anchor', ANCHOR)
+        await expect(anchor.locator('#restoreLocalSession')).to_be_visible()
+        await anchor.locator('#restoreLocalSession').click()
+        await expect(anchor.locator('#exportAssignmentReceipt')).to_be_visible()
+        _, again = await self.download(anchor, lambda: anchor.locator('#exportAssignmentReceipt').click(), 'receipt-after-refresh.json')
+        self.check('refresh restores immutable receipt and answers', again == receipt)
+
+        broken = dict(receipt); broken['snapshotSha256'] = '0' * 64
+        invalid = self.out / 'receipt-wrong-version.json'; invalid.write_text(json.dumps(broken, ensure_ascii=False))
+        await self.import_receipt(operator, invalid); await expect(operator.locator('#toast')).to_contain_text('版本不一致')
+        self.check('wrong-version receipt rejected', not await self.pref(operator, 'submissions'))
+        await self.import_receipt(operator, receipt_path)
+        await expect(operator.locator('#ops-tracking')).to_contain_text('回执待核实')
+        self.check('manual receipt marked unauthenticated', (await self.pref(operator, 'submissions'))[0]['manuallyImported'] is True)
+        # Clear the file input using normal UI then import exact same file again.
+        await operator.locator('#assignmentReceiptImport').set_input_files([])
+        await self.import_receipt(operator, receipt_path)
+        await expect(operator.locator('#toast')).to_contain_text('回执已导入')
+        self.check('duplicate receipt is idempotent', len(await self.pref(operator, 'submissions')) == 1)
+        conflict = json.loads(json.dumps(receipt)); conflict['turns'][0]['answer'] += '冲突'
+        invalid.write_text(json.dumps(conflict, ensure_ascii=False)); await self.import_receipt(operator, invalid)
+        await expect(operator.locator('#toast')).to_contain_text('冲突')
+        self.check('conflicting same-session receipt cannot overwrite', (await self.pref(operator, 'submissions'))[0]['turns'][0]['answer'] == edited)
+        await self.screenshot(operator, 'received-pending-verification')
+
+        # Real native MediaRecorder with synthetic devices. Only model inference is stubbed.
+        media_ctx = await self.context(browser, mock_asr=True); media = await self.page(media_ctx)
+        await self.login(media, 'anchor', MEDIA_ANCHOR); await self.open_import(media, pkg_path)
+        await expect(media.locator('[data-join-assignment]').first).to_be_visible(); await self.join(media, text=False)
+        for i in range(3): await self.answer(media, i, media=True)
+        await self.finish(media); await media.wait_for_timeout(1500)
+        await media.locator('#reviewDetails').click()
+        await expect(media.locator('#questionSummary audio')).to_have_count(3)
+        blobs = await media.locator('#questionSummary audio').evaluate_all("async es => Promise.all(es.map(async e=>{const b=await (await fetch(e.src)).blob();return {bytes:b.size,type:b.type}}))")
+        self.check('three distinct original audio blobs recorded', len(blobs) == 3 and all(x['bytes'] > 200 for x in blobs), blobs)
+        await media.locator('#reviewDetailsBack').click()
+        media_receipt, media_data = await self.download(media, lambda: media.locator('#submitSession').click(), 'receipt-media.json')
+        self.check('ASR cannot overwrite manual answers or reorder questions', [t['answer'] for t in media_data['turns']] == ANSWERS and [t['question'] for t in media_data['turns']] == QUESTIONS)
+        records = await self.db(media, 'prefs')
+        stored = [r for r in records if r.get('id', '').startswith('submission-media:')]
+        self.check('submitted media stored in IndexedDB', len(stored) == 1)
+        await self.import_receipt(operator, media_receipt)
+        await expect(operator.locator('#ops-tracking')).to_contain_text(MEDIA_ANCHOR + ' · 回执待核实')
+
+        # Same browser, same origin, separate DB namespaces: official has no QA assignment.
+        original = await self.page(operator_ctx, OFFICIAL); await self.login(original, 'operator', OPERATOR)
+        await original.locator('[data-ops-tab="tracking"]').click()
+        self.check('official site cannot see QA assignment', assignment['title'] not in await original.locator('#ops-tracking').inner_text())
+        dbnames = await original.evaluate('async()=> (await indexedDB.databases()).map(x=>x.name)')
+        self.check('official and QA storage are separate', DB in dbnames and 'tcl-specialty-r24-paraformer-v1' in dbnames, dbnames)
+        host = urlparse(self.base).netloc
+        external = [r for r in self.requests if r['url'].startswith(('http://', 'https://')) and urlparse(r['url']).netloc != host]
+        mutations = [r for r in self.requests if r['method'] not in ('GET', 'HEAD', 'OPTIONS')]
+        self.check('no external data requests', not external, external)
+        self.check('no data-upload requests', not mutations, mutations)
+        self.check('no browser page or console errors', not self.errors, self.errors)
+        self.check('no failing HTTP resources', not self.responses, self.responses)
+
+    async def main(self):
+        failure = None
+        try:
+            async with async_playwright() as pw:
+                browser = await pw.chromium.launch(headless=True, args=['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-audio-capture=' + str(self.wav.resolve()), '--autoplay-policy=no-user-gesture-required'])
+                try: await self.run(browser)
+                except Exception:
+                    failure = traceback.format_exc()
+                    for ci, ctx in enumerate(self.contexts):
+                        for pi, p in enumerate(ctx.pages):
+                            if not p.is_closed():
+                                try:
+                                    await self.screenshot(p, f'failure-{ci}-{pi}')
+                                    (self.out / f'failure-{ci}-{pi}.txt').write_text(await p.locator('body').inner_text())
+                                except Exception: pass
+                await browser.close()
+        except Exception: failure = traceback.format_exc()
+        result = {'passed': sum(x['pass'] for x in self.rows), 'checks': self.rows, 'failure': failure, 'page_errors': self.errors, 'failed_http': self.responses, 'requests': self.requests, 'scope': 'real Chromium UI, XLSX parser, IndexedDB and MediaRecorder; synthetic identities/devices; ASR Worker explicitly mocked only for media flow; no physical phone, human speech accuracy or automatic cloud delivery claims'}
+        (self.out / 'browser-assignment-result.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
+        print(json.dumps({'passed': result['passed'], 'failure': failure}, ensure_ascii=False), flush=True)
+        if failure: raise SystemExit(1)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(); parser.add_argument('--base-url', required=True); parser.add_argument('--evidence', required=True)
+    asyncio.run(Audit(parser.parse_args()).main())

@@ -12,6 +12,8 @@ EXPECTED_ARCHIVE_SHA='dec534aac5467b07fba730e422f14200d26e3293fd1f964bf1c4ff88d8
 EXPECTED_APP_SHA='37eb6128081571861c712c9c1e5d07c75fb498d08091e8f2ee94a48c00ef19ec'
 R24_HISTORICAL_SHA='8c569a3f9b2adee09cc6ca668b121ab2390321eb76ad5e12c011acc7b3778b1a'
 
+TEST_ROUTE='tcl-r24-paraformer-excel-qa'
+
 def digest(raw): return hashlib.sha256(raw).hexdigest()
 
 def unzip_verified(file,dir):
@@ -41,7 +43,8 @@ def run(package,target,allow_historical=False):
         raise ValueError(f'R24 archive SHA does not match pinned {"historical" if allow_historical else "Paraformer pages3"} input: actual={sha}, expected={expected}')
     target=pathlib.Path(target);target.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
-        root=pathlib.Path(tmp)
+        root=pathlib.Path(tmp)/TEST_ROUTE
+        root.mkdir()
         unzip_verified(package,root)
         source_app=list(root.rglob('app.js'))
         if len(source_app)!=1:raise ValueError('Cannot isolate exactly one R24 app.js')
@@ -52,7 +55,11 @@ def run(package,target,allow_historical=False):
         target_dir=target/'frontend'/source_app[0].parent.name
         with zipfile.ZipFile(target/'R24_Excel_Assignment_Only_Offline_Candidate.zip','w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
             for p in sorted(target_dir.rglob('*')):
-                if p.is_file():z.write(p,p.relative_to(target/'frontend').as_posix())
+                if p.is_file():
+                    entry=zipfile.ZipInfo(p.relative_to(target_dir).as_posix(),(2026,11,23,0,0,0))
+                    entry.compress_type=zipfile.ZIP_DEFLATED
+                    entry.external_attr=0o100644 << 16
+                    z.writestr(entry,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
         script=target_dir/'app.js'
         subprocess.run(['node','--input-type=module','--check'],input=script.read_text(),text=True,check=True,timeout=12)
         subprocess.run(['node','--check',str(target_dir/'assignment-excel.mjs')],check=True,timeout=12)
@@ -61,6 +68,7 @@ def run(package,target,allow_historical=False):
           'source_sha256':sha,'source_app_sha256':app_sha,
           'candidate_zip_sha256':digest((target/'R24_Excel_Assignment_Only_Offline_Candidate.zip').read_bytes()),
           'preserved_ui':True,'preserved_stylesheet':True,'preserved_model_assets':True,
+          'isolated_test_route':TEST_ROUTE,
           'asr_business_code_changed':False,'shared_cloud_backend':False,
           'cross_device_delivery':'manual JSON package/receipt, not automatic cloud delivery',
           'built_site':target_dir.name

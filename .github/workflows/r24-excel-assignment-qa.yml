@@ -1,0 +1,60 @@
+name: R24 Excel assignment isolated browser QA
+on:
+  push:
+    branches: [fix/r24-excel-assignment-deploy-20261123]
+    paths:
+      - experiments/r24-paraformer-excel-assignment/**
+      - .github/workflows/r24-excel-assignment-qa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: r24-excel-assignment-qa-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install explicit browser test dependencies
+        run: |
+          python -m pip install playwright==1.62.0 openpyxl==3.1.5 xlwt==1.3.0
+          python -m playwright install --with-deps chromium
+      - name: Build exact official baseline and isolated candidate
+        run: |
+          mkdir -p _qa/evidence
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 --max-filesize 80161695 --proto "=https" --proto-redir "=https" --output _qa/model.tar.bz2 "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small.tar.bz2"
+          python3 experiments/r24-paraformer-excel-assignment/tools/prepare_browser_site.py --out _qa --model _qa/model.tar.bz2
+      - name: Run assignment rules and exact patcher regressions
+        env:
+          R24_EXCEL_SITE_DIR: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa
+          R24_EXCEL_APP: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa/app.js
+        run: |
+          node --test experiments/r24-paraformer-excel-assignment/tests/*.test.mjs > _qa/evidence/node-tests.log 2>&1
+          python3 experiments/r24-paraformer-excel-assignment/tests/test_patcher.py > _qa/evidence/patcher-tests.log 2>&1
+      - name: Exercise actual Excel upload and manual handoff in Chromium
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory _qa/site > _qa/evidence/http-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          python3 experiments/r24-paraformer-excel-assignment/tests/browser_assignment_e2e.py --base-url http://127.0.0.1:8765 --evidence _qa/evidence
+      - name: Save exact candidate and test evidence
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: r24-excel-qa-${{ github.run_id }}
+          path: |
+            _qa/evidence
+            _qa/build/BUILD_RESULT.json
+            _qa/build/PATCH_EVIDENCE.json
+            _qa/build/R24_Excel_Assignment_Only_Offline_Candidate.zip
+          retention-days: 14
