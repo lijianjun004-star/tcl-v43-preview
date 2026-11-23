@@ -1,7 +1,11 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
-import {extractQA} from '../../base/tcl-v352-asr-r24-qa/lib/qa-import.js';
+import {existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+const localQA=new URL('../../base/tcl-v352-asr-r24-qa/lib/qa-import.js',import.meta.url);
+const repoQA=new URL('../../r24/tcl-v352-asr-r24-qa/lib/qa-import.js',import.meta.url);
+const {extractQA}=await import(existsSync(fileURLToPath(localQA))?localQA.href:repoQA.href);
 import {validateExcelQuestions,makeAssignment,parseRecipients,questionsForAssignment,isAssigned,verifyAssignment,toExchangePackage,toReceipt,verifyReceipt} from '../assignment-excel.mjs';
 const parsed={format:'xlsx',blocks:[{kind:'table',rows:[
  {locator:'Excel 1',cells:['问题','参考答案','型号','SKU','评分点','品类','平台']},
