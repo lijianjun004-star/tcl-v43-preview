@@ -1,0 +1,120 @@
+name: Publish pinned R24 Excel QA delivery kit
+on:
+  push:
+    branches: [release/r24-excel-qa-kit-20261123]
+    paths:
+      - .github/workflows/r24-excel-qa-release-kit.yml
+      - tools/build_release_kit.py
+      - README_RELEASE.md
+      - evidence/r24-excel-public-352.json
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: r24-excel-qa-20261123-release-kit
+  cancel-in-progress: false
+env:
+  REPOSITORY: lijianjun004-star/tcl-v43-preview
+  SOURCE_SHA: ceee762ef092837e17ab680bdb41c0d1ba55e229
+  PUBLISHED_SHA: 1ff721925f826717fb63a8594766e35a812d08ab
+  QA_RUN: '45135920009'
+  PAGES_RUN: '45136397011'
+  ARTIFACT_ID: '14799911900'
+  ARTIFACT_NAME: r24-excel-qa-45135920009
+  RELEASE_TAG: r24-excel-qa-20261123
+jobs:
+  release-kit:
+    if: github.repository == 'lijianjun004-star/tcl-v43-preview' && github.ref == 'refs/heads/release/r24-excel-qa-kit-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: _kit/source
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.PUBLISHED_SHA }}
+          path: _kit/published
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/workflows/pages.yml
+            /release-ci/release_guard.py
+            /release-ci/test_release_guard.py
+            /experiments/r24-paraformer-excel-release/site-only.zip
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Fetch exact successful QA and Pages evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p _kit/meta
+          gh api "repos/$REPOSITORY/actions/runs/$QA_RUN" > _kit/meta/qa-run.json
+          gh api "repos/$REPOSITORY/actions/runs/$PAGES_RUN" > _kit/meta/pages-run.json
+          gh api "repos/$REPOSITORY/actions/artifacts/$ARTIFACT_ID" > _kit/meta/artifact.json
+          gh api "repos/$REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > _kit/qa-artifact.zip
+          gh run download "$QA_RUN" --repo "$REPOSITORY" --name "$ARTIFACT_NAME" --dir _kit/qa-artifact
+          python3 tools/build_release_kit.py --verify-only
+      - name: Rebuild pinned complete QA route
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 --max-filesize 80161695 --proto '=https' --proto-redir '=https' --output _kit/model.tar.bz2 'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small.tar.bz2'
+          test "$(stat -c %s _kit/model.tar.bz2)" = 80161695
+          echo 'be25b1ef4dcb7a037cf6954ad878737ce7842fa0b512c991ebd39b95d2e6d548  _kit/model.tar.bz2' | sha256sum --check --strict
+          python3 _kit/source/experiments/r24-paraformer-excel-assignment/tools/prepare_browser_site.py --out _kit/rebuild --model _kit/model.tar.bz2
+      # Root may insert a full-site verification step here. A tracked successful
+      # evidence/r24-excel-public-352.json is strictly checked and included by the
+      # builder; when present it replaces the additional 36-resource HTTP pass.
+      - name: Verify live evidence and build deterministic delivery ZIP
+        run: python3 tools/build_release_kit.py
+      - name: Create a new prerelease without replacing any tag or asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, subprocess
+          repo, tag = os.environ['REPOSITORY'], os.environ['RELEASE_TAG']
+          for endpoint in (f'repos/{repo}/git/ref/tags/{tag}', f'repos/{repo}/releases/tags/{tag}'):
+              result = subprocess.run(['gh', 'api', endpoint], capture_output=True, text=True)
+              if result.returncode == 0:
+                  raise SystemExit('Refusing to overwrite an existing tag/release')
+              if '(HTTP 404)' not in result.stderr:
+                  raise SystemExit('Cannot establish that tag/release is absent; stopping')
+          PY
+          # Atomic create refuses a concurrent pre-existing tag; never use a force update.
+          gh api --method POST "repos/$REPOSITORY/git/refs" -f ref="refs/tags/$RELEASE_TAG" -f sha="$PUBLISHED_SHA" > _kit/created-tag.json
+          gh release create "$RELEASE_TAG" dist/R24_Excel_QA_20261123.zip dist/SHA256SUMS --repo "$REPOSITORY" --verify-tag --target "$PUBLISHED_SHA" --prerelease --latest=false --title 'R24 Excel QA 2026-11-23 完整交付包' --notes-file README_RELEASE.md
+      - name: Verify prerelease identity and downloaded asset hashes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPOSITORY/git/ref/tags/$RELEASE_TAG" > _kit/tag.json
+          gh api "repos/$REPOSITORY/releases/tags/$RELEASE_TAG" > _kit/release.json
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          tag = json.loads(Path('_kit/tag.json').read_text())
+          release = json.loads(Path('_kit/release.json').read_text())
+          assert tag['object']['type'] == 'commit' and tag['object']['sha'] == os.environ['PUBLISHED_SHA']
+          assert release['tag_name'] == os.environ['RELEASE_TAG'] and release['prerelease'] is True and release['draft'] is False
+          assert {a['name'] for a in release['assets']} == {'R24_Excel_QA_20261123.zip', 'SHA256SUMS'}
+          assert all(a['state'] == 'uploaded' for a in release['assets'])
+          print(release['html_url'])
+          PY
+          gh release download "$RELEASE_TAG" --repo "$REPOSITORY" --dir _kit/release-readback --pattern R24_Excel_QA_20261123.zip --pattern SHA256SUMS
+          cmp dist/SHA256SUMS _kit/release-readback/SHA256SUMS
+          cd _kit/release-readback
+          sha256sum --check --strict SHA256SUMS
