@@ -162,3 +162,52 @@ test('manual receipt deduplication keeps different assignments even with the sam
   await ingest({ ...one, turns: one.turns.map(t => ({ ...t, answer: '不同回答' })) });
   assert.equal(f.saved.submissions.length, 2); assert.match(f.messages.at(-1), /回执内容冲突/);
 });
+
+// ---- QA3 review fixes (independent live review of QA2 by Claude and Gemini) ----
+const statusSource = section('function assignmentStatusFor(a,anchor){', '\n// UI boundaries in this local demo');
+async function receiptFor(deadline, submittedAt) {
+  const questions = rules.validateExcelQuestions(rows, { category: 'TCL 电视', platform: '京东' });
+  const a = await rules.makeAssignment({ id: 'late-' + submittedAt, title: '限时作业', operatorName: '运营甲', boardId: '01', platform: '京东', deadline, assignedTo: [], questions, createdAt: '2026-11-23T10:00:00.000Z' });
+  const snap = { id: 'run-' + submittedAt, assignmentId: a.id, assignmentVersion: a.version, assignmentSnapshotSha256: a.snapshotSha256, operatorName: a.operatorName, boardId: a.boardId, platform: a.platform, anchorName: '限时主播', turns: a.questions.map(q => ({ questionId: q.id, question: q.question, model: q.model, sku: q.sku, answer: '主播人工核对后的回答', transcript: '', asrStatus: '' })) };
+  const receipt = rules.toReceipt(a, snap); receipt.submittedAt = submittedAt;
+  return { a, receipt };
+}
+async function importReceipt(f, receipt) {
+  const text = JSON.stringify(receipt), file = { size: text.length, text: async () => text }, input = { files: [file], isConnected: true };
+  f.nodes.assignmentReceiptImport = input;
+  await f.ctx.importAssignmentReceipt({ currentTarget: input });
+}
+
+test('QA3 late manual receipt keeps a visible late flag for the operator', async () => {
+  for (const [submittedAt, late] of [['2026-11-23T10:23:04.227Z', true], ['2026-11-23T10:22:00.000Z', false]]) {
+    const f = fixture(), { a, receipt } = await receiptFor('2026-11-23T10:23:00.000Z', submittedAt);
+    f.saved.assignments = [a];
+    await importReceipt(f, receipt);
+    assert.equal(f.saved.submissions.length, 1, f.messages.at(-1));
+    assert.equal(f.saved.submissions[0].late, late);
+    assert.equal(/逾期提交/.test(f.messages.at(-1)), late, f.messages.at(-1));
+    const status = vm.createContext({ localSubmissions: f.saved.submissions, localTrainingLogs: [], localAssignmentJoins: [], assignmentExpired: () => true });
+    vm.runInContext(statusSource, status);
+    assert.equal(status.assignmentStatusFor(a, '限时主播'), late ? '逾期提交 · 回执待核实' : '回执待核实');
+  }
+});
+
+test('QA3 importing the same assignment package twice says it already exists and keeps one copy', async () => {
+  const f = fixture(); f.ctx.userRole = 'anchor'; f.ctx.userName = '主播甲';
+  const questions = rules.validateExcelQuestions(rows, { category: 'TCL 电视', platform: '京东' });
+  const a = await rules.makeAssignment({ id: 'dup-pkg-1', title: '公开作业', operatorName: '运营甲', boardId: '01', platform: '京东', assignedTo: [], questions });
+  const pkg = JSON.stringify(rules.toExchangePackage(a));
+  const importPkg = async () => { const input = { files: [{ size: pkg.length, text: async () => pkg }], isConnected: true }; f.nodes.assignmentPackageImport = input; await f.ctx.importAssignmentPackage({ currentTarget: input }); };
+  await importPkg(); assert.equal(f.saved.assignments.length, 1); assert.match(f.messages.at(-1), /^作业包已导入本机/);
+  await importPkg(); assert.equal(f.saved.assignments.length, 1); assert.match(f.messages.at(-1), /^该作业已在本机列表中/);
+});
+
+test('QA3 generated app shows overflow counts and cancels the rotated fold indicator inline', () => {
+  assert.match(source, /todo\.length>3\?`<p class="scene-tip">当前显示前 3 条（共 \$\{todo\.length\} 条）/);
+  assert.match(source, /assigned\.length>8\?`<p class="scene-tip">仅显示前 8 条（共 \$\{assigned\.length\} 条）/);
+  assert.match(source, /matches\.length>8\?`<p class="scene-tip">仅显示前 8 条（共 \$\{matches\.length\} 条）/);
+  const fold = section('function syncFoldIndicators(){', '\nfunction clearAnswerAudio(){');
+  assert.match(fold, /ind\.style\.transform='none'/);
+  assert.match(fold, /fold\.open\?'收起 ⌄':'展开 ›'/);
+  assert.match(source, /homeResultsUpdater=updateResults;bindResumeReview\(\);\n syncFoldIndicators\(\);/);
+});

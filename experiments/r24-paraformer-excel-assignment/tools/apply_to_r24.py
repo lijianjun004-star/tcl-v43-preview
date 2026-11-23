@@ -12,7 +12,7 @@ import shutil
 import sys
 
 MODULE=Path(__file__).resolve().parents[1]/'assignment-excel.mjs'
-VERSION='r24-paraformer-excel-assignment-20261123-qa2-operator-search'
+VERSION='r24-paraformer-excel-assignment-20261123-qa3-review-fixes'
 EXTERNAL_MODEL_FILES={
     'vendor/paraformer/sherpa-onnx-asr.js':'ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9',
     'vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.data':'9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f',
@@ -324,6 +324,44 @@ function nextQuestion(){''','stop preview resource selection before revocation')
     # A failed/cancelled browser download is recoverable after refresh.
     s=replace_once(s,"<p class=\"scene-tip submit-local-note\">", "${submitted?.assignmentReceipt?'<button type=\"button\" id=\"exportAssignmentReceipt\" class=\"btn soft wide\">导出作业回执（JSON）</button>':''}<p class=\"scene-tip submit-local-note\">",'persistent receipt export control')
     s=replace_once(s,"ELEM('reviewRetry').onclick=", "if(ELEM('exportAssignmentReceipt'))ELEM('exportAssignmentReceipt').onclick=()=>{const record=reviewSubmission();if(record?.assignmentReceipt)downloadJSON('TCL-主播作业提交回执-'+record.id+'.json',record.assignmentReceipt);};\n ELEM('reviewRetry').onclick=",'bind persistent receipt export')
+    return qa3_review_fixes(s)
+
+
+def qa3_review_fixes(s):
+    """QA3: fixes from the independent live review of QA2 (Claude + Gemini).
+
+    Applied after the frozen QA2 patches so every QA2 anchor remains exact.
+    Touches only assignment UI/receipt code; ASR recognition code is unchanged.
+    """
+    s=replace_once(s,'toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete} from',
+        'toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from','QA3 late helper import')
+    # P1: a manual receipt submitted after the deadline must stay visibly late
+    # for the operator, judged against the frozen deadline (device clock).
+    s=replace_once(s,"if(sub)return sub.manuallyImported?'回执待核实':sub.late?'逾期提交':'已提交';",
+        "if(sub)return sub.manuallyImported?(sub.late?'逾期提交 · 回执待核实':'回执待核实'):sub.late?'逾期提交':'已提交';",'QA3 late manual receipt status')
+    s=replace_once(s,'assignmentReceipt:receipt,manuallyImported:true,',
+        'assignmentReceipt:receipt,late:isReceiptLate(receipt,assignment),manuallyImported:true,','QA3 late flag on imported receipt')
+    s=replace_once(s,"if(current()){localSubmissions=saved;toast('回执已导入本机，真实性仍需运营人工核对');",
+        "if(current()){localSubmissions=saved;toast(item.late?'回执已导入本机（逾期提交，按主播设备时间判断），真实性仍需运营人工核对':'回执已导入本机，真实性仍需运营人工核对');",'QA3 late import notice')
+    # P2 (Gemini review): tell the anchor when a package was already present.
+    s=replace_once(s,"return existing?list:[assignment,...list];});\n  if(current()){localAssignments=saved;toast('作业包已导入本机，可搜索运营姓名自主领取');anchorHome();}",
+        "if(existing){alreadyImported=true;return list;}alreadyImported=false;return [assignment,...list];});\n  if(current()){localAssignments=saved;toast(alreadyImported?'该作业已在本机列表中，可搜索运营姓名自主领取':'作业包已导入本机，可搜索运营姓名自主领取');anchorHome();}",'QA3 duplicate package notice')
+    s=replace_once(s,"  const saved=await updatePrefList('assignments',list=>{if(!current())throw new Error('导入页面或姓名已变化');",
+        "  let alreadyImported=false;\n  const saved=await updatePrefList('assignments',list=>{if(!current())throw new Error('导入页面或姓名已变化');",'QA3 duplicate package state')
+    # P2 (Gemini review): truncated lists say how many items are hidden.
+    s=replace_once(s,"<div class=\"assignment-results\">${todo.slice(0,3).map(assignmentRowHtml).join('')}</div></section>`:''}",
+        "<div class=\"assignment-results\">${todo.slice(0,3).map(assignmentRowHtml).join('')}</div>${todo.length>3?`<p class=\"scene-tip\">当前显示前 3 条（共 ${todo.length} 条），可在下方“运营布置的作业”按运营姓名筛选。</p>`:''}</section>`:''}",'QA3 todo overflow hint')
+    s=replace_once(s,"${assigned.slice(0,8).map(assignmentRowHtml).join('')||'<div class=\"empty compact\">还没有找到相关作业，可以先自由练播。</div>'}",
+        "${assigned.slice(0,8).map(assignmentRowHtml).join('')||'<div class=\"empty compact\">还没有找到相关作业，可以先自由练播。</div>'}${assigned.length>8?`<p class=\"scene-tip\">仅显示前 8 条（共 ${assigned.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:''}",'QA3 initial search overflow hint')
+    s=replace_once(s,"results.innerHTML=matches.slice(0,8).map(assignmentRowHtml).join('')||'<div class=\"empty compact\">暂无匹配作业</div>';",
+        "results.innerHTML=(matches.slice(0,8).map(assignmentRowHtml).join('')||'<div class=\"empty compact\">暂无匹配作业</div>')+(matches.length>8?`<p class=\"scene-tip\">仅显示前 8 条（共 ${matches.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:'');",'QA3 search overflow hint')
+    # P2: the pinned stylesheet rotates the whole "展开 ›" pill 90deg when open,
+    # rendering it vertically. style.css stays byte-identical, so cancel the
+    # rotation inline on this route and swap the label instead.
+    s=replace_once(s,"homeResultsUpdater=updateResults;bindResumeReview();",
+        "homeResultsUpdater=updateResults;bindResumeReview();\n syncFoldIndicators();",'QA3 fold indicator binding')
+    s=replace_once(s,'function clearAnswerAudio(){',
+        "function syncFoldIndicators(){\n for(const fold of document.querySelectorAll('#view details.hub-fold')){const ind=fold.querySelector('.fold-indicator');if(!ind||ind.dataset.qaSynced)continue;ind.dataset.qaSynced='1';ind.style.transform='none';const sync=()=>{ind.textContent=fold.open?'收起 ⌄':'展开 ›';};sync();fold.addEventListener('toggle',sync);}\n}\nfunction clearAnswerAudio(){",'QA3 fold indicator helper')
     return s
 
 

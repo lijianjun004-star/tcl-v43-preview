@@ -17,6 +17,7 @@ ROUTE = '/tcl-r24-paraformer-excel-qa/'
 SAMPLE_SHA = 'a1bd32dc78493c123f9625a66deee562aed2895f53fbc39f2cca3be7e6f4f20f'
 MANIFEST_SHA = '9a9538a91e1ba4230577d1a4410fe4ac429039ced6478af15346e378cedc6df2'
 CACHE_NAME = 'tcl-r24-paraformer-excel-qa-assets-1.12.20-v1'
+EXPECTED_TEXT = '欢迎大家来体验达摩院推出的语音识别模型'
 
 HARNESS = r"""async ({route,samplePin,manifestPin,cacheName}) => {
   const hash = async buffer => [...new Uint8Array(await crypto.subtle.digest('SHA-256',buffer))].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -91,6 +92,9 @@ async def run(args):
                 check('public source recording exact SHA and size',result['sample']['sha256']==SAMPLE_SHA and result['sample']['bytes']==177572,result['sample'])
                 check('fixed official model manifest SHA',result['manifest']['sha256']==MANIFEST_SHA,result['manifest'])
                 check('real Mandarin inference returned nonempty Chinese',bool(re.search(r'[\u3400-\u9fff]',result['transcription'].get('text',''))),result['transcription'])
+                # Non-speech also yields Chinese text (observed live: pure tone -> "我是我是一的问的"),
+                # so the pinned public sample must reproduce its exact known transcript.
+                check('pinned sample transcript is exactly the known sentence',re.sub(r'[\s\W_]+','',result['transcription'].get('text',''))==EXPECTED_TEXT,result['transcription'].get('text'))
                 check('real engine reports ParaformerSmall',result['transcription'].get('model')=='ParaformerSmall-int8')
                 check('one short public sample completed in full',4.0<result['transcription'].get('duration',0)<7.0 and len(result['transcription'].get('chunks',[]))==1,result['transcription'].get('duration'))
                 check('five cache files independently rehashed',len(result['cacheReadback'])==5,result['cacheReadback'])

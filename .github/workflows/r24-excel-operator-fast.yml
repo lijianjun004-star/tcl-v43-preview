@@ -1,7 +1,7 @@
 name: R24 Excel operator-search fast offline regressions
 on:
   push:
-    branches: [fix/r24-excel-operator-search-20261123]
+    branches: [fix/r24-excel-operator-search-20261123, claude/paraformer-excel-qa-verify-mum367]
     paths:
       - experiments/r24-paraformer-excel-assignment/**
       - .github/workflows/r24-excel-operator-fast.yml

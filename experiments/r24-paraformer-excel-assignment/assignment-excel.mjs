@@ -280,6 +280,34 @@ export function toExchangePackage(a) {
   return { schema: ASSIGNMENT_SCHEMA, notice: '仅供手动传递的本机练播作业；姓名不是身份认证。私有Excel只在本机读取，不应提交到公开仓库。', assignment: structuredClone(a) };
 }
 
+/**
+ * A non-speech or noisy recording can be transcribed as one or two characters
+ * repeated (observed live: "谢谢谢谢…", "不不不谢谢…", "啊啊啊啊啊不拜"). Such text is not an answer.
+ * Punctuation, symbols and whitespace are ignored before counting characters.
+ */
+export function isDegenerateAnswer(value) {
+  const chars = Array.from(String(value ?? '').normalize('NFKC').replace(/[\s\p{P}\p{S}]/gu, ''));
+  // Digits never count toward noise: "1000", "10000" or "1111元" are valid answers.
+  const words = chars.filter(c => !/\p{Nd}/u.test(c)), distinct = new Set(words).size;
+  // Count-based: long genuine answers naturally have a low distinct/length ratio.
+  if ((words.length >= 4 && distinct <= 2) || (words.length >= 8 && distinct <= 3)) return true;
+  // One non-digit character repeated >=4 times in a row covering over half the text
+  // (observed live: "啊啊啊啊啊不拜"); digits are exempt so "10000元" stays valid.
+  let run = 0, longest = 0;
+  for (let i = 0; i < chars.length; i++) {
+    run = i > 0 && chars[i] === chars[i - 1] && !/\p{Nd}/u.test(chars[i]) ? run + 1 : 1;
+    longest = Math.max(longest, run);
+  }
+  return longest >= 4 && longest * 2 > chars.length;
+}
+
+/** Late against the frozen deadline, by the receipt's own (device-clock) submission time. */
+export function isReceiptLate(receipt, assignment) {
+  if (!assignment?.deadline) return false;
+  const due = Date.parse(assignment.deadline), at = Date.parse(receipt?.submittedAt);
+  return Number.isFinite(due) && Number.isFinite(at) && at >= due;
+}
+
 function completeTurns(turns, assignment) {
   check(Array.isArray(turns) && turns.length === assignment.questions.length, '必须完成原作业的全部题目后再提交，不能缺题或重复答题');
   const seen = new Set();
@@ -293,6 +321,8 @@ function completeTurns(turns, assignment) {
       `第${i + 1}题与原作业的题目、型号或SKU不一致`);
     check(turn.manualCleared !== true && typeof turn.answer === 'string' && turn.answer.trim().length > 0,
       `第${i + 1}题尚未完成回答，旧转写不能替代已清空的答案`);
+    check(!isDegenerateAnswer(turn.answer),
+      `第${i + 1}题回答疑似噪音误识别或重复字，请人工核对并改写后再提交`);
     text(turn.answer, `第${i + 1}题回答`, 10000);
     text(turn.transcript, `第${i + 1}题转写`, 20000, { empty: true });
     text(turn.asrStatus, `第${i + 1}题识别状态`, 300, { empty: true });
