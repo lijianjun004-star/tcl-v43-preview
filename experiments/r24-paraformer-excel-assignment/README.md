@@ -39,3 +39,7 @@ node --test '<解压本包的目录>/source/tests/assignment-excel.test.mjs'
 ## 跨设备边界
 
 R24 pages3 目前是静态站 + 本机 IndexedDB，并不具备已认证的云端运营/主播账号后台。本次提供**离线手动交换包**：运营发布本地作业后「导出作业包 JSON」，把文件发给指定主播；主播用现有姓名进入并导入；主播提交后下载文字回执 JSON，再由运营导入并**人工核对**。不会自动跨设备推送、上传录音录像或实现可信权限认证。需要全自动跨设备作业、提交与媒体上传，必须另接服务端鉴权/存储，在独立任务中验收；禁止把姓名输入和 JSON 校验哈希冒充安全身份认证。
+
+## QA3 候选（2026-11-23，未部署）
+
+在 QA2 的全部补丁之后追加 `tools/apply_to_r24.py` 的 `qa3_review_fixes()`，版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。修复两轮独立复验发现的问题：人工回执逾期标记丢失、噪音被识别为重复字答案、折叠按钮竖排、列表截断无提示、重复导入提示。详细问题、处理和 NOT RUN 范围见 [TEST_REPORT.md](TEST_REPORT.md) 的 QA3 一节。新增 `tests/browser_adversarial_e2e.py`，CI 在 `r24-excel-assignment-qa.yml` 中运行。QA3 未改发布门禁和 Pages，部署须另走门禁 PR + 发行 PR。

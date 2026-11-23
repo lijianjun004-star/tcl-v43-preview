@@ -1,7 +1,7 @@
 name: R24 Excel assignment isolated browser QA
 on:
   push:
-    branches: [fix/r24-excel-assignment-deploy-20261123, fix/r24-excel-operator-search-20261123]
+    branches: [fix/r24-excel-assignment-deploy-20261123, fix/r24-excel-operator-search-20261123, claude/paraformer-excel-qa-verify-mum367]
     paths:
       - experiments/r24-paraformer-excel-assignment/**
       - .github/workflows/r24-excel-assignment-qa.yml
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   browser-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v6
         with:
@@ -54,6 +54,14 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           python3 experiments/r24-paraformer-excel-assignment/tests/browser_assignment_e2e.py --base-url http://127.0.0.1:8765 --evidence _qa/evidence
+      - name: Adversarial review scenarios (gates, two anchors, tampering, deadline, real-model noise)
+        if: ${{ !cancelled() && hashFiles('_qa/build/BUILD_RESULT.json') != '' }}
+        run: |
+          mkdir -p _qa/evidence/adversarial
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory _qa/site > _qa/evidence/adversarial/http-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          python3 experiments/r24-paraformer-excel-assignment/tests/browser_adversarial_e2e.py --base-url http://127.0.0.1:8765 --evidence _qa/evidence/adversarial
       - name: Save exact candidate and test evidence
         if: always()
         uses: actions/upload-artifact@v5

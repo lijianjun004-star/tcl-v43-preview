@@ -130,6 +130,20 @@ class R24PatchTests(unittest.TestCase):
         self.assertIn('a.assignedTo.length === 0 || a.assignedTo.includes(anchorName.trim())', module)
         self.assertIn('已有的作业，跨手机须先导入', app)
 
+    def test_11_qa3_review_fixes_are_present_and_versioned(self):
+        app = (self.site / 'app.js').read_text('utf-8')
+        module = (self.site / 'assignment-excel.mjs').read_text('utf-8')
+        manifest = json.loads((self.site / 'static-manifest.json').read_text('utf-8'))
+        self.assertEqual(manifest['version'], 'r24-paraformer-excel-assignment-20261123-qa3-review-fixes')
+        self.assertIn("sub.late?'逾期提交 · 回执待核实':'回执待核实'", app)
+        self.assertIn('late:isReceiptLate(receipt,assignment)', app)
+        self.assertIn("'该作业已在本机列表中，可搜索运营姓名自主领取'", app)
+        self.assertIn("ind.style.transform='none'", app)
+        self.assertIn('export function isDegenerateAnswer(value)', module)
+        self.assertIn('check(!isDegenerateAnswer(turn.answer)', module)
+        # The ASR recognition path itself is untouched by QA3.
+        self.assertEqual(app.count('turn.answer=text'), 2)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
