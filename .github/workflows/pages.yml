@@ -56,6 +56,10 @@ jobs:
           MODEL="$RUNNER_TEMP/r24-paraformer-rc-model.tar.bz2"
           curl --fail --location --silent --show-error --retry 3 --max-time 120 --max-filesize 80161695 --proto "=https" --proto-redir "=https" --output "$MODEL" "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.12.20/sherpa-onnx-wasm-simd-1.12.20-vad-asr-zh_en-paraformer_small.tar.bz2"
           python3 release-ci/release_guard.py --stage-r24-paraformer-rc _site experiments/r24-paraformer-rc-release/site-only.zip "$MODEL"
+      - name: Stage isolated R2.4 Excel assignment preview
+        run: |
+          MODEL="$RUNNER_TEMP/r24-paraformer-model.tar.bz2"
+          python3 release-ci/release_guard.py --stage-r24-paraformer-excel _site experiments/r24-paraformer-excel-release/site-only.zip "$MODEL"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
