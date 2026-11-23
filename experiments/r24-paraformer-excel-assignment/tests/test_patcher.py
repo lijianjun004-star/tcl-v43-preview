@@ -1,6 +1,7 @@
 import hashlib, json, pathlib, shutil, sys, tempfile, unittest, zipfile
-ROOT=pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0,str(ROOT/'implementation/tools'))
+SOURCE=pathlib.Path(__file__).resolve().parents[1]
+ROOT=SOURCE.parent
+sys.path.insert(0,str(SOURCE/'tools'))
 from apply_to_r24 import build, patch_app
 BASE=ROOT/'base/tcl-v352-asr-r24-qa'
 
