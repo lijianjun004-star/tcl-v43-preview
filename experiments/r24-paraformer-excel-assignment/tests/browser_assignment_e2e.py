@@ -346,7 +346,9 @@ class Audit:
         await expect(operator.locator('#toast')).to_contain_text('回执已导入')
         self.check('duplicate receipt is idempotent', len(await self.pref(operator, 'submissions')) == 1)
         conflict = json.loads(json.dumps(receipt)); conflict['turns'][0]['answer'] += '冲突'
-        invalid.write_text(json.dumps(conflict, ensure_ascii=False)); await self.import_receipt(operator, invalid)
+        # Keep receipt-wrong-version.json as evidence of the rejected stale version.
+        conflict_path = self.out / 'receipt-conflict.json'
+        conflict_path.write_text(json.dumps(conflict, ensure_ascii=False)); await self.import_receipt(operator, conflict_path)
         await expect(operator.locator('#toast')).to_contain_text('冲突')
         self.check('conflicting same-session receipt cannot overwrite', (await self.pref(operator, 'submissions'))[0]['turns'][0]['answer'] == edited)
         await self.screenshot(operator, 'received-pending-verification')
