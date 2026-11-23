@@ -12,7 +12,7 @@ import shutil
 import sys
 
 MODULE=Path(__file__).resolve().parents[1]/'assignment-excel.mjs'
-VERSION='r24-paraformer-excel-assignment-20261123-qa1'
+VERSION='r24-paraformer-excel-assignment-20261123-qa2-operator-search'
 EXTERNAL_MODEL_FILES={
     'vendor/paraformer/sherpa-onnx-asr.js':'ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9',
     'vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.data':'9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f',
@@ -36,7 +36,7 @@ def replace_once(s, old, new, name):
 def patch_app(src:str)->str:
     s=src
     s=replace_once(s,"import { extractQA, detectReviewConflicts } from './lib/qa-import.js';",
-        "import { extractQA, detectReviewConflicts } from './lib/qa-import.js';\nimport {validateExcelQuestions,assertExcelOneRowPerQuestion,parseRecipients,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt} from './assignment-excel.mjs';",'ASR/qa imports')
+        "import { extractQA, detectReviewConflicts } from './lib/qa-import.js';\nimport {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt} from './assignment-excel.mjs';",'ASR/qa imports')
     s=replace_once(s,'let operatorActiveTab="publish";',
         'let assignmentExcelPreview=null, assignmentExcelEpoch=0;\nlet operatorActiveTab="publish";', 'operator state')
     s=replace_once(s,"const assigned=localAssignments.filter(a=>!q||norm(`${a.operatorName}${a.title}${boardById(a.boardId).category}${a.platform}`).includes(q));",
@@ -53,29 +53,29 @@ def patch_app(src:str)->str:
         "ELEM('assignmentPackageImport').onchange=importAssignmentPackage;\n search.oninput=e=>{assignmentSearch=e.target.value;",'anchor import binding')
     # Inline additions only in existing operator 'publish' panel.
     s=replace_once(s,'<button id="publishAssignment" class="btn primary wide hub-publish">',
-        '<div class="field"><label for="assignmentRecipients">4. 接收作业的主播姓名（可用逗号分隔）</label><input id="assignmentRecipients" placeholder="例如：张三，李四"></div><div class="field"><label for="assignmentExcelFile">5. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button><div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">','operator upload UI')
+        '<p class="scene-tip">本次作业面向所有主播开放领取；当前仅能搜索本机已有的作业，跨手机须先导入运营发送的 JSON。</p><div class="field"><label for="assignmentExcelFile">4. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button><div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">','operator upload UI')
     s=replace_once(s,"ELEM('publishAssignment').onclick=async()=>{await publishAssignment();};",
-        "ELEM('publishAssignment').onclick=async()=>{await publishAssignment();};\n ELEM('assignmentExcelPreviewBtn').onclick=previewAssignmentExcel;\n ['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentRecipients'].forEach(id=>ELEM(id).addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;const dest=ELEM('assignmentExcelPreview');if(dest)dest.textContent='作业条件已变化，请重新预览Excel';}));\n ELEM('assignmentExcelFile').addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;ELEM('assignmentExcelPreview').textContent='文件已更换，请重新解析预览';});\n document.querySelectorAll('[data-export-assignment]').forEach(btn=>btn.onclick=()=>{const a=assignmentById(btn.dataset.exportAssignment);if(a?.schema)downloadJSON('TCL-运营作业-'+a.id+'.json',toExchangePackage(a));});\n if(ELEM('assignmentReceiptImport'))ELEM('assignmentReceiptImport').onchange=importAssignmentReceipt;",'operator controls')
+        "ELEM('publishAssignment').onclick=async()=>{await publishAssignment();};\n ELEM('assignmentExcelPreviewBtn').onclick=previewAssignmentExcel;\n ['assignmentTitle','assignmentBoard','assignmentPlatform'].forEach(id=>ELEM(id).addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;const dest=ELEM('assignmentExcelPreview');if(dest)dest.textContent='作业条件已变化，请重新预览Excel';}));\n ELEM('assignmentExcelFile').addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;ELEM('assignmentExcelPreview').textContent='文件已更换，请重新解析预览';});\n document.querySelectorAll('[data-export-assignment]').forEach(btn=>btn.onclick=()=>{const a=assignmentById(btn.dataset.exportAssignment);if(a?.schema)downloadJSON('TCL-运营作业-'+a.id+'.json',toExchangePackage(a));});\n if(ELEM('assignmentReceiptImport'))ELEM('assignmentReceiptImport').onchange=importAssignmentReceipt;",'operator controls')
     s=replace_once(s,'<div class="assignment-results">${own.map(a=>',
         '<div class="field"><label for="assignmentReceiptImport">接收主播提交回执（JSON；需人工确认真实性）</label><input id="assignmentReceiptImport" type="file" accept=".json,application/json"></div><div class="assignment-results">${own.map(a=>','operator receipt input')
     s=replace_once(s,'<div class="assignment-statuses">${anchors.map',
         '<div>${a.schema?`<small>Excel作业 · ${a.questions.length}题 · 固定版本 v${a.version}</small><button type="button" class="btn soft small" data-export-assignment="${ESC(a.id)}">导出作业包给主播</button>`:""}</div><div class="assignment-statuses">${anchors.map','operator export button')
-    # Existing operator tracking must include named recipients even before join.
+    # Keep historical explicitly named recipients in tracking; public [] tracks actual claimants.
     s=replace_once(s,
         "const anchors=[...new Set(localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName))];",
         "const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName)])];",'assignment recipient status')
     s=replace_once(s,'if(!title)return toast(\'请输入作业名称\');',
-        "if(!title)return toast('请输入作业名称');\n const recipients=parseRecipients(ELEM('assignmentRecipients')?.value||'');\n if(!recipients.length)return toast('请填写接收作业的主播姓名');\n if(!assignmentExcelPreview||assignmentExcelPreview.epoch!==assignmentExcelEpoch||assignmentExcelPreview.boardId!==boardId||assignmentExcelPreview.platform!==platform||assignmentExcelPreview.file!==ELEM('assignmentExcelFile')?.files?.[0])return toast('请先上传Excel并完成预览，确认题目无误后发布');",'publish preflight')
+        "if(!title)return toast('请输入作业名称');\n if(!assignmentExcelPreview||assignmentExcelPreview.epoch!==assignmentExcelEpoch||assignmentExcelPreview.boardId!==boardId||assignmentExcelPreview.platform!==platform||assignmentExcelPreview.file!==ELEM('assignmentExcelFile')?.files?.[0])return toast('请先上传Excel并完成预览，确认题目无误后发布');",'publish preflight')
     s=replace_once(s,"const item={id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso()};",
         "",'remove premature legacy assignment initializer')
     s=replace_once(s,"assignmentPublishPending=true;if(button)button.disabled=true;\n try{",
-        "assignmentPublishPending=true;if(button)button.disabled=true;\n try{\n  const item=await makeAssignment({id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso(),assignedTo:recipients,questions:assignmentExcelPreview.questions});",'make immutable assignment inside catchable transaction')
+        "assignmentPublishPending=true;if(button)button.disabled=true;\n try{\n  const item=await makeAssignment({id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso(),assignedTo:[],questions:assignmentExcelPreview.questions});",'make immutable assignment inside catchable transaction')
     s=replace_once(s,"toast('作业已发布（本机测试数据）');operatorActiveTab='tracking';operatorHome();",
-        "toast('作业已保存到本机；请导出作业包手动发送给主播（不会自动跨设备同步）');operatorActiveTab='tracking';operatorHome();",'publication truthfulness')
+        "toast('已发布全员可领取的本机作业；跨手机仍须先传递 JSON，尚无共享后台');operatorActiveTab='tracking';operatorHome();",'publication truthfulness')
     s=replace_once(s,"if(sub)return sub.late?'逾期提交':'已提交';",
         "if(sub)return sub.manuallyImported?'回执待核实':sub.late?'逾期提交':'已提交';",'operator manual receipt status')
     s=replace_once(s,"const a=assignmentById(id);if(!a)return toast('作业不存在');",
-        "const a=assignmentById(id);if(!a)return toast('作业不存在');\n if(!isAssigned(a,userName))return toast('当前姓名不在此作业接收名单中（姓名不是身份认证）');",'recipient visibility join')
+        "const a=assignmentById(id);if(!a)return toast('作业不存在');\n if(!isAssigned(a,userName))return toast('此作业采用历史限定名单，当前主播姓名不匹配');",'recipient visibility join')
     # Prohibit accidental switching to a different category/platform with an active assignment.
     s=replace_once(s,"function openBoard(id,platform='',opts={}){\n if(!pageAllowed('training'))",
         "function openBoard(id,platform='',opts={}){\n const assigned=activeAssignmentId?assignmentById(activeAssignmentId):null;\n if(assigned&&!Object.prototype.hasOwnProperty.call(opts,'assignmentId')&&(assigned.boardId!==id||platform&&assigned.platform!==platform))return toast('当前为运营专属作业；如需更换板块，请先返回首页退出作业');\n if(!pageAllowed('training'))",'prevent assignment cross-board')
@@ -124,7 +124,7 @@ async function importAssignmentPackage(ev){
   if(assignment.schema!==envelope.schema||!isAssigned(assignment,who))throw new Error('作业包不匹配当前主播姓名');
   if(userName!==who||userRole!==role||page!=='home')return;
   localAssignments=await updatePrefList('assignments',list=>{const existing=list.find(a=>a.id===assignment.id);if(existing&&existing.snapshotSha256!==assignment.snapshotSha256)throw new Error('同一作业ID的版本发生冲突，拒绝覆盖');return existing?list:[assignment,...list];});
-  if(userName===who&&userRole===role){toast('作业包已导入本机，请在待完成作业中进入');anchorHome();}
+  if(userName===who&&userRole===role){toast('作业包已导入本机，可搜索运营姓名自主领取');anchorHome();}
  }catch(e){toast('导入失败：'+String(e?.message||e));}
 }
 async function importAssignmentReceipt(ev){
@@ -166,8 +166,8 @@ def harden_app(s):
         'function currentAssignment(){return runId&&sessionAssignmentSnapshot?.id===activeAssignmentId?sessionAssignmentSnapshot:assignmentById(activeAssignmentId);}', 'freeze active assignment lookup')
     s=replace_once(s,'function operatorHome(){\n',
         'function operatorHome(){\n invalidateAssignmentExcel();\n','invalidate preview on fresh operator view')
-    s=replace_once(s,"['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentRecipients'].forEach(id=>ELEM(id).addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;const dest=ELEM('assignmentExcelPreview');if(dest)dest.textContent='作业条件已变化，请重新预览Excel';}));\n ELEM('assignmentExcelFile').addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;ELEM('assignmentExcelPreview').textContent='文件已更换，请重新解析预览';});",
-        "['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentRecipients','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentExcel('作业条件已变化，请重新预览Excel'))));\n ELEM('assignmentExcelFile').addEventListener('change',()=>invalidateAssignmentExcel('文件已更换，请重新解析预览'));",'invalidate on all form edits')
+    s=replace_once(s,"['assignmentTitle','assignmentBoard','assignmentPlatform'].forEach(id=>ELEM(id).addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;const dest=ELEM('assignmentExcelPreview');if(dest)dest.textContent='作业条件已变化，请重新预览Excel';}));\n ELEM('assignmentExcelFile').addEventListener('change',()=>{assignmentExcelEpoch++;assignmentExcelPreview=null;ELEM('assignmentExcelPreview').textContent='文件已更换，请重新解析预览';});",
+        "['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentExcel('作业条件已变化，请重新预览Excel'))));\n ELEM('assignmentExcelFile').addEventListener('change',()=>invalidateAssignmentExcel('文件已更换，请重新解析预览'));",'invalidate on all form edits')
     s=replace_once(s,"const todo=localAssignments.filter(x=>isAssigned(x,userName)&&['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName)));",
         "const todo=localAssignments.filter(x=>isAssigned(x,userName)&&(['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName))||x.schema&&assignmentStatusFor(x,userName)==='未加入'));",'show assigned tasks before joining')
 
@@ -178,7 +178,7 @@ function invalidateAssignmentExcel(message=''){
  if(panel)panel.textContent=message;if(button)button.disabled=false;
 }
 function assignmentFormFingerprint(){
- return JSON.stringify(['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline','assignmentRecipients'].map(id=>ELEM(id)?.value??''));
+ return JSON.stringify(['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].map(id=>ELEM(id)?.value??''));
 }
 function assignmentViewCurrent(ctx){
  return userRole===ctx.role&&userName===ctx.owner&&page==='home'&&ELEM('view')?.firstElementChild===ctx.view&&ELEM('assignmentExcelFile')===ctx.input&&ctx.input.isConnected&&ctx.input.files?.[0]===ctx.file&&assignmentExcelEpoch===ctx.epoch&&assignmentFormFingerprint()===ctx.fingerprint;
@@ -213,8 +213,6 @@ async function previewAssignmentExcel(){
  const current=()=>activeView()&&preview===assignmentExcelPreview&&assignmentViewCurrent(preview);
  const title=ELEM('assignmentTitle')?.value.trim(),boardId=ELEM('assignmentBoard')?.value,platform=ELEM('assignmentPlatform')?.value,deadline=ELEM('assignmentDeadline')?.value||'';
  if(!title)return toast('请输入作业名称');
- const recipients=parseRecipients(ELEM('assignmentRecipients')?.value||'');
- if(!recipients.length)return toast('请填写接收作业的主播姓名');
  if(!preview||!assignmentViewCurrent(preview))return toast('请先上传Excel并完成预览，确认题目无误后发布');
  const end=deadline?new Date(deadline):null;
  if(end&&!Number.isFinite(end.getTime()))return toast('截止时间无效，请重新选择');
@@ -222,11 +220,11 @@ async function previewAssignmentExcel(){
  const questionCopy=structuredClone(preview.questions);
  assignmentPublishPending=true;if(button)button.disabled=true;
  try{
-  const item=await makeAssignment({id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso(),assignedTo:recipients,questions:questionCopy});
+  const item=await makeAssignment({id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso(),assignedTo:[],questions:questionCopy});
   if(!current())throw new Error('发布人、文件或作业条件已变化，请重新预览后发布');
   const saved=await updatePrefList('assignments',list=>{if(!current())throw new Error('发布上下文已变化，作业未保存');return [item,...list.filter(x=>x.id!==item.id)];});
   if(!activeView())return;localAssignments=saved;
-  toast('作业已保存到本机；请导出作业包手动发送给主播（不会自动跨设备同步）');operatorActiveTab='tracking';operatorHome();
+  toast('已发布全员可领取的本机作业；跨手机仍须先传递 JSON，尚无共享后台');operatorActiveTab='tracking';operatorHome();
  }catch(e){if(activeView())toast('作业未保存：'+(e?.message||e)+'。请重新核对后重试');}
  finally{assignmentPublishPending=false;if(button?.isConnected)button.disabled=false;}
 }'''
@@ -245,7 +243,7 @@ async function previewAssignmentExcel(){
   const board=BOARDS.find(x=>x.id===assignment.boardId);
   if(!board||!board.platforms.includes(assignment.platform)||assignment.questions.some(q=>q.category!==board.category))throw new Error('作业板块、品类或平台不匹配');
   const saved=await updatePrefList('assignments',list=>{if(!current())throw new Error('导入页面或姓名已变化');const existing=list.find(a=>a.id===assignment.id);if(existing&&existing.snapshotSha256!==assignment.snapshotSha256)throw new Error('同一作业ID的版本发生冲突，拒绝覆盖');return existing?list:[assignment,...list];});
-  if(current()){localAssignments=saved;toast('作业包已导入本机，请在待完成作业中进入');anchorHome();}
+  if(current()){localAssignments=saved;toast('作业包已导入本机，可搜索运营姓名自主领取');anchorHome();}
  }catch(e){if(current())toast('导入失败：'+String(e?.message||e));}
 }
 function receiptKey(receipt){return JSON.stringify([receipt.assignmentId,receipt.sessionId,receipt.anchorName]);}
@@ -396,7 +394,7 @@ def build(source_dir:Path,output_dir:Path):
             'unchanged_html_sha256':hashlib.sha256((out/'index.html').read_bytes()).hexdigest(),
             'unchanged_style_sha256':hashlib.sha256((out/'style.css').read_bytes()).hexdigest(),
             'added_module_sha256':hashlib.sha256((out/'assignment-excel.mjs').read_bytes()).hexdigest(),
-            'source_directory':site.name,'browser_ui_changed':'Only new Excel/recipient/transfer controls inside existing cards; CSS/HTML unchanged'}
+            'source_directory':site.name,'browser_ui_changed':'Only Excel/public-claim/transfer controls inside existing cards; CSS/HTML unchanged'}
     (output_dir/'PATCH_EVIDENCE.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n','utf-8')
     print(json.dumps(result,ensure_ascii=False,indent=2))
 
