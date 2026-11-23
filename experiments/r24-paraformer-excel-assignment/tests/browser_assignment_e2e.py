@@ -154,6 +154,11 @@ class Audit:
 
     async def finish(self, p):
         await p.locator('#focusClose').click()
+        # Chromium uses the app's accessible HTML dialog, not window.confirm.
+        # Wait for its rendered button rather than probing visibility once.
+        confirm = p.get_by_role('button', name='结束并进入复盘', exact=True)
+        await expect(confirm).to_be_visible()
+        await confirm.click()
         await expect(p.locator('#submitSession')).to_be_visible(timeout=30000)
 
     async def download(self, p, trigger, filename):
@@ -231,7 +236,8 @@ class Audit:
         await expect(anchor.locator('#toast')).to_contain_text('全部题目')
         self.check('missing two questions cannot submit', not await self.pref(anchor, 'submissions'))
         await anchor.locator('#reviewRetry').click()
-        if await anchor.locator('#tclRestartYes').is_visible(): await anchor.locator('#tclRestartYes').click()
+        await expect(anchor.locator('#tclRestartYes')).to_be_visible()
+        await anchor.locator('#tclRestartYes').click()
         await expect(anchor.locator('#startScene')).to_be_visible()
         if await anchor.locator('#prepQuickText').is_visible(): await anchor.locator('#prepQuickText').click()
         await expect(anchor.locator('#startScene')).to_be_enabled()
