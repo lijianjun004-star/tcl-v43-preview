@@ -70,6 +70,7 @@ class Audit:
     def __init__(self, args):
         self.args = args; self.out = Path(args.evidence); self.out.mkdir(parents=True, exist_ok=True)
         self.rows = []; self.errors = []; self.requests = []; self.responses = []; self.contexts = []
+        self.next_taps = {}; self.cooldown_waits = []
         self.xlsx, self.wav = fixtures(self.out / 'fixtures')
         self.base = args.base_url.rstrip('/')
 
@@ -149,8 +150,24 @@ class Audit:
         await p.locator('#liveTextAnswer').fill(ANSWERS[i])
         await p.locator('#liveTextSave').click()
         if i < 2:
-            await p.locator('#focusNext').click()
+            await self.next_question(p)
             await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[i + 1])
+
+    async def next_question(self, p):
+        # Official pages3 nextByTap deliberately ignores taps less than 700 ms
+        # apart. Programmatic fill is faster than human typing, so respect that
+        # existing guard using test-owned monotonic timestamps. Do not change
+        # the product cooldown, bypass the handler, or weaken question assertions.
+        button = p.locator('#focusNext')
+        await expect(button).to_be_visible()
+        await expect(button).to_be_enabled()
+        now = time.monotonic(); prior = self.next_taps.get(p)
+        remaining = max(0, .710 - (now - prior)) if prior is not None else 0
+        if remaining:
+            self.cooldown_waits.append({'guard_ms': 700, 'wait_ms': round(remaining * 1000, 2)})
+            await asyncio.sleep(remaining)
+        await button.click()
+        self.next_taps[p] = time.monotonic()
 
     async def finish(self, p):
         await p.locator('#focusClose').click()
@@ -243,7 +260,7 @@ class Audit:
         await expect(anchor.locator('#startScene')).to_be_enabled()
         await anchor.locator('#startScene').click()
         for i in range(3): await self.answer(anchor, i)
-        await anchor.locator('#focusNext').click()
+        await self.next_question(anchor)
         await expect(anchor.locator('#liveQText')).to_have_text(QUESTIONS[2])
         await self.finish(anchor)
         await anchor.locator('#reviewDetails').click()
@@ -332,7 +349,7 @@ class Audit:
                                 except Exception: pass
                 await browser.close()
         except Exception: failure = traceback.format_exc()
-        result = {'passed': sum(x['pass'] for x in self.rows), 'checks': self.rows, 'failure': failure, 'page_errors': self.errors, 'failed_http': self.responses, 'requests': self.requests, 'scope': 'real Chromium UI, XLSX parser, IndexedDB and MediaRecorder; synthetic identities/devices; ASR Worker explicitly mocked only for media flow; no physical phone, human speech accuracy or automatic cloud delivery claims'}
+        result = {'passed': sum(x['pass'] for x in self.rows), 'checks': self.rows, 'failure': failure, 'page_errors': self.errors, 'failed_http': self.responses, 'requests': self.requests, 'explicit_next_button_cooldown_waits': self.cooldown_waits, 'scope': 'real Chromium UI, XLSX parser, IndexedDB and MediaRecorder; synthetic identities/devices; ASR Worker explicitly mocked only for media flow; no physical phone, human speech accuracy or automatic cloud delivery claims'}
         (self.out / 'browser-assignment-result.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
         print(json.dumps({'passed': result['passed'], 'failure': failure}, ensure_ascii=False), flush=True)
         if failure: raise SystemExit(1)
