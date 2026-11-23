@@ -48,6 +48,8 @@
 
 ## 交付包与复验
 
+- [完整复验包（约 97 MB）](https://github.com/lijianjun004-star/tcl-v43-preview/releases/download/r24-excel-qa-20261123/R24_Excel_QA_20261123.zip)，包含模型、源码、测试证据及回滚说明；[发行页](https://github.com/lijianjun004-star/tcl-v43-preview/releases/tag/r24-excel-qa-20261123)。完整包 SHA256：`30233880a3d03fb9c6b8c260c4bada17d706b6465ca4911fa543af97a133db2a`。发布后已下载回读并验证哈希，[交付运行 45137820122](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45137820122)成功。
+
 完整包的 `frontend/tcl-r24-paraformer-excel-qa/` 包含 36 个文件及固定模型；`source/` 为构建补丁和测试源码，`evidence/` 保存结果、日志及版本检查。模型组件许可随原目录保留。`SHA256SUMS` 可校验包内文件。
 
 本机预览：在解压目录运行 `python3 -m http.server 8765 --bind 127.0.0.1 --directory frontend`，再打开 `http://127.0.0.1:8765/tcl-r24-paraformer-excel-qa/`。不要直接双击 HTML；模型和浏览器模块需要 HTTP 环境。
