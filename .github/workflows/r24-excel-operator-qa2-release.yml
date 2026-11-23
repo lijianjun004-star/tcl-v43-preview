@@ -1,0 +1,65 @@
+name: R24 Excel QA2 prepare exact release branch
+on:
+  push:
+    branches: [fix/r24-excel-operator-search-20261123]
+    paths: [.github/workflows/r24-excel-operator-qa2-release.yml]
+permissions:
+  contents: write
+jobs:
+  prepare-branch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout tested QA2 source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Build exact pinned R24 frontend candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 experiments/r24-paraformer-excel-assignment/tools/build_from_official_r24.py experiments/r24-paraformer-release/site-only.zip --out _qa2
+          echo "a99012ad503baedd404a1c8ed6e4ffb304a07372e6641ec9367a42343035a9d6  _qa2/R24_Excel_Assignment_Only_Offline_Candidate.zip" | sha256sum --check --strict
+          node --input-type=module --check < _qa2/frontend/tcl-r24-paraformer-excel-qa/app.js
+      - name: Checkout pinned QA1 main and already-merged QA2 gate
+        uses: actions/checkout@v6
+        with:
+          ref: 3833f0be01848bd77cf7a612cb4ff3c9e3513da1
+          path: release
+          persist-credentials: true
+      - name: Validate exact 3-file QA1 to QA2 transition
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          p=Path('release-ci/release_guard.py')
+          spec=importlib.util.spec_from_file_location('gate',p)
+          mod=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+          before=Path('experiments/r24-paraformer-excel-release/site-only.zip').read_bytes()
+          after=Path('../_qa2/R24_Excel_Assignment_Only_Offline_Candidate.zip').read_bytes()
+          changed=mod.verify_r24_pf_excel_archive_update(before,after)
+          print('PINNED_EXCEL_QA2_UPGRADE_PASS',sorted(changed))
+          PY
+      - name: Commit candidate only on a separate review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release
+          git switch -c fix/r24-excel-qa2-release-20261123
+          cp ../_qa2/R24_Excel_Assignment_Only_Offline_Candidate.zip experiments/r24-paraformer-excel-release/site-only.zip
+          test "$(git diff --name-only | sed '/^$/d')" = "experiments/r24-paraformer-excel-release/site-only.zip"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/r24-paraformer-excel-release/site-only.zip
+          git commit -m "release(r24): pinned operator-search QA2 frontend only"
+          git push origin HEAD:refs/heads/fix/r24-excel-qa2-release-20261123
