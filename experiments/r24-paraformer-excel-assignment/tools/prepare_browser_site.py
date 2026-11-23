@@ -17,6 +17,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 sys.path.insert(0, str(HERE))
 from build_from_official_r24 import run, TEST_ROUTE
+from apply_to_r24 import VERSION
 
 
 def prepare(out: Path, model: Path):
@@ -42,7 +43,7 @@ def prepare(out: Path, model: Path):
         pins = {k: hashlib.sha256(v).hexdigest() for k, v in files.items() if k != 'static-manifest.json'}
         pins.update({'vendor/paraformer/' + k: v[1] for k, v in gate.R24_PF_MODEL_FILES.items()})
         manifest = json.loads(files['static-manifest.json'])
-        if manifest != {'version': 'r24-paraformer-excel-assignment-20261123-qa1', 'files': pins}:
+        if manifest != {'version': VERSION, 'files': pins}:
             raise ValueError('Preview manifest does not describe exact frontend and model')
         return files
 

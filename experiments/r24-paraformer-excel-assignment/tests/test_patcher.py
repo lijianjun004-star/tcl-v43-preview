@@ -119,6 +119,17 @@ class R24PatchTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unexpected missing static resource'):
             self._bad_manifest(next(iter(EXTERNAL_MODEL_FILES)), '0' * 64)
 
+    def test_10_open_excel_assignments_keep_existing_search_and_no_required_roster(self):
+        app = (self.site / 'app.js').read_text('utf-8')
+        module = (self.site / 'assignment-excel.mjs').read_text('utf-8')
+        self.assertNotIn('assignmentRecipients', app)
+        self.assertNotIn('请填写接收作业的主播姓名', app)
+        self.assertIn('assignedTo:[]', app)
+        self.assertIn('本次作业面向所有主播开放领取', app)
+        self.assertIn("localAssignments.filter(a=>isAssigned(a,userName)", app)
+        self.assertIn('a.assignedTo.length === 0 || a.assignedTo.includes(anchorName.trim())', module)
+        self.assertIn('已有的作业，跨手机须先导入', app)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

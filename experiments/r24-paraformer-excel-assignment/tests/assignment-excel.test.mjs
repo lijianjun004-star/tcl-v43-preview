@@ -32,7 +32,7 @@ test('07 duplicate same question+SKU blocked',()=>{const x=[{question:'这款型
 test('08 same question different model permitted',()=>{let x=[{question:'对比具体参数',answer:'型号1',model:'Q10L'},{question:'对比具体参数',answer:'型号2',model:'T7M'}];assert.equal(validateExcelQuestions(x,opts).length,2);});
 test('09 stop >100 questions',()=>{assert.throws(()=>validateExcelQuestions(Array.from({length:101},(_,i)=>({question:'测试问题'+i,answer:'参考答案'})),opts),/100/);});
 test('10 recipients trim and dedupe',()=>assert.deepEqual(parseRecipients('张主播，李主播\n张主播; 王主播'),['张主播','李主播','王主播']));
-test('11 selected anchor access only',async()=>{const a=await build();assert.ok(isAssigned(a,'张主播'));assert.ok(!isAssigned(a,'赵主播'));});
+test('11 historical selected anchor access only',async()=>{const a=await build();assert.ok(isAssigned(a,'张主播'));assert.ok(!isAssigned(a,'赵主播'));});
 test('12 immutable assignment source after publish',async()=>{let q=get(),a=await makeAssignment({id:'A-02',title:'测试',operatorName:'运',boardId:'01',platform:'京东',assignedTo:['张主播'],questions:q});q[0].question='恶意覆盖';assert.notEqual(a.questions[0].question,'恶意覆盖');assert.ok(Object.isFrozen(a.questions[0]));});
 test('13 version hash validates',async()=>{const a=await build();assert.equal((await verifyAssignment(a)).snapshotSha256,a.snapshotSha256);});
 test('14 reject modified question in transferred assignment',async()=>{let a=await build(),tampered=structuredClone(a);tampered.questions[0].answer='篡改';await assert.rejects(verifyAssignment(tampered),/校验失败/);});
@@ -41,7 +41,15 @@ test('16 export/import contains assignment only',async()=>{let a=await build(),p
 test('17 recipient mismatch receipt rejected',async()=>{let a=await build();assert.throws(()=>toReceipt(a,snapshot(a,{anchorName:'赵主播'})),/不在/);});
 test('18 complete receipt belongs to exact version',async()=>{let a=await build(),r=toReceipt(a,snapshot(a));assert.ok(verifyReceipt(r,a));assert.throws(()=>verifyReceipt({...r,snapshotSha256:'0'.repeat(64)},a),/不一致/);});
 test('19 no imported question can be public data by default',()=>{assert.equal(get()[0].kind,'assignment-excel');assert.equal(get()[0].source,'运营Excel作业');});
-test('20 missing recipients blocked',async()=>{await assert.rejects(makeAssignment({id:'a',title:'b',operatorName:'c',boardId:'d',platform:'京东',assignedTo:'',questions:get()}),/至少一名/);});
+test('20 open Excel assignment supports no selected streamer',async()=>{
+ const a=await makeAssignment({id:'A-open-20',title:'公开领取作业',operatorName:'王运营',boardId:'01',platform:'京东',questions:get()});
+ assert.deepEqual(a.assignedTo,[]);
+ for(const name of ['张主播','李主播','赵主播']) assert.equal(isAssigned(a,name),true);
+ assert.equal(isAssigned(a,''),false);
+ const explicit=await makeAssignment({id:'A-open-20b',title:'公开领取作业',operatorName:'王运营',boardId:'01',platform:'京东',assignedTo:[],questions:get()});
+ assert.deepEqual(explicit.assignedTo,[]);
+ assert.deepEqual((await verifyAssignment(toExchangePackage(a).assignment)).assignedTo,[]);
+});
 import {assertExcelOneRowPerQuestion} from '../assignment-excel.mjs';
 test('21 reject duplicate Excel table records before legacy aggregation',()=>{
  const file={format:'xlsx',blocks:[{kind:'table',rows:[
@@ -154,7 +162,7 @@ test('optional authoritative board check rejects mismatched category or platform
  const a=await build();assert.equal((await verifyAssignment(a,{board:{id:'01',category:'TCL 电视',platforms:['京东','天猫']}})).id,a.id);
  await assert.rejects(verifyAssignment(a,{board:{id:'03',category:'TCL 冰箱',platforms:['京东','天猫']}}),/本站训练板块/);
 });
-test('new assignments cannot gain legacy all-anchor visibility by dropping recipients',async()=>{
+test('historical restricted assignments cannot become public by dropping recipients',async()=>{
  const a=structuredClone(await build());delete a.assignedTo;assert.equal(isAssigned(a,'其他主播'),false);
  assert.equal(isAssigned({id:'legacy'},'原主播'),true);
 });
@@ -215,4 +223,22 @@ test('candidate importer handles reordered 题目/作业题目 headers without g
   const questions=validateExcelQuestions(rows,opts);assert.equal(questions[0].question,'这款电视如何演示画质');
   assert.equal(questions[0].model,'Q10L');assert.equal(questions[0].sku,'0001');assert.deepEqual(questions[0].keyPoints,['画质','用途']);
  }
+});
+
+test('public Excel job is searchable by operator independently of streamer identity',async()=>{
+ const a=await makeAssignment({id:'public-search',title:'冰箱外观话术',operatorName:'王运营',boardId:'01',platform:'京东',assignedTo:[],questions:get()});
+ const query='王运营',all=[a,await build()];
+ const found=all.filter(x=>isAssigned(x,'未指定的新主播')&&[x.operatorName,x.title,x.platform].join(' ').includes(query));
+ assert.deepEqual(found.map(x=>x.id),['public-search']);
+ const transferred=await verifyAssignment(toExchangePackage(a).assignment);
+ for(const anchorName of ['新主播甲','新主播乙']){
+  const receipt=toReceipt(transferred,snapshot(transferred,{anchorName,sessionId:'run-'+anchorName}));
+  assert.equal(receipt.anchorName,anchorName);
+  assert.ok(verifyReceipt(receipt,transferred));
+ }
+});
+test('public job cannot be silently converted to a restricted roster',async()=>{
+ const a=structuredClone(await makeAssignment({id:'public-locked',title:'公开练习',operatorName:'王运营',boardId:'01',platform:'京东',assignedTo:[],questions:get()}));
+ a.assignedTo=['张主播'];
+ await assert.rejects(verifyAssignment(a),/校验失败/);
 });
