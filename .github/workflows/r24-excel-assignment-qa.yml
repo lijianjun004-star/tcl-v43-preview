@@ -39,8 +39,8 @@ jobs:
           R24_EXCEL_SITE_DIR: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa
           R24_EXCEL_APP: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa/app.js
         run: |
-          node --test experiments/r24-paraformer-excel-assignment/tests/*.test.mjs > _qa/evidence/node-tests.log 2>&1
-          python3 experiments/r24-paraformer-excel-assignment/tests/test_patcher.py > _qa/evidence/patcher-tests.log 2>&1
+          node --test experiments/r24-paraformer-excel-assignment/tests/*.test.mjs > _qa/evidence/node-tests.log 2>&1 || { tail -n 180 _qa/evidence/node-tests.log; exit 1; }
+          python3 experiments/r24-paraformer-excel-assignment/tests/test_patcher.py > _qa/evidence/patcher-tests.log 2>&1 || { tail -n 180 _qa/evidence/patcher-tests.log; exit 1; }
       - name: Verify real Paraformer worker and public Mandarin recording
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory _qa/site > _qa/evidence/http-model-server.log 2>&1 &
