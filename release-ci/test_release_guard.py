@@ -3147,6 +3147,58 @@ class R24ExcelPreviewGateTests(unittest.TestCase):
                     gate.verify_pr(base, head)
 
 
+    def test_qa2_pinned_upgrade_and_rollback_only_touch_reviewed_three_files(self):
+        base = self.zipped()
+        edited = dict(self.resources)
+        edited['app.js'] = b'const operatorSearch = true;'
+        edited['assignment-excel.mjs'] = b'export const publicClaim = true;'
+        upgrade = self.zipped(
+            change=lambda x: x.update({k: edited[k] for k in ('app.js', 'assignment-excel.mjs')}),
+            manifest_change=lambda x: x.update(version=gate.R24_PF_EXCEL_NEXT_VERSION),
+        )
+        with mock.patch.multiple(gate, R24_PF_EXCEL_SITE_SHA=gate.sha256(base),
+                                 R24_PF_EXCEL_NEXT_SITE_SHA=gate.sha256(upgrade),
+                                 R24_PF_EXCEL_NEXT_APP_SHA=gate.sha256(edited['app.js']),
+                                 R24_PF_EXCEL_NEXT_MODULE_SHA=gate.sha256(edited['assignment-excel.mjs'])):
+            self.assertEqual(gate.verify_r24_pf_excel_archive_update(base, upgrade),
+                             {'app.js', 'assignment-excel.mjs', 'static-manifest.json'})
+            self.assertEqual(gate.verify_r24_pf_excel_archive_update(upgrade, base),
+                             {'app.js', 'assignment-excel.mjs', 'static-manifest.json'})
+            with self.assertRaisesRegex(gate.GateFailure, 'exact pinned'):
+                gate.verify_r24_pf_excel_archive_update(base, base)
+            with self.assertRaisesRegex(gate.GateFailure, 'ZIP hash'):
+                gate.verify_r24_pf_excel_archive_update(base, upgrade + b'tampered')
+            # Even if all archive pins were modified in tests, a fourth changed
+            # resource must be refused when upgrading an isolated route.
+            altered = self.zipped(
+                change=lambda x: x.update({**{k: edited[k] for k in ('app.js', 'assignment-excel.mjs')},
+                                           'vendor/paraformer/manifest.json': b'changed'}),
+                manifest_change=lambda x: x.update(version=gate.R24_PF_EXCEL_NEXT_VERSION),
+            )
+            with mock.patch.object(gate, 'R24_PF_EXCEL_NEXT_SITE_SHA', gate.sha256(altered)):
+                with self.assertRaisesRegex(gate.GateFailure, 'model manifest'):
+                    gate.verify_r24_pf_excel_archive_update(base, altered)
+
+    def test_qa2_only_archive_pr_is_accepted_but_mixed_mutations_are_rejected(self):
+        base, head = 'a' * 40, 'b' * 40
+        archive = gate.R24_PF_EXCEL_ARCHIVE
+        def output(command, **kwargs):
+            if command[:2] == ['git', 'diff']: return archive + '\\n'
+            if command[:2] == ['git', 'show']: return command[2].encode()
+            raise AssertionError(command)
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \\
+             mock.patch.object(gate, 'verify_r24_pf_excel_archive_update') as verifier, \\
+             contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gate.verify_pr(base, head), 0)
+            self.assertEqual(verifier.call_count, 1)
+        def mixed(command, **kwargs):
+            if command[:2] == ['git', 'diff']: return archive + '\\n.github/workflows/pages.yml\\nrelease-ci/release_guard.py\\n'
+            return command[2].encode()
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=mixed):
+            with self.assertRaisesRegex(gate.GateFailure, 'Unexpected PR paths'):
+                gate.verify_pr(base, head)
+
+
 class R24ExcelPreviewRepositoryTests(unittest.TestCase):
     def test_current_preview_artifact_workflow_and_pins_agree(self):
         repo = HERE.parent
