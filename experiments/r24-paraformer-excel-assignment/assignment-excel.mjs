@@ -93,8 +93,8 @@ function sizeBound(value, label) {
   check(new TextEncoder().encode(canonicalJSON(value)).byteLength <= MAX_PACKAGE_BYTES, `${label}内容超过交换大小上限，请拆分为多个作业`);
 }
 
-function validNames(names, { dedupe = false } = {}) {
-  check(Array.isArray(names) && names.length >= 1 && names.length <= 100, '必须指定至少一名主播，最多100名');
+function validNames(names, { dedupe = false, allowEmpty = false } = {}) {
+  check(Array.isArray(names) && names.length >= (allowEmpty ? 0 : 1) && names.length <= 100, '指定主播名单最多100人；留空表示所有主播可领取');
   const result = names.map(value => personName(value, '主播姓名'));
   const seen = new Set();
   const unique = [];
@@ -227,7 +227,7 @@ function assignmentStructure(a, { hashRequired = true, board } = {}) {
   check(typeof a.boardId === 'string' && /^(0[1-9]|1[0-6])$/u.test(a.boardId), '作业板块无效');
   check(PLATFORMS.includes(a.platform), '作业平台无效');
   timestamp(a.createdAt, '发布时间'); timestamp(a.deadline, '截止时间', true);
-  const recipients = validNames(a.assignedTo);
+  const recipients = validNames(a.assignedTo, { allowEmpty: true });
   check(recipients.every((name, i) => name === a.assignedTo[i]), '接收主播姓名格式不规范');
   check(Array.isArray(a.questions) && a.questions.length >= 1 && a.questions.length <= MAX_QUESTIONS, '作业题目数量无效');
   for (const row of a.questions) keys(row, ROW_KEYS, '作业题目');
@@ -243,7 +243,7 @@ function assignmentStructure(a, { hashRequired = true, board } = {}) {
 }
 
 export async function makeAssignment({ id, title, operatorName, boardId, platform, deadline = '', assignedTo, questions, createdAt }) {
-  const names = Array.isArray(assignedTo) ? validNames(assignedTo, { dedupe: true }) : validNames(parseRecipients(assignedTo));
+  const names = Array.isArray(assignedTo) ? validNames(assignedTo, { dedupe: true, allowEmpty: true }) : assignedTo == null ? [] : validNames(parseRecipients(assignedTo), { allowEmpty: true });
   check(Array.isArray(questions) && questions.length > 0, '必须先预览Excel题目');
   const a = { schema: ASSIGNMENT_SCHEMA, id: text(id, '作业ID', 128), title: text(title, '作业名称', 120),
     operatorName: personName(operatorName, '发布运营姓名'), boardId: text(boardId, '作业板块', 2), platform,
@@ -257,7 +257,8 @@ export async function makeAssignment({ id, title, operatorName, boardId, platfor
 export function isAssigned(a, anchorName) {
   if (typeof anchorName !== 'string' || !anchorName.trim()) return false;
   if (a?.schema) return a.schema === ASSIGNMENT_SCHEMA && a.version === 1
-    && Array.isArray(a.assignedTo) && a.assignedTo.includes(anchorName.trim());
+    && Array.isArray(a.assignedTo) && (a.assignedTo.length === 0 || a.assignedTo.includes(anchorName.trim()));
+  // [] is an explicit all-streamer Excel assignment; existing named-list assignments remain restricted.
   // Existing non-Excel assignments retain their historical visibility rules.
   return !!a && (!Array.isArray(a.assignedTo) || a.assignedTo.includes(anchorName.trim()));
 }
