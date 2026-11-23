@@ -30,7 +30,7 @@ function fixture() {
     view: { firstElementChild: view }, assignmentExcelFile: { files: [file], isConnected: true },
     assignmentExcelPreview: { textContent: '', innerHTML: '' }, assignmentExcelPreviewBtn: { disabled: false },
     assignmentTitle: { value: '人工合成作业' }, assignmentBoard: { value: '01' }, assignmentPlatform: { value: '京东' },
-    assignmentDeadline: { value: '' }, assignmentRecipients: { value: '主播甲' }, publishAssignment: { disabled: false, isConnected: true }
+    assignmentDeadline: { value: '' }, publishAssignment: { disabled: false, isConnected: true }
   };
   const writes = [], messages = [], saved = { assignments: [], submissions: [] };
   const ctx = vm.createContext({ ...rules, structuredClone, JSON, Map, Set, Date, encodeURIComponent,
@@ -86,7 +86,7 @@ test('identity change while publication digest is pending prevents database writ
 test('form mutation without an event while digest is pending is still rejected', async () => {
   const f = fixture(); await f.ctx.previewAssignmentExcel();
   const pending = deferred(); f.ctx.makeAssignment = () => pending.promise;
-  const work = f.ctx.publishAssignment(); f.nodes.assignmentRecipients.value = '主播乙';
+  const work = f.ctx.publishAssignment(); f.nodes.assignmentDeadline.value = '2026-12-31T23:00';
   pending.resolve({ id: 'fixture-assignment' }); await work;
   assert.equal(f.writes.length, 0); assert.match(f.messages.at(-1), /已变化/);
 });
