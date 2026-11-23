@@ -3199,6 +3199,53 @@ class R24ExcelPreviewGateTests(unittest.TestCase):
                 gate.verify_pr(base, head)
 
 
+    def test_qa3_is_reachable_only_from_and_back_to_qa2_with_three_reviewed_files(self):
+        qa1 = self.zipped()
+        edited = dict(self.resources)
+        edited['app.js'] = b'const operatorSearch = true;'
+        edited['assignment-excel.mjs'] = b'export const publicClaim = true;'
+        qa2 = self.zipped(change=lambda x: x.update({k: edited[k] for k in ('app.js', 'assignment-excel.mjs')}),
+                          manifest_change=lambda x: x.update(version=gate.R24_PF_EXCEL_NEXT_VERSION))
+        fixed = dict(edited)
+        fixed['app.js'] = b'const lateReceipt = true;'
+        fixed['assignment-excel.mjs'] = b'export const rejectNoise = true;'
+        qa3 = self.zipped(change=lambda x: x.update({k: fixed[k] for k in ('app.js', 'assignment-excel.mjs')}),
+                          manifest_change=lambda x: x.update(version=gate.R24_PF_EXCEL_QA3_VERSION))
+        pins = dict(R24_PF_EXCEL_SITE_SHA=gate.sha256(qa1), R24_PF_EXCEL_NEXT_SITE_SHA=gate.sha256(qa2),
+                    R24_PF_EXCEL_NEXT_APP_SHA=gate.sha256(edited['app.js']),
+                    R24_PF_EXCEL_NEXT_MODULE_SHA=gate.sha256(edited['assignment-excel.mjs']),
+                    R24_PF_EXCEL_QA3_SITE_SHA=gate.sha256(qa3), R24_PF_EXCEL_QA3_APP_SHA=gate.sha256(fixed['app.js']),
+                    R24_PF_EXCEL_QA3_MODULE_SHA=gate.sha256(fixed['assignment-excel.mjs']))
+        three = {'app.js', 'assignment-excel.mjs', 'static-manifest.json'}
+        with mock.patch.multiple(gate, **pins):
+            self.assertEqual(gate.verify_r24_pf_excel_archive_update(qa2, qa3), three)
+            self.assertEqual(gate.verify_r24_pf_excel_archive_update(qa3, qa2), three)
+            self.assertEqual(gate.verify_r24_pf_excel_archive_update(qa1, qa2), three)
+            for before, after in ((qa1, qa3), (qa3, qa1), (qa3, qa3), (qa2, qa3 + b'tampered')):
+                with self.assertRaisesRegex(gate.GateFailure, 'exact pinned'):
+                    gate.verify_r24_pf_excel_archive_update(before, after)
+            self.assertEqual(set(gate.r24_pf_excel_frontend(qa3)), set(self.resources) | {'static-manifest.json'})
+            # QA3 bytes labelled with the QA2 version must be refused.
+            mislabelled = self.zipped(change=lambda x: x.update({k: fixed[k] for k in ('app.js', 'assignment-excel.mjs')}),
+                                      manifest_change=lambda x: x.update(version=gate.R24_PF_EXCEL_NEXT_VERSION))
+            with mock.patch.object(gate, 'R24_PF_EXCEL_QA3_SITE_SHA', gate.sha256(mislabelled)):
+                with self.assertRaisesRegex(gate.GateFailure, 'manifest version'):
+                    gate.r24_pf_excel_frontend(mislabelled)
+            # An archive pinned as QA3 must still carry the tested app and rules.
+            with mock.patch.object(gate, 'R24_PF_EXCEL_QA3_APP_SHA', '0' * 64):
+                with self.assertRaisesRegex(gate.GateFailure, 'pinned tested sources'):
+                    gate.r24_pf_excel_frontend(qa3)
+
+    def test_qa3_pins_are_distinct_full_hashes_and_versioned(self):
+        pins = [gate.R24_PF_EXCEL_SITE_SHA, gate.R24_PF_EXCEL_NEXT_SITE_SHA, gate.R24_PF_EXCEL_QA3_SITE_SHA]
+        self.assertEqual(len(set(pins)), 3)
+        for value in pins + [gate.R24_PF_EXCEL_QA3_APP_SHA, gate.R24_PF_EXCEL_QA3_MODULE_SHA]:
+            self.assertRegex(value, r'^[0-9a-f]{64}$')
+        self.assertNotEqual(gate.R24_PF_EXCEL_QA3_APP_SHA, gate.R24_PF_EXCEL_NEXT_APP_SHA)
+        self.assertNotEqual(gate.R24_PF_EXCEL_QA3_MODULE_SHA, gate.R24_PF_EXCEL_NEXT_MODULE_SHA)
+        self.assertTrue(gate.R24_PF_EXCEL_QA3_VERSION.endswith('-qa3-review-fixes'))
+        self.assertEqual(len({gate.R24_PF_EXCEL_VERSION, gate.R24_PF_EXCEL_NEXT_VERSION, gate.R24_PF_EXCEL_QA3_VERSION}), 3)
+
 class R24ExcelPreviewRepositoryTests(unittest.TestCase):
     def test_current_preview_artifact_workflow_and_pins_agree(self):
         repo = HERE.parent
