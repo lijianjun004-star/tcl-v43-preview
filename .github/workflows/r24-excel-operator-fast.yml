@@ -1,0 +1,37 @@
+name: R24 Excel operator-search fast offline regressions
+on:
+  push:
+    branches: [fix/r24-excel-operator-search-20261123]
+    paths:
+      - experiments/r24-paraformer-excel-assignment/**
+      - .github/workflows/r24-excel-operator-fast.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: r24-excel-operator-fast-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Build pinned historical R24 source with operator-search logic
+        run: |
+          python3 experiments/r24-paraformer-excel-assignment/tools/build_from_official_r24.py experiments/r24-paraformer-release/site-only.zip --out _qa/build
+      - name: Verify strict patch invariants
+        run: python3 experiments/r24-paraformer-excel-assignment/tests/test_patcher.py
+      - name: Run assignment unit tests and UI lifecycle
+        env:
+          R24_EXCEL_SITE_DIR: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa
+          R24_EXCEL_APP: ${{ github.workspace }}/_qa/build/frontend/tcl-r24-paraformer-excel-qa/app.js
+        run: node --test experiments/r24-paraformer-excel-assignment/tests/*.test.mjs
