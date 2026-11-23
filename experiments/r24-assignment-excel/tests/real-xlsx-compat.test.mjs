@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {parseDocumentFile} from '../../preview/tcl-v352-asr-r24-qa/lib/parser.js';
+import {extractQA} from '../../preview/tcl-v352-asr-r24-qa/lib/qa-import.js';
+import {validateExcelQuestions} from '../assignment-excel.mjs';
+const contents=await readFile(new URL('../../作业_测试样本.xlsx',import.meta.url));
+const parsed=await parseDocumentFile({name:'作业_测试样本.xlsx',arrayBuffer:async()=>contents.buffer.slice(contents.byteOffset,contents.byteOffset+contents.byteLength)});
+const items=extractQA(parsed);
+test('23: real namespaced XLSX can be read and imported without skipping rows',()=>{assert.equal(parsed.format,'xlsx');assert.equal(items.length,3);assert.equal(items[0].question,'TCL Q10L电视接口有什么优势？');});
+test('24: exact strings/leading-zero SKU and scoring points survive real XLSX',()=>{const rows=validateExcelQuestions(items,{category:'TCL 电视',platform:'京东'});assert.equal(rows[0].model,'Q10L');assert.equal(rows[0].sku,'0099088');assert.deepEqual(rows[0].keyPoints,['说明接口','提醒核对型号']);});
