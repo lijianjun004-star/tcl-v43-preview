@@ -63,7 +63,7 @@ def patch_app(src:str)->str:
     # Keep historical explicitly named recipients in tracking; public [] tracks actual claimants.
     s=replace_once(s,
         "const anchors=[...new Set(localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName))];",
-        "const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName)])];",'assignment recipient status')
+        "const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName),...localSubmissions.filter(x=>x.assignmentId===a.id&&x.operatorName===a.operatorName).map(x=>x.anchorName)])];",'assignment recipient status')
     s=replace_once(s,'if(!title)return toast(\'请输入作业名称\');',
         "if(!title)return toast('请输入作业名称');\n if(!assignmentExcelPreview||assignmentExcelPreview.epoch!==assignmentExcelEpoch||assignmentExcelPreview.boardId!==boardId||assignmentExcelPreview.platform!==platform||assignmentExcelPreview.file!==ELEM('assignmentExcelFile')?.files?.[0])return toast('请先上传Excel并完成预览，确认题目无误后发布');",'publish preflight')
     s=replace_once(s,"const item={id:uid(),title,operatorName:ownerName,boardId,platform,deadline:end?end.toISOString():'',createdAt:nowIso()};",
