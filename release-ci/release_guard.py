@@ -1717,6 +1717,12 @@ R24_PF_EXCEL_NEXT_VERSION = 'r24-paraformer-excel-assignment-20261123-qa2-operat
 R24_PF_EXCEL_NEXT_APP_SHA = '8af5310dbe54250c6a19dbe25f00cfc0d103a4b29fe0242bf2995522cd3f82f9'
 R24_PF_EXCEL_NEXT_MODULE_SHA = 'e7bb2a73a2e63b35e687d7a0e4c3d4e996f0dd5330e312d055cbe79e373763af'
 R24_PF_EXCEL_NEXT_CHANGED_FILES = frozenset({'app.js', 'assignment-excel.mjs', 'static-manifest.json'})
+# Third exact QA-only snapshot after independent review of QA2 (PR169 source
+# 42c3c3f1c88447c4872e30d2affcc2c3043e9f98). Reachable only from/to QA2.
+R24_PF_EXCEL_QA3_SITE_SHA = '65ce635c9987c033d0963502a88ee56795a5afcdd0308ca5bab116e3b04eeaa9'
+R24_PF_EXCEL_QA3_VERSION = 'r24-paraformer-excel-assignment-20261123-qa3-review-fixes'
+R24_PF_EXCEL_QA3_APP_SHA = 'd6b9f4891e409f330e928659e2bcde59a398bf3ccef1d088be4af3562a5f478a'
+R24_PF_EXCEL_QA3_MODULE_SHA = '9dcbdb352cdaf01d597186a8b3ca9614b9b7c0fcf8b902597737f641216b77da'
 R24_PF_EXCEL_BASE_WORKFLOW_SHA = '9903576514b72b45a5cee346c1f760fa9c4e6563fa474750e29eaea78db84955'
 R24_PF_EXCEL_UI_PINS = {
     'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
@@ -1748,9 +1754,19 @@ def verify_r24_pf_excel_rollback_workflow(before, after):
     verify_r24_pf_excel_release_workflow(after, before)
 
 
+def r24_pf_excel_snapshots():
+    # archive SHA -> (manifest version, pinned app.js SHA, pinned rules SHA)
+    return {
+        R24_PF_EXCEL_SITE_SHA: (R24_PF_EXCEL_VERSION, None, None),
+        R24_PF_EXCEL_NEXT_SITE_SHA: (R24_PF_EXCEL_NEXT_VERSION, R24_PF_EXCEL_NEXT_APP_SHA, R24_PF_EXCEL_NEXT_MODULE_SHA),
+        R24_PF_EXCEL_QA3_SITE_SHA: (R24_PF_EXCEL_QA3_VERSION, R24_PF_EXCEL_QA3_APP_SHA, R24_PF_EXCEL_QA3_MODULE_SHA),
+    }
+
+
 def r24_pf_excel_frontend(raw):
     archive_sha = sha256(raw)
-    if len(raw) > 1_500_000 or archive_sha not in (R24_PF_EXCEL_SITE_SHA, R24_PF_EXCEL_NEXT_SITE_SHA):
+    snapshots = r24_pf_excel_snapshots()
+    if len(raw) > 1_500_000 or archive_sha not in snapshots:
         raise GateFailure('Excel preview frontend ZIP hash or size mismatch')
     _, resources = inspect_zip_bytes_for_autoqa(raw)
     if set(resources) != R24_PF_FRONTEND_FILES | {'assignment-excel.mjs'}:
@@ -1762,23 +1778,25 @@ def r24_pf_excel_frontend(raw):
         raise GateFailure('Excel preview model manifest identity mismatch')
     expected = {name: sha256(data) for name, data in resources.items() if name != 'static-manifest.json'}
     expected.update({f'vendor/paraformer/{name}': pin for name, (_, pin) in R24_PF_MODEL_FILES.items()})
-    version = R24_PF_EXCEL_VERSION if archive_sha == R24_PF_EXCEL_SITE_SHA else R24_PF_EXCEL_NEXT_VERSION
+    version, app_pin, module_pin = snapshots[archive_sha]
     if json.loads(resources['static-manifest.json']) != {'version': version, 'files': expected}:
         raise GateFailure('Excel preview static manifest version, coverage or hash mismatch')
-    if archive_sha == R24_PF_EXCEL_NEXT_SITE_SHA:
-        if sha256(resources['app.js']) != R24_PF_EXCEL_NEXT_APP_SHA or sha256(resources['assignment-excel.mjs']) != R24_PF_EXCEL_NEXT_MODULE_SHA:
-            raise GateFailure('Excel QA2 app or assignment rules differ from pinned tested sources')
+    if app_pin is not None:
+        if sha256(resources['app.js']) != app_pin or sha256(resources['assignment-excel.mjs']) != module_pin:
+            raise GateFailure('Excel QA app or assignment rules differ from pinned tested sources')
     return resources
 
 
 def verify_r24_pf_excel_archive_update(before, after):
-    """Allow only QA1<->QA2, with the exact 3 reviewed resources changing."""
+    """Allow only adjacent QA1<->QA2 and QA2<->QA3, with the exact 3 reviewed resources changing."""
     before_sha, after_sha = sha256(before), sha256(after)
     if (before_sha, after_sha) not in (
         (R24_PF_EXCEL_SITE_SHA, R24_PF_EXCEL_NEXT_SITE_SHA),
         (R24_PF_EXCEL_NEXT_SITE_SHA, R24_PF_EXCEL_SITE_SHA),
+        (R24_PF_EXCEL_NEXT_SITE_SHA, R24_PF_EXCEL_QA3_SITE_SHA),
+        (R24_PF_EXCEL_QA3_SITE_SHA, R24_PF_EXCEL_NEXT_SITE_SHA),
     ):
-        raise GateFailure('Excel QA update must be the exact pinned QA1/QA2 transition or rollback')
+        raise GateFailure('Excel QA update must be an exact pinned adjacent transition (QA1/QA2/QA3) or rollback')
     old, new = r24_pf_excel_frontend(before), r24_pf_excel_frontend(after)
     changes = {name for name in old if old[name] != new[name]}
     if set(old) != set(new) or changes != R24_PF_EXCEL_NEXT_CHANGED_FILES:
@@ -1972,7 +1990,7 @@ def verify_pr(base, head):
         print('verify-pages-release PASS: exact isolated Excel assignment preview release/rollback')
     elif changed == {R24_PF_EXCEL_ARCHIVE}:
         verify_r24_pf_excel_archive_update(show(base, R24_PF_EXCEL_ARCHIVE), show(head, R24_PF_EXCEL_ARCHIVE))
-        print('verify-pages-release PASS: pinned Excel QA1/QA2 archive-only upgrade or rollback')
+        print('verify-pages-release PASS: pinned Excel QA1/QA2/QA3 adjacent archive-only upgrade or rollback')
     elif changed == {R24_PF_ARCHIVE}:
         verify_r24_pf_archive_update(show(base, R24_PF_ARCHIVE), show(head, R24_PF_ARCHIVE))
         print('verify-pages-release PASS: exact Paraformer formal same-route update/rollback')
