@@ -20,6 +20,8 @@ const previewSource = section('let assignmentExcelParsing=0;', '\nasync function
 const publishSource = section('async function publishAssignment(){', '\nasync function joinAssignment');
 const exchangeSource = section('async function importAssignmentPackage(ev){', '\nlet assignmentPublishPending');
 const nextSource = section('function nextQuestion(){', '\nfunction showReference');
+const answerAudioCleanupSource = source.includes('function clearAnswerAudio(){')
+  ? section('function clearAnswerAudio(){', '\nfunction nextQuestion(){') : '';
 function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
 const rows = [{ question: '人工样例问题一', answer: '人工样例答案一', model: 'DEMO-A', sku: '001', keyPoints: ['人工要点'], category: 'TCL 电视', platform: '京东' }];
 function fixture() {
@@ -103,6 +105,45 @@ test('the final next-question action saves the typed final answer without creati
     currentAssignment: () => ({ schema: 'assignment' }), saveCurrentTypedAnswer: () => { saves++; }, toast: x => messages.push(x) });
   vm.runInContext(nextSource, ctx); ctx.nextQuestion();
   assert.equal(saves, 1); assert.equal(ctx.sessionTurns.length, 2); assert.match(messages[0], /全部展示/);
+});
+
+test('switching questions cancels the preview media load before revoking its blob URL', () => {
+  const events = [], revocations = [], nodes = new Map();
+  let pendingLoad = true, attached = true, mediaSrc = 'blob:recorded-question';
+  const player = {
+    pause: () => events.push('pause'),
+    removeAttribute: name => { assert.equal(name, 'src'); mediaSrc = ''; events.push('remove-src'); },
+    load: () => { assert.equal(mediaSrc, ''); pendingLoad = false; events.push('cancel-load'); }
+  };
+  const holder = {
+    querySelectorAll: selector => { assert.equal(selector, 'audio'); return attached ? [player] : []; },
+    replaceChildren: () => { attached = false; events.push('detach'); }
+  };
+  const node = id => {
+    if (id === 'audioHolder') return holder;
+    if (!nodes.has(id)) nodes.set(id, { classList: { add() {} }, replaceChildren() {}, value: '' });
+    return nodes.get(id);
+  };
+  const original = new Blob(['original recorded bytes']), audio = new Map([['question-one', original]]);
+  const ctx = vm.createContext({
+    recorderPending: false, liveStarted: true, currentRecorder: null, recorderFinalizing: false,
+    selectedBoard: '01', boardById: () => ({}), questions: [{ question: '下一道原始作业题', kind: 'assignment-excel' }],
+    sessionTurns: [], currentAssignment: () => ({ schema: 'assignment' }), nextQuestionIndex: () => 0,
+    activeQuestionIndex: -1, answerAudioURL: 'blob:recorded-question', perQuestionAudio: audio,
+    ELEM: node, saveCurrentTypedAnswer() {}, cancelSpeech() {}, cancelTTS() {}, cancelTranscript() {},
+    updateLiveQuestionCard() {}, recordUI() {}, addChat() {}, viewerNick: () => '合成观众', scheduleChatQuestion() {},
+    Math: { random: () => .5 },
+    URL: { revokeObjectURL: url => { revocations.push({ url, pendingLoad, attached }); events.push('revoke'); } }
+  });
+  vm.runInContext(answerAudioCleanupSource + '\n' + nextSource, ctx);
+  ctx.nextQuestion();
+  assert.deepEqual(revocations, [{ url: 'blob:recorded-question', pendingLoad: false, attached: false }]);
+  assert.ok(events.indexOf('cancel-load') < events.indexOf('revoke'));
+  assert.equal(ctx.answerAudioURL, '');
+  assert.equal(audio.get('question-one'), original, 'the saved original recording must remain available for review');
+  assert.equal(node('currentQuestion').textContent, '下一道原始作业题');
+  ctx.clearAnswerAudio();
+  assert.equal(revocations.length, 1, 'repeated cleanup does not revoke another recording');
 });
 
 test('manual receipt deduplication keeps different assignments even with the same session ID', async () => {

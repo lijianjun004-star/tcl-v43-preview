@@ -37,6 +37,19 @@ self.addEventListener('message', ({data:m}) => {
  setTimeout(()=>self.postMessage({id:m.id,type:'result',result}),80);
 });
 """
+MEDIA_OBSERVER = r"""(() => {
+ const log=[];Object.defineProperty(window,'__qaMediaTrace',{value:log});
+ const add=(kind,data={})=>{log.push({kind,at:performance.now(),wall:Date.now(),...data});if(log.length>2000)log.shift();};
+ const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);
+ URL.createObjectURL=function(value){const url=create(value);add('url-create',{url,bytes:value?.size??null,type:value?.type??null,stack:new Error().stack});return url;};
+ URL.revokeObjectURL=function(url){add('url-revoke',{url:String(url),stack:new Error().stack});return revoke(url);};
+ for(const name of ['loadstart','loadedmetadata','loadeddata','canplay','play','playing','pause','ended','abort','emptied','error']){
+  document.addEventListener(name,event=>{const e=event.target;if(!(e instanceof HTMLMediaElement))return;
+   add('media-'+name,{tag:e.tagName,id:e.id,src:e.getAttribute('src'),currentSrc:e.currentSrc,connected:e.isConnected,readyState:e.readyState,networkState:e.networkState,error:e.error?{code:e.error.code,message:e.error.message}:null});
+  },true);
+ }
+ for(const name of ['pagehide','beforeunload'])window.addEventListener(name,()=>add(name));
+})();"""
 
 
 def fixtures(folder):
@@ -71,6 +84,7 @@ class Audit:
         self.args = args; self.out = Path(args.evidence); self.out.mkdir(parents=True, exist_ok=True)
         self.rows = []; self.errors = []; self.requests = []; self.responses = []; self.contexts = []
         self.next_taps = {}; self.cooldown_waits = []
+        self.phase = 'initialization'; self.page_labels = {}; self.request_failures = []; self.media_traces = []
         self.xlsx, self.wav = fixtures(self.out / 'fixtures')
         self.base = args.base_url.rstrip('/')
 
@@ -81,6 +95,7 @@ class Audit:
 
     async def context(self, browser, width=390, mock_asr=False):
         ctx = await browser.new_context(viewport={'width': width, 'height': 844}, permissions=['camera', 'microphone'], accept_downloads=True)
+        await ctx.add_init_script(MEDIA_OBSERVER)
         if mock_asr:
             await ctx.route('**/paraformer-worker.js', lambda route: route.fulfill(status=200, content_type='text/javascript', body=MOCK_WORKER))
         self.contexts.append(ctx)
@@ -88,9 +103,11 @@ class Audit:
 
     async def page(self, ctx, path=QA):
         p = await ctx.new_page(); p.set_default_timeout(20000)
-        p.on('pageerror', lambda e: self.errors.append({'url': p.url, 'error': str(e)}))
-        p.on('console', lambda msg: self.errors.append({'url': p.url, 'console': msg.text, 'location': msg.location}) if msg.type == 'error' and urlparse(msg.location.get('url', '')).path != '/favicon.ico' else None)
+        self.page_labels[p] = 'page-' + str(len(self.page_labels) + 1)
+        p.on('pageerror', lambda e: self.errors.append({'url': p.url, 'page': self.page_labels[p], 'phase': self.phase, 'error': str(e)}))
+        p.on('console', lambda msg: self.errors.append({'url': p.url, 'page': self.page_labels[p], 'phase': self.phase, 'console': msg.text, 'location': msg.location}) if msg.type == 'error' and urlparse(msg.location.get('url', '')).path != '/favicon.ico' else None)
         p.on('request', lambda r: self.requests.append({'url': r.url, 'method': r.method, 'type': r.resource_type}))
+        p.on('requestfailed', lambda r: self.request_failures.append({'url': r.url, 'type': r.resource_type, 'failure': r.failure, 'page': self.page_labels[p], 'phase': self.phase, 'wall': time.time()}))
         p.on('response', lambda r: self.responses.append({'url': r.url, 'status': r.status}) if r.status >= 400 and urlparse(r.url).path != '/favicon.ico' else None)
         p.on('dialog', lambda d: d.accept())
         await p.goto(self.base + path, wait_until='networkidle')
@@ -140,6 +157,7 @@ class Audit:
         await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[0])
 
     async def answer(self, p, i, media=False):
+        self.phase = ('media' if media else 'text') + '-answer-' + str(i + 1)
         await expect(p.locator('#liveQText')).to_have_text(QUESTIONS[i])
         if media:
             # Real browser capture proceeds on a synthetic --use-file-for-fake-audio-capture device.
@@ -170,6 +188,7 @@ class Audit:
         self.next_taps[p] = time.monotonic()
 
     async def finish(self, p):
+        self.phase = self.page_labels[p] + '-finish'
         await p.locator('#focusClose').click()
         # Chromium uses the app's accessible HTML dialog, not window.confirm.
         # Wait for its rendered button rather than probing visibility once.
@@ -187,6 +206,35 @@ class Audit:
     async def import_receipt(self, operator, path):
         await operator.locator('[data-ops-tab="tracking"]').click()
         await operator.locator('#assignmentReceiptImport').set_input_files(str(path))
+
+    async def collect_media_trace(self):
+        for p, label in self.page_labels.items():
+            if not p.is_closed():
+                try:
+                    self.media_traces.append({'page': label, 'url': p.url, 'events': await p.evaluate('window.__qaMediaTrace||[]')})
+                except Exception as error:
+                    self.media_traces.append({'page': label, 'trace_error': str(error)})
+
+    async def play_media(self, element, label, end=False):
+        # Load and play the application's actual retained object URL. No new
+        # success source or media element is substituted for the product player.
+        result = await element.evaluate("""async (e,shouldEnd) => {
+          const state=()=>({src:e.currentSrc||e.src,duration:Number.isFinite(e.duration)?e.duration:null,currentTime:e.currentTime,ended:e.ended,readyState:e.readyState,error:e.error?{code:e.error.code,message:e.error.message}:null});
+          await e.play();
+          if(shouldEnd)await new Promise((resolve,reject)=>{
+            const cleanup=()=>{clearTimeout(timer);e.removeEventListener('ended',ok);e.removeEventListener('error',bad)};
+            const ok=()=>{cleanup();resolve()},bad=()=>{cleanup();reject(new Error('Actual player error '+JSON.stringify(state())))};
+            const timer=setTimeout(()=>{cleanup();reject(new Error('Actual player did not finish '+JSON.stringify(state())))},15000);
+            e.addEventListener('ended',ok,{once:true});e.addEventListener('error',bad,{once:true});if(e.ended)ok();
+          });
+          else await new Promise((resolve,reject)=>{const start=e.currentTime;let count=0;const timer=setInterval(()=>{
+            if(e.error){clearInterval(timer);reject(new Error('Actual video failed '+JSON.stringify(state())))}
+            else if(e.currentTime>start+.15){clearInterval(timer);resolve()}
+            else if(++count>100){clearInterval(timer);reject(new Error('Actual video clock did not advance '+JSON.stringify(state())))}
+          },50)});
+          const value=state();e.pause();return value;
+        }""", end)
+        self.check(label, result['error'] is None and result['readyState'] >= 2 and result['currentTime'] > 0 and (not end or result['ended']), result)
 
     async def run(self, browser):
         # No layout rewrite: real static resources, role-gateway geometry at three widths.
@@ -301,6 +349,7 @@ class Audit:
 
         # Real native MediaRecorder with synthetic devices. Only model inference is stubbed.
         media_ctx = await self.context(browser, mock_asr=True); media = await self.page(media_ctx)
+        self.page_labels[media] = 'native-media-anchor'; self.phase = 'native-media-start'
         await self.login(media, 'anchor', MEDIA_ANCHOR); await self.open_import(media, pkg_path)
         await expect(media.locator('[data-join-assignment]').first).to_be_visible(); await self.join(media, text=False)
         for i in range(3): await self.answer(media, i, media=True)
@@ -309,7 +358,13 @@ class Audit:
         await expect(media.locator('#questionSummary audio')).to_have_count(3)
         blobs = await media.locator('#questionSummary audio').evaluate_all("async es => Promise.all(es.map(async e=>{const b=await (await fetch(e.src)).blob();return {bytes:b.size,type:b.type}}))")
         self.check('three distinct original audio blobs recorded', len(blobs) == 3 and all(x['bytes'] > 200 for x in blobs), blobs)
+        self.phase = 'actual-audio-playback'
+        for i in range(3): await self.play_media(media.locator('#questionSummary audio').nth(i), f'actual recorded answer {i + 1} plays to completion', end=True)
         await media.locator('#reviewDetailsBack').click()
+        await media.locator('#reviewReplay').click(); self.phase = 'actual-video-playback'
+        await expect(media.locator('#sessionArchiveHolder video')).to_be_visible()
+        await self.play_media(media.locator('#sessionArchiveHolder video'), 'actual recorded session video plays')
+        await media.locator('#reviewReplayBack').click(); self.phase = 'native-media-submit'
         media_receipt, media_data = await self.download(media, lambda: media.locator('#submitSession').click(), 'receipt-media.json')
         self.check('ASR cannot overwrite manual answers or reorder questions', [t['answer'] for t in media_data['turns']] == ANSWERS and [t['question'] for t in media_data['turns']] == QUESTIONS)
         records = await self.db(media, 'prefs')
@@ -331,6 +386,7 @@ class Audit:
         self.check('no data-upload requests', not mutations, mutations)
         self.check('no browser page or console errors', not self.errors, self.errors)
         self.check('no failing HTTP resources', not self.responses, self.responses)
+        self.check('no missing blob media resources', not [r for r in self.request_failures if r['type'] == 'media' and r['url'].startswith('blob:') and 'ERR_FILE_NOT_FOUND' in str(r['failure'])], self.request_failures)
 
     async def main(self):
         failure = None
@@ -347,9 +403,10 @@ class Audit:
                                     await self.screenshot(p, f'failure-{ci}-{pi}')
                                     (self.out / f'failure-{ci}-{pi}.txt').write_text(await p.locator('body').inner_text())
                                 except Exception: pass
+                await self.collect_media_trace()
                 await browser.close()
         except Exception: failure = traceback.format_exc()
-        result = {'passed': sum(x['pass'] for x in self.rows), 'checks': self.rows, 'failure': failure, 'page_errors': self.errors, 'failed_http': self.responses, 'requests': self.requests, 'explicit_next_button_cooldown_waits': self.cooldown_waits, 'scope': 'real Chromium UI, XLSX parser, IndexedDB and MediaRecorder; synthetic identities/devices; ASR Worker explicitly mocked only for media flow; no physical phone, human speech accuracy or automatic cloud delivery claims'}
+        result = {'passed': sum(x['pass'] for x in self.rows), 'checks': self.rows, 'failure': failure, 'page_errors': self.errors, 'failed_http': self.responses, 'requests': self.requests, 'request_failures': self.request_failures, 'media_traces': self.media_traces, 'explicit_next_button_cooldown_waits': self.cooldown_waits, 'scope': 'real Chromium UI, XLSX parser, IndexedDB and MediaRecorder; synthetic identities/devices; ASR Worker explicitly mocked only for media flow; no physical phone, human speech accuracy or automatic cloud delivery claims'}
         (self.out / 'browser-assignment-result.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
         print(json.dumps({'passed': result['passed'], 'failure': failure}, ensure_ascii=False), flush=True)
         if failure: raise SystemExit(1)

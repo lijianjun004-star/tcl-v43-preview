@@ -291,6 +291,25 @@ async function importAssignmentReceipt(ev){
     s=replace_once(s,"if(currentAssignment()?.schema&&sessionTurns.length>=questions.length)return toast('本次作业的题目已全部完成，请结束练播并提交作业');\n saveCurrentTypedAnswer();",
         "saveCurrentTypedAnswer();\n if(currentAssignment()?.schema&&sessionTurns.length>=questions.length)return toast('本次作业的题目已全部展示，请结束练播并核对每题回答后提交');",'save final answer before stopping at last question')
 
+    # The official onstop handler mounts a preview immediately before a question
+    # transition. Removing that player alone does not cancel its deferred media
+    # load. Stop the known preview, remove its source, and reset the load before
+    # revoking the URL; leave perQuestionAudio and the recorded Blob untouched.
+    old_audio_cleanup="if(answerAudioURL){URL.revokeObjectURL(answerAudioURL);answerAudioURL=''}"
+    if s.count(old_audio_cleanup)!=3:
+        raise ValueError('answer preview cleanup: expected exactly three anchors; refusing unknown R24 source')
+    s=s.replace(old_audio_cleanup,'clearAnswerAudio();')
+    s=replace_once(s,"clearAnswerAudio();\n ELEM('audioHolder').replaceChildren();recordUI('尚未录制本题回答');",
+        "clearAnswerAudio();\n recordUI('尚未录制本题回答');",'cancel preview load before question transition')
+    s=replace_once(s,'if(answerAudioURL)URL.revokeObjectURL(answerAudioURL);\n   answerAudioURL=URL.createObjectURL(blob);',
+        'clearAnswerAudio();\n   answerAudioURL=URL.createObjectURL(blob);','cancel preview load before a replacement recording')
+    s=replace_once(s,'function nextQuestion(){',r'''function clearAnswerAudio(){
+ const holder=ELEM('audioHolder');
+ if(holder){for(const audio of holder.querySelectorAll('audio')){try{audio.pause()}catch{}try{audio.removeAttribute('src');audio.load()}catch{}}holder.replaceChildren();}
+ if(answerAudioURL){URL.revokeObjectURL(answerAudioURL);answerAudioURL=''}
+}
+function nextQuestion(){''','stop preview resource selection before revocation')
+
     # A receipt is prepared only after every exact frozen question has an answer.
     # Keep the original atomic checkpoint + media transaction and add a current
     # owner/answer check inside its write callback.
