@@ -245,8 +245,8 @@ test('public job cannot be silently converted to a restricted roster',async()=>{
 });
 
 test('QA3 degenerate noise transcripts are not accepted as answers',()=>{
- for(const noise of ['谢谢谢谢谢谢谢谢谢谢谢谢','不不不谢谢谢谢谢谢谢不谢','嗯嗯嗯嗯','好的好的','AAAA AAAA','。。。谢谢，谢谢！谢谢','的的的的的的的的的的的是','谢谢谢谢谢谢不不好好','啊啊啊啊啊不拜','嗯嗯嗯嗯好']) assert.equal(isDegenerateAnswer(noise),true,noise);
- for(const real of ['主播已保存回答','这款TCL Q10L电视支持144Hz高刷','好的','谢谢','人工回答第1题：TEST-A1 为合成型号，信息仅用于流程测试。','RV-1 型号 001','一二三四五六七八九十十十十','价格10000元','售价1999元，库存1000台','嗯嗯嗯嗯，这款电视支持高刷新率','啊啊啊啊这款不错',Array.from({length:10000},(_,i)=>String.fromCharCode(0x4e00+i%500)).join('')]) assert.equal(isDegenerateAnswer(real),false,real);
+ for(const noise of ['谢谢谢谢谢谢谢谢谢谢谢谢','不不不谢谢谢谢谢谢谢不谢','嗯嗯嗯嗯','好的好的','AAAA AAAA','。。。谢谢，谢谢！谢谢','的的的的的的的的的的的是','谢谢谢谢谢谢不不好好','啊啊啊啊啊不拜','嗯嗯嗯嗯好','谢谢谢谢1']) assert.equal(isDegenerateAnswer(noise),true,noise);
+ for(const real of ['主播已保存回答','这款TCL Q10L电视支持144Hz高刷','好的','谢谢','人工回答第1题：TEST-A1 为合成型号，信息仅用于流程测试。','RV-1 型号 001','一二三四五六七八九十十十十','价格10000元','1000','10000','1111元','100%','2026年11月23日','8888 8888','售价1999元，库存1000台','嗯嗯嗯嗯，这款电视支持高刷新率','啊啊啊啊这款不错',Array.from({length:10000},(_,i)=>String.fromCharCode(0x4e00+i%500)).join('')]) assert.equal(isDegenerateAnswer(real),false,real);
 });
 test('QA3 submission and manual receipt reject noise-only answers',async()=>{
  const a=await build(),s=snapshot(a);s.turns[0].answer='谢谢谢谢谢谢谢谢谢谢谢谢';
@@ -261,4 +261,12 @@ test('QA3 receipt lateness uses the frozen deadline and the receipt submission t
  assert.equal(isReceiptLate({submittedAt:'2026-11-23T10:23:00.000Z'},a),true);
  assert.equal(isReceiptLate({submittedAt:'2026-11-23T10:23:04.227Z'},a),true);
  assert.equal(isReceiptLate({submittedAt:'not-a-time'},a),false);
+});
+test('QA3 numeric answers such as 1000 are valid in submission and receipt import',async()=>{
+ const a=await build();
+ for(const answer of ['1000','10000','1111元']){
+  const s=snapshot(a);s.turns.forEach(t=>{t.answer=answer;});
+  assert.equal(await verifyAssignmentSnapshot(a,s),true,answer);
+  assert.equal(verifyReceipt(toReceipt(a,s),a),true,answer);
+ }
 });

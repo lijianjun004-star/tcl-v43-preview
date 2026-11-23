@@ -287,9 +287,10 @@ export function toExchangePackage(a) {
  */
 export function isDegenerateAnswer(value) {
   const chars = Array.from(String(value ?? '').normalize('NFKC').replace(/[\s\p{P}\p{S}]/gu, ''));
-  const distinct = new Set(chars).size;
+  // Digits never count toward noise: "1000", "10000" or "1111元" are valid answers.
+  const words = chars.filter(c => !/\p{Nd}/u.test(c)), distinct = new Set(words).size;
   // Count-based: long genuine answers naturally have a low distinct/length ratio.
-  if ((chars.length >= 4 && distinct <= 2) || (chars.length >= 8 && distinct <= 3)) return true;
+  if ((words.length >= 4 && distinct <= 2) || (words.length >= 8 && distinct <= 3)) return true;
   // One non-digit character repeated >=4 times in a row covering over half the text
   // (observed live: "啊啊啊啊啊不拜"); digits are exempt so "10000元" stays valid.
   let run = 0, longest = 0;

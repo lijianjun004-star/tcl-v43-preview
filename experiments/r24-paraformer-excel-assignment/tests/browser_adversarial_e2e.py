@@ -31,8 +31,9 @@ HDR = ['题目', '参考答案', '型号', 'SKU', '评分要点']
 def degenerate(value):
     """Python mirror of assignment-excel.mjs isDegenerateAnswer()."""
     chars = [c for c in unicodedata.normalize('NFKC', value or '') if not (c.isspace() or unicodedata.category(c)[0] in 'PS')]
-    d = len(set(chars))
-    if (len(chars) >= 4 and d <= 2) or (len(chars) >= 8 and d <= 3): return True
+    words = [c for c in chars if unicodedata.category(c) != 'Nd']
+    d = len(set(words))
+    if (len(words) >= 4 and d <= 2) or (len(words) >= 8 and d <= 3): return True
     run = longest = 0
     for i, c in enumerate(chars):
         run = run + 1 if i and c == chars[i - 1] and unicodedata.category(c) != 'Nd' else 1
