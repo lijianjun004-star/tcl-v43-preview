@@ -1,0 +1,112 @@
+name: Package pinned R24 Excel QA2 for Gemini and Claude
+on:
+  push:
+    branches: [package/r24-excel-qa2-gemini-claude-20261123]
+    paths:
+      - .github/workflows/r24-excel-qa2-review-kit.yml
+      - experiments/r24-paraformer-excel-release/tools/build_qa2_review.py
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: r24-excel-qa2-gemini-claude-20261123
+  cancel-in-progress: false
+env:
+  REPOSITORY: lijianjun004-star/tcl-v43-preview
+  RELEASE_TAG: r24-excel-qa2-review-20261123
+  RELEASE_TARGET: ac64863acdb3238ee2efaa3765c14b24659b9e43
+jobs:
+  package-and-verify:
+    if: github.repository == 'lijianjun004-star/tcl-v43-preview' && github.ref == 'refs/heads/package/r24-excel-qa2-gemini-claude-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - name: Checkout repository with pinned published QA2 and review packager
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Checkout exact QA2 source that passed all 80/10/57/13 tests
+        uses: actions/checkout@v6
+        with:
+          ref: 33fdfa6298bba31cba2b98f5e12231acd0d09718
+          path: qa2_source
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Fetch pinned historical QA1 full model and QA2 test evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p qa1_kit qa2-artifact meta
+          gh release download r24-excel-qa-20261123 --repo "$REPOSITORY" \
+            --pattern R24_Excel_QA_20261123.zip --dir qa1_kit
+          echo "30233880a3d03fb9c6b8c260c4bada17d706b6465ca4911fa543af97a133db2a  qa1_kit/R24_Excel_QA_20261123.zip" | sha256sum --check --strict
+          gh run download 45141448081 --repo "$REPOSITORY" \
+            --name r24-excel-qa-45141448081 --dir qa2-artifact
+          gh api "repos/$REPOSITORY/actions/runs/45141448081" > meta/qa2-full-browser-and-model.json
+          gh api "repos/$REPOSITORY/actions/runs/45141447932" > meta/qa2-fast-tests.json
+          gh api "repos/$REPOSITORY/actions/runs/45142668104" > meta/qa2-release-gate.json
+          gh api "repos/$REPOSITORY/actions/runs/45142722021" > meta/qa2-pages-deployment.json
+          gh api "repos/$REPOSITORY/actions/runs/45142987868" > meta/qa2-public-eight-hashes.json
+          gh api "repos/$REPOSITORY/actions/runs/45143395686" > meta/qa2-final-doc-pages.json
+          gh run view 45141447932 --repo "$REPOSITORY" --log > meta/fast-run.log
+          gh run view 45142987868 --repo "$REPOSITORY" --log > meta/public-run.log
+          gh run view 45142722021 --repo "$REPOSITORY" --log > meta/pages-run.log
+      - name: Generate and fully read back SHA-pinned FULL and LITE review packages
+        run: |
+          set -euo pipefail
+          python3 experiments/r24-paraformer-excel-release/tools/build_qa2_review.py
+          cd dist
+          sha256sum --check --strict SHA256SUMS
+      - name: Publish new non-production prerelease without overwriting other versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, subprocess
+          repo,tag=os.environ['REPOSITORY'],os.environ['RELEASE_TAG']
+          for endpoint in (f'repos/{repo}/git/ref/tags/{tag}',f'repos/{repo}/releases/tags/{tag}'):
+              p=subprocess.run(['gh','api',endpoint],text=True,capture_output=True)
+              if p.returncode==0:raise SystemExit('Refuse to overwrite an existing tag or release')
+              if '(HTTP 404)' not in p.stderr:raise SystemExit('Could not confirm target absent: '+p.stderr)
+          PY
+          gh api --method POST "repos/$REPOSITORY/git/refs" \
+             -f ref="refs/tags/$RELEASE_TAG" -f sha="$RELEASE_TARGET" > release-tag-result.json
+          gh release create "$RELEASE_TAG" \
+            dist/TCL_R24_Excel_QA2_Gemini_Claude_Review_FULL_20261123.zip \
+            dist/TCL_R24_Excel_QA2_Gemini_Claude_Review_LITE_20261123.zip \
+            dist/SHA256SUMS \
+            --repo "$REPOSITORY" --verify-tag --target "$RELEASE_TARGET" \
+            --prerelease --latest=false --title 'TCL R24 Excel QA2｜Gemini & Claude 完整/轻量复验包' \
+            --notes-file experiments/r24-paraformer-excel-release/README.md
+      - name: Validate prerelease identity and downloads
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPOSITORY/git/ref/tags/$RELEASE_TAG" > release-tag.json
+          gh api "repos/$REPOSITORY/releases/tags/$RELEASE_TAG" > release-meta.json
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          tag=json.loads(Path('release-tag.json').read_text())
+          release=json.loads(Path('release-meta.json').read_text())
+          expected={'TCL_R24_Excel_QA2_Gemini_Claude_Review_FULL_20261123.zip',
+                    'TCL_R24_Excel_QA2_Gemini_Claude_Review_LITE_20261123.zip',
+                    'SHA256SUMS'}
+          assert tag['object']['type']=='commit' and tag['object']['sha']==os.environ['RELEASE_TARGET']
+          assert release['tag_name']==os.environ['RELEASE_TAG'] and release['prerelease'] and not release['draft']
+          assert {a['name'] for a in release['assets']}==expected
+          assert all(a['state']=='uploaded' for a in release['assets'])
+          print('QA2 REVIEW PRERELEASE ASSETS PASS',release['html_url'])
+          PY
+          mkdir -p readback
+          gh release download "$RELEASE_TAG" --repo "$REPOSITORY" --dir readback \
+            --pattern 'TCL_R24_Excel_QA2_Gemini_Claude_Review_*.zip' --pattern SHA256SUMS
+          cmp dist/SHA256SUMS readback/SHA256SUMS
+          cd readback
+          sha256sum --check --strict SHA256SUMS
