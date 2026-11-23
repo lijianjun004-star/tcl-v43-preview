@@ -3166,7 +3166,7 @@ class R24ExcelPreviewGateTests(unittest.TestCase):
                              {'app.js', 'assignment-excel.mjs', 'static-manifest.json'})
             with self.assertRaisesRegex(gate.GateFailure, 'exact pinned'):
                 gate.verify_r24_pf_excel_archive_update(base, base)
-            with self.assertRaisesRegex(gate.GateFailure, 'ZIP hash'):
+            with self.assertRaisesRegex(gate.GateFailure, 'exact pinned'):
                 gate.verify_r24_pf_excel_archive_update(base, upgrade + b'tampered')
             # Even if all archive pins were modified in tests, a fourth changed
             # resource must be refused when upgrading an isolated route.
