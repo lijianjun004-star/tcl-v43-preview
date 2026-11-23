@@ -3183,16 +3183,16 @@ class R24ExcelPreviewGateTests(unittest.TestCase):
         base, head = 'a' * 40, 'b' * 40
         archive = gate.R24_PF_EXCEL_ARCHIVE
         def output(command, **kwargs):
-            if command[:2] == ['git', 'diff']: return archive + '\\n'
+            if command[:2] == ['git', 'diff']: return archive + '\n'
             if command[:2] == ['git', 'show']: return command[2].encode()
             raise AssertionError(command)
-        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \\
-             mock.patch.object(gate, 'verify_r24_pf_excel_archive_update') as verifier, \\
+        with mock.patch.object(gate.subprocess, 'check_output', side_effect=output), \
+             mock.patch.object(gate, 'verify_r24_pf_excel_archive_update') as verifier, \
              contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(gate.verify_pr(base, head), 0)
             self.assertEqual(verifier.call_count, 1)
         def mixed(command, **kwargs):
-            if command[:2] == ['git', 'diff']: return archive + '\\n.github/workflows/pages.yml\\nrelease-ci/release_guard.py\\n'
+            if command[:2] == ['git', 'diff']: return archive + '\n.github/workflows/pages.yml\nrelease-ci/release_guard.py\n'
             return command[2].encode()
         with mock.patch.object(gate.subprocess, 'check_output', side_effect=mixed):
             with self.assertRaisesRegex(gate.GateFailure, 'Unexpected PR paths'):
