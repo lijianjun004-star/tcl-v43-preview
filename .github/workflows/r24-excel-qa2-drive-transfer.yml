@@ -1,0 +1,48 @@
+name: Prepare verified TCL QA2 full archive for Google Drive
+on:
+  push:
+    branches: [package/r24-excel-qa2-gemini-claude-20261123]
+    paths: [.github/workflows/r24-excel-qa2-drive-transfer.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Download the published full review archive and check exact SHA256
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p handoff
+          gh release download r24-excel-qa2-review-20261123 --repo lijianjun004-star/tcl-v43-preview --dir handoff --pattern TCL_R24_Excel_QA2_Gemini_Claude_Review_FULL_20261123.zip
+          (cd handoff && echo "4951ad61c8897ba26f0d396490bb81676dbeb5a55d86378ce6c68191482cc50a  TCL_R24_Excel_QA2_Gemini_Claude_Review_FULL_20261123.zip" | sha256sum --check --strict)
+          cat > handoff/README-Gemini.md <<'EOF'
+          # TCL 智能练播房 R24 Excel QA2 — Gemini 复验交接
+
+          本 ZIP 是从 GitHub Actions 转存 Google Drive 的传输外壳。
+          请先提取其中 TCL_R24_Excel_QA2_Gemini_Claude_Review_FULL_20261123.zip，
+          再打开该内层 ZIP 中的 README-给Gemini和Claude的复验任务.md 开始独立复验。
+
+          原始 FULL 包 SHA256：4951ad61c8897ba26f0d396490bb81676dbeb5a55d86378ce6c68191482cc50a
+          原始 FULL 包大小：97472570 字节
+          GitHub 官方发行：https://github.com/lijianjun004-star/tcl-v43-preview/releases/tag/r24-excel-qa2-review-20261123
+          当前独立测试站：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/
+
+          注意：跨手机自动搜索、云端提交未接入；不可把 QA2 静态测试版误判为正式云端系统。
+          EOF
+      - name: Preserve full archive and handoff note in transfer artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: tcl-r24-excel-qa2-google-drive-handoff
+          path: handoff/
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
