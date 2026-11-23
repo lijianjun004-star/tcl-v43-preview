@@ -1705,6 +1705,60 @@ R24_PF_RC_VERSION = 'r24-paraformer-small-20261118-devicecheck-rc1'
 R24_PF_RC_SITE_SHA = '69a49036041c5b0286aef87bb799ade1f3ceb454cc2076b20891cf77ccdf1f17'
 R24_PF_RC_BASE_WORKFLOW_SHA = 'b14e77bf74f7c691a4b61e713eb0a45b71a0b6eb11effaa66f4227ee137f5d2c'
 
+# Excel assignments are an isolated manual-exchange preview, never an update to
+# the official Paraformer, historical R24, R25 or root routes.
+R24_PF_EXCEL_ARCHIVE = 'experiments/r24-paraformer-excel-release/site-only.zip'
+R24_PF_EXCEL_DEST = 'tcl-r24-paraformer-excel-qa'
+R24_PF_EXCEL_VERSION = 'r24-paraformer-excel-assignment-20261123-qa1'
+R24_PF_EXCEL_SITE_SHA = '7316d528f824dc7fcbf47ccf877b92e58072748f2fa041315b872ceecb6ad94f'
+R24_PF_EXCEL_BASE_WORKFLOW_SHA = '9903576514b72b45a5cee346c1f760fa9c4e6563fa474750e29eaea78db84955'
+R24_PF_EXCEL_UI_PINS = {
+    'index.html': '39a04e9845975e7eb874401f6864f4facb12d498168d50570cc5e444e428d59e',
+    'style.css': '35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2',
+    'training-boards.json': 'e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11',
+    'legacy-65.json': 'd122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f',
+}
+
+
+def r24_pf_excel_stage_step():
+    # Reuse the same upstream bytes already fetched for the protected official
+    # route. stage_r24_pf rechecks the archive and every extracted model file.
+    return (
+        '      - name: Stage isolated R2.4 Excel assignment preview\n'
+        '        run: |\n'
+        '          MODEL="$RUNNER_TEMP/r24-paraformer-model.tar.bz2"\n'
+        f'          python3 release-ci/release_guard.py --stage-r24-paraformer-excel _site {R24_PF_EXCEL_ARCHIVE} "$MODEL"\n'
+    )
+
+
+def verify_r24_pf_excel_release_workflow(before, after):
+    if sha256(before.encode()) != R24_PF_EXCEL_BASE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+        raise GateFailure('Excel preview requires the exact protected Pages workflow')
+    if after != before.replace(LAB_ANCHOR, r24_pf_excel_stage_step() + LAB_ANCHOR, 1):
+        raise GateFailure('Excel preview must add only its isolated stage before Pages configuration')
+
+
+def verify_r24_pf_excel_rollback_workflow(before, after):
+    verify_r24_pf_excel_release_workflow(after, before)
+
+
+def r24_pf_excel_frontend(raw):
+    if len(raw) > 1_500_000 or sha256(raw) != R24_PF_EXCEL_SITE_SHA:
+        raise GateFailure('Excel preview frontend ZIP hash or size mismatch')
+    _, resources = inspect_zip_bytes_for_autoqa(raw)
+    if set(resources) != R24_PF_FRONTEND_FILES | {'assignment-excel.mjs'}:
+        raise GateFailure('Excel preview frontend resource allowlist mismatch')
+    for name, pin in R24_PF_EXCEL_UI_PINS.items():
+        if sha256(resources[name]) != pin:
+            raise GateFailure('Excel preview changed a preserved UI or public question resource: ' + name)
+    if sha256(resources['vendor/paraformer/manifest.json']) != R24_PF_MODEL_MANIFEST_SHA:
+        raise GateFailure('Excel preview model manifest identity mismatch')
+    expected = {name: sha256(data) for name, data in resources.items() if name != 'static-manifest.json'}
+    expected.update({f'vendor/paraformer/{name}': pin for name, (_, pin) in R24_PF_MODEL_FILES.items()})
+    if json.loads(resources['static-manifest.json']) != {'version': R24_PF_EXCEL_VERSION, 'files': expected}:
+        raise GateFailure('Excel preview static manifest version, coverage or hash mismatch')
+    return resources
+
 
 def r24_pf_stage_step():
     return (
@@ -1861,6 +1915,10 @@ def stage_r24_pf_rc(site_path, app_zip, model_archive):
     return stage_r24_pf(site_path, app_zip, model_archive, dest=R24_PF_RC_DEST, frontend=r24_pf_rc_frontend)
 
 
+def stage_r24_pf_excel(site_path, app_zip, model_archive):
+    return stage_r24_pf(site_path, app_zip, model_archive, dest=R24_PF_EXCEL_DEST, frontend=r24_pf_excel_frontend)
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -1872,7 +1930,21 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R24_PF_ARCHIVE}:
+    if changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
+        flags = [subprocess.check_output(
+            ['git', 'ls-tree', '--name-only', ref, '--', R24_PF_EXCEL_ARCHIVE], text=True).strip()
+            for ref in (base, head)]
+        before, after = [show(ref, '.github/workflows/pages.yml').decode('utf-8') for ref in (base, head)]
+        if flags == ['', R24_PF_EXCEL_ARCHIVE]:
+            verify_r24_pf_excel_release_workflow(before, after)
+            r24_pf_excel_frontend(show(head, R24_PF_EXCEL_ARCHIVE))
+        elif flags == [R24_PF_EXCEL_ARCHIVE, '']:
+            verify_r24_pf_excel_rollback_workflow(before, after)
+            r24_pf_excel_frontend(show(base, R24_PF_EXCEL_ARCHIVE))
+        else:
+            raise GateFailure('Excel preview accepts only an exact additive release or full isolated route rollback')
+        print('verify-pages-release PASS: exact isolated Excel assignment preview release/rollback')
+    elif changed == {R24_PF_ARCHIVE}:
         verify_r24_pf_archive_update(show(base, R24_PF_ARCHIVE), show(head, R24_PF_ARCHIVE))
         print('verify-pages-release PASS: exact Paraformer formal same-route update/rollback')
     elif changed == {R24_PF_RC_ARCHIVE, '.github/workflows/pages.yml'}:
@@ -1928,7 +2000,7 @@ def verify_pr(base, head):
     elif changed == {R25_ARCHIVE}:
         verify_r25_archive_update(
             show(base, '.github/workflows/pages.yml').decode('utf-8')
-            .replace(r24_pf_rc_stage_step(), '', 1).replace(r24_pf_stage_step(), '', 1),
+            .replace(r24_pf_excel_stage_step(), '', 1).replace(r24_pf_rc_stage_step(), '', 1).replace(r24_pf_stage_step(), '', 1),
             show(base, R25_ARCHIVE), show(head, R25_ARCHIVE), show(base, 'site.zip'),
             {path: show(base, path) for path in R25_TRUSTED_INPUTS},
         )
@@ -1936,7 +2008,7 @@ def verify_pr(base, head):
     elif changed == {R24_ARCHIVE}:
         verify_r24_archive_update(
             show(base, '.github/workflows/pages.yml').decode('utf-8')
-            .replace(r24_pf_rc_stage_step(), '', 1).replace(r24_pf_stage_step(), '', 1),
+            .replace(r24_pf_excel_stage_step(), '', 1).replace(r24_pf_rc_stage_step(), '', 1).replace(r24_pf_stage_step(), '', 1),
             show(base, R24_ARCHIVE), show(head, R24_ARCHIVE), show(base, 'site.zip'),
             {path: show(base, path) for path in R24_TRUSTED_INPUTS},
         )
@@ -2042,6 +2114,13 @@ def verify_pr(base, head):
 
 
 def main():
+    if len(sys.argv) == 5 and sys.argv[1] == '--stage-r24-paraformer-excel':
+        try:
+            stage_r24_pf_excel(sys.argv[2], sys.argv[3], sys.argv[4])
+            return 0
+        except (GateFailure, OSError, ValueError, KeyError, tarfile.TarError, zipfile.BadZipFile, zlib.error) as exc:
+            print(f'R24_PARAFORMER_EXCEL_STAGE_FAILED: {exc}', file=sys.stderr)
+            return 2
     if len(sys.argv) == 5 and sys.argv[1] == '--stage-r24-paraformer-rc':
         try:
             stage_r24_pf_rc(sys.argv[2], sys.argv[3], sys.argv[4])
