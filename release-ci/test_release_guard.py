@@ -2985,6 +2985,7 @@ class R24ParaformerRCRepositoryStateTests(unittest.TestCase):
     def test_repository_rc_archive_and_workflow_are_consistent(self):
         repo = HERE.parent
         workflow = (repo / '.github/workflows/pages.yml').read_text(encoding='utf-8')
+        workflow = workflow.replace(gate.r24_pf_excel_stage_step(), '', 1)
         archive = repo / gate.R24_PF_RC_ARCHIVE
         step = gate.r24_pf_rc_stage_step()
         if archive.exists():
@@ -2993,6 +2994,169 @@ class R24ParaformerRCRepositoryStateTests(unittest.TestCase):
             gate.verify_r24_pf_rc_release_workflow(base, workflow)
             resources = gate.r24_pf_rc_frontend(archive.read_bytes())
             self.assertEqual(set(resources), gate.R24_PF_FRONTEND_FILES)
+        else:
+            self.assertNotIn(step, workflow)
+
+
+class R24ExcelPreviewGateTests(unittest.TestCase):
+    """A new assignment route must neither weaken pins nor replace an old route."""
+
+    def setUp(self):
+        self.resources = {
+            'index.html': b'<title>Original R24 UI</title>',
+            'style.css': b'body{color:black}',
+            'training-boards.json': b'{"public":true}',
+            'legacy-65.json': b'[]',
+            'app.js': b'const namespace = "isolated-excel";',
+            'assignment-excel.mjs': b'export const isolated = true;',
+            'vendor/paraformer/manifest.json': b'{"fixed-model":true}',
+        }
+        self.model_pins = {'fixture.wasm': (4, gate.sha256(b'wasm'))}
+        patcher = mock.patch.multiple(
+            gate, R24_PF_FRONTEND_FILES=frozenset(self.resources) - {'assignment-excel.mjs'} | {'static-manifest.json'},
+            R24_PF_MODEL_FILES=self.model_pins,
+            R24_PF_MODEL_MANIFEST_SHA=gate.sha256(self.resources['vendor/paraformer/manifest.json']),
+            R24_PF_EXCEL_UI_PINS={n: gate.sha256(self.resources[n]) for n in ('index.html', 'style.css', 'training-boards.json', 'legacy-65.json')},
+        )
+        patcher.start(); self.addCleanup(patcher.stop)
+        self.before = 'protected workflow\n' + gate.LAB_ANCHOR + 'unchanged tail\n'
+        pin = mock.patch.object(gate, 'R24_PF_EXCEL_BASE_WORKFLOW_SHA', gate.sha256(self.before.encode()))
+        pin.start(); self.addCleanup(pin.stop)
+        self.after = self.before.replace(gate.LAB_ANCHOR, gate.r24_pf_excel_stage_step() + gate.LAB_ANCHOR, 1)
+
+    def zipped(self, change=None, manifest_change=None):
+        resources = dict(self.resources)
+        if change: change(resources)
+        coverage = {n: gate.sha256(b) for n, b in resources.items()}
+        coverage.update({'vendor/paraformer/' + n: pin for n, (_, pin) in self.model_pins.items()})
+        manifest = {'version': gate.R24_PF_EXCEL_VERSION, 'files': coverage}
+        if manifest_change: manifest_change(manifest)
+        resources['static-manifest.json'] = json.dumps(manifest).encode()
+        out = io.BytesIO()
+        with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name, data in resources.items(): archive.writestr(name, data)
+        return out.getvalue()
+
+    def checked(self, raw):
+        with mock.patch.object(gate, 'R24_PF_EXCEL_SITE_SHA', gate.sha256(raw)):
+            return gate.r24_pf_excel_frontend(raw)
+
+    def test_accept_exact_frontend_and_its_model_coverage(self):
+        self.assertEqual(set(self.checked(self.zipped())), set(self.resources) | {'static-manifest.json'})
+
+    def test_reject_unreviewed_archive_even_with_valid_internal_manifest(self):
+        with mock.patch.object(gate, 'R24_PF_EXCEL_SITE_SHA', '0' * 64):
+            with self.assertRaisesRegex(gate.GateFailure, 'ZIP hash'):
+                gate.r24_pf_excel_frontend(self.zipped())
+
+    def test_reject_old_or_official_version_even_if_outer_pin_is_changed(self):
+        raw = self.zipped(manifest_change=lambda m: m.update(version=gate.R24_PF_PAGES3_VERSION))
+        with self.assertRaisesRegex(gate.GateFailure, 'version'):
+            self.checked(raw)
+
+    def test_preserve_html_css_and_public_question_files(self):
+        for name in gate.R24_PF_EXCEL_UI_PINS:
+            with self.subTest(name=name):
+                raw = self.zipped(change=lambda r, n=name: r.__setitem__(n, b'changed'))
+                with self.assertRaisesRegex(gate.GateFailure, 'preserved UI or public question'):
+                    self.checked(raw)
+
+    def test_reject_added_private_spreadsheet_or_removed_module(self):
+        for change in (lambda r: r.__setitem__('private-homework.xlsx', b'private'),
+                       lambda r: r.pop('assignment-excel.mjs')):
+            with self.subTest(change=change):
+                with self.assertRaisesRegex(gate.GateFailure, 'allowlist'):
+                    self.checked(self.zipped(change=change))
+
+    def test_reject_changed_model_manifest(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'model manifest'):
+            self.checked(self.zipped(change=lambda r: r.__setitem__('vendor/paraformer/manifest.json', b'changed')))
+
+    def test_reject_stale_or_incomplete_hash_coverage(self):
+        mutations = (
+            lambda m: m['files'].pop('assignment-excel.mjs'),
+            lambda m: m['files'].pop('vendor/paraformer/fixture.wasm'),
+            lambda m: m['files'].__setitem__('app.js', '0' * 64),
+            lambda m: m['files'].__setitem__('vendor/paraformer/fixture.wasm', 'f' * 64),
+            lambda m: m['files'].__setitem__('static-manifest.json', '0' * 64),
+            lambda m: m.update(extra='unreviewed'),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                with self.assertRaisesRegex(gate.GateFailure, 'manifest'):
+                    self.checked(self.zipped(manifest_change=mutation))
+
+    def test_reject_oversized_frontend(self):
+        raw = b'x' * 1_500_001
+        with self.assertRaisesRegex(gate.GateFailure, 'ZIP hash or size'):
+            self.checked(raw)
+
+    def test_exact_additive_workflow_and_rollback(self):
+        gate.verify_r24_pf_excel_release_workflow(self.before, self.after)
+        gate.verify_r24_pf_excel_rollback_workflow(self.after, self.before)
+        self.assertNotIn('curl ', gate.r24_pf_excel_stage_step())
+        self.assertIn('--stage-r24-paraformer-excel', gate.r24_pf_excel_stage_step())
+
+    def test_reject_changed_base_or_unrelated_workflow_edits(self):
+        with self.assertRaisesRegex(gate.GateFailure, 'exact protected'):
+            gate.verify_r24_pf_excel_release_workflow(self.before + '#new', self.after)
+        for after in (self.after + '#extra', self.before,
+                      self.after.replace('unchanged tail', 'changed tail'),
+                      self.before.replace(gate.LAB_ANCHOR, gate.LAB_ANCHOR + gate.r24_pf_excel_stage_step()),
+                      self.after.replace(gate.r24_pf_excel_stage_step(), gate.r24_pf_excel_stage_step() * 2)):
+            with self.subTest(after=after):
+                with self.assertRaisesRegex(gate.GateFailure, 'add only its isolated stage'):
+                    gate.verify_r24_pf_excel_release_workflow(self.before, after)
+
+    def test_reject_partial_or_modified_rollback(self):
+        with self.assertRaises(gate.GateFailure):
+            gate.verify_r24_pf_excel_rollback_workflow(self.after, self.before + '#extra')
+
+    def test_legacy_archive_update_removes_only_known_additive_steps(self):
+        base, head = 'a' * 40, 'b' * 40
+        plain = 'name: old\n' + gate.LAB_ANCHOR + 'tail\n'
+        all_steps = plain.replace(gate.LAB_ANCHOR, gate.r24_pf_stage_step() + gate.r24_pf_rc_stage_step() + gate.r24_pf_excel_stage_step() + gate.LAB_ANCHOR)
+        for archive, verifier in ((gate.R24_ARCHIVE, 'verify_r24_archive_update'), (gate.R25_ARCHIVE, 'verify_r25_archive_update')):
+            def output(command, archive=archive, **kwargs):
+                if command[:2] == ['git', 'diff']: return archive + '\n'
+                if command[2] == base + ':.github/workflows/pages.yml': return all_steps.encode()
+                return command[2].encode()
+            with self.subTest(archive=archive), mock.patch.object(gate.subprocess, 'check_output', side_effect=output), mock.patch.object(gate, verifier) as verify, contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(gate.verify_pr(base, head), 0)
+                self.assertEqual(verify.call_args.args[0], plain)
+
+    def test_release_and_rollback_use_correct_archive_without_mixed_changes(self):
+        base, head = 'a' * 40, 'b' * 40
+        for rollback in (False, True):
+            def output(command, **kwargs):
+                if command[:2] == ['git', 'diff']: return gate.R24_PF_EXCEL_ARCHIVE + '\n.github/workflows/pages.yml\n'
+                if command[:2] == ['git', 'ls-tree']:
+                    exists = command[3] == (base if rollback else head)
+                    return gate.R24_PF_EXCEL_ARCHIVE + '\n' if exists else ''
+                if command[2].endswith(':.github/workflows/pages.yml'):
+                    is_before = command[2].startswith(base + ':')
+                    return ((self.after if rollback else self.before) if is_before else (self.before if rollback else self.after)).encode()
+                return command[2].encode()
+            with self.subTest(rollback=rollback), mock.patch.object(gate.subprocess, 'check_output', side_effect=output), mock.patch.object(gate, 'r24_pf_excel_frontend') as front, contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(gate.verify_pr(base, head), 0)
+                front.assert_called_once_with(((base if rollback else head) + ':' + gate.R24_PF_EXCEL_ARCHIVE).encode())
+        for extra in ('release-ci/release_guard.py', gate.R24_PF_ARCHIVE, 'private-data.json'):
+            def mixed(command, **kwargs): return '\n'.join((gate.R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml', extra))
+            with self.subTest(extra=extra), mock.patch.object(gate.subprocess, 'check_output', side_effect=mixed):
+                with self.assertRaisesRegex(gate.GateFailure, 'Unexpected PR paths'):
+                    gate.verify_pr(base, head)
+
+
+class R24ExcelPreviewRepositoryTests(unittest.TestCase):
+    def test_current_preview_artifact_workflow_and_pins_agree(self):
+        repo = HERE.parent
+        workflow = (repo / '.github/workflows/pages.yml').read_text(encoding='utf-8')
+        archive = repo / gate.R24_PF_EXCEL_ARCHIVE
+        step = gate.r24_pf_excel_stage_step()
+        if archive.exists():
+            self.assertEqual(workflow.count(step), 1)
+            gate.verify_r24_pf_excel_release_workflow(workflow.replace(step, '', 1), workflow)
+            gate.r24_pf_excel_frontend(archive.read_bytes())
         else:
             self.assertNotIn(step, workflow)
 
