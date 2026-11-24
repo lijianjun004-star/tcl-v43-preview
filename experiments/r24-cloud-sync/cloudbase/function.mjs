@@ -4,13 +4,19 @@ import {createAuthenticator} from './cloudbase-identity.mjs';
 import {createDatabaseAdapter} from './cloudbase-store.mjs';
 import {createGatewayHandler} from './gateway.mjs';
 import {readFunctionConfig} from './function-config.mjs';
+import {createDeviceAccess} from './device-access.mjs';
+import {createDeviceGrantStore} from './device-grants-store.mjs';
 
 function createFunction(runtimeNamespace) {
   const {envId, prefix, allowedOrigins} = readFunctionConfig(process.env, runtimeNamespace);
   const cloudApp = cloudbase.init({env: envId, region: 'ap-shanghai', timeout: 12_000});
-  const {getEnrollment, directory, store} = createDatabaseAdapter(cloudApp.rdb(), prefix);
-  const authenticate = createAuthenticator({envId, getEnrollment});
-  return createGatewayHandler(createApi({authenticate, directory, store, allowedOrigins, basePath: ''}));
+  const db = cloudApp.rdb();
+  const {getEnrollment, directory, store} = createDatabaseAdapter(db, prefix);
+  const authenticateNative = createAuthenticator({envId, getEnrollment});
+  const grants = createDeviceGrantStore(db, prefix);
+  const {authenticate, activationHandler} = createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins});
+  const api = createApi({authenticate, directory, store, allowedOrigins, basePath: ''});
+  return createGatewayHandler(request => activationHandler(request, api));
 }
 
 let handler;

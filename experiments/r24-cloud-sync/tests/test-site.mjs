@@ -1,5 +1,4 @@
 import { createServer } from 'node:http';
-import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +6,7 @@ import { createApi } from '../backend/api.mjs';
 import { createMemoryStore } from '../backend/memory-store.mjs';
 
 const apiBasePath = '/api/tcl-r24-sync';
-const sitePath = fileURLToPath(new URL('../site/', import.meta.url));
+const sitePath = resolve(process.env.TCL_TEST_SITE_DIR || fileURLToPath(new URL('../site/', import.meta.url)));
 const mediaTypes = {
   '.html': 'text/html; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8',
@@ -18,9 +17,9 @@ const mediaTypes = {
 };
 
 export const identities = {
-  operator: { username: 'fixture-operator', id: 'operator-1', teamId: 'team-a', role: 'operator', displayName: '合成验收运营', active: true },
-  anchor: { username: 'fixture-anchor', id: 'anchor-1', teamId: 'team-a', role: 'anchor', displayName: '合成文字主播', active: true },
-  foreign: { username: 'fixture-foreign', id: 'anchor-2', teamId: 'team-b', role: 'anchor', displayName: '其他团队测试主播', active: true }
+  operator: { code: 'R24-000000000000000000000001', id: 'operator-1', teamId: 'team-a', role: 'operator', displayName: '合成验收运营', active: true },
+  anchor: { code: 'R24-000000000000000000000002', id: 'anchor-1', teamId: 'team-a', role: 'anchor', displayName: '合成文字主播', active: true },
+  foreign: { code: 'R24-000000000000000000000003', id: 'anchor-2', teamId: 'team-b', role: 'anchor', displayName: '其他团队测试主播', active: true }
 };
 
 async function readBody(req) {
@@ -45,21 +44,26 @@ export async function startTestSite() {
   const requests = [];
   const tokens = new Map();
   const actors = Object.values(identities);
+  const unusedCodes = new Map(actors.map(actor => [actor.code, actor]));
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, origin);
     const path = url.pathname;
     const method = req.method;
     requests.push({ path, method });
     try {
-      if (path === '/test-auth' && method === 'POST') {
-        const { username, password } = JSON.parse(await readBody(req));
-        const user = actors.find(entry => entry.username === username);
-        if (!user || password !== 'fixture-account-password') {
-          return sendJson(res, 401, { error: { message: '合成测试账号或密码错误' } });
+      if (path === apiBasePath + '/device/activate' && method === 'POST') {
+        const { displayName, code, deviceToken } = JSON.parse(await readBody(req));
+        const actor = unusedCodes.get(code);
+        if (!actor || actor.displayName !== displayName ||
+            !/^r24d_[0-9a-f]{64}$/.test(deviceToken) || tokens.has(deviceToken)) {
+          return sendJson(res, 401, {
+            error: { code: 'INVALID_ACTIVATION', message: '姓名或设备绑定码无效' },
+          });
         }
-        const token = randomUUID();
-        tokens.set(token, user);
-        return sendJson(res, 200, { access_token: token });
+        const { id, role } = actor;
+        unusedCodes.delete(code);
+        tokens.set(deviceToken, actor);
+        return sendJson(res, 200, { principal: { id, role, displayName } });
       }
 
       if (path.startsWith(apiBasePath + '/')) {
@@ -81,7 +85,7 @@ export async function startTestSite() {
         return sendJson(res, 200, mode === 'sync' ? {
           assignmentSync: {
             apiBase: origin + apiBasePath,
-            testAuthUrl: origin + '/test-auth'
+            testMode: true
           }
         } : {});
       }

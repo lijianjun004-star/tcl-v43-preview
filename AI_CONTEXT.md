@@ -10,6 +10,10 @@
 
 公网 37/37 资源 SHA 匹配。两个合成测试账号通过真实登录、Excel 作业冻结快照 API 发布和获取、答复提交、同场次重试去重及运营收件，未登录 401、主播越权读取运营收件 403。公网 Chromium 双会话使用合成 XLSX 通过发布、领取、三题提交、运营收件，0 页面异常。真实手机尚未验收，默认测试域名会出现腾讯云风险提醒。云端只接收答复和转写，录像仍保存在本机，未迁移旧浏览器数据。[发布和验收证据](experiments/r24-cloud-sync/evidence/shanghai/README.md)
 
+### 同日更新：R24 试点改用姓名进入
+
+同一试点入口的登录页改为只填姓名，首次使用新设备时用管理员发放的一次性设备码绑定。已绑定浏览器日常只输姓名，设备绑定与 R25 独立。公网 37/37 资源哈希匹配。两个原生身份完成实际试点 XLSX 作业发布、领取、提交及收件，独立公网浏览器验证退出后姓名返回且没有再次调用绑定接口。原 QA3 未变。[姓名登录验收](experiments/r24-cloud-sync/evidence/shanghai/name-login/README.md)
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。

@@ -1,32 +1,49 @@
-// Credentials live only in the current page. The assignment API identifies
-// users from verified access tokens, never from a name entered in the app.
+// The API verifies an opaque, revocable binding scoped to this R24 pilot.
+// A displayed name is never used as proof of identity.
 const loopback = url => ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
 const text = value => typeof value === 'string' ? value : '';
+export const normalizeDisplayName = value => text(value).normalize('NFC').trim();
+const devicePattern = /^r24d_[a-f0-9]{64}$/;
+
+function newDeviceToken() {
+  const random = crypto.getRandomValues(new Uint8Array(32));
+  return 'r24d_' + Array.from(random, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function readBinding(key) {
+  try {
+    const binding = JSON.parse(localStorage.getItem(key));
+    if (binding && typeof binding.name === 'string' &&
+        devicePattern.test(binding.token) && typeof binding.confirmed === 'boolean') return binding;
+  } catch { /* Unavailable or unreadable binding. */ }
+  return null;
+}
+
+function writeBinding(key, binding) {
+  try {
+    localStorage.setItem(key, JSON.stringify(binding));
+  } catch {
+    throw new Error('此浏览器无法保存设备绑定，请使用非无痕浏览器重试');
+  }
+}
 
 export function createAssignmentSync(settings, pageUrl = location.href) {
   if (!settings?.apiBase) return null;
 
   const api = new URL(settings.apiBase);
   const page = new URL(pageUrl);
-  const localTest = Boolean(settings.testAuthUrl);
+  const localTest = settings.testMode === true;
   const envId = text(settings.envId);
   if (api.username || api.password || api.search || api.hash) {
     throw new Error('作业服务地址配置无效');
   }
-  let auth;
-  if (localTest) {
-    auth = new URL(settings.testAuthUrl);
-    if (![page, api, auth].every(loopback) || auth.username || auth.password) {
-      throw new Error('测试登录仅限本机');
-    }
-  } else {
-    if (api.protocol !== 'https:' || !/^[a-z0-9][a-z0-9-]{2,63}$/.test(envId)) {
-      throw new Error('请配置 CloudBase 环境 ID 和 HTTPS 作业服务地址');
-    }
-    auth = new URL(`https://${envId}.api.tcloudbasegateway.com/auth/v1/signin`);
+  if (localTest ? ![page, api].every(loopback) :
+    api.protocol !== 'https:' || !/^[a-z0-9][a-z0-9-]{2,63}$/.test(envId)) {
+    throw new Error('作业服务环境配置无效');
   }
 
   const base = api.href.replace(/\/$/, '');
+  const bindingKey = 'tcl-r24-sync-binding-v1:' + base;
   let token = null;
   let principal = null;
 
@@ -42,9 +59,8 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data) {
-        const message = response.status === 401 ? '登录已失效，请重新登录后继续'
-          : text(data?.error?.message) || `请求失败（HTTP ${response.status}）`;
-        throw new Error(message);
+        const message = text(data?.error?.message) || `请求失败（HTTP ${response.status}）`;
+        throw Object.assign(new Error(message), {status: response.status});
       }
       return data;
     } catch (error) {
@@ -57,7 +73,7 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
   }
 
   async function get(path, method = 'GET', body) {
-    if (!token) throw new Error('请先登录云端账号');
+    if (!token) throw new Error('请先通过姓名进入');
     return request(base + path, { method, body, headers: { Authorization: `Bearer ${token}` } });
   }
 
@@ -78,35 +94,55 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
     return rows;
   }
 
+  function confirmMember(result, name) {
+    const member = result?.principal;
+    if (!member || !['anchor', 'operator'].includes(member.role) ||
+        !text(member.id) || normalizeDisplayName(member.displayName) !== name) {
+      throw new Error('设备绑定与所填姓名不匹配');
+    }
+    principal = Object.freeze({id: member.id, role: member.role, displayName: member.displayName});
+    return principal;
+  }
+
   return {
     storageScope: localTest ? base : envId,
     get principal() { return principal; },
-    async signIn(username, password) {
-      let deviceId;
-      try {
-        deviceId = localStorage.getItem('tcl-sync-device-id');
-        if (!deviceId) {
-          deviceId = crypto.randomUUID();
-          localStorage.setItem('tcl-sync-device-id', deviceId);
+    async signIn(displayName, rawCode = '') {
+      const name = normalizeDisplayName(displayName);
+      if (!name || name.length > 40) throw new Error('请输入有效姓名');
+      const stored = readBinding(bindingKey);
+      const binding = stored?.name === name ? stored : null;
+      token = null;
+      principal = null;
+
+      if (!rawCode) {
+        if (!binding) return null;
+        token = binding.token;
+        try {
+          const member = confirmMember(await get('/me'), name);
+          if (!binding.confirmed) writeBinding(bindingKey, {...binding, confirmed: true});
+          return member;
+        } catch (error) {
+          token = null;
+          principal = null;
+          if (error.status === 401) return null;
+          throw error;
         }
-      } catch { deviceId = crypto.randomUUID(); }
-      const session = await request(auth, {
-        method: 'POST', body: { username, password },
-        headers: localTest ? {} : { 'x-device-id': deviceId },
-      });
-      if (typeof session.access_token !== 'string' || !session.access_token) {
-        throw new Error('登录失败，请检查账号及密码');
       }
-      token = session.access_token;
+
+      const codeMatch = /^r24-([a-f0-9]{24})$/i.exec(rawCode.trim());
+      if (!codeMatch) throw new Error('设备码格式有误，请粘贴完整设备码');
+      const code = 'R24-' + codeMatch[1].toLowerCase();
+      const pending = binding && !binding.confirmed ? binding : {name, token: newDeviceToken(), confirmed: false};
+      writeBinding(bindingKey, pending);
       try {
-        const result = await get('/me');
-        const member = result.principal;
-        if (!member || !['anchor', 'operator'].includes(member.role) ||
-            !text(member.id) || !text(member.displayName)) {
-          throw new Error('当前账号未开通主播或运营权限');
-        }
-        principal = Object.freeze({ id: member.id, role: member.role, displayName: member.displayName });
-        return principal;
+        const result = await request(base + '/device/activate', {
+          method: 'POST', body: {displayName: name, code, deviceToken: pending.token},
+        });
+        const member = confirmMember(result, name);
+        writeBinding(bindingKey, {...pending, confirmed: true});
+        token = pending.token;
+        return member;
       } catch (error) {
         token = null;
         principal = null;

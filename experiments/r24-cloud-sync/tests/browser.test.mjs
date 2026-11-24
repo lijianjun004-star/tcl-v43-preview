@@ -47,10 +47,31 @@ async function browserFixture(t) {
   return { server, excel, newPage };
 }
 
-async function signIn(page, name, password = 'fixture-account-password') {
-  await page.locator('#syncUsername').fill(name);
-  await page.locator('#syncPassword').fill(password);
+const activationPath = '/api/tcl-r24-sync/device/activate';
+const activationPosts = server => server.requests.filter(req =>
+  req.path === activationPath && req.method === 'POST').length;
+const identityBar = page => page.locator('.identity-bar');
+
+async function submitName(page, displayName) {
+  await page.locator('#syncDisplayName').fill(displayName);
   await page.locator('#syncLoginForm button[type="submit"]').click();
+}
+
+async function submitCode(page, code) {
+  await page.locator('#syncActivationCode').fill(code);
+  const [response] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === activationPath &&
+      response.request().method() === 'POST'),
+    page.locator('#syncLoginForm button[type="submit"]').click(),
+  ]);
+  return response;
+}
+
+async function signIn(page, identity) {
+  await submitName(page, identity.displayName);
+  const response = await submitCode(page, identity.code);
+  assert.ok(response.ok(), `Binding returned HTTP ${response.status()}`);
+  await identityBar(page).filter({ hasText: identity.displayName }).waitFor();
 }
 
 async function signInLocally(page, role, name) {
@@ -102,8 +123,8 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
   const { server, excel, newPage } = await browserFixture(t);
   const ops = await newPage();
   const trainee = await newPage();
-  await signIn(ops.page, operator.username);
-  await signIn(trainee.page, anchor.username);
+  await signIn(ops.page, operator);
+  await signIn(trainee.page, anchor);
   await ops.page.locator('#switchIdentity').waitFor();
   await trainee.page.locator('#assignmentFold').waitFor();
   await checkNoOverflow(ops.page);
@@ -172,22 +193,70 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
     await ops.page.locator('#syncInbox').getByText(answer, { exact: true }).waitFor();
   }
 
-  const sameAnchorElsewhere = await newPage();
-  await signIn(sameAnchorElsewhere.page, anchor.username);
-  await sameAnchorElsewhere.page.locator('#assignmentFold summary').click();
-  await sameAnchorElsewhere.page.locator('#assignmentSearch').fill(operator.displayName);
-  await sameAnchorElsewhere.page.locator('#assignmentSearchResults .assignment-row')
+  const binds = activationPosts(server);
+  await trainee.page.reload({ waitUntil: 'domcontentloaded' });
+  await submitName(trainee.page, anchor.displayName);
+  await identityBar(trainee.page).filter({ hasText: anchor.displayName }).waitFor();
+  assert.equal(activationPosts(server), binds);
+  await trainee.page.locator('#assignmentFold summary').click();
+  await trainee.page.locator('#assignmentSearch').fill(operator.displayName);
+  await trainee.page.locator('#assignmentSearchResults .assignment-row')
     .filter({ hasText: '已提交到云端' }).waitFor();
 
   const foreign = await newPage();
-  await signIn(foreign.page, identities.foreign.username);
+  await signIn(foreign.page, identities.foreign);
   await foreign.page.locator('#assignmentFold').waitFor();
   await foreign.page.locator('#assignmentFold summary').click();
   await foreign.page.locator('#syncRefresh').click();
   await foreign.page.locator('#syncRefreshStatus').filter({ hasText: '已读取 0 份云端作业' }).waitFor();
   await foreign.page.locator('#assignmentSearch').fill(operator.displayName);
   assert.equal(await foreign.page.locator('#assignmentSearchResults [data-join-assignment]').count(), 0);
-  assert.deepEqual([...ops.errors, ...trainee.errors, ...sameAnchorElsewhere.errors, ...foreign.errors], []);
+  assert.deepEqual([...ops.errors, ...trainee.errors, ...foreign.errors], []);
+});
+
+test('first browser requires a valid device code, same browser later uses name only', { timeout: 45_000 }, async t => {
+  const { server, newPage } = await browserFixture(t);
+  const primary = await newPage();
+  await submitName(primary.page, operator.displayName);
+  await primary.page.locator('#syncActivationCode').waitFor();
+  assert.equal(await identityBar(primary.page).count(), 0);
+  assert.equal(activationPosts(server), 0);
+
+  const invalid = await submitCode(primary.page, 'R24-ffffffffffffffffffffffff');
+  assert.equal(invalid.status(), 401);
+  await primary.page.locator('#syncLoginError').filter({ hasText: /\S/ }).waitFor();
+  assert.equal(await identityBar(primary.page).count(), 0);
+  assert.equal(await primary.page.locator('[data-ops-tab="publish"]').count(), 0);
+
+  const bound = await submitCode(primary.page, operator.code);
+  assert.ok(bound.ok());
+  await identityBar(primary.page).filter({ hasText: operator.displayName }).waitFor();
+  await primary.page.locator('[data-ops-tab="publish"]').waitFor();
+  const binds = activationPosts(server);
+  const meBefore = server.requests.filter(req => req.path.endsWith('/me')).length;
+
+  await primary.page.locator('#switchIdentity').click();
+  await submitName(primary.page, operator.displayName);
+  await identityBar(primary.page).filter({ hasText: operator.displayName }).waitFor();
+  assert.equal(activationPosts(server), binds);
+  assert.equal(await primary.page.locator('#syncActivationCode').count(), 0);
+  assert.ok(server.requests.filter(req => req.path.endsWith('/me')).length > meBefore);
+
+  const unknownDevice = await newPage();
+  await submitName(unknownDevice.page, operator.displayName);
+  await unknownDevice.page.locator('#syncActivationCode').waitFor();
+  assert.equal(activationPosts(server), binds);
+  assert.equal(await identityBar(unknownDevice.page).count(), 0);
+
+  const wrongRoleCode = await submitCode(unknownDevice.page, anchor.code);
+  assert.equal(wrongRoleCode.status(), 401);
+  await unknownDevice.page.locator('#syncLoginError').filter({ hasText: /\S/ }).waitFor();
+  assert.equal(await unknownDevice.page.locator('[data-ops-tab="publish"]').count(), 0);
+
+  const usedCode = await submitCode(unknownDevice.page, operator.code);
+  assert.equal(usedCode.status(), 401);
+  assert.equal(await identityBar(unknownDevice.page).count(), 0);
+  assert.deepEqual([...primary.errors, ...unknownDevice.errors], []);
 });
 
 test('local fallback uses the original XLSX/JSON path and labels only local save', { timeout: 90_000 }, async t => {
@@ -216,6 +285,6 @@ test('local fallback uses the original XLSX/JSON path and labels only local save
   const receipt = await receiptPromise;
   assert.match(receipt.suggestedFilename(), /作业提交回执/);
   await trainee.page.locator('#submitSession').filter({ hasText: /本机/ }).waitFor();
-  assert.equal(server.requests.filter(r => r.path.startsWith('/api/') || r.path === '/test-auth').length, 0);
+  assert.equal(server.requests.filter(r => r.path.startsWith('/api/')).length, 0);
   assert.deepEqual([...ops.errors, ...trainee.errors], []);
 });

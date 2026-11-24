@@ -7,7 +7,7 @@ import { parseDocumentFile } from './lib/parser.js';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync } from './assignment-sync.mjs';
+import { createAssignmentSync } from './assignment-sync.mjs?v=r24-name-20261124';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -1091,26 +1091,42 @@ function nav(to){if(!pageAllowed(to)){toast('当前身份不能进入此页面')
  if(reviewAlive()&&(page==='sessionReview'||reviewParked)){if(page==='sessionReview'&&!leaveReviewKeepingSession())return;activeAssignmentId='';page=to;render();window.scrollTo({top:0,behavior:'instant'});return;}
  if(!canLeaveRecording())return;const keepText=to==='catalog'&&deviceCheck.mode==='text';activeAssignmentId='';resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();clearAnswerAudio();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:keepText,mode:keepText?'text':'hardware',checked:keepText};page=to;render();window.scrollTo({top:0,behavior:'instant'});}
 function renderSyncLogin(){
- setTitle('云端作业登录');
+ setTitle('姓名进入');
  ELEM('view').innerHTML=`<section class="name-login"><div class="name-login-card">
- <h2>练播房账号登录</h2><p>请使用已开通的主播或运营账号。</p>
+ <h2>输入姓名进入练播房</h2><p>已绑定的设备只需输入姓名。</p>
  ${syncConfigError?`<p role="alert">${ESC(syncConfigError)}</p>`:`<form id="syncLoginForm">
- <div class="field"><label for="syncUsername">账号</label><input id="syncUsername" autocomplete="username" maxlength="128" required></div>
- <div class="field"><label for="syncPassword">密码</label><input id="syncPassword" type="password" autocomplete="current-password" maxlength="256" required></div>
- <button class="btn primary wide" type="submit">登录</button><p id="syncLoginError" role="alert"></p>
+ <div class="field"><label for="syncDisplayName">姓名</label><input id="syncDisplayName" autocomplete="name" maxlength="40" required></div>
+ <div class="field" id="syncActivationField" hidden>
+  <label for="syncActivationCode">一次性设备码</label>
+  <input id="syncActivationCode" type="text" maxlength="28" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
+  <small>首次使用这台设备，请向管理员领取设备码。以后只需输入姓名。</small>
+ </div>
+ <button class="btn primary wide" type="submit">进入</button><p id="syncLoginError" role="alert"></p>
  </form>`}</div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
+ const name=ELEM('syncDisplayName'),code=ELEM('syncActivationCode');
+ const field=ELEM('syncActivationField'),message=ELEM('syncLoginError');
+ const button=form.querySelector('button');
+ function showActivation(visible){
+  field.hidden=!visible;
+  code.disabled=!visible;
+  code.required=visible;
+  if(!visible)code.value='';
+  button.textContent=visible?'绑定并进入':'进入';
+ }
+ name.oninput=()=>{showActivation(false);message.textContent='';};
  form.onsubmit=async event=>{
   event.preventDefault();
-  const button=form.querySelector('button');
   if(button.disabled)return;
   button.disabled=true;
-  ELEM('syncLoginError').textContent='';
-  const password=ELEM('syncPassword');
+  name.readOnly=true;
+  code.readOnly=true;
+  message.textContent='';
   try{
-   const member=await assignmentSync.signIn(ELEM('syncUsername').value.trim(),password.value);
-   password.value='';
+   const member=await assignmentSync.signIn(name.value,field.hidden?'':code.value);
+   if(!member){showActivation(true);return;}
+   code.value='';
    const storageName=STORE_NAME+'-account:'+encodeURIComponent(assignmentSync.storageScope)+':'+encodeURIComponent(member.id);
    await initialiseStorage(storageName);
    userRole=member.role;userName=member.displayName;page='home';assignmentSearch='';
@@ -1119,8 +1135,13 @@ function renderSyncLogin(){
    if(syncMember()===member&&userRole==='anchor'&&page==='home')void findSavedSession();
   }catch(error){
    assignmentSync.signOut();
-   if(form.isConnected)ELEM('syncLoginError').textContent=error.message;
-  }finally{password.value='';button.disabled=false;}
+   if(form.isConnected)message.textContent=error.message;
+  }finally{
+   code.readOnly=false;
+   name.readOnly=false;
+   button.disabled=false;
+   if(!field.hidden&&form.isConnected)code.focus();
+  }
  };
 }
 function syncRefreshHtml(){
