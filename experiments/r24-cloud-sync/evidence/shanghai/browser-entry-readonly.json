@@ -1,0 +1,1 @@
+{"pass":true,"stage":"read-only-passed","assignmentId":null,"checks":["readOnly verified pilot entry and API configuration"],"network":{"publishPosts":0,"submissionPosts":0,"rejectedRequests":0,"responses":{"readOnlySiteInitialHttp":404,"readOnlyRiskNoticeConfirmed":true,"readOnlySiteHttp":200}},"pageErrorCount":0}

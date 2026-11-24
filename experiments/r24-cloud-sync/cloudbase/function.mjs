@@ -3,40 +3,20 @@ import {createApi} from './portable/api.mjs';
 import {createAuthenticator} from './cloudbase-identity.mjs';
 import {createDatabaseAdapter} from './cloudbase-store.mjs';
 import {createGatewayHandler} from './gateway.mjs';
+import {readFunctionConfig} from './function-config.mjs';
 
-const publishedEnvironment = 'unknown-roadrunner-d7cap6e21f517';
-
-function configuredOrigins(raw = '') {
-  return raw.split(',').map(origin => origin.trim()).filter(Boolean).map(origin => {
-    const url = new URL(origin);
-    if (url.protocol !== 'https:' || url.origin !== origin) throw new Error('Invalid allowed origin');
-    return url.origin;
-  });
-}
-
-function createFunction() {
-  if (process.env.TCL_R24_SYNC_ENABLED !== 'true') throw new Error('Cloud sync not enabled');
-  const envId = process.env.TCL_R24_SYNC_ENV_ID;
-  if (!/^[a-z0-9][a-z0-9-]{2,63}$/.test(envId ?? '') || envId === publishedEnvironment) {
-    throw new Error('An isolated CloudBase environment is required');
-  }
-  // The platform sets this value in the CloudBase function runtime.
-  // One function instance cannot elect to read an unrelated environment.
-  const runtimeEnvironment = process.env.TCB_ENV || process.env.SCF_NAMESPACE;
-  if (runtimeEnvironment !== envId) throw new Error('CloudBase runtime environment mismatch');
-  const prefix = process.env.TCL_R24_SYNC_COLLECTION_PREFIX || 'tcl_r24_sync_v1';
-  if (!/^tcl_r24_sync_[a-z0-9_]{1,22}$/.test(prefix)) throw new Error('Invalid collection prefix');
-  const allowedOrigins = configuredOrigins(process.env.TCL_R24_SYNC_ORIGINS);
-  const cloudApp = cloudbase.init({env: envId});
-  const {getEnrollment, directory, store} = createDatabaseAdapter(cloudApp.database(), prefix);
+function createFunction(runtimeNamespace) {
+  const {envId, prefix, allowedOrigins} = readFunctionConfig(process.env, runtimeNamespace);
+  const cloudApp = cloudbase.init({env: envId, region: 'ap-shanghai', timeout: 12_000});
+  const {getEnrollment, directory, store} = createDatabaseAdapter(cloudApp.rdb(), prefix);
   const authenticate = createAuthenticator({envId, getEnrollment});
   return createGatewayHandler(createApi({authenticate, directory, store, allowedOrigins, basePath: ''}));
 }
 
 let handler;
-export function main(event) {
+export function main(event, context) {
   try {
-    handler ||= createFunction();
+    handler ||= createFunction(context?.namespace);
   } catch {
     return {
       statusCode: 503,

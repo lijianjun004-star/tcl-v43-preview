@@ -1,0 +1,30 @@
+{
+  "data": {
+    "RequestId": "822da241-7393-4c21-9f50-5ed4709b6220",
+    "ExecutionTimeMs": 10,
+    "Columns": [
+      "relation",
+      "rls",
+      "anon_access",
+      "client_access",
+      "server_read",
+      "server_insert",
+      "server_mutate_existing"
+    ],
+    "ColumnTypes": [
+      "name",
+      "bool",
+      "bool",
+      "bool",
+      "bool",
+      "bool",
+      "bool"
+    ],
+    "Rows": [
+      "[\"tcl_r24_sync_v1_assignments\",\"true\",\"false\",\"false\",\"true\",\"true\",\"false\"]",
+      "[\"tcl_r24_sync_v1_enrollments\",\"true\",\"false\",\"false\",\"true\",\"false\",\"false\"]",
+      "[\"tcl_r24_sync_v1_submissions\",\"true\",\"false\",\"false\",\"true\",\"true\",\"false\"]"
+    ],
+    "AffectedRows": 0
+  }
+}

@@ -1,59 +1,62 @@
-import {createHash} from 'node:crypto';
 import {readEnrollment} from './cloudbase-identity.mjs';
 
 const pageSize = 10;
 const maxPages = 100;
 const maxResultBytes = 8 * 1024 * 1024;
-const duplicateCodes = new Set(['DATABASE_DUPLICATE_WRITE', 11000, '11000', 'E11000']);
-const documentKey = id => createHash('sha256').update(id).digest('hex').slice(0, 32);
 
-function checked(result) {
-  if (result?.code && result.code !== 'SUCCESS' && result.code !== 'OK') {
-    const error = new Error('CloudBase database request failed');
-    error.code = result.code;
-    throw error;
+async function resultRows(query) {
+  const response = await query;
+  if (response?.error || !Array.isArray(response?.data)) {
+    throw new Error('CloudBase PostgreSQL request failed');
   }
-  return result;
+  return response.data;
 }
 
-function rows(result) {
-  if (!Array.isArray(checked(result)?.data)) throw new Error('Invalid CloudBase database response');
-  return result.data;
+function enrollment(row) {
+  if (!row) return null;
+  return {
+    _id: row.id, teamId: row.team_id, displayName: row.display_name,
+    role: row.role, active: row.active,
+  };
 }
 
-function withoutDocId({_id, ...record}) {
-  return record;
+function payload(row) {
+  if (row?.payload?.id !== row.id) throw new Error('Invalid CloudBase PostgreSQL record');
+  return row.payload;
 }
 
-export function createDatabaseAdapter(db, collectionPrefix) {
-  const enrollments = db.collection(`${collectionPrefix}_enrollments`);
-  const assignments = db.collection(`${collectionPrefix}_assignments`);
-  const submissions = db.collection(`${collectionPrefix}_submissions`);
+export function createDatabaseAdapter(db, prefix) {
+  const enrollments = `${prefix}_enrollments`;
+  const assignments = `${prefix}_assignments`;
+  const submissions = `${prefix}_submissions`;
 
-  // Use a collection query: SDK optimizes an exact _id lookup into a GET that 404s
-  // for missing records. An empty match here also keeps auth and service errors distinct.
-  const getDocument = async (collection, documentId) =>
-    rows(await collection.where({_id: db.command.in([documentId])}).limit(1).get())[0] ?? null;
+  function queryFrom(table, fields, filter) {
+    let query = db.from(table).select(fields);
+    for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
+    return query;
+  }
 
-  async function pageById(collection, filter, fields) {
+  async function getRow(table, fields, id) {
+    const rows = await resultRows(queryFrom(table, fields, {id}).limit(1));
+    return rows[0] ?? null;
+  }
+
+  async function pageById(table, fields, filter) {
     const result = [];
     let cursor = null;
     let accumulatedBytes = 0;
     for (let page = 0; page < maxPages; page++) {
-      const query = cursor === null ? filter : {...filter, _id: db.command.gt(cursor)};
-      let request = collection.where(query).orderBy('_id', 'asc').limit(pageSize);
-      if (fields) request = request.field(fields);
-      const batch = rows(await request.get());
-      if (batch.length > pageSize) throw new Error('Invalid CloudBase page size');
-      for (const item of batch) {
-        if (typeof item?._id !== 'string' || !item._id || (cursor !== null && item._id <= cursor)) {
-          throw new Error('Invalid CloudBase cursor');
+      let query = queryFrom(table, fields, filter).order('id', {ascending: true}).limit(pageSize);
+      if (cursor !== null) query = query.gt('id', cursor);
+      const batch = await resultRows(query);
+      if (batch.length > pageSize) throw new Error('Invalid PostgreSQL page size');
+      for (const row of batch) {
+        if (typeof row?.id !== 'string' || !row.id || (cursor !== null && row.id <= cursor)) {
+          throw new Error('Invalid PostgreSQL cursor');
         }
-        accumulatedBytes += Buffer.byteLength(JSON.stringify(item));
-        if (accumulatedBytes > maxResultBytes) {
-          throw new Error('CloudBase result exceeded the pilot size limit');
-        }
-        cursor = item._id;
+        accumulatedBytes += Buffer.byteLength(JSON.stringify(row));
+        if (accumulatedBytes > maxResultBytes) throw new Error('CloudBase result exceeded the pilot size limit');
+        cursor = row.id;
       }
       result.push(...batch);
       if (batch.length < pageSize) return result;
@@ -61,47 +64,46 @@ export function createDatabaseAdapter(db, collectionPrefix) {
     throw new Error('CloudBase result exceeded the pilot pagination limit');
   }
 
-  async function getRecord(collection, id) {
-    const document = await getDocument(collection, documentKey(id));
-    if (!document) return null;
-    if (document.id !== id) throw new Error('CloudBase record key collision');
-    return withoutDocId(document);
+  async function getRecord(table, id) {
+    const row = await getRow(table, 'id,payload', id);
+    return row ? payload(row) : null;
   }
 
-  async function insertRecord(collection, record) {
-    const _id = documentKey(record.id);
-    try {
-      // add is an insert, not set/upsert. CloudBase's unique _id prevents concurrent overwrites.
-      const result = checked(await collection.add({...record, _id}));
-      if (!result || ![result._id, result.id, ...(result.ids || [])].includes(_id)) {
-        throw new Error('CloudBase did not confirm document insert');
-      }
-      return true;
-    } catch (error) {
-      if (duplicateCodes.has(error?.code)) return false;
-      throw error;
+  async function insertRecord(table, row) {
+    // INSERT is atomic on the primary key. No update/upsert permission is required.
+    const result = await db.from(table).insert(row).select('id');
+    if (result?.error?.code === '23505') return false;
+    if (result?.error || result?.data?.length !== 1 || result.data[0]?.id !== row.id) {
+      throw new Error('CloudBase PostgreSQL did not confirm record insert');
     }
+    return true;
   }
 
+  const enrollmentCols = 'id,team_id,display_name,role,active';
   return {
-    getEnrollment: uid => getDocument(enrollments, uid),
+    getEnrollment: async uid => enrollment(await getRow(enrollments, enrollmentCols, uid)),
     directory: {
-      listAnchors: async teamId => (await pageById(enrollments, {teamId, role: 'anchor', active: true}))
-        .map(readEnrollment)
-        .filter(Boolean),
+      listAnchors: async teamId => (await pageById(
+        enrollments, enrollmentCols, {team_id: teamId, role: 'anchor', active: true},
+      )).map(row => readEnrollment(enrollment(row))).filter(Boolean),
     },
     store: {
       getAssignment: id => getRecord(assignments, id),
-      createAssignment: record => insertRecord(assignments, record),
-      listAssignments: async teamId => (await pageById(assignments, {teamId})).map(withoutDocId),
+      createAssignment: record => insertRecord(assignments, {
+        id: record.id, team_id: record.teamId, payload: record,
+      }),
+      listAssignments: async teamId => (await pageById(assignments, 'id,payload', {team_id: teamId})).map(payload),
       getSubmission: id => getRecord(submissions, id),
-      createSubmission: record => insertRecord(submissions, record),
+      createSubmission: record => insertRecord(submissions, {
+        id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
+        anchor_id: record.anchorId, submitted_at: record.submittedAt, payload: record,
+      }),
       listSubmissions: async (assignmentId, teamId) => (await pageById(
-        submissions, {assignmentId, teamId},
-      )).map(withoutDocId),
+        submissions, 'id,payload', {assignment_id: assignmentId, team_id: teamId},
+      )).map(payload),
       listAnchorSubmissionStatuses: async (teamId, anchorId) => (await pageById(
-        submissions, {teamId, anchorId}, {_id: true, assignmentId: true, submittedAt: true},
-      )).map(({assignmentId, submittedAt}) => ({assignmentId, submittedAt})),
+        submissions, 'id,assignment_id,submitted_at', {team_id: teamId, anchor_id: anchorId},
+      )).map(row => ({assignmentId: row.assignment_id, submittedAt: new Date(row.submitted_at).toISOString()})),
     },
   };
 }

@@ -10,7 +10,7 @@ if (!destination || process.argv.length !== 3) {
 const target = resolve(destination);
 const files = [
   'package.json', 'package-lock.json', 'index.js', 'function.mjs', 'gateway.mjs',
-  'cloudbase-identity.mjs', 'cloudbase-store.mjs',
+  'cloudbase-identity.mjs', 'cloudbase-store.mjs', 'function-config.mjs',
 ].map(name => [new URL(name, import.meta.url), name]);
 files.push(
   [new URL('../backend/api.mjs', import.meta.url), 'portable/api.mjs'],

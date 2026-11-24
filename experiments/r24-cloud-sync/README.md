@@ -1,6 +1,6 @@
 # TCL R24 Excel 作业跨设备同步试点
 
-基于已经发布的 QA3 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。GitHub main 参考提交 `5c3de29946777454cca367d15abe7db6cd6723f5`，原站清单 SHA-256 `ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1`。本试点是独立候选，等待隔离 CloudBase 环境和真机复验。
+基于已经发布的 QA3 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。GitHub main 参考提交 `5c3de29946777454cca367d15abe7db6cd6723f5`，原站清单 SHA-256 `ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1`。本试点已在现有上海 CloudBase 环境的独立路径部署，并完成公网双浏览器验收。实体手机和真实业务账号尚待验收。[上海部署记录](evidence/shanghai/README.md)。
 
 ## 业务流程
 

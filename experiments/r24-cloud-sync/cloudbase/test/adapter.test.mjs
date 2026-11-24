@@ -56,39 +56,37 @@ test('identity provider failure remains distinguishable from rejected credential
 });
 
 function fakeDatabase() {
-  const namedCollections = new Map();
-  const gt = value => ({greaterThan: value});
+  const tables = new Map();
+  const project = (row, fields) => Object.fromEntries(fields.split(',').map(key => [key, row[key]]));
   return {
-    command: {gt, in: values => ({in: values})},
-    collection(name) {
-      if (!namedCollections.has(name)) namedCollections.set(name, new Map());
-      const documents = namedCollections.get(name);
+    from(table) {
+      if (!tables.has(table)) tables.set(table, new Map());
+      const rows = tables.get(table);
       return {
-        async add(record) {
-          if (documents.has(record._id)) throw Object.assign(new Error('duplicate'), {
-            code: 'DATABASE_DUPLICATE_WRITE',
-          });
-          documents.set(record._id, structuredClone(record));
-          return {id: record._id};
+        insert(row) {
+          return {
+            async select(fields) {
+              if (rows.has(row.id)) return {error: {code: '23505'}};
+              rows.set(row.id, structuredClone(row));
+              return {data: [project(row, fields)], error: null};
+            },
+          };
         },
-        where(filter) {
+        select(fields) {
+          const filters = [];
           let count = Infinity;
           let order;
-          let projection;
           return {
-            orderBy(field, direction) { order = [field, direction]; return this; },
+            eq(column, value) { filters.push(row => row[column] === value); return this; },
+            gt(column, value) { filters.push(row => row[column] > value); return this; },
+            order(column) { order = column; return this; },
             limit(value) { count = value; return this; },
-            field(fields) { projection = fields; return this; },
-            async get() {
-              const result = Array.from(documents.values()).filter(record =>
-                Object.entries(filter).every(([key, value]) =>
-                  (value?.greaterThan !== undefined) ? record[key] > value.greaterThan :
-                    Array.isArray(value?.in) ? value.in.includes(record[key]) : record[key] === value));
-              if (order) result.sort((a, b) => a[order[0]] > b[order[0]] ? 1 : -1);
-              const page = result.slice(0, count).map(record => projection
-                ? Object.fromEntries(Object.entries(record).filter(([key]) => projection[key]))
-                : record);
-              return {data: structuredClone(page)};
+            then(resolve, reject) {
+              return Promise.resolve().then(() => {
+                const items = [...rows.values()].filter(row => filters.every(test => test(row)));
+                if (order) items.sort((a, b) => a[order] > b[order] ? 1 : -1);
+                return {data: items.slice(0, count).map(row => project(row, fields)), error: null};
+              }).then(resolve, reject);
             },
           };
         },
@@ -156,8 +154,12 @@ test('two CloudBase identities round-trip a published assignment and a submissio
   const db = fakeDatabase();
   const pilot = 'tcl_r24_sync_test';
   const operator = {...enrollment, _id: 'uid-operator', displayName: '运营乙', role: 'operator'};
-  await db.collection(pilot + '_enrollments').add(enrollment);
-  await db.collection(pilot + '_enrollments').add(operator);
+  for (const account of [enrollment, operator]) {
+    await db.from(pilot + '_enrollments').insert({
+      id: account._id, team_id: account.teamId, display_name: account.displayName,
+      role: account.role, active: account.active,
+    }).select('id');
+  }
 
   const {getEnrollment, directory, store} = createDatabaseAdapter(db, pilot);
   const authenticate = createAuthenticator({
@@ -212,4 +214,39 @@ test('large database results fail closed instead of returning an incomplete list
     await store.createAssignment({id: 'large-' + index, teamId: 'pilot', text: '数据'.repeat(165000)});
   }
   await assert.rejects(store.listAssignments('pilot'), /pilot size limit/);
+});
+
+test('shared Shanghai pilot requires explicit opt-in, known prefix, and single trusted origin', async () => {
+  const {readFunctionConfig} = await import('../function-config.mjs');
+  const envId = 'unknown-roadrunner-d7cap6e21f517';
+  const origin = 'https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com';
+  const env = {
+    TCL_R24_SYNC_ENABLED: 'true',
+    TCL_R24_SYNC_ALLOW_SHARED_SHANGHAI: 'true',
+    TCL_R24_SYNC_ENV_ID: envId,
+    TCL_R24_SYNC_COLLECTION_PREFIX: 'tcl_r24_sync_v1',
+    TCL_R24_SYNC_ORIGINS: origin,
+    SCF_NAMESPACE: envId,
+  };
+  assert.deepEqual(readFunctionConfig(env), {envId, prefix: 'tcl_r24_sync_v1', allowedOrigins: [origin]});
+  for (const change of [
+    {TCL_R24_SYNC_ENABLED: 'false'},
+    {TCL_R24_SYNC_ALLOW_SHARED_SHANGHAI: 'false'},
+    {TCL_R24_SYNC_COLLECTION_PREFIX: undefined},
+    {TCL_R24_SYNC_COLLECTION_PREFIX: 'tcl_r24_sync_other'},
+    {TCL_R24_SYNC_ORIGINS: 'https://foreign.example'},
+    {TCL_R24_SYNC_ORIGINS: origin + ', https://foreign.example'},
+    {SCF_NAMESPACE: 'test-other-env'},
+    {TCB_ENV: 'test-other-env'},
+  ]) assert.throws(() => readFunctionConfig({...env, ...change}));
+  assert.throws(() => readFunctionConfig(env, 'test-other-env'));
+  assert.throws(() => readFunctionConfig({...env, SCF_NAMESPACE: undefined}));
+  assert.equal(readFunctionConfig({...env, SCF_NAMESPACE: undefined}, envId).envId, envId);
+});
+
+test('non-unique PostgreSQL insert errors remain failures', async () => {
+  const {store} = createDatabaseAdapter({
+    from: () => ({insert: () => ({select: async () => ({error: {code: '42501'}})})}),
+  }, 'tcl_r24_sync_test');
+  await assert.rejects(store.createAssignment({id: 'safe-id', teamId: 'pilot'}), /did not confirm/);
 });

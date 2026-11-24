@@ -11,6 +11,7 @@
       "installDependency": true,
       "envVariables": {
         "TCL_R24_SYNC_ENABLED": "false",
+        "TCL_R24_SYNC_ALLOW_SHARED_SHANGHAI": "false",
         "TCL_R24_SYNC_ENV_ID": "<isolated-env-id>",
         "TCL_R24_SYNC_COLLECTION_PREFIX": "tcl_r24_sync_v1",
         "TCL_R24_SYNC_ORIGINS": "https://<isolated-site-host>"
