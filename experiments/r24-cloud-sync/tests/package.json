@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  },
+  "name": "tcl-r24-sync-acceptance",
+  "scripts": {
+    "test": "node --test browser.test.mjs"
+  },
+  "private": true
+}

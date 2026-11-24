@@ -1,0 +1,14 @@
+
+> test
+> node --test browser.test.mjs
+
+✔ two independent browsers: publish a real XLSX, claim, submit, operator reads exact answers (5752.287675ms)
+✔ local fallback uses the original XLSX/JSON path and labels only local save (3070.181352ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9059.683372

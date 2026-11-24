@@ -1,0 +1,16 @@
+✔ authenticator controls identity, team, role, and activation (45.87385ms)
+✔ public publishing validates QA3 hash, board and publisher; visibility stays within team (25.01371ms)
+✔ named assignment uses IDs from trusted directory instead of same-name or out-of-team actors (4.901401ms)
+✔ parallel publish is idempotent and cannot overwrite an existing snapshot, including after a name change (5.121893ms)
+✔ complete submission binds actor ID and frozen assignment and records server receipt time (14.49728ms)
+✔ retry does not duplicate a submission or change its server time; second anchor can have same practice session ID (6.846571ms)
+✔ limits on content type, body size, CORS and invalid cursors (6.530915ms)
+✔ pagination does not skip same-time assignments and stays viewer scoped (41.008794ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223.763316

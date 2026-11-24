@@ -4,6 +4,12 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## R24 Excel 作业云同步候选（2026-11-24，未上线）
+
+在独立候选分支完成 [R24 作业云同步试点](experiments/r24-cloud-sync/README.md)。运营可发布冻结 Excel 作业，主播通过受认证的团队账号领取并主动提交文字答复，运营可读取本人发布作业的提交。CloudBase Auth、云函数与数据库适配已编写，真实环境尚待联调。
+
+使用本地 API 与模拟账号执行 8 项域测试、2 项独立浏览器端到端测试，验证重复提交去重、权限与手工 JSON 兼容。现有公开 QA3 入口仍使用下方 QA3 版本。测试未覆盖实体手机、真实账号、线上持久化或媒体同步。下一步使用隔离 CloudBase 环境、一个运营和一个主播账号验收，正式切换保留独立授权与发布校验。
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
