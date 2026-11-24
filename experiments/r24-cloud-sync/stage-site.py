@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-device-code-20261124"
+VERSION = "r24-paraformer-excel-cloud-sync-device-code-entry-20261124"
 
 
 def digest(path):
@@ -55,7 +55,7 @@ def main():
     old_script = b'src="app.js"'
     if html.count(old_script) != 1:
         raise ValueError("QA3 module script could not be uniquely identified")
-    entry.write_bytes(html.replace(old_script, b'src="app.js?v=r24-device-code-20261124"'))
+    entry.write_bytes(html.replace(old_script, b'src="app.js?v=r24-device-code-entry-20261124"'))
     for name in ("app.js", "assignment-sync.mjs"):
         shutil.copyfile(overlay / name, target / name)
     if args.api_base:

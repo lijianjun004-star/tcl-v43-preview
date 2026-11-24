@@ -1,0 +1,1 @@
+{"pass":true,"stage":"read-only-passed","checks":["first verified public entry and configuration","login screen exposes generator; unbound browser sees binding instructions without requests"],"activationPosts":0,"issuePosts":0,"rejected":0,"pageErrors":0,"responses":{"firstInitialHttp":404,"firstRiskNoticeConfirmed":true,"firstSiteHttp":200}}

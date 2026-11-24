@@ -342,6 +342,52 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
   assert.deepEqual([...first.errors, ...second.errors, ...third.errors], []);
 });
 
+test('login device-code shortcut guides fresh browsers and opens the panel after verified name entry', { timeout: 45_000 }, async t => {
+  const { server, newPage } = await browserFixture(t);
+  const { page, errors } = await newPage();
+  const openCodeTools = page.locator('#syncOpenDeviceCode');
+  const name = page.locator('#syncDisplayName');
+  const apiRequests = () => server.requests.filter(request => request.path.startsWith('/api/'));
+  const codePosts = () => server.requests.filter(request => request.method === 'POST' &&
+    request.path === deviceCodePath).length;
+
+  const guide = page.locator('#syncDeviceCodeEntryGuide');
+  await openCodeTools.click();
+  await guide.filter({ hasText: '先填写姓名' }).waitFor();
+  await page.waitForFunction(() => document.activeElement?.id === 'syncDisplayName');
+  assert.equal(await name.inputValue(), '');
+  assert.deepEqual(apiRequests(), []);
+  assert.equal(await page.locator('#syncActivationCode').isVisible(), false);
+
+  await name.fill(operator.displayName);
+  await openCodeTools.click();
+  await page.locator('#syncActivationCode').waitFor();
+  await guide.filter({ hasText: '设备需要先绑定' }).waitFor();
+  assert.equal(await identityBar(page).count(), 0);
+  assert.equal(await page.locator('#syncDeviceTools').count(), 0);
+  assert.deepEqual(apiRequests(), []);
+
+  const bound = await submitCode(page, operator.code);
+  assert.ok(bound.ok());
+  await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
+  const activationBefore = activationPosts(server);
+  const issueBefore = codePosts();
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await name.fill(operator.displayName);
+  const [verification] = await Promise.all([
+    page.waitForResponse(response => response.request().method() === 'GET' &&
+      new URL(response.url()).pathname === '/api/tcl-r24-sync/me'),
+    openCodeTools.click(),
+  ]);
+  assert.ok(verification.ok());
+  await page.locator('#syncDeviceTools[open] #syncGenerateDeviceCode').waitFor();
+  await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
+  assert.equal(activationPosts(server), activationBefore);
+  assert.equal(codePosts(), issueBefore);
+  assert.deepEqual(errors, []);
+});
+
 test('local fallback uses the original XLSX/JSON path and labels only local save', { timeout: 90_000 }, async t => {
   const { server, excel, newPage } = await browserFixture(t);
   const ops = await newPage('/local/');

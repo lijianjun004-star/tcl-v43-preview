@@ -18,6 +18,10 @@
 
 已绑定的运营或主播可在工作台「换手机 · 生成设备码」复制或下载个人备用码。新设备输入同一姓名及备用码即可绑定。首次开通仍由管理员发码。自助码有效 90 天，限用一次，重新生成让先前未用的自助码失效。公网双浏览器通过生成、绑定和读取同一账号与作业，37/37 哈希匹配，原 QA3 清单一致。[部署与验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code/README.md)
 
+### 同日更新：登录页显示设备码生成入口
+
+同一个 R24 上海试点登录页「进入」下方增加「生成设备码」。已绑定浏览器填姓名点击可直达生成器，未绑定设备显示取码提示。只更新三个试点前端文件。公网 Chromium 确认按钮和指引，37/37 资源一致，原 QA3 清单未变。[验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code-entry/README.md)
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。

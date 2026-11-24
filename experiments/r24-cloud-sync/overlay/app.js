@@ -1101,13 +1101,18 @@ function renderSyncLogin(){
   <input id="syncActivationCode" type="text" maxlength="28" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
   <small>请输入你在原设备生成的设备码。首次开通请向管理员领取。</small>
  </div>
- <button class="btn primary wide" type="submit">进入</button><p id="syncLoginError" role="alert"></p>
+ <button class="btn primary wide" type="submit">进入</button>
+ <button class="btn soft wide" type="button" id="syncOpenDeviceCode" aria-describedby="syncDeviceCodeEntryGuide">生成设备码</button>
+ <p id="syncDeviceCodeEntryGuide" class="scene-tip" role="status">请在已绑定的设备上使用生成器。在新设备打开时，使用之前保存的设备码。</p>
+ <p id="syncLoginError" role="alert"></p>
  </form>`}</div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
  const name=ELEM('syncDisplayName'),code=ELEM('syncActivationCode');
  const field=ELEM('syncActivationField'),message=ELEM('syncLoginError');
- const button=form.querySelector('button');
+ const button=form.querySelector('button[type="submit"]');
+ const shortcut=ELEM('syncOpenDeviceCode'),guide=ELEM('syncDeviceCodeEntryGuide');
+ let openGenerator=false;
  function showActivation(visible){
   field.hidden=!visible;
   code.disabled=!visible;
@@ -1116,22 +1121,42 @@ function renderSyncLogin(){
   button.textContent=visible?'绑定并进入':'进入';
  }
  name.oninput=()=>{showActivation(false);message.textContent='';};
+ shortcut.onclick=()=>{
+  openGenerator=true;
+  if(!name.value.trim()){
+   guide.textContent='先填写姓名，再点「生成设备码」，就能在已绑定设备上打开生成器。';
+   name.focus();
+   return;
+  }
+  if(!field.hidden&&!code.value.trim()){
+   guide.textContent='这台设备需要先绑定。请在原设备生成设备码，再回到这里填写。';
+   code.focus();
+   return;
+  }
+  form.requestSubmit();
+ };
  form.onsubmit=async event=>{
   event.preventDefault();
   if(button.disabled)return;
-  button.disabled=true;
+  button.disabled=true;shortcut.disabled=true;
   name.readOnly=true;
   code.readOnly=true;
   message.textContent='';
   try{
    const member=await assignmentSync.signIn(name.value,field.hidden?'':code.value);
-   if(!member){showActivation(true);return;}
+   if(!member){
+    showActivation(true);
+    if(openGenerator)guide.textContent='这台设备需要先绑定。请在原设备生成设备码，或使用已经保存的码。首次开通请联系管理员。';
+    return;
+   }
    code.value='';
    const storageName=STORE_NAME+'-account:'+encodeURIComponent(assignmentSync.storageScope)+':'+encodeURIComponent(member.id);
    await initialiseStorage(storageName);
    userRole=member.role;userName=member.displayName;page='home';assignmentSearch='';
+   if(openGenerator)deviceCodeState().open=true;
    updateMode();render();
    await refreshSyncAssignments();
+   if(openGenerator&&syncMember()===member&&page==='home')ELEM('syncGenerateDeviceCode')?.focus();
    if(syncMember()===member&&userRole==='anchor'&&page==='home')void findSavedSession();
   }catch(error){
    assignmentSync.signOut();
@@ -1139,7 +1164,7 @@ function renderSyncLogin(){
   }finally{
    code.readOnly=false;
    name.readOnly=false;
-   button.disabled=false;
+   button.disabled=false;shortcut.disabled=false;
    if(!field.hidden&&form.isConnected)code.focus();
   }
  };
