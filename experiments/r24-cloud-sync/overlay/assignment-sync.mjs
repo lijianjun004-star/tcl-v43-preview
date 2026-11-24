@@ -4,6 +4,15 @@ const loopback = url => ['localhost', '127.0.0.1', '[::1]'].includes(url.hostnam
 const text = value => typeof value === 'string' ? value : '';
 export const normalizeDisplayName = value => text(value).normalize('NFC').trim();
 const devicePattern = /^r24d_[a-f0-9]{64}$/;
+const deviceCodeFormatHint = '设备码格式不符。R24 云同步试点设备码以 R24- 开头，共 28 个字符，后 24 位为数字 0–9 或字母 a–f。请从本试点已绑定设备完整复制。';
+
+export function normalizeDeviceCode(value) {
+  const compact = text(value).normalize('NFKC')
+    .replace(/[\s\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-');
+  const match = /^r24-([a-f0-9]{24})$/i.exec(compact);
+  return match ? 'R24-' + match[1].toLowerCase() : null;
+}
 
 function newDeviceToken() {
   const random = crypto.getRandomValues(new Uint8Array(32));
@@ -107,6 +116,7 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
   return {
     storageScope: localTest ? base : envId,
     get principal() { return principal; },
+    hasSavedBinding: () => readBinding(bindingKey)?.confirmed === true,
     async signIn(displayName, rawCode = '') {
       const name = normalizeDisplayName(displayName);
       if (!name || name.length > 40) throw new Error('请输入有效姓名');
@@ -130,9 +140,8 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
         }
       }
 
-      const codeMatch = /^r24-([a-f0-9]{24})$/i.exec(rawCode.trim());
-      if (!codeMatch) throw new Error('设备码格式有误，请粘贴完整设备码');
-      const code = 'R24-' + codeMatch[1].toLowerCase();
+      const code = normalizeDeviceCode(rawCode);
+      if (!code) throw new Error(deviceCodeFormatHint);
       const pending = binding && !binding.confirmed ? binding : {name, token: newDeviceToken(), confirmed: false};
       writeBinding(bindingKey, pending);
       try {

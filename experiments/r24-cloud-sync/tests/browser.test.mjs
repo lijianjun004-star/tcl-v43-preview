@@ -265,6 +265,52 @@ test('first browser requires a valid device code, same browser later uses name o
   assert.deepEqual([...primary.errors, ...unknownDevice.errors], []);
 });
 
+test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
+  const { server, newPage } = await browserFixture(t);
+  const { page, context, errors } = await newPage();
+  const shortVersion = 'R24-20261124.1';
+  const mode = page.locator('#modeText');
+  const field = page.locator('#syncActivationCode');
+  const submit = page.locator('#syncLoginForm button[type="submit"]');
+  await page.locator('#syncReleaseVersion').filter({ hasText: shortVersion }).waitFor();
+  await mode.filter({ hasText: /^云同步试点\s*·\s*未绑定设备$/ }).waitFor();
+
+  await submitName(page, operator.displayName);
+  await field.fill('ABCDEF1234567890');
+  const activationsBeforeInvalidCode = activationPosts(server);
+  await submit.click();
+  const message = page.locator('#syncLoginError');
+  await message.filter({ hasText: 'R24-' }).filter({ hasText: /28\s*个字符/ }).waitFor();
+  assert.equal(activationPosts(server), activationsBeforeInvalidCode);
+  assert.equal(await identityBar(page).count(), 0);
+
+  const suffix = operator.code.slice(4);
+  const copied = ` Ｒ２４－${suffix.slice(0, 9)}\n ${suffix.slice(9, 17)}\u200b\u3000${suffix.slice(17)}  `;
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.evaluate(text => navigator.clipboard.writeText(text), copied);
+  await field.focus();
+  await field.press('ControlOrMeta+A');
+  await field.press('ControlOrMeta+V');
+  await page.waitForFunction(code =>
+    document.querySelector('#syncActivationCode')?.value === code, operator.code);
+  const [activated] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === activationPath &&
+      response.request().method() === 'POST'),
+    submit.click(),
+  ]);
+  assert.ok(activated.ok());
+  assert.equal(activated.request().postDataJSON().code, operator.code);
+  assert.equal(activationPosts(server), activationsBeforeInvalidCode + 1);
+  await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
+  await mode.filter({ hasText: /^云同步试点\s*·\s*已绑定$/ }).waitFor();
+
+  const deviceTools = page.locator('#syncDeviceTools');
+  await deviceTools.locator('summary').click();
+  await deviceTools.getByText(shortVersion, { exact: false }).first().waitFor();
+  await deviceTools.getByText(/28\s*个字符/).first().waitFor();
+  assert.deepEqual(errors, []);
+});
+
 const deviceCodePath = '/api/tcl-r24-sync/device/code';
 
 async function generateCode(page) {

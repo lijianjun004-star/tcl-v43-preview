@@ -22,6 +22,10 @@
 
 同一个 R24 上海试点登录页「进入」下方增加「生成设备码」。已绑定浏览器填姓名点击可直达生成器，未绑定设备显示取码提示。只更新三个试点前端文件。公网 Chromium 确认按钮和指引，37/37 资源一致，原 QA3 清单未变。[验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code-entry/README.md)
 
+### 同日更新：设备码格式指引和版本标识
+
+上海试点发布 `R24-20261124.1`。明确 28 字符 R24 格式、兼容粘贴空白和常见全角符号、修复云同步状态并显示短版本。公网双 Chromium 会话确认 16 位无前缀码在本机被拒绝，合法 R24 码带全角、换行和不可见空白仍可绑定并查看同一作业。37/37 资源一致，原 QA3 清单未变。用户原 16 位码的生成页来源待取证。[发布与验收](experiments/r24-cloud-sync/evidence/shanghai/format-guidance/README.md)
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。

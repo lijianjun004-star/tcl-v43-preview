@@ -7,7 +7,7 @@ import { parseDocumentFile } from './lib/parser.js';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync } from './assignment-sync.mjs?v=r24-device-code-20261124';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-code-format-20261124';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -197,7 +197,7 @@ function pageAllowed(target){
 function applyRoleChrome(){
  document.body.dataset.role=userRole||'guest';
  const brand=ELEM('modeText');
- if(brand&&userName)brand.textContent=`${roleLabel()} · ${userName} · 本机测试`;
+ if(brand&&userName&&!assignmentSync&&!syncConfigError)brand.textContent=`${roleLabel()} · ${userName} · 本机测试`;
  document.querySelectorAll('[data-page]').forEach(el=>{el.hidden=!pageAllowed(el.dataset.page)});
  // 主播在普通页面只需一键到达首页、练播、记录；摄像头与复盘全屏时不占空间。
  const quick=ELEM('mobileQuickNav');
@@ -1067,7 +1067,20 @@ function closeDrawer(){ELEM('trainingControls')?.classList.remove('show-live-con
 function togglePhoneSheet(id,triggerId){const sheet=ELEM(id);if(!sheet)return;const opening=sheet.hidden;closeDrawer();sheet.hidden=!opening;ELEM(triggerId)?.setAttribute('aria-expanded',String(opening));}
 function showPrepPreview(){if(page!=='training'||roomPhase==='live')return;ELEM('livePhone')?.classList.add('is-preparing');document.body.classList.add('focus-open','room-preparing');if(ELEM('preLiveActions'))ELEM('preLiveActions').style.display='flex';}
 function setTitle(t){ELEM('pageTitle').textContent=t;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));closeMenu();applyRoleChrome();}
-function updateMode(){if(syncMember()){ELEM('modeDot').classList.add('online');ELEM('modeText').textContent='云端作业 · 已登录';return;}const online=!!cloud.base&&!!cloud.token;ELEM('modeDot').classList.toggle('online',online);ELEM('modeText').textContent=online?'已连接云端（需查询同步）':memoryFallback?'本机内存临时预览（受浏览器限制未持久化）':'本机独立预览 · 未云同步';}
+function updateMode(needsBinding=false){
+ const dot=ELEM('modeDot'),label=ELEM('modeText');
+ if(assignmentSync||syncConfigError){
+  const bound=Boolean(syncMember());
+  dot.classList.toggle('online',bound);
+  const state=syncConfigError?'配置异常':bound?'已绑定':
+    !needsBinding&&assignmentSync.hasSavedBinding()?'待登录':'未绑定设备';
+  label.textContent='云同步试点 · '+state;
+  return;
+ }
+ const online=Boolean(cloud.base&&cloud.token);
+ dot.classList.toggle('online',online);
+ label.textContent=online?'已连接云端（需查询同步）':memoryFallback?'本机内存临时预览（受浏览器限制未持久化）':'本机独立预览 · 未云同步';
+}
 async function remote(path,method='GET',body){if(!cloud.base)throw new Error('尚未配置云端 API');const res=await fetch(cloud.base+path,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(cloud.token?{'Authorization':'Bearer '+cloud.token}:{})},...(body?{body:JSON.stringify(body)}:{})});let j;try{j=await res.json()}catch{throw new Error(`服务器返回非JSON（HTTP ${res.status}）`)}if(!res.ok)throw new Error(j.error||`请求失败：${res.status}`);return j;}
 function canLeaveRecording(){
  if(capturePending||roomPhase==='live')return toast('请先结束直播，确保录像封装完成后再离开'),false;
@@ -1090,22 +1103,24 @@ function nav(to){if(!pageAllowed(to)){toast('当前身份不能进入此页面')
  if(to==='sessionReview'){if(!reviewAlive()){toast('上一场复盘已结束，或已被新的练习替换');return;}reviewParked=false;reviewStage='overview';page=to;render();window.scrollTo({top:0,behavior:'instant'});return;}
  if(reviewAlive()&&(page==='sessionReview'||reviewParked)){if(page==='sessionReview'&&!leaveReviewKeepingSession())return;activeAssignmentId='';page=to;render();window.scrollTo({top:0,behavior:'instant'});return;}
  if(!canLeaveRecording())return;const keepText=to==='catalog'&&deviceCheck.mode==='text';activeAssignmentId='';resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();clearAnswerAudio();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:keepText,mode:keepText?'text':'hardware',checked:keepText};page=to;render();window.scrollTo({top:0,behavior:'instant'});}
+const syncReleaseVersion=document.querySelector('meta[name="tcl-r24-sync-version"]')?.content||'本地开发';
+const r24CodeExample='R24-0123456789abcdef01234567';
 function renderSyncLogin(){
  setTitle('姓名进入');
  ELEM('view').innerHTML=`<section class="name-login"><div class="name-login-card">
- <h2>输入姓名进入练播房</h2><p>已绑定的设备只需输入姓名。</p>
+ <h2>输入姓名进入练播房</h2><p>R24 云同步试点 · 已绑定的设备只需输入姓名。</p>
  ${syncConfigError?`<p role="alert">${ESC(syncConfigError)}</p>`:`<form id="syncLoginForm">
  <div class="field"><label for="syncDisplayName">姓名</label><input id="syncDisplayName" autocomplete="name" maxlength="40" required></div>
  <div class="field" id="syncActivationField" hidden>
   <label for="syncActivationCode">一次性设备码</label>
-  <input id="syncActivationCode" type="text" maxlength="28" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
-  <small>请输入你在原设备生成的设备码。首次开通请向管理员领取。</small>
+  <input id="syncActivationCode" type="text" maxlength="128" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="syncDeviceCodeFormatHint" disabled>
+  <small id="syncDeviceCodeFormatHint">本试点设备码以 R24- 开头，共 28 个字符。示例：<code>${r24CodeExample}</code>。请使用原设备生成的码，首次开通请向管理员领取。</small>
  </div>
  <button class="btn primary wide" type="submit">进入</button>
  <button class="btn soft wide" type="button" id="syncOpenDeviceCode" aria-describedby="syncDeviceCodeEntryGuide">生成设备码</button>
  <p id="syncDeviceCodeEntryGuide" class="scene-tip" role="status">请在已绑定的设备上使用生成器。在新设备打开时，使用之前保存的设备码。</p>
  <p id="syncLoginError" role="alert"></p>
- </form>`}</div></section>`;
+ </form>`}<p class="scene-tip" id="syncReleaseVersion">版本：${ESC(syncReleaseVersion)}</p></div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
  const name=ELEM('syncDisplayName'),code=ELEM('syncActivationCode');
@@ -1120,7 +1135,14 @@ function renderSyncLogin(){
   if(!visible)code.value='';
   button.textContent=visible?'绑定并进入':'进入';
  }
- name.oninput=()=>{showActivation(false);message.textContent='';};
+ name.oninput=()=>{showActivation(false);message.textContent='';updateMode();};
+ code.addEventListener('paste',event=>{
+  const canonical=normalizeDeviceCode(event.clipboardData?.getData('text/plain'));
+  if(!canonical)return;
+  event.preventDefault();
+  code.value=canonical;
+  message.textContent='';
+ });
  shortcut.onclick=()=>{
   openGenerator=true;
   if(!name.value.trim()){
@@ -1145,6 +1167,7 @@ function renderSyncLogin(){
   try{
    const member=await assignmentSync.signIn(name.value,field.hidden?'':code.value);
    if(!member){
+    updateMode(true);
     showActivation(true);
     if(openGenerator)guide.textContent='这台设备需要先绑定。请在原设备生成设备码，或使用已经保存的码。首次开通请联系管理员。';
     return;
@@ -1186,6 +1209,7 @@ function syncRefreshHtml(){
  <span id="syncRefreshStatus" role="status"></span>
  <details id="syncDeviceTools"${state.open?' open':''}>
   <summary>换手机 · 生成设备码</summary>
+  <small id="syncGeneratorVersion">R24 云同步试点 · ${ESC(syncReleaseVersion)} · R24- 开头，共 28 个字符</small>
   <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 90 天。重新生成后，上一枚未使用的自助码会失效。</p>
   <button type="button" id="syncGenerateDeviceCode" class="btn primary">生成设备码</button>
   <div class="field" id="syncDeviceCodeResult" hidden>
