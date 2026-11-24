@@ -7,7 +7,7 @@ import { parseDocumentFile } from './lib/parser.js';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync } from './assignment-sync.mjs?v=r24-name-20261124';
+import { createAssignmentSync } from './assignment-sync.mjs?v=r24-device-code-20261124';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -1099,7 +1099,7 @@ function renderSyncLogin(){
  <div class="field" id="syncActivationField" hidden>
   <label for="syncActivationCode">一次性设备码</label>
   <input id="syncActivationCode" type="text" maxlength="28" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
-  <small>首次使用这台设备，请向管理员领取设备码。以后只需输入姓名。</small>
+  <small>请输入你在原设备生成的设备码。首次开通请向管理员领取。</small>
  </div>
  <button class="btn primary wide" type="submit">进入</button><p id="syncLoginError" role="alert"></p>
  </form>`}</div></section>`;
@@ -1144,12 +1144,102 @@ function renderSyncLogin(){
   }
  };
 }
-function syncRefreshHtml(){
- return '<div class="panel"><button type="button" id="syncRefresh" class="btn soft">刷新云端作业</button><span id="syncRefreshStatus" role="status"></span></div>';
+let deviceCodePanel=null;
+const deviceCodeExpiry=expiresAt=>new Date(expiresAt).toLocaleString('zh-CN');
+
+function deviceCodeState(){
+ const member=syncMember();
+ if(!deviceCodePanel||deviceCodePanel.member!==member){
+  deviceCodePanel={member,open:false,busy:false,proof:null,message:''};
+ }
+ return deviceCodePanel;
 }
+
+function syncRefreshHtml(){
+ const state=deviceCodeState();
+ return `<div class="panel"><button type="button" id="syncRefresh" class="btn soft">刷新云端作业</button>
+ <span id="syncRefreshStatus" role="status"></span>
+ <details id="syncDeviceTools"${state.open?' open':''}>
+  <summary>换手机 · 生成设备码</summary>
+  <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 90 天。重新生成后，上一枚未使用的自助码会失效。</p>
+  <button type="button" id="syncGenerateDeviceCode" class="btn primary">生成设备码</button>
+  <div class="field" id="syncDeviceCodeResult" hidden>
+   <label for="syncGeneratedDeviceCode">我的设备码</label>
+   <input id="syncGeneratedDeviceCode" type="text" readonly autocomplete="off" spellcheck="false">
+   <small id="syncDeviceCodeExpiry"></small>
+   <div>
+    <button type="button" id="syncCopyDeviceCode" class="btn soft">复制</button>
+    <button type="button" id="syncSaveDeviceCode" class="btn soft">下载备份</button>
+   </div>
+  </div>
+  <p id="syncDeviceCodeStatus" class="scene-tip" role="status"></p>
+ </details></div>`;
+}
+
+function paintDeviceCodePanel(state){
+ const button=ELEM('syncGenerateDeviceCode'),result=ELEM('syncDeviceCodeResult');
+ if(!button||!result||syncMember()!==state.member)return;
+ button.disabled=state.busy;
+ button.textContent=state.busy?'生成中…':state.proof?'重新生成':'生成设备码';
+ result.hidden=!state.proof;
+ ELEM('syncGeneratedDeviceCode').value=state.proof?.code||'';
+ ELEM('syncDeviceCodeExpiry').textContent=state.proof?'有效至 '+deviceCodeExpiry(state.proof.expiresAt):'';
+ ELEM('syncDeviceCodeStatus').textContent=state.message;
+}
+
+function bindDeviceCodePanel(){
+ const panel=ELEM('syncDeviceTools');
+ if(!panel)return;
+ const state=deviceCodeState();
+ paintDeviceCodePanel(state);
+ panel.ontoggle=()=>{if(panel.isConnected)state.open=panel.open;};
+ ELEM('syncGenerateDeviceCode').onclick=async()=>{
+  if(state.busy||syncMember()!==state.member)return;
+  if(state.proof&&!window.confirm('重新生成后，上一枚未使用的设备码会失效。继续吗？'))return;
+  state.busy=true;state.proof=null;state.message='';
+  paintDeviceCodePanel(state);
+  try{
+   const proof=await assignmentSync.issueDeviceCode();
+   if(syncMember()!==state.member)return;
+   state.proof=proof;
+   state.message='请私下保存设备码。打开新设备时，先输姓名，再粘贴此码。';
+  }catch(error){
+   if(syncMember()===state.member)state.message=error.message;
+  }finally{
+   state.busy=false;
+   paintDeviceCodePanel(state);
+  }
+ };
+ ELEM('syncCopyDeviceCode').onclick=async()=>{
+  const proof=state.proof;
+  if(!proof||syncMember()!==state.member)return;
+  try{
+   await navigator.clipboard.writeText(proof.code);
+   if(state.proof===proof)state.message='已复制，请保存在自己的备忘录或密码管理器里。';
+  }catch{
+   if(state.proof===proof){
+    const input=ELEM('syncGeneratedDeviceCode');
+    input?.focus();input?.select();
+    state.message='自动复制不可用，请手动复制选中的设备码。';
+   }
+  }
+  paintDeviceCodePanel(state);
+ };
+ ELEM('syncSaveDeviceCode').onclick=()=>{
+  const proof=state.proof;
+  if(!proof||syncMember()!==state.member)return;
+  downloadText('TCL-R24-设备码.txt',
+   `TCL R24 练播房\n姓名：${state.member.displayName}\n设备码：${proof.code}\n有效至：${deviceCodeExpiry(proof.expiresAt)}\n新设备输入姓名后粘贴设备码。一码限用一次，请仅自己保存。\n`,
+   'text/plain;charset=utf-8');
+  state.message='已请求下载备份，请查看浏览器下载记录。';
+  paintDeviceCodePanel(state);
+ };
+}
+
 function bindSyncControls(){
  const refresh=ELEM('syncRefresh');
  if(refresh)refresh.onclick=refreshSyncAssignments;
+ bindDeviceCodePanel();
  for(const button of document.querySelectorAll('[data-sync-submissions]')){
   button.onclick=()=>void showSyncInbox(button.dataset.syncSubmissions);
  }

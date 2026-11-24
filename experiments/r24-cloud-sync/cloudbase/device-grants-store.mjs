@@ -12,6 +12,19 @@ export function createDeviceGrantStore(db, prefix) {
   return {
     findByCode: digest => find('code_digest', digest),
     findByDevice: digest => find('device_digest', digest),
+    async issueCode({issuerDeviceDigest, codeDigest}) {
+      const result = await db.rpc(`${prefix}_issue_device_code`, {
+        p_issuer_device_digest: issuerDeviceDigest,
+        p_code_digest: codeDigest,
+      });
+      if (result?.error || !result || !Object.hasOwn(result, 'data')) throw new Error('Device code issuance failed');
+      if (result.data === null || result.data?.expiresAt === null) return null;
+      const expiry = result.data?.expiresAt;
+      if (typeof expiry !== 'string' || !Number.isFinite(Date.parse(expiry))) {
+        throw new Error('Invalid device code expiry');
+      }
+      return new Date(expiry).toISOString();
+    },
     async claim({codeDigest, enrollmentId, deviceDigest, usedAt, deviceExpiresAt}) {
       const result = await db.from(table).update({
         used_at: usedAt,

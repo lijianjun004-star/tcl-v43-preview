@@ -150,6 +150,14 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       }
     },
     signOut() { token = null; principal = null; },
+    async issueDeviceCode() {
+      const result = await get('/device/code', 'POST', {});
+      const expiry = Date.parse(result.expiresAt);
+      if (!/^R24-[a-f0-9]{24}$/.test(text(result.code)) || !Number.isFinite(expiry)) {
+        throw new Error('设备码结果未确认，请重新生成');
+      }
+      return {code: result.code, expiresAt: result.expiresAt};
+    },
     listAssignments: () => list('/assignments', 'assignments'),
     publish: assignment => get('/assignments', 'POST', { assignment, recipientIds: [] }),
     submit: snapshot => get('/assignments/' + encodeURIComponent(snapshot.assignmentId) + '/submissions', 'POST', { snapshot }),

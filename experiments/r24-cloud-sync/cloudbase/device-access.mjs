@@ -1,4 +1,4 @@
-import {createHash} from 'node:crypto';
+import {createHash, randomBytes} from 'node:crypto';
 import {readEnrollment} from './cloudbase-identity.mjs';
 
 const devicePrefix = 'r24d_';
@@ -43,8 +43,10 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     return activeDevice(grant, proof, now()) ? enrollment(grant.enrollment_id) : null;
   }
 
-  async function activationHandler(request, handle) {
-    if (new URL(request.url).pathname !== '/device/activate' || request.method === 'OPTIONS') return handle(request);
+  async function handleDeviceRequest(request, handle) {
+    const path = new URL(request.url).pathname;
+    const issuing = path === '/device/code';
+    if ((!issuing && path !== '/device/activate') || request.method === 'OPTIONS') return handle(request);
     const origin = request.headers.get('origin');
     const cors = {vary: 'Origin'};
     if (origin && !origins.has(origin)) {
@@ -54,7 +56,12 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     if (request.method !== 'POST') {
       return response({error: {code: 'METHOD_NOT_ALLOWED', message: '此接口仅支持 POST'}}, 405, {...cors, allow: 'POST, OPTIONS'});
     }
-    const invalid = () => response({error: {code: 'ACTIVATION_INVALID', message: '请核对已登记姓名和启用码，或联系运营获取新码'}}, 401, cors);
+    const invalid = () => response({error: issuing
+      ? {code: 'DEVICE_AUTH_REQUIRED', message: '请先在已启用的设备上进入工作台'}
+      : {code: 'ACTIVATION_INVALID', message: '请核对已登记姓名和启用码，或联系运营获取新码'}}, 401, cors);
+    const invalidBody = () => response({error: {code: 'BODY_INVALID', message: '请求体须为不含身份字段的空对象'}}, 400, cors);
+    const bearer = /^Bearer ([^\s,]+)$/i.exec(request.headers.get('authorization') ?? '')?.[1];
+    if (issuing && (!bearer || !deviceTokenPattern.test(bearer))) return invalid();
     if (request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
       return response({error: {code: 'JSON_REQUIRED', message: '请求须使用 application/json'}}, 415, cors);
     }
@@ -65,7 +72,17 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
       if (body.byteLength > maxActivationBytes) return response({error: {code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大'}}, 413, cors);
       input = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(body));
     } catch {
-      return invalid();
+      return issuing ? invalidBody() : invalid();
+    }
+    if (issuing) {
+      if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).length) return invalidBody();
+      try {
+        const code = 'R24-' + randomBytes(12).toString('hex');
+        const expiresAt = await grants.issueCode({issuerDeviceDigest: digest(bearer), codeDigest: digest(code)});
+        return expiresAt ? response({code, expiresAt}, 200, cors) : invalid();
+      } catch {
+        return response({error: {code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试'}}, 503, cors);
+      }
     }
     const displayName = enrollmentName(input?.displayName);
     const {code, deviceToken} = input || {};
@@ -99,5 +116,5 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     }
   }
 
-  return {authenticate, activationHandler};
+  return {authenticate, handleDeviceRequest};
 }

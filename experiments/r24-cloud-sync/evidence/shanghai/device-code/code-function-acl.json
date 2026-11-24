@@ -1,0 +1,22 @@
+{
+  "data": {
+    "RequestId": "90686457-5acb-4b73-89f0-3eeefda69197",
+    "AffectedRows": 0,
+    "ExecutionTimeMs": 11,
+    "Columns": [
+      "anon",
+      "browser",
+      "server",
+      "restricted_function"
+    ],
+    "ColumnTypes": [
+      "bool",
+      "bool",
+      "bool",
+      "bool"
+    ],
+    "Rows": [
+      "[\"false\",\"false\",\"true\",\"true\"]"
+    ]
+  }
+}

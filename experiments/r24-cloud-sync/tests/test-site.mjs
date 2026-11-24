@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
@@ -45,6 +46,7 @@ export async function startTestSite() {
   const tokens = new Map();
   const actors = Object.values(identities);
   const unusedCodes = new Map(actors.map(actor => [actor.code, actor]));
+  const lastSelfIssuedCodeByMember = new Map();
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, origin);
     const path = url.pathname;
@@ -64,6 +66,25 @@ export async function startTestSite() {
         unusedCodes.delete(code);
         tokens.set(deviceToken, actor);
         return sendJson(res, 200, { principal: { id, role, displayName } });
+      }
+
+      if (path === apiBasePath + '/device/code' && method === 'POST') {
+        const token = /^Bearer (r24d_[0-9a-f]{64})$/.exec(req.headers.authorization || '')?.[1];
+        const actor = tokens.get(token);
+        if (!actor) {
+          return sendJson(res, 401, { error: { code: 'UNAUTHORIZED', message: '设备尚未绑定' } });
+        }
+        const body = JSON.parse(await readBody(req));
+        if (body === null || Array.isArray(body) || typeof body !== 'object' || Object.keys(body).length !== 0) {
+          return sendJson(res, 400, { error: { code: 'INVALID_INPUT', message: '请求必须为空对象' } });
+        }
+        const oldCode = lastSelfIssuedCodeByMember.get(actor.id);
+        unusedCodes.delete(oldCode);
+        const code = 'R24-' + randomBytes(12).toString('hex');
+        lastSelfIssuedCodeByMember.set(actor.id, code);
+        unusedCodes.set(code, actor);
+        const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+        return sendJson(res, 200, { code, expiresAt });
       }
 
       if (path.startsWith(apiBasePath + '/')) {

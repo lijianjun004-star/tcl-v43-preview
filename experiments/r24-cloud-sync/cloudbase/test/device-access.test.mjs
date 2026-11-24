@@ -53,7 +53,7 @@ function fixture(overrides = {}) {
     now: () => currentTime,
   });
   async function activate(body = {}, requestOrigin = origin) {
-    return deviceAccess.activationHandler(new Request(origin + '/device/activate', {
+    return deviceAccess.handleDeviceRequest(new Request(origin + '/device/activate', {
       method: 'POST',
       headers: {origin: requestOrigin, 'Content-Type': 'application/json'},
       body: JSON.stringify({displayName: '主播 É', code, deviceToken: token, ...body}),
@@ -135,4 +135,57 @@ test('database reports unique device collision as no claim and refuses other wri
   }, 'tcl_r24_sync_v1');
   assert.equal(await store('23505').claim({}), null);
   await assert.rejects(store('42501').claim({}), /grant claim failed/);
+});
+
+test('self-service code uses only the current device bearer, returns plaintext once, and never caches', async () => {
+  let rpcCalls = 0;
+  let sentParams;
+  const expiry = new Date(stamp + 90 * 24 * 60 * 60 * 1000).toISOString();
+  const grants = createDeviceGrantStore({
+    async rpc(name, params) {
+      rpcCalls++;
+      assert.equal(name, 'tcl_r24_sync_v1_issue_device_code');
+      sentParams = params;
+      if (params.p_issuer_device_digest !== digest(token)) return {data: {expiresAt: null}};
+      return {data: {expiresAt: expiry}};
+    },
+  }, 'tcl_r24_sync_v1');
+  const {handleDeviceRequest} = createDeviceAccess({
+    grants, getEnrollment: async () => assert.fail('issuer is verified by database'),
+    authenticateNative: async () => assert.fail('native credentials cannot issue code'),
+    allowedOrigins: [origin],
+  });
+
+  async function issue(proof, input = {}, requestOrigin = origin) {
+    return handleDeviceRequest(new Request(origin + '/device/code', {
+      method: 'POST',
+      headers: {
+        ...(proof ? {Authorization: 'Bearer ' + proof} : {}),
+        Origin: requestOrigin,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    }), () => assert.fail('unexpected fallthrough'));
+  }
+
+  assert.equal((await issue(null)).status, 401);
+  assert.equal((await issue('native-bearer')).status, 401);
+  assert.equal((await issue(token, {}, 'https://wrong-origin.test')).status, 403);
+  for (const input of [{displayName: '伪造账号'}, {role: 'operator'}, {id: 'someone'}, null, []]) {
+    assert.equal((await issue(token, input)).status, 400);
+  }
+  assert.equal(rpcCalls, 0);
+  assert.equal((await issue(alternateToken)).status, 401);
+  const issued = await issue(token);
+  const data = await issued.json();
+  assert.equal(issued.status, 200);
+  assert.equal(issued.headers.get('cache-control'), 'no-store');
+  assert.equal(issued.headers.get('access-control-allow-origin'), origin);
+  assert.match(data.code, /^R24-[0-9a-f]{24}$/);
+  assert.equal(data.expiresAt, expiry);
+  assert.deepEqual(sentParams, {p_issuer_device_digest: digest(token), p_code_digest: digest(data.code)});
+  assert.equal(JSON.stringify(sentParams).includes(data.code), false);
+  const replaced = await (await issue(token)).json();
+  assert.notEqual(replaced.code, data.code);
+  assert.equal(rpcCalls, 3);
 });

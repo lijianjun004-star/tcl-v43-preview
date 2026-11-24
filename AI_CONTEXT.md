@@ -14,6 +14,10 @@
 
 同一试点入口的登录页改为只填姓名，首次使用新设备时用管理员发放的一次性设备码绑定。已绑定浏览器日常只输姓名，设备绑定与 R25 独立。公网 37/37 资源哈希匹配。两个原生身份完成实际试点 XLSX 作业发布、领取、提交及收件，独立公网浏览器验证退出后姓名返回且没有再次调用绑定接口。原 QA3 未变。[姓名登录验收](experiments/r24-cloud-sync/evidence/shanghai/name-login/README.md)
 
+### 同日更新：R24 试点可自助生成设备码
+
+已绑定的运营或主播可在工作台「换手机 · 生成设备码」复制或下载个人备用码。新设备输入同一姓名及备用码即可绑定。首次开通仍由管理员发码。自助码有效 90 天，限用一次，重新生成让先前未用的自助码失效。公网双浏览器通过生成、绑定和读取同一账号与作业，37/37 哈希匹配，原 QA3 清单一致。[部署与验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code/README.md)
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。

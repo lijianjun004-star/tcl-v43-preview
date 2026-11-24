@@ -14,9 +14,9 @@ function createFunction(runtimeNamespace) {
   const {getEnrollment, directory, store} = createDatabaseAdapter(db, prefix);
   const authenticateNative = createAuthenticator({envId, getEnrollment});
   const grants = createDeviceGrantStore(db, prefix);
-  const {authenticate, activationHandler} = createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins});
+  const {authenticate, handleDeviceRequest} = createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins});
   const api = createApi({authenticate, directory, store, allowedOrigins, basePath: ''});
-  return createGatewayHandler(request => activationHandler(request, api));
+  return createGatewayHandler(request => handleDeviceRequest(request, api));
 }
 
 let handler;

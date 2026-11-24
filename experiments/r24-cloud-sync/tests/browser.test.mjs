@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -31,7 +31,9 @@ async function browserFixture(t) {
   t.after(() => browser.close());
 
   async function newPage(path = '/sync/') {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 }, acceptDownloads: true,
+    });
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
       return url.origin === server.origin ? route.continue() : route.abort();
@@ -39,10 +41,14 @@ async function browserFixture(t) {
     const page = await context.newPage();
     page.setDefaultTimeout(12_000);
     const errors = [];
+    const dialogs = [];
     page.on('pageerror', error => errors.push(error.message));
-    page.on('dialog', dialog => dialog.accept());
+    page.on('dialog', dialog => {
+      dialogs.push(dialog.type());
+      return dialog.accept();
+    });
     await page.goto(server.origin + path, { waitUntil: 'domcontentloaded' });
-    return { page, errors };
+    return { context, page, errors, dialogs };
   }
   return { server, excel, newPage };
 }
@@ -257,6 +263,83 @@ test('first browser requires a valid device code, same browser later uses name o
   assert.equal(usedCode.status(), 401);
   assert.equal(await identityBar(unknownDevice.page).count(), 0);
   assert.deepEqual([...primary.errors, ...unknownDevice.errors], []);
+});
+
+const deviceCodePath = '/api/tcl-r24-sync/device/code';
+
+async function generateCode(page) {
+  const [response] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === deviceCodePath &&
+      response.request().method() === 'POST'),
+    page.locator('#syncGenerateDeviceCode').click(),
+  ]);
+  assert.ok(response.ok(), `Issue code returned HTTP ${response.status()}`);
+  const result = await response.json();
+  assert.match(result.code, /^R24-[a-f0-9]{24}$/);
+  const remainingDays = (Date.parse(result.expiresAt) - Date.now()) / (24 * 60 * 60 * 1000);
+  assert.ok(remainingDays >= 89.9 && remainingDays <= 90);
+  await page.waitForFunction(code =>
+    document.querySelector('#syncGeneratedDeviceCode')?.value === code, result.code);
+  return result.code;
+}
+
+test('bound device can generate, copy, save, and renew one-time codes for a fresh browser', { timeout: 60_000 }, async t => {
+  const { server, excel, newPage } = await browserFixture(t);
+  const unconfirmed = await fetch(server.origin + deviceCodePath, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+  });
+  assert.equal(unconfirmed.status, 401);
+
+  const first = await newPage();
+  await first.context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await signIn(first.page, operator);
+  await fillAssignment(first.page, excel);
+  const [published] = await Promise.all([
+    first.page.waitForResponse(response => response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/tcl-r24-sync/assignments'),
+    first.page.locator('#publishAssignment').click(),
+  ]);
+  assert.ok(published.ok());
+  const { assignment } = await published.json();
+
+  await first.page.locator('#syncDeviceTools summary').click();
+  const earlierCode = await generateCode(first.page);
+  assert.deepEqual(first.dialogs, []);
+  assert.notEqual(await first.page.locator('#syncGeneratedDeviceCode').getAttribute('readonly'), null);
+
+  await first.page.locator('#syncCopyDeviceCode').click();
+  await first.page.waitForFunction(async code =>
+    await navigator.clipboard.readText() === code, earlierCode);
+  const [download] = await Promise.all([
+    first.page.waitForEvent('download'),
+    first.page.locator('#syncSaveDeviceCode').click(),
+  ]);
+  const saved = await readFile(await download.path(), 'utf8');
+  assert.ok(saved.includes(earlierCode));
+
+  const currentCode = await generateCode(first.page);
+  assert.notEqual(currentCode, earlierCode);
+  assert.equal(first.dialogs.filter(type => type === 'confirm').length, 1);
+
+  const second = await newPage();
+  await submitName(second.page, operator.displayName);
+  const stale = await submitCode(second.page, earlierCode);
+  assert.equal(stale.status(), 401);
+  assert.equal(await identityBar(second.page).count(), 0);
+  const accepted = await submitCode(second.page, currentCode);
+  assert.ok(accepted.ok());
+  await identityBar(second.page).filter({ hasText: operator.displayName }).waitFor();
+  await second.page.locator('[data-ops-tab="tracking"]').click();
+  const sameAssignment = second.page.locator(`[data-sync-submissions="${assignment.id}"]`);
+  await sameAssignment.waitFor();
+  assert.equal(await sameAssignment.count(), 1);
+
+  const third = await newPage();
+  await submitName(third.page, operator.displayName);
+  const spent = await submitCode(third.page, currentCode);
+  assert.equal(spent.status(), 401);
+  assert.equal(await identityBar(third.page).count(), 0);
+  assert.deepEqual([...first.errors, ...second.errors, ...third.errors], []);
 });
 
 test('local fallback uses the original XLSX/JSON path and labels only local save', { timeout: 90_000 }, async t => {
