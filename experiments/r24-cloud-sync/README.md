@@ -1,6 +1,6 @@
 # TCL R24 Excel 作业云同步试点
 
-试点版本 `R24-20261124.4`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [本次验收报告](evidence/shanghai/v2/README.md)
+试点版本 `R24-20261124.6`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。登录页和工作台均可展开「设备码使用说明」。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit) · [`.5` 公网双账号验收](evidence/shanghai/v2-5-public/README.md)
 
 ## 登录与换设备
 

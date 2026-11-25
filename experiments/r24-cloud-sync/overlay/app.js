@@ -1153,6 +1153,21 @@ async function refreshAfterSyncLogin(member,openGenerator){
  await refreshSyncAssignments();
 }
 
+function deviceCodeGuideHtml(){
+ return `<details class="field device-code-guide">
+  <summary><strong>设备码使用说明｜换手机、换浏览器、旧设备找不到</strong></summary>
+  <p>平时用同一个已绑定的浏览器，选原角色、填原姓名即可进入。第一次参加试点，选角色填姓名后点「进入工作台（首次自动开通）」。</p>
+  <ol class="note-list">
+   <li><strong>准备好新设备，再在旧设备发码。</strong>用原来已绑定的浏览器进入工作台，展开「换手机 · 生成设备码」，点「生成设备码」。核对显示的姓名与角色。</li>
+   <li><strong>把完整的码私下转到新设备。</strong>点「复制」，或点「下载备份」取得文本文件。码以 <code>R24-</code> 开头，共 28 个字符，只能用一次，生成后 30 分钟内有效。下载文件不会延长有效期。不要把码发到群里。</li>
+   <li><strong>在新设备填原姓名并绑定。</strong>打开同一个试点网址，选原角色、输入原姓名，点「进入工作台（首次自动开通）」。出现「一次性设备码」输入框后，粘贴完整的码，点「绑定并进入」。看到「已绑定」并核对自己的作业后，再停用旧设备。</li>
+  </ol>
+  <p><strong>过期、用过或忘了保存：</strong>旧浏览器还能进入，就回旧浏览器重新生成。重新生成会作废此前未使用的码。</p>
+  <p><strong>旧设备丢了或已清除浏览器数据：</strong>私下联系试点管理员，说明原姓名、原角色和遇到的问题。管理员核实后会约你重置绑定。已提交的云端作业不受影响；未提交复盘、整场录像等本机内容需要从原浏览器另行备份。</p>
+  <p>微信内置浏览器、Safari、Chrome 各自保存绑定。建议固定一个浏览器使用，换浏览器也按新设备绑定。</p>
+ </details>`;
+}
+
 function renderSyncLogin(){
  setTitle('姓名进入');
  ELEM('view').innerHTML=`<section class="name-login"><div class="name-login-card">
@@ -1164,7 +1179,7 @@ function renderSyncLogin(){
   <label for="syncActivationCode">一次性设备码</label>
   <input id="syncActivationCode" type="text" maxlength="128" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="syncDeviceCodeFormatHint" disabled>
   <small id="syncDeviceCodeFormatHint">本试点设备码以 R24- 开头，共 28 个字符。示例：<code>${r24CodeExample}</code>。请使用原设备生成的码。</small>
-  <small>若原设备无法打开，请联系管理员重置绑定（不删历史作业记录），重置后可重新自动开通。</small>
+  <small>若旧设备无法打开，请私下联系试点管理员，核实后用原姓名和角色恢复绑定。</small>
  </div>
  <button class="btn primary wide" type="submit">进入工作台（首次自动开通）</button>
  <button class="btn soft wide" type="button" id="syncOpenDeviceCode" aria-describedby="syncDeviceCodeEntryGuide">生成设备码</button>
@@ -1173,6 +1188,7 @@ function renderSyncLogin(){
  <p id="syncLoginError" role="alert">${ESC(syncSessionFeedback)}</p>
  </form>`}
  <p class="scene-tip">微信内置浏览器与手机 Safari 登录态不互通，建议固定用同一浏览器打开。</p>
+ ${deviceCodeGuideHtml()}
  <p class="scene-tip" id="syncReleaseVersion">版本：${ESC(syncReleaseVersion)}</p></div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
@@ -1305,7 +1321,7 @@ function syncRefreshHtml(){
  <details id="syncDeviceTools"${state.open?' open':''}>
   <summary>换手机 · 生成设备码</summary>
   <small id="syncGeneratorVersion">R24 云同步试点 · ${ESC(syncReleaseVersion)} · R24- 开头，共 28 个字符</small>
-  <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 30 分钟。重新生成后，此人先前未使用的码会失效。</p>
+  <p class="scene-tip">准备换设备时再生成。码只能用一次，生成后 30 分钟有效。重新生成会作废此前未使用的码。</p>
   <button type="button" id="syncGenerateDeviceCode" class="btn primary">生成设备码</button>
   <dialog id="syncRegenerateDialog" aria-labelledby="syncRegenerateTitle" aria-describedby="syncRegenerateMessage" style="box-sizing:border-box;width:min(390px,92vw);padding:20px;border:1px solid #dce4ed;border-radius:16px;color:#192b43;background:white">
    <h3 id="syncRegenerateTitle">重新生成设备码？</h3>
@@ -1327,7 +1343,7 @@ function syncRefreshHtml(){
    </div>
   </div>
   <p id="syncDeviceCodeStatus" class="scene-tip" role="status"></p>
- </details></div>`;
+ </details>${deviceCodeGuideHtml()}</div>`;
 }
 
 function updateDeviceCountdown(state){
@@ -1390,7 +1406,7 @@ function bindDeviceCodePanel(){
    const proof=await assignmentSync.issueDeviceCode();
    if(syncMember()!==state.member)return;
    state.proof=proof;
-   state.message=(replacing?'新码已生成。':'设备码已生成。')+'请私下保存设备码。打开新设备时，先输姓名，再粘贴此码。';
+   state.message=(replacing?'新码已生成。':'设备码已生成。')+'请在 30 分钟内私下把码转到新设备。用原姓名进入，出现输入框后粘贴此码。';
   }catch(error){
    if(syncMember()===state.member)state.message='设备码签发未确认：'+error.message+(replacing?'。旧码状态未确认，请重试后使用新码。':'');
   }finally{
@@ -1404,7 +1420,7 @@ function bindDeviceCodePanel(){
   if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
   try{
    await navigator.clipboard.writeText(proof.code);
-   if(state.proof===proof)state.message='已复制，请保存在自己的备忘录或密码管理器里。';
+   if(state.proof===proof)state.message='已复制。请私下转到新设备，并在剩余有效期内绑定。';
   }catch{
    if(state.proof===proof){
     const input=ELEM('syncGeneratedDeviceCode');
@@ -1418,7 +1434,7 @@ function bindDeviceCodePanel(){
   const proof=state.proof;
   if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
   downloadText('TCL-R24-设备码.txt',proof.code,'text/plain;charset=utf-8');
-  state.message='已请求下载备份，请查看浏览器下载记录。';
+  state.message='已请求下载备份。文件中的码也只有 30 分钟有效，请在有效期内使用。';
   paintDeviceCodePanel(state);
  };
 }

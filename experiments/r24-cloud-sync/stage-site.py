@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.5"
-SHORT_VERSION = "R24-20261124.5"
-ASSET_REVISION = "r24-sync-v2-20261124.5"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.6"
+SHORT_VERSION = "R24-20261124.6"
+ASSET_REVISION = "r24-sync-v2-20261124.6"
 
 
 def digest(path):
