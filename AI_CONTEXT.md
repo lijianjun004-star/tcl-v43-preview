@@ -4,7 +4,13 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
-## 上海 R24 云同步试点当前版本（2026-11-25 复验）
+## 上海 R24 云同步试点 `.5` 已发布（2026-11-25 UTC）
+
+现有上海 CloudBase 的试点目录已上线 `R24-20261124.5`。部署源码固定为 `111115e3c45da55f9a4700b9a4d342e76e89e47c`。Gemini R2 已通过源码与更新包核验，线上三项仍待其执行。[试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [Gemini R2 复验结果](https://docs.google.com/document/d/1KelrGasnuBCMeFAqzdXBwtzvduOUnju5/edit)
+
+公网根页和四个更新对象逐字节匹配，两个带 `.5` 版本参数的脚本 URL 同样匹配。公网清单 `r24-paraformer-excel-cloud-sync-v2-20261124.5`，36 项，SHA-256 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。CloudBase 托管前后均 131 个对象，仅试点的 `app.js`、`assignment-sync.mjs`、`index.html`、`static-manifest.json` 改变，其余 33 个试点对象与 94 个其他对象元数据一致。CLI 上传结束后的内置校验返回码 5，把带前导斜线的路径报告为缺失，托管清单和独立公网读回已核实实物。回滚使用已校验的四文件 `.4` 原件。[更新与回滚包](https://drive.google.com/file/d/1BieAv7arKRYEQzabSlcaV0Kx3H0hjr9k/view)
+
+## 上海 R24 云同步试点 `.4` 基线（2026-11-25 复验）
 
 `R24-20261124.4` 已部署在 `unknown-roadrunner-d7cap6e21f517` 的 `/tcl-r24-cloud-sync-pilot/`。主播和运营首次用姓名自动开通，同名新设备使用原设备的 28 字符一次性码。沿用既有账号 ID；运营发布、主播领取、文字/转写提交和逐题录音使用试点云资源，整场录像保留在本机。[试点网站](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)
 
@@ -16,7 +22,7 @@
 
 `.5` 让已绑定浏览器刷新后先恢复本机复盘，再自动呈现作业请求的结果。读取作业期间不显示零，页面切换不丢弃有效响应。重新生成设备码采用页内确认，显示生成进度和失败提示。选错已绑定角色需明确确认。Chromium 延迟响应回归在 `.4` 复现、在 `.5` 通过。独立会话以合成 Excel 和虚拟麦克风完成发布、领取、提交、三段录音播放、码轮换、跨设备绑定和复用拒绝。后端与 CloudBase 适配器 33 项通过。测试写入使用本机内存后端。
 
-候选静态清单 SHA-256 为 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。列出的 36 项文件中仅 `app.js`、`assignment-sync.mjs`、`index.html` 的字节变化，部署或回滚都限这些文件及 `static-manifest.json`，目标为上海试点原目录。候选尚未部署，待确认云端托管管理会话后做公网复验。实体手机、微信、真实人声音准与单 IP 限频待验证。
+候选静态清单 SHA-256 为 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。列出的 36 项文件中仅 `app.js`、`assignment-sync.mjs`、`index.html` 的字节变化，部署或回滚都限这些文件及 `static-manifest.json`。发布状态见上方 `.5` 记录。实体手机、微信、真实人声音准与单 IP 限频待验证。
 
 ## R24 Excel 作业云同步试点已部署到上海（2026-11-24）
 
