@@ -1432,7 +1432,7 @@ function bindSyncControls(){
  }
 }
 async function refreshSyncAssignments(){
- const member=syncMember();
+ const member=syncMember(),previousRows=cloudAssignments;
  if(!member||syncAssignmentsLoading||assignmentPublishPending||assignmentJoinPending)return;
  const paint=()=>{
   const button=ELEM('syncRefresh'),status=ELEM('syncRefreshStatus');
@@ -1443,7 +1443,7 @@ async function refreshSyncAssignments(){
  try{
   const rows=await assignmentSync.listAssignments();
   if(syncMember()!==member)return;
-  if(assignmentJoinPending||assignmentPublishPending){syncAssignmentsMessage=' 作业正在更新，可稍后刷新';return;}
+  if(assignmentJoinPending||assignmentPublishPending||cloudAssignments!==previousRows){syncAssignmentsMessage=' 作业刚有更新，可刷新查看最新列表';return;}
   cloudAssignments=rows;syncAssignmentsLoaded=true;
   syncAssignmentsMessage=` 已读取 ${rows.length} 份云端作业`;
   if(page==='home'){
