@@ -1,0 +1,31 @@
+{
+  "pass": true,
+  "version": "版本：R24-20261124.6",
+  "source": "localhost staged .6",
+  "timerOverrideMs": 6000,
+  "autoElapsedMs": 6426,
+  "playback": {
+    "width": 640,
+    "height": 480,
+    "position": 0.36878
+  },
+  "sizeBytes": 323190,
+  "format": "matroska,webm",
+  "durationSeconds": null,
+  "streams": [
+    {
+      "codec_name": "vp8",
+      "codec_type": "video"
+    },
+    {
+      "codec_name": "opus",
+      "codec_type": "audio"
+    }
+  ],
+  "packetEndSeconds": [
+    5.999,
+    6.0169999999999995
+  ],
+  "pageErrors": 0,
+  "blockedExternalOrigins": 0
+}
