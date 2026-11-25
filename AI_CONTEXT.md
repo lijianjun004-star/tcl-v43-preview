@@ -14,6 +14,8 @@
 
 长录像补验在本机 `.6` Chromium 使用合成音视频设备实际录制约 190 秒及 185 秒，原视频可下载，第一段跳至 170 秒仍可播放，第二段刷新后可从同一浏览器恢复。超过 180 秒被本机整场转写及 WAV 导出明确限制，自动停录流程用 6 秒测试阈值验证。实际 8 分钟、64 MiB 停录路径、真机未跑；整场视频仍不上云。[长录像验证](experiments/r24-cloud-sync/evidence/shanghai/v2-6-video/README.md)
 
+Gemini 独立确认公网 `.6` 版本和模拟 Excel，因托管浏览器缺少文件上传、第二个独立会话及麦克风，运营至主播双账号线上操作 NOT RUN。Codex 另在本机 `.6` 双会话明确验到：保存复盘后运营两入口无提交且请求数为零；主动提交后两处有唯一提交，三题和三段录音匹配。`.6` 既有公网 9 项通过仍保留为独立的 Codex 证据。没有新增线上账户。[独立核查与本机补验](experiments/r24-cloud-sync/evidence/shanghai/v2-6-independent/README.md)
+
 ## 上海 R24 云同步试点 `.5` 已发布（2026-11-25 UTC）
 
 现有上海 CloudBase 的试点目录已上线 `R24-20261124.5`。部署源码固定为 `111115e3c45da55f9a4700b9a4d342e76e89e47c`。Gemini R2 已通过源码与更新包核验，并于 2026-11-25 16:30–16:38 UTC 在线复验刷新后作业数和未提交复盘恢复、重发设备码确认与反馈、角色提示和原姓名登录，三项通过，零失败。旧码失效、新设备绑定、慢请求期间切页及真机仍未做此轮线上实测；前三项已有本机 Chromium 回归。退出账号的原生确认框记为 P3 观察。[试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [离线复验](https://docs.google.com/document/d/1KelrGasnuBCMeFAqzdXBwtzvduOUnju5/edit) · [线上复验](https://docs.google.com/document/d/1beSDC9FMvPIllmAeRV_tv8Qo3tuhxioz/edit)
