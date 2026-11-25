@@ -1,0 +1,2 @@
+{"audioProbe":[{"mimeType":"audio/wav","http":503,"errorCode":"AUDIO_UPLOAD_PENDING","stage":"credential-response"},{"mimeType":"audio/mp4","http":503,"errorCode":"AUDIO_UPLOAD_PENDING","stage":"credential-response"}]}
+{"audioProbe":[{"mimeType":"audio/wav","http":200,"playback":200,"bytesMatch":true},{"mimeType":"audio/mp4","http":200,"playback":200,"bytesMatch":true}]}

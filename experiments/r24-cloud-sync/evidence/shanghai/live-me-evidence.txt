@@ -1,0 +1,4 @@
+operator: native username login and authenticated profile verified
+operator: live gateway verified correct database-backed role
+anchor: native username login and authenticated profile verified
+anchor: live gateway verified correct database-backed role

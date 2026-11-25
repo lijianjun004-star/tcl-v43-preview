@@ -1,0 +1,17 @@
+
+> test
+> node --test browser.test.mjs
+
+✔ two independent browsers: publish a real XLSX, claim, submit, operator reads exact answers (5278.346905ms)
+✔ first browser requires a valid device code, same browser later uses name only (2027.283904ms)
+✔ bound device can generate, copy, save, and renew one-time codes for a fresh browser (2599.293004ms)
+✔ login device-code shortcut guides fresh browsers and opens the panel after verified name entry (936.41515ms)
+✔ local fallback uses the original XLSX/JSON path and labels only local save (3012.517681ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14251.421356

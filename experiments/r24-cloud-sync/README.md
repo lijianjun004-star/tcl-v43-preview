@@ -1,0 +1,36 @@
+# TCL R24 Excel 作业云同步试点
+
+试点版本 `R24-20261124.4`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [本次验收报告](evidence/shanghai/v2/README.md)
+
+## 登录与换设备
+
+1. 首次使用时，选择「主播」或「直播运营」，填写姓名，点「进入工作台（首次自动开通）」。姓名按 NFKC 和首尾空白规则规范化，须为 2–30 个字符。
+2. 同一个已绑定浏览器再次打开时自动进入。手动退出后，用原姓名可重新进入。微信内置浏览器和手机 Safari 分别保存绑定。
+3. 换设备时，在原设备打开「设备码生成器」。生成器显示适用姓名、角色及剩余有效期，可以复制或下载。设备码由 `R24-` 和 24 个十六进制字符组成，共 28 个字符。30 分钟内仅可绑定一台新设备，生成新码会作废此前未用的旧码。
+4. 新设备输入相同姓名，按提示粘贴设备码。同名登记沿用原角色，两台设备仍使用同一个试点账号。原设备无法打开时，联系管理员重置绑定。重置保留历史作业和提交。[管理员重置步骤](cloudbase/README-CloudBase.md#管理员重置绑定)
+
+公开试点按首次登记的姓名绑定设备，角色由首次登记人选择。此流程用于试点，使用合成测试资料。接入正式业务数据前需接入可验证的员工身份与角色授权。
+
+## 作业流程
+
+1. 运营上传、校验并预览 Excel，发布后同一试点团队所有主播可见。云端冻结题目、答案、品类、平台和版本哈希。
+2. 主播按运营姓名或作业标题搜索，领取后逐题回答。页面保留本机草稿、录音和作答过程。
+3. 主播主动点「提交到云端」。云端先保存文字、转写和提交记录，再尝试上传符合大小与格式限制的逐题录音。每段最多 512 KiB。网络或录音上传失败时，已确认的文字记录仍可查看，本机有原录音时可重试。整场录像保存在原浏览器的 IndexedDB。
+4. 运营打开作业进度或刷新云端作业，可读取领取状态、提交时间、每题文字、转写和可播放的逐题录音。主播换设备后可查看同一作业及已提交的记录。浏览器内尚未提交的草稿和整场录像随原设备保留。
+
+已有试点身份、作业和提交 ID 由迁移保留。QA3 与其他页面的本机数据按各自存储规则使用。
+
+## 构建与验证
+
+准备 Python 3.11+、Node.js 22+ 和 Chromium。先用原 QA3 LITE 包的工具补齐四个模型，核验清单本身和列出的 35 个资源。使用新的输出目录生成候选。
+
+```sh
+python3 stage-site.py /path/to/verified/tcl-r24-paraformer-excel-qa candidate-cloud \
+  --env-id YOUR_ISOLATED_ENV_ID --api-base https://YOUR_HTTP_GATEWAY/tcl-r24-sync
+node --test backend/tests/*.test.mjs
+(cd cloudbase && npm ci && npm test)
+(cd tests && npm ci && TCL_TEST_SITE_DIR=/absolute/path/to/candidate-cloud npm test)
+(cd tests && TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/absolute/path/to/candidate-cloud node v2-smoke.mjs)
+```
+
+仅用于本机或静态演示时可以省略环境和 API 参数，候选保留原有手工 JSON 交接。云端候选含 36 个资源及 `static-manifest.json`。构建和本机测试均在独立候选目录执行。[CloudBase 适配与部署](cloudbase/README-CloudBase.md) · [API 接口](backend/API.md) · [浏览器复验](tests/README.md)

@@ -1,0 +1,21 @@
+
+> tcl-r24-assignment-cloudbase@1.0.0 test
+> node --test test/*.test.mjs
+
+✔ live provider verification determines UID, and enrollment alone determines the app role (18.396208ms)
+✔ invalid, anonymous, disabled, and unenrolled accounts cannot operate (1.312945ms)
+✔ identity provider failure remains distinguishable from rejected credentials (0.481718ms)
+✔ competing retries use insert-only unique IDs and preserve the first payload (0.910176ms)
+✔ keyset pages stay in the given team, and anchor status only returns status fields (3.775117ms)
+✔ gateway carries path, query, auth and UTF-8/base64 payload to portable API (1.698918ms)
+✔ gateway prevents oversized payloads and rejects non-HTTP-style events before API routing (1.169348ms)
+✔ two CloudBase identities round-trip a published assignment and a submission through the gateway adapter (14.312906ms)
+✔ large database results fail closed instead of returning an incomplete list (73.25771ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 180.770171

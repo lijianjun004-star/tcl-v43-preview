@@ -1,0 +1,19 @@
+{
+  "data": {
+    "RequestId": "5d539a2a-90dc-40e3-8956-8e8d029eea1f",
+    "Columns": [
+      "role",
+      "active"
+    ],
+    "ColumnTypes": [
+      "text",
+      "int8"
+    ],
+    "Rows": [
+      "[\"anchor\",\"1\"]",
+      "[\"operator\",\"1\"]"
+    ],
+    "AffectedRows": 0,
+    "ExecutionTimeMs": 9
+  }
+}

@@ -1,0 +1,1 @@
+d35cc5d1b3a4d81a56a0f1723f56228a286f660ed1cfd2be014b349659a488a2  static-manifest.json

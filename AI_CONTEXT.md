@@ -1,8 +1,36 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-23。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-25。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
+
+## 上海 R24 云同步试点当前版本（2026-11-25 复验）
+
+`R24-20261124.4` 已部署在 `unknown-roadrunner-d7cap6e21f517` 的 `/tcl-r24-cloud-sync-pilot/`。主播和运营首次用姓名自动开通，同名新设备使用原设备的 28 字符一次性码。沿用既有账号 ID；运营发布、主播领取、文字/转写提交和逐题录音使用试点云资源，整场录像保留在本机。[试点网站](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)
+
+公网 Chromium 以合成 Excel 和虚拟麦克风完成发布、领取、三题文字提交、三段录音上传与运营播放、换机和复用拒绝，0 个页面异常。公网 37/37 资源 SHA-256 一致，QA3 清单及 94 个试点外托管对象对比一致。实体手机和微信未实测。当前公网的开通和激活采用共享限流，单 IP 限频仍待网关验证。自动开通适用于试点，正式业务需验证员工身份和角色授权。[执行与复验报告](experiments/r24-cloud-sync/evidence/shanghai/v2/README.md)
+
+## R24 Excel 作业云同步试点已部署到上海（2026-11-24）
+
+用户明确批准使用现有上海 CloudBase 环境，部署在独立 [试点目录](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)。新增 `tcl-r24-sync` 函数和 HTTP 路径，以及 PostgreSQL 独立试点三张表及服务角色权限。使用已有用户名密码登录、安全域名和套餐，原 QA3 公网清单与原 HTTP 路由回查一致。未创建新环境或升级套餐。
+
+公网 37/37 资源 SHA 匹配。两个合成测试账号通过真实登录、Excel 作业冻结快照 API 发布和获取、答复提交、同场次重试去重及运营收件，未登录 401、主播越权读取运营收件 403。公网 Chromium 双会话使用合成 XLSX 通过发布、领取、三题提交、运营收件，0 页面异常。真实手机尚未验收，默认测试域名会出现腾讯云风险提醒。云端只接收答复和转写，录像仍保存在本机，未迁移旧浏览器数据。[发布和验收证据](experiments/r24-cloud-sync/evidence/shanghai/README.md)
+
+### 同日更新：R24 试点改用姓名进入
+
+同一试点入口的登录页改为只填姓名，首次使用新设备时用管理员发放的一次性设备码绑定。已绑定浏览器日常只输姓名，设备绑定与 R25 独立。公网 37/37 资源哈希匹配。两个原生身份完成实际试点 XLSX 作业发布、领取、提交及收件，独立公网浏览器验证退出后姓名返回且没有再次调用绑定接口。原 QA3 未变。[姓名登录验收](experiments/r24-cloud-sync/evidence/shanghai/name-login/README.md)
+
+### 同日更新：R24 试点可自助生成设备码
+
+已绑定的运营或主播可在工作台「换手机 · 生成设备码」复制或下载个人备用码。新设备输入同一姓名及备用码即可绑定。首次开通仍由管理员发码。自助码有效 90 天，限用一次，重新生成让先前未用的自助码失效。公网双浏览器通过生成、绑定和读取同一账号与作业，37/37 哈希匹配，原 QA3 清单一致。[部署与验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code/README.md)
+
+### 同日更新：登录页显示设备码生成入口
+
+同一个 R24 上海试点登录页「进入」下方增加「生成设备码」。已绑定浏览器填姓名点击可直达生成器，未绑定设备显示取码提示。只更新三个试点前端文件。公网 Chromium 确认按钮和指引，37/37 资源一致，原 QA3 清单未变。[验收记录](experiments/r24-cloud-sync/evidence/shanghai/device-code-entry/README.md)
+
+### 同日更新：设备码格式指引和版本标识
+
+上海试点发布 `R24-20261124.1`。明确 28 字符 R24 格式、兼容粘贴空白和常见全角符号、修复云同步状态并显示短版本。公网双 Chromium 会话确认 16 位无前缀码在本机被拒绝，合法 R24 码带全角、换行和不可见空白仍可绑定并查看同一作业。37/37 资源一致，原 QA3 清单未变。用户原 16 位码的生成页来源待取证。[发布与验收](experiments/r24-cloud-sync/evidence/shanghai/format-guidance/README.md)
 
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 

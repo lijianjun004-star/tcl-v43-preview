@@ -1,0 +1,21 @@
+{
+  "name": "tcl-r24-assignment-cloudbase",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "stage": "node stage.mjs"
+  },
+  "dependencies": {
+    "@cloudbase/node-sdk": "4.2.1",
+    "@cloudbase/signature-nodejs": "2.2.2"
+  },
+  "overrides": {
+    "@cloudbase/node-sdk": {
+      "axios": "1.21.1"
+    }
+  }
+}
