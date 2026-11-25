@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-code-format-20261124.1"
-SHORT_VERSION = "R24-20261124.1"
-ASSET_REVISION = "r24-code-format-20261124"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.4"
+SHORT_VERSION = "R24-20261124.4"
+ASSET_REVISION = "r24-sync-v2-20261124.4"
 
 
 def digest(path):
@@ -61,12 +61,15 @@ def main():
     if html.count(head_end) != 1:
         raise ValueError("QA3 head could not be uniquely identified")
     meta = f'<meta name="tcl-r24-sync-version" content="{SHORT_VERSION}">'.encode()
+    if args.api_base:
+        meta += b'<meta name="tcl-r24-sync-mode" content="cloud">'
     entry.write_bytes(
         html.replace(head_end, meta + head_end)
         .replace(old_script, f'src="app.js?v={ASSET_REVISION}"'.encode())
     )
     for name in ("app.js", "assignment-sync.mjs"):
         shutil.copyfile(overlay / name, target / name)
+    shutil.copyfile(overlay.parent / "backend/vendor/assignment-excel.mjs", target / "assignment-excel.mjs")
     if args.api_base:
         config = {"assignmentSync": {"envId": args.env_id, "apiBase": args.api_base}}
         (target / "app-config.json").write_text(json.dumps(config, indent=2) + "\n")

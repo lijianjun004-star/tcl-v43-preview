@@ -1,0 +1,42 @@
+✔ authenticator controls identity, team, role, and activation (20.083196ms)
+✔ public publishing validates QA3 hash, board and publisher; visibility stays within team (16.865339ms)
+✔ named assignment uses IDs from trusted directory instead of same-name or out-of-team actors (3.898535ms)
+✔ parallel publish is idempotent and cannot overwrite an existing snapshot, including after a name change (4.43753ms)
+✔ complete submission binds actor ID and frozen assignment and records server receipt time (6.053632ms)
+✔ retry does not duplicate a submission or change its server time; second anchor can have same practice session ID (4.349426ms)
+✔ limits on content type, body size, CORS and invalid cursors (3.125696ms)
+✔ pagination does not skip same-time assignments and stays viewer scoped (15.349328ms)
+✔ claim and operator progress are identity-scoped and retries keep the same timestamp (2.955869ms)
+✔ private audio is separately retried, verified, size-limited and restricted to owner or author (6.94484ms)
+✔ live provider verification determines UID, and enrollment alone determines the app role (12.76429ms)
+✔ invalid, anonymous, disabled, and unenrolled accounts cannot operate (0.966091ms)
+✔ identity provider failure remains distinguishable from rejected credentials (0.846941ms)
+✔ competing retries use insert-only unique IDs and preserve the first payload (0.617243ms)
+✔ keyset pages stay in the given team, and anchor status only returns status fields (1.82534ms)
+✔ gateway carries path, query, auth and UTF-8/base64 payload to portable API (1.570815ms)
+✔ gateway prevents oversized payloads and rejects non-HTTP-style events before API routing (0.810756ms)
+✔ two CloudBase identities round-trip a published assignment and a submission through the gateway adapter (14.43108ms)
+✔ large database results fail closed instead of returning an incomplete list (9.262675ms)
+✔ shared Shanghai pilot requires explicit opt-in, known prefix, and single trusted origin (1.1314ms)
+✔ non-unique PostgreSQL insert errors remain failures (0.149466ms)
+R24 pilot private audio { operation: 'credential-response', status: null, code: null }
+✔ CloudBase audio sends raw bytes and uses runtime credentials on private upload and playback (13.369324ms)
+✔ CloudBase audio rejects invalid paths and missing credentials before opening storage (1.047584ms)
+✔ CloudBase audio accepts insert-only replay and bounds downloaded data without Content-Length (0.794732ms)
+✔ CloudBase audio exchanges a trusted SCF session for a service token at the fixed gateway (8.55201ms)
+✔ when SCF credentials are unavailable, storage can reuse the Node SDK RDB exchange (3.796701ms)
+✔ name validation normalizes NFKC, rejects controls, and counts Unicode points (1.031239ms)
+✔ auto enrollment persists only the credential digest and returns explicit role and device identity (14.06146ms)
+✔ existing enrolled identity supplies only registered role and rejects unauthenticated role escalation (1.251262ms)
+✔ activation accepts current and legacy payload field names and reports distinguishable errors (5.698046ms)
+✔ gateway metadata drives the rate bucket; headers alone never establish a caller IP (4.127992ms)
+✔ device authentication checks current enrollment; existing native tokens stay compatible (0.395378ms)
+✔ only registered device bearers issue private 28-character codes (0.873881ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 359.559332

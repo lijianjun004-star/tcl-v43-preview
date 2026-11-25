@@ -2,7 +2,17 @@
 // A displayed name is never used as proof of identity.
 const loopback = url => ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
 const text = value => typeof value === 'string' ? value : '';
-export const normalizeDisplayName = value => text(value).normalize('NFC').trim();
+export const normalizeDisplayName = value => text(value).trim().normalize('NFKC').trim();
+const roles = new Set(['anchor', 'operator']);
+
+function validateName(value) {
+  const canonical = normalizeDisplayName(value);
+  const length = [...canonical].length;
+  if (/[\p{Cc}\p{Cf}]/u.test(text(value)) || length < 2 || length > 30) {
+    throw new Error('姓名须为 2–30 个字符，不能含控制字符');
+  }
+  return canonical;
+}
 const devicePattern = /^r24d_[a-f0-9]{64}$/;
 const deviceCodeFormatHint = '设备码格式不符。R24 云同步试点设备码以 R24- 开头，共 28 个字符，后 24 位为数字 0–9 或字母 a–f。请从本试点已绑定设备完整复制。';
 
@@ -53,6 +63,8 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
 
   const base = api.href.replace(/\/$/, '');
   const bindingKey = 'tcl-r24-sync-binding-v1:' + base;
+  const pendingKey = bindingKey + ':pending';
+  const signedOutKey = bindingKey + ':signed-out';
   let token = null;
   let principal = null;
 
@@ -69,7 +81,10 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       const data = await response.json().catch(() => null);
       if (!response.ok || !data) {
         const message = text(data?.error?.message) || `请求失败（HTTP ${response.status}）`;
-        throw Object.assign(new Error(message), {status: response.status});
+        throw Object.assign(new Error(message), {
+          status: response.status, code: text(data?.errorCode || data?.error?.code),
+          registeredRole: roles.has(data?.registeredRole) ? data.registeredRole : null,
+        });
       }
       return data;
     } catch (error) {
@@ -113,63 +128,127 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
     return principal;
   }
 
+  function forget(key) {
+    try { localStorage.removeItem(key); } catch {}
+  }
+
+  function intentionallySignedOut() {
+    try { return localStorage.getItem(signedOutKey) === '1'; } catch { return false; }
+  }
+
+  function accept(result, binding) {
+    const member = confirmMember(result, normalizeDisplayName(binding.name));
+    writeBinding(bindingKey, {name: member.displayName, token: binding.token, confirmed: true});
+    forget(pendingKey);
+    forget(signedOutKey);
+    token = binding.token;
+    return member;
+  }
+
+  async function checkBinding(binding) {
+    token = binding.token;
+    try {
+      return accept(await get('/me'), binding);
+    } catch (error) {
+      token = null;
+      principal = null;
+      if (error.status === 401) return null;
+      throw error;
+    }
+  }
+
+  function pendingDevice(name) {
+    const previous = readBinding(pendingKey);
+    if (previous && previous.name === name && !previous.confirmed) return previous;
+    const binding = {name, token: newDeviceToken(), confirmed: false};
+    writeBinding(pendingKey, binding);
+    return binding;
+  }
+
   return {
     storageScope: localTest ? base : envId,
     get principal() { return principal; },
     hasSavedBinding: () => readBinding(bindingKey)?.confirmed === true,
-    async signIn(displayName, rawCode = '') {
-      const name = normalizeDisplayName(displayName);
-      if (!name || name.length > 40) throw new Error('请输入有效姓名');
+    async restoreSession() {
       const stored = readBinding(bindingKey);
-      const binding = stored?.name === name ? stored : null;
+      if (!stored?.confirmed || intentionallySignedOut()) return null;
+      const member = await checkBinding(stored);
+      if (!member) forget(bindingKey);
+      return member;
+    },
+    async enter({displayName, role, rawCode = '', allowEnrollment = true}) {
+      const name = validateName(displayName);
+      if (!roles.has(role)) throw new Error('请选择主播或直播运营');
+      const stored = readBinding(bindingKey);
+      const local = stored && normalizeDisplayName(stored.name) === name ? stored : null;
       token = null;
       principal = null;
-
-      if (!rawCode) {
-        if (!binding) return null;
-        token = binding.token;
+      try {
+        if (rawCode) {
+          const code = normalizeDeviceCode(rawCode);
+          if (!code) throw new Error(deviceCodeFormatHint);
+          const binding = pendingDevice(name);
+          const result = await request(base + '/device/activate', {
+            method: 'POST', body: {displayName: name, code, deviceToken: binding.token, role},
+          });
+          return {member: accept(result,binding), opened: false};
+        }
+        if (local) {
+          const member = await checkBinding(local);
+          if (member) return {member, opened: false};
+          forget(bindingKey);
+        }
+        if (!allowEnrollment) return {member: null, needsBinding: true};
+        const binding = pendingDevice(name);
         try {
-          const member = confirmMember(await get('/me'), name);
-          if (!binding.confirmed) writeBinding(bindingKey, {...binding, confirmed: true});
-          return member;
+          const result = await request(base + '/device/auto-enroll', {
+            method: 'POST', body: {name, role, deviceCredential: binding.token},
+          });
+          if (result.status !== 'enrolled') throw new Error('自动开通未确认，请重试');
+          return {member: accept(result,binding), opened: true};
         } catch (error) {
-          token = null;
-          principal = null;
-          if (error.status === 401) return null;
+          if (error.status === 409 && error.code === 'ALREADY_ENROLLED' && error.registeredRole) {
+            return {member: null, needsBinding: true, registeredRole: error.registeredRole};
+          }
+          if (error.code === 'DEVICE_CREDENTIAL_CONFLICT') forget(pendingKey);
           throw error;
         }
-      }
-
-      const code = normalizeDeviceCode(rawCode);
-      if (!code) throw new Error(deviceCodeFormatHint);
-      const pending = binding && !binding.confirmed ? binding : {name, token: newDeviceToken(), confirmed: false};
-      writeBinding(bindingKey, pending);
-      try {
-        const result = await request(base + '/device/activate', {
-          method: 'POST', body: {displayName: name, code, deviceToken: pending.token},
-        });
-        const member = confirmMember(result, name);
-        writeBinding(bindingKey, {...pending, confirmed: true});
-        token = pending.token;
-        return member;
       } catch (error) {
         token = null;
         principal = null;
         throw error;
       }
     },
-    signOut() { token = null; principal = null; },
+    signOut(manual = false) {
+      token = null; principal = null;
+      if (manual) {
+        try { localStorage.setItem(signedOutKey, '1'); } catch {}
+      }
+    },
     async issueDeviceCode() {
       const result = await get('/device/code', 'POST', {});
       const expiry = Date.parse(result.expiresAt);
       if (!/^R24-[a-f0-9]{24}$/.test(text(result.code)) || !Number.isFinite(expiry)) {
         throw new Error('设备码结果未确认，请重新生成');
       }
-      return {code: result.code, expiresAt: result.expiresAt};
+      if (normalizeDisplayName(result.name) !== normalizeDisplayName(principal?.displayName) ||
+          result.role !== principal?.role) throw new Error('签发身份未确认，请重新进入工作台');
+      return {code: result.code, expiresAt: result.expiresAt, name: result.name, role: result.role};
     },
     listAssignments: () => list('/assignments', 'assignments'),
     publish: assignment => get('/assignments', 'POST', { assignment, recipientIds: [] }),
     submit: snapshot => get('/assignments/' + encodeURIComponent(snapshot.assignmentId) + '/submissions', 'POST', { snapshot }),
     submissions: assignmentId => list('/assignments/' + encodeURIComponent(assignmentId) + '/submissions', 'submissions'),
+    claim: assignmentId => get('/assignments/' + encodeURIComponent(assignmentId) + '/claim', 'POST', {}),
+    progress: assignmentId => list('/assignments/' + encodeURIComponent(assignmentId) + '/progress', 'claims'),
+    mySubmissions: assignmentId => list('/assignments/' + encodeURIComponent(assignmentId) + '/my-submissions', 'submissions'),
+    uploadSubmissionAudio: (assignmentId, submissionId, segment) =>
+      get(submissionAudioPath(assignmentId, submissionId), 'POST', segment),
+    submissionAudio: (assignmentId, submissionId, questionId) =>
+      get(submissionAudioPath(assignmentId, submissionId) + '?questionId=' + encodeURIComponent(questionId)),
   };
+}
+
+function submissionAudioPath(assignmentId, submissionId) {
+  return '/assignments/' + encodeURIComponent(assignmentId) + '/submissions/' + encodeURIComponent(submissionId) + '/audio';
 }

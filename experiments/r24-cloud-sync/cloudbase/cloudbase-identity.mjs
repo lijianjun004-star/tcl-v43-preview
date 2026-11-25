@@ -7,7 +7,7 @@ export function readEnrollment(row) {
       typeof row.teamId !== 'string' || !accountId.test(row.teamId) ||
       !['anchor', 'operator'].includes(row.role) ||
       typeof row.displayName !== 'string' || row.displayName.trim() !== row.displayName ||
-      !row.displayName || row.displayName.length > 40 ||
+      !row.displayName || [...row.displayName].length > 40 ||
       /[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/u.test(row.displayName)) return null;
   return {
     id: row._id, teamId: row.teamId, role: row.role, displayName: row.displayName, active: true,

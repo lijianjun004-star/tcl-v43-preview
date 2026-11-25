@@ -1,8 +1,14 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-23。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-25。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
+
+## 上海 R24 云同步试点当前版本（2026-11-25 复验）
+
+`R24-20261124.4` 已部署在 `unknown-roadrunner-d7cap6e21f517` 的 `/tcl-r24-cloud-sync-pilot/`。主播和运营首次用姓名自动开通，同名新设备使用原设备的 28 字符一次性码。沿用既有账号 ID；运营发布、主播领取、文字/转写提交和逐题录音使用试点云资源，整场录像保留在本机。[试点网站](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)
+
+公网 Chromium 以合成 Excel 和虚拟麦克风完成发布、领取、三题文字提交、三段录音上传与运营播放、换机和复用拒绝，0 个页面异常。公网 37/37 资源 SHA-256 一致，QA3 清单及 94 个试点外托管对象对比一致。实体手机和微信未实测。当前公网的开通和激活采用共享限流，单 IP 限频仍待网关验证。自动开通适用于试点，正式业务需验证员工身份和角色授权。[执行与复验报告](experiments/r24-cloud-sync/evidence/shanghai/v2/README.md)
 
 ## R24 Excel 作业云同步试点已部署到上海（2026-11-24）
 

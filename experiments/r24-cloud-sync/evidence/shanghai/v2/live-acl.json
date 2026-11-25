@@ -1,0 +1,26 @@
+{
+  "data": {
+    "RequestId": "1a5712da-7422-449c-a10d-e872834e2b60",
+    "Columns": [
+      "anon_audio",
+      "browser_audio",
+      "browser_sql_enroll",
+      "service_reset",
+      "bucket_public",
+      "max_bytes"
+    ],
+    "ColumnTypes": [
+      "bool",
+      "bool",
+      "bool",
+      "bool",
+      "bool",
+      "int8"
+    ],
+    "Rows": [
+      "[\"false\",\"false\",\"false\",\"false\",\"false\",\"524288\"]"
+    ],
+    "AffectedRows": 0,
+    "ExecutionTimeMs": 7
+  }
+}

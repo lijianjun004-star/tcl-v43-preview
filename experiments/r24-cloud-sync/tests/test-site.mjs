@@ -1,10 +1,11 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createApi } from '../backend/api.mjs';
 import { createMemoryStore } from '../backend/memory-store.mjs';
+import { normalizeEnrollmentName } from '../cloudbase/device-access.mjs';
 
 const apiBasePath = '/api/tcl-r24-sync';
 const sitePath = resolve(process.env.TCL_TEST_SITE_DIR || fileURLToPath(new URL('../site/', import.meta.url)));
@@ -46,26 +47,61 @@ export async function startTestSite() {
   const tokens = new Map();
   const actors = Object.values(identities);
   const unusedCodes = new Map(actors.map(actor => [actor.code, actor]));
+  const codeErrors = new Map();
   const lastSelfIssuedCodeByMember = new Map();
+  const principal = ({id, role, displayName}) => ({id, role, displayName});
+  const status = (res, responseStatus, code, extra = {}) => sendJson(res, responseStatus, {
+    errorCode: code, error: { code, message: code }, ...extra,
+  });
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, origin);
     const path = url.pathname;
     const method = req.method;
     requests.push({ path, method });
     try {
-      if (path === apiBasePath + '/device/activate' && method === 'POST') {
-        const { displayName, code, deviceToken } = JSON.parse(await readBody(req));
-        const actor = unusedCodes.get(code);
-        if (!actor || actor.displayName !== displayName ||
-            !/^r24d_[0-9a-f]{64}$/.test(deviceToken) || tokens.has(deviceToken)) {
-          return sendJson(res, 401, {
-            error: { code: 'INVALID_ACTIVATION', message: '姓名或设备绑定码无效' },
-          });
+      if (path === apiBasePath + '/device/auto-enroll' && method === 'POST') {
+        const body = JSON.parse(await readBody(req));
+        const displayName = normalizeEnrollmentName(body.name);
+        const role = body.role;
+        const token = body.deviceCredential;
+        if (!displayName || !['anchor', 'operator'].includes(role) || !/^r24d_[a-f0-9]{64}$/.test(token)) {
+          return status(res, 400, 'NAME_OR_ROLE_INVALID');
         }
-        const { id, role } = actor;
+        const registered = actors.find(actor => normalizeEnrollmentName(actor.displayName) === displayName);
+        if (registered && tokens.get(token)?.id !== registered.id) {
+          return status(res, 409, 'ALREADY_ENROLLED', { registeredRole: registered.role });
+        }
+        if (tokens.has(token) && tokens.get(token)?.id !== registered?.id) {
+          return status(res, 409, 'DEVICE_CREDENTIAL_CONFLICT');
+        }
+        const actor = registered || { id: randomUUID(), teamId: 'team-a', displayName, role, active: true };
+        if (!registered) actors.push(actor);
+        tokens.set(token, actor);
+        return sendJson(res, 200, {
+          status: 'enrolled', name: actor.displayName, role: actor.role,
+          deviceId: actor.id, principal: principal(actor),
+        });
+      }
+      if (path === apiBasePath + '/device/activate' && method === 'POST') {
+        const { displayName, code, deviceToken, role: chosenRole } = JSON.parse(await readBody(req));
+        const prior = codeErrors.get(code);
+        const actor = unusedCodes.get(code) || prior?.actor;
+        if (!actor || normalizeEnrollmentName(actor.displayName) !== normalizeEnrollmentName(displayName) ||
+            !/^r24d_[0-9a-f]{64}$/.test(deviceToken)) {
+          return status(res, 401, 'CODE_MISMATCH');
+        }
+        if (chosenRole && chosenRole !== actor.role) {
+          return status(res, 401, 'CODE_MISMATCH', { registeredRole: actor.role });
+        }
+        if (prior && prior.deviceToken !== deviceToken) {
+          return status(res, prior.error === 'CODE_USED' ? 409 : 401, prior.error);
+        }
+        if (prior?.deviceToken === deviceToken) return sendJson(res, 200, { principal: principal(actor) });
+        if (tokens.has(deviceToken)) return status(res, 401, 'CODE_MISMATCH');
         unusedCodes.delete(code);
+        codeErrors.set(code, { actor, deviceToken, error: 'CODE_USED' });
         tokens.set(deviceToken, actor);
-        return sendJson(res, 200, { principal: { id, role, displayName } });
+        return sendJson(res, 200, { principal: principal(actor) });
       }
 
       if (path === apiBasePath + '/device/code' && method === 'POST') {
@@ -79,12 +115,12 @@ export async function startTestSite() {
           return sendJson(res, 400, { error: { code: 'INVALID_INPUT', message: '请求必须为空对象' } });
         }
         const oldCode = lastSelfIssuedCodeByMember.get(actor.id);
-        unusedCodes.delete(oldCode);
+        if (unusedCodes.delete(oldCode)) codeErrors.set(oldCode, { actor, error: 'CODE_EXPIRED' });
         const code = 'R24-' + randomBytes(12).toString('hex');
         lastSelfIssuedCodeByMember.set(actor.id, code);
         unusedCodes.set(code, actor);
-        const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
-        return sendJson(res, 200, { code, expiresAt });
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+        return sendJson(res, 200, { code, expiresAt, name: actor.displayName, role: actor.role });
       }
 
       if (path.startsWith(apiBasePath + '/')) {
@@ -113,7 +149,10 @@ export async function startTestSite() {
 
       const target = resolve(sitePath, filename || 'index.html');
       if (!target.startsWith(resolve(sitePath) + sep)) return sendJson(res, 404, { error: 'Not found' });
-      const data = await readFile(target);
+      let data = await readFile(target);
+      if (mode === 'local' && target.endsWith('/index.html')) {
+        data = data.toString('utf8').replace(/<meta\b[^>]*name=["']tcl-r24-sync-mode["'][^>]*>/gi, '');
+      }
       res.writeHead(200, {
         'Content-Type': mediaTypes[extname(target)] || 'application/octet-stream',
         'Cache-Control': 'no-store'
@@ -130,7 +169,17 @@ export async function startTestSite() {
     server.listen(0, '127.0.0.1', resolve);
   });
   origin = 'http://127.0.0.1:' + server.address().port;
+  const clips = new Map();
   api = createApi({
+    media: {
+      async put(path, _mimeType, bytes) {
+        if (!clips.has(path)) clips.set(path, Buffer.from(bytes));
+      },
+      async get(path) {
+        if (!clips.has(path)) throw new Error('Synthetic clip not found');
+        return Buffer.from(clips.get(path));
+      },
+    },
     authenticate: async token => tokens.get(token) || null,
     store: createMemoryStore(),
     directory: {

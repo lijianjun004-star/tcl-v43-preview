@@ -7,7 +7,7 @@ import { parseDocumentFile } from './lib/parser.js';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-code-format-20261124';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -78,9 +78,9 @@ const dbAll=(store)=>memoryFallback?Promise.resolve([...(memStores[store]?.value
 const dbPut=(store,obj)=>memoryFallback?(memStores[store]?.set(obj.id,obj),Promise.resolve(obj.id)):new Promise((resolve,reject)=>{try{const tx=localDB.transaction(store,'readwrite');let value=obj.id,failed=false;tx.oncomplete=()=>{if(!failed)resolve(value)};tx.onerror=()=>{failed=true;reject(tx.error||new Error('保存事务失败'))};tx.onabort=()=>{failed=true;reject(tx.error||new Error('保存已中止'))};const req=tx.objectStore(store).put(obj);req.onsuccess=()=>{value=req.result};req.onerror=()=>{failed=true;reject(req.error||new Error('写入失败'))}}catch(e){reject(e)}});
 const dbDelete=(store,id)=>memoryFallback?(memStores[store]?.delete(id),Promise.resolve()):new Promise((resolve,reject)=>{try{const tx=localDB.transaction(store,'readwrite');let failed=false;tx.oncomplete=()=>{if(!failed)resolve()};tx.onerror=()=>{failed=true;reject(tx.error||new Error('删除事务失败'))};tx.onabort=()=>{failed=true;reject(tx.error||new Error('删除已中止'))};const req=tx.objectStore(store).delete(id);req.onerror=()=>{failed=true;reject(req.error||new Error('删除失败'))}}catch(e){reject(e)}});
 
-// Submitted media stays local. Metadata and media commit in one existing prefs transaction.
+// Full video remains local; text receipt, session audio and pending upload IDs commit together.
 let submissionSaving=false, submittedPlaybackUrls=[],submittedPlaybackEpoch=0,submittedMediaSequence=0;
-function clearSubmittedPlayback(){submittedPlaybackEpoch++;document.querySelectorAll('[id^="submitted-media-"] video,[id^="submitted-media-"] audio').forEach(media=>{try{media.pause()}catch{}});for(const url of submittedPlaybackUrls)URL.revokeObjectURL(url);submittedPlaybackUrls=[];document.querySelectorAll('[id^="submitted-media-"]').forEach(holder=>{holder.replaceChildren();delete holder.dataset.loaded;delete holder.dataset.loading;});}
+function clearSubmittedPlayback(){submittedPlaybackEpoch++;document.querySelectorAll('[id^="submitted-media-"] video,[id^="submitted-media-"] audio,[data-cloud-player] audio').forEach(media=>{try{media.pause()}catch{}});for(const url of submittedPlaybackUrls)URL.revokeObjectURL(url);submittedPlaybackUrls=[];document.querySelectorAll('[id^="submitted-media-"]').forEach(holder=>{holder.replaceChildren();delete holder.dataset.loaded;delete holder.dataset.loading;});document.querySelectorAll('[data-cloud-player]').forEach(holder=>{holder.replaceChildren();});}
 function commitSubmission(submission,logId,media,expectedToken,stillCurrent=()=>true){
  if(memoryFallback||!localDB)return Promise.reject(new Error('本机数据库不可用，无法可靠保存提交；请先下载原录像'));
  return new Promise((resolve,reject)=>{let tx,error,merged;try{
@@ -184,7 +184,31 @@ function assignmentForReview(snap){
 function currentAssignment(){return runId&&sessionAssignmentSnapshot?.id===activeAssignmentId?sessionAssignmentSnapshot:assignmentById(activeAssignmentId);}
 // V3.4.9：到点即截止（<=）；未加入的显示“已截止”，已加入/已训练未交的显示“已逾期”；截止后提交标记“逾期提交”。
 function assignmentExpired(a){return !!a?.deadline&&new Date(a.deadline).getTime()<=Date.now();}
-function assignmentStatusFor(a,anchor){if(syncMember()&&cloudAssignments.some(row=>row.assignment.id===a.id&&row.submitted))return '已提交到云端';const sub=localSubmissions.find(x=>x.assignmentId===a.id&&x.anchorName===anchor);if(sub)return sub.cloudConfirmed?'已提交到云端':sub.manuallyImported?(sub.late?'逾期提交 · 回执待核实':'回执待核实'):sub.late?'本机已保存（逾期）':'本机已保存';const log=localTrainingLogs.find(x=>x.assignmentId===a.id&&x.anchorName===anchor);const join=localAssignmentJoins.find(x=>x.assignmentId===a.id&&x.anchorName===anchor);if(assignmentExpired(a))return (log||join)?'已逾期':'已截止';if(log)return '已训练';if(join)return '已加入';return '未加入';}
+function cloudAssignmentState(id){return cloudAssignments.find(row=>row.assignment.id===id);}
+function assignmentJoined(a,anchor){
+ const cloudRow=syncMember()?cloudAssignmentState(a.id):null;
+ return cloudRow?Boolean(cloudRow.claimedAt||cloudRow.submitted):
+  localAssignmentJoins.some(row=>row.assignmentId===a.id&&row.anchorName===anchor);
+}
+function canSeeAssignment(a){return Boolean(syncMember())||isAssigned(a,userName);}
+function assignmentStatusFor(a,anchor){
+ const cloudRow=syncMember()?cloudAssignmentState(a.id):null;
+ if(cloudRow){
+  if(cloudRow.submitted)return '已提交到云端';
+  if(assignmentExpired(a))return cloudRow.claimedAt?'已逾期':'已截止';
+  if(cloudRow.claimedAt)return '已加入';
+  return '未加入';
+ }
+ const sub=localSubmissions.find(x=>x.assignmentId===a.id&&x.anchorName===anchor);
+ if(sub)return sub.cloudConfirmed?'已提交到云端':sub.manuallyImported?
+  (sub.late?'逾期提交 · 回执待核实':'回执待核实'):sub.late?'本机已保存（逾期）':'本机已保存';
+ const log=localTrainingLogs.find(x=>x.assignmentId===a.id&&x.anchorName===anchor);
+ const join=assignmentJoined(a,anchor);
+ if(assignmentExpired(a))return (log||join)?'已逾期':'已截止';
+ if(log)return '已训练';
+ if(join)return '已加入';
+ return '未加入';
+}
 // UI boundaries in this local demo are not authentication: users sharing a browser
 // can choose any name or inspect its storage. A shared backend must enforce access.
 function pageAllowed(target){
@@ -1074,12 +1098,13 @@ function updateMode(needsBinding=false){
   dot.classList.toggle('online',bound);
   const state=syncConfigError?'配置异常':bound?'已绑定':
     !needsBinding&&assignmentSync.hasSavedBinding()?'待登录':'未绑定设备';
-  label.textContent='云同步试点 · '+state;
+  const identity=bound?'（'+syncRoleName(syncMember().role)+' · '+syncMember().displayName+'）':'';
+  label.textContent='云同步试点 · '+state+identity;
   return;
  }
  const online=Boolean(cloud.base&&cloud.token);
  dot.classList.toggle('online',online);
- label.textContent=online?'已连接云端（需查询同步）':memoryFallback?'本机内存临时预览（受浏览器限制未持久化）':'本机独立预览 · 未云同步';
+ label.textContent=online?'已连接云端（需查询同步）':memoryFallback?'本机内存临时预览（受浏览器限制未持久化）':'本机独立预览';
 }
 async function remote(path,method='GET',body){if(!cloud.base)throw new Error('尚未配置云端 API');const res=await fetch(cloud.base+path,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(cloud.token?{'Authorization':'Bearer '+cloud.token}:{})},...(body?{body:JSON.stringify(body)}:{})});let j;try{j=await res.json()}catch{throw new Error(`服务器返回非JSON（HTTP ${res.status}）`)}if(!res.ok)throw new Error(j.error||`请求失败：${res.status}`);return j;}
 function canLeaveRecording(){
@@ -1104,95 +1129,142 @@ function nav(to){if(!pageAllowed(to)){toast('当前身份不能进入此页面')
  if(reviewAlive()&&(page==='sessionReview'||reviewParked)){if(page==='sessionReview'&&!leaveReviewKeepingSession())return;activeAssignmentId='';page=to;render();window.scrollTo({top:0,behavior:'instant'});return;}
  if(!canLeaveRecording())return;const keepText=to==='catalog'&&deviceCheck.mode==='text';activeAssignmentId='';resetRunState();deviceCheckSeq++;stopScene();captureSeq++;discardVideoArchive();exitFocus();clearAnswerAudio();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:keepText,mode:keepText?'text':'hardware',checked:keepText};page=to;render();window.scrollTo({top:0,behavior:'instant'});}
 const syncReleaseVersion=document.querySelector('meta[name="tcl-r24-sync-version"]')?.content||'本地开发';
+const requiresAssignmentCloud=document.querySelector('meta[name="tcl-r24-sync-mode"]')?.content==='cloud';
 const r24CodeExample='R24-0123456789abcdef01234567';
+const syncRoleName=role=>role==='operator'?'直播运营':'主播';
+let syncSessionFeedback='';
+
+async function loadSyncIdentity(member){
+ const storageName=STORE_NAME+'-account:'+encodeURIComponent(assignmentSync.storageScope)+':'+encodeURIComponent(member.id);
+ await initialiseStorage(storageName);
+ userRole=member.role;
+ userName=member.displayName;
+ page='home';
+ assignmentSearch='';
+}
+
+async function refreshAfterSyncLogin(member,openGenerator){
+ await refreshSyncAssignments();
+ if(syncMember()!==member||page!=='home')return;
+ if(openGenerator)ELEM('syncGenerateDeviceCode')?.focus();
+ if(userRole==='anchor')void findSavedSession();
+}
+
 function renderSyncLogin(){
  setTitle('姓名进入');
  ELEM('view').innerHTML=`<section class="name-login"><div class="name-login-card">
- <h2>输入姓名进入练播房</h2><p>R24 云同步试点 · 已绑定的设备只需输入姓名。</p>
+ <h2>输入姓名进入练播房</h2><p>R24 云同步试点 · 已绑定的设备只需输入原姓名。</p>
  ${syncConfigError?`<p role="alert">${ESC(syncConfigError)}</p>`:`<form id="syncLoginForm">
- <div class="field"><label for="syncDisplayName">姓名</label><input id="syncDisplayName" autocomplete="name" maxlength="40" required></div>
+ <div class="field"><label for="syncRole">角色</label><select id="syncRole"><option value="anchor">主播</option><option value="operator">直播运营</option></select></div>
+ <div class="field"><label for="syncDisplayName">姓名</label><input id="syncDisplayName" autocomplete="name" maxlength="120" required></div>
  <div class="field" id="syncActivationField" hidden>
   <label for="syncActivationCode">一次性设备码</label>
   <input id="syncActivationCode" type="text" maxlength="128" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="syncDeviceCodeFormatHint" disabled>
-  <small id="syncDeviceCodeFormatHint">本试点设备码以 R24- 开头，共 28 个字符。示例：<code>${r24CodeExample}</code>。请使用原设备生成的码，首次开通请向管理员领取。</small>
+  <small id="syncDeviceCodeFormatHint">本试点设备码以 R24- 开头，共 28 个字符。示例：<code>${r24CodeExample}</code>。请使用原设备生成的码。</small>
+  <small>若原设备无法打开，请联系管理员重置绑定（不删历史作业记录），重置后可重新自动开通。</small>
  </div>
- <button class="btn primary wide" type="submit">进入</button>
+ <button class="btn primary wide" type="submit">进入工作台（首次自动开通）</button>
  <button class="btn soft wide" type="button" id="syncOpenDeviceCode" aria-describedby="syncDeviceCodeEntryGuide">生成设备码</button>
- <p id="syncDeviceCodeEntryGuide" class="scene-tip" role="status">请在已绑定的设备上使用生成器。在新设备打开时，使用之前保存的设备码。</p>
- <p id="syncLoginError" role="alert"></p>
- </form>`}<p class="scene-tip" id="syncReleaseVersion">版本：${ESC(syncReleaseVersion)}</p></div></section>`;
+ <p id="syncDeviceCodeEntryGuide" class="scene-tip" role="status">首次使用请先选角色填姓名自动开通。已绑定设备可点此打开生成器为新设备发码。</p>
+ <p id="syncLoginError" role="alert">${ESC(syncSessionFeedback)}</p>
+ </form>`}
+ <p class="scene-tip">微信内置浏览器与手机 Safari 登录态不互通，建议固定用同一浏览器打开。</p>
+ <p class="scene-tip" id="syncReleaseVersion">版本：${ESC(syncReleaseVersion)}</p></div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
- const name=ELEM('syncDisplayName'),code=ELEM('syncActivationCode');
+ const name=ELEM('syncDisplayName'),role=ELEM('syncRole'),code=ELEM('syncActivationCode');
  const field=ELEM('syncActivationField'),message=ELEM('syncLoginError');
  const button=form.querySelector('button[type="submit"]');
  const shortcut=ELEM('syncOpenDeviceCode'),guide=ELEM('syncDeviceCodeEntryGuide');
- let openGenerator=false;
+ let openGenerator=false,inFlight=false;
+
  function showActivation(visible){
   field.hidden=!visible;
   code.disabled=!visible;
   code.required=visible;
   if(!visible)code.value='';
-  button.textContent=visible?'绑定并进入':'进入';
+  button.textContent=visible?'绑定并进入':'进入工作台（首次自动开通）';
  }
- name.oninput=()=>{showActivation(false);message.textContent='';updateMode();};
+ function applyRegisteredRole(registeredRole){
+  if(!registeredRole)return;
+  role.value=registeredRole;
+  guide.textContent=`该姓名已登记为【${syncRoleName(registeredRole)}】，请用原设备生成的 28 位 R24- 设备码绑定。`;
+ }
+ function clearLoginMessage(){message.textContent='';delete message.dataset.errorCode;}
+ name.oninput=()=>{
+  showActivation(false);clearLoginMessage();updateMode();
+  guide.textContent='首次使用请先选角色填姓名自动开通。已绑定设备可点此打开生成器为新设备发码。';
+ };
+ function canonicalizeInput(){
+  const canonical=normalizeDeviceCode(code.value);
+  if(canonical)code.value=canonical;
+ }
+ code.addEventListener('blur',canonicalizeInput);
  code.addEventListener('paste',event=>{
   const canonical=normalizeDeviceCode(event.clipboardData?.getData('text/plain'));
   if(!canonical)return;
   event.preventDefault();
   code.value=canonical;
-  message.textContent='';
+  clearLoginMessage();
  });
  shortcut.onclick=()=>{
-  openGenerator=true;
+  if(inFlight)return;
   if(!name.value.trim()){
-   guide.textContent='先填写姓名，再点「生成设备码」，就能在已绑定设备上打开生成器。';
+   guide.textContent='请填写已绑定的姓名，再点「生成设备码」。首次使用请先选角色，点击「进入工作台」。';
    name.focus();
    return;
   }
-  if(!field.hidden&&!code.value.trim()){
-   guide.textContent='这台设备需要先绑定。请在原设备生成设备码，再回到这里填写。';
-   code.focus();
-   return;
-  }
-  form.requestSubmit();
+  void submitLogin(true);
  };
- form.onsubmit=async event=>{
-  event.preventDefault();
-  if(button.disabled)return;
-  button.disabled=true;shortcut.disabled=true;
-  name.readOnly=true;
-  code.readOnly=true;
-  message.textContent='';
+ form.onsubmit=event=>{event.preventDefault();void submitLogin(false);};
+
+ async function submitLogin(generatorOnly){
+  if(inFlight)return;
+  inFlight=true;
+  openGenerator=generatorOnly;
+  button.disabled=true;shortcut.disabled=true;role.disabled=true;
+  name.readOnly=true;code.readOnly=true;
+  clearLoginMessage();
+  if(!field.hidden)canonicalizeInput();
   try{
-   const member=await assignmentSync.signIn(name.value,field.hidden?'':code.value);
-   if(!member){
+   const result=await assignmentSync.enter({
+    displayName:name.value,role:role.value,
+    rawCode:field.hidden||generatorOnly?'':code.value,
+    allowEnrollment:!generatorOnly,
+   });
+   if(!result.member){
     updateMode(true);
-    showActivation(true);
-    if(openGenerator)guide.textContent='这台设备需要先绑定。请在原设备生成设备码，或使用已经保存的码。首次开通请联系管理员。';
+    if(result.registeredRole){
+     showActivation(true);
+     applyRegisteredRole(result.registeredRole);
+    }else if(generatorOnly){
+     guide.textContent='生成设备码需要已绑定的设备。首次使用请选角色并点击「进入工作台」；换设备请在原设备生成码。';
+    }
     return;
    }
+   const member=result.member;
    code.value='';
-   const storageName=STORE_NAME+'-account:'+encodeURIComponent(assignmentSync.storageScope)+':'+encodeURIComponent(member.id);
-   await initialiseStorage(storageName);
-   userRole=member.role;userName=member.displayName;page='home';assignmentSearch='';
+   await loadSyncIdentity(member);
    if(openGenerator)deviceCodeState().open=true;
    updateMode();render();
-   await refreshSyncAssignments();
-   if(openGenerator&&syncMember()===member&&page==='home')ELEM('syncGenerateDeviceCode')?.focus();
-   if(syncMember()===member&&userRole==='anchor'&&page==='home')void findSavedSession();
+   if(result.opened)toast('已自动绑定本机，可随时用「设备码生成器」给其他设备换机');
+   await refreshAfterSyncLogin(member,openGenerator);
   }catch(error){
    assignmentSync.signOut();
-   if(form.isConnected)message.textContent=error.message;
+   if(form.isConnected){
+    if(error.registeredRole)applyRegisteredRole(error.registeredRole);
+    if(error.code)message.dataset.errorCode=error.code;
+    message.textContent=error.message;
+   }
   }finally{
-   code.readOnly=false;
-   name.readOnly=false;
-   button.disabled=false;shortcut.disabled=false;
+   inFlight=false;
+   code.readOnly=false;name.readOnly=false;
+   button.disabled=false;shortcut.disabled=false;role.disabled=false;
    if(!field.hidden&&form.isConnected)code.focus();
   }
- };
+ }
 }
-let deviceCodePanel=null;
+let deviceCodePanel=null,deviceCodeTicker=null;
 const deviceCodeExpiry=expiresAt=>new Date(expiresAt).toLocaleString('zh-CN');
 
 function deviceCodeState(){
@@ -1210,12 +1282,14 @@ function syncRefreshHtml(){
  <details id="syncDeviceTools"${state.open?' open':''}>
   <summary>换手机 · 生成设备码</summary>
   <small id="syncGeneratorVersion">R24 云同步试点 · ${ESC(syncReleaseVersion)} · R24- 开头，共 28 个字符</small>
-  <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 90 天。重新生成后，上一枚未使用的自助码会失效。</p>
+  <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 30 分钟。重新生成后，此人先前未使用的码会失效。</p>
   <button type="button" id="syncGenerateDeviceCode" class="btn primary">生成设备码</button>
   <div class="field" id="syncDeviceCodeResult" hidden>
    <label for="syncGeneratedDeviceCode">我的设备码</label>
    <input id="syncGeneratedDeviceCode" type="text" readonly autocomplete="off" spellcheck="false">
+   <small id="syncDeviceOwner"></small>
    <small id="syncDeviceCodeExpiry"></small>
+   <small id="syncDeviceCountdown"></small>
    <div>
     <button type="button" id="syncCopyDeviceCode" class="btn soft">复制</button>
     <button type="button" id="syncSaveDeviceCode" class="btn soft">下载备份</button>
@@ -1225,6 +1299,17 @@ function syncRefreshHtml(){
  </details></div>`;
 }
 
+function updateDeviceCountdown(state){
+ const countdown=ELEM('syncDeviceCountdown');
+ if(!countdown||!state.proof||syncMember()!==state.member)return;
+ const seconds=Math.max(0,Math.ceil((Date.parse(state.proof.expiresAt)-Date.now())/1000));
+ countdown.textContent=seconds
+  ?'剩余 '+String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')+' · 一次性'
+  :'设备码已过期，请重新生成。';
+ ELEM('syncCopyDeviceCode').disabled=!seconds;
+ ELEM('syncSaveDeviceCode').disabled=!seconds;
+}
+
 function paintDeviceCodePanel(state){
  const button=ELEM('syncGenerateDeviceCode'),result=ELEM('syncDeviceCodeResult');
  if(!button||!result||syncMember()!==state.member)return;
@@ -1232,15 +1317,21 @@ function paintDeviceCodePanel(state){
  button.textContent=state.busy?'生成中…':state.proof?'重新生成':'生成设备码';
  result.hidden=!state.proof;
  ELEM('syncGeneratedDeviceCode').value=state.proof?.code||'';
+ ELEM('syncDeviceOwner').textContent=state.proof?'适用：'+state.proof.name+' · '+syncRoleName(state.proof.role):'';
  ELEM('syncDeviceCodeExpiry').textContent=state.proof?'有效至 '+deviceCodeExpiry(state.proof.expiresAt):'';
  ELEM('syncDeviceCodeStatus').textContent=state.message;
+ updateDeviceCountdown(state);
 }
 
 function bindDeviceCodePanel(){
+ clearInterval(deviceCodeTicker);
  const panel=ELEM('syncDeviceTools');
  if(!panel)return;
  const state=deviceCodeState();
  paintDeviceCodePanel(state);
+ deviceCodeTicker=setInterval(()=>{
+  if(panel.isConnected)updateDeviceCountdown(state);else clearInterval(deviceCodeTicker);
+ },1000);
  panel.ontoggle=()=>{if(panel.isConnected)state.open=panel.open;};
  ELEM('syncGenerateDeviceCode').onclick=async()=>{
   if(state.busy||syncMember()!==state.member)return;
@@ -1261,7 +1352,7 @@ function bindDeviceCodePanel(){
  };
  ELEM('syncCopyDeviceCode').onclick=async()=>{
   const proof=state.proof;
-  if(!proof||syncMember()!==state.member)return;
+  if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
   try{
    await navigator.clipboard.writeText(proof.code);
    if(state.proof===proof)state.message='已复制，请保存在自己的备忘录或密码管理器里。';
@@ -1276,10 +1367,8 @@ function bindDeviceCodePanel(){
  };
  ELEM('syncSaveDeviceCode').onclick=()=>{
   const proof=state.proof;
-  if(!proof||syncMember()!==state.member)return;
-  downloadText('TCL-R24-设备码.txt',
-   `TCL R24 练播房\n姓名：${state.member.displayName}\n设备码：${proof.code}\n有效至：${deviceCodeExpiry(proof.expiresAt)}\n新设备输入姓名后粘贴设备码。一码限用一次，请仅自己保存。\n`,
-   'text/plain;charset=utf-8');
+  if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
+  downloadText('TCL-R24-设备码.txt',proof.code,'text/plain;charset=utf-8');
   state.message='已请求下载备份，请查看浏览器下载记录。';
   paintDeviceCodePanel(state);
  };
@@ -1295,11 +1384,11 @@ function bindSyncControls(){
 }
 async function refreshSyncAssignments(){
  const member=syncMember(),button=ELEM('syncRefresh'),status=ELEM('syncRefreshStatus');
- if(!member||!button||button.disabled||assignmentPublishPending)return;
+ if(!member||!button||button.disabled||assignmentPublishPending||assignmentJoinPending)return;
  button.disabled=true;status.textContent=' 正在读取…';
  try{
   const rows=await assignmentSync.listAssignments();
-  if(syncMember()!==member||!button.isConnected)return;
+  if(syncMember()!==member||!button.isConnected||assignmentJoinPending||assignmentPublishPending)return;
   cloudAssignments=rows;
   if(page==='home'){
    if(userRole==='anchor'){
@@ -1320,23 +1409,240 @@ function syncOperatorRow(assignment){
  <button type="button" class="btn soft small" data-sync-submissions="${ESC(assignment.id)}">查看云端提交</button>
  </div>`;
 }
-async function showSyncInbox(assignmentId){
- const target=ELEM('syncInbox'),assignment=assignmentById(assignmentId);
- if(!target||!assignment)return;
- const view=document.createElement('section');
- view.setAttribute('aria-live','polite');
- view.textContent='正在读取提交…';
- target.replaceChildren(view);
+let syncInboxAssignmentId='',syncRecordsAssignmentId='',syncRecordList=[];
+let anchorSearchRefreshAt=0;
+const cloudAudioMaxBytes=512*1024;
+const cloudAudioTypes=new Set(['audio/webm','audio/ogg','audio/mp4','audio/wav','audio/x-wav','audio/mpeg','audio/aac','audio/x-m4a']);
+const audioMime=blob=>blob.type.toLowerCase().split(';',1)[0].trim();
+const cloudAudioAcceptable=clip=>Boolean(clip.questionId&&clip.blob instanceof Blob&&clip.blob.size&&
+ clip.blob.size<=cloudAudioMaxBytes&&cloudAudioTypes.has(audioMime(clip.blob)));
+const syncAudioBusy=new Set();
+let fallbackSubmissionMedia=null;
+
+async function refreshAnchorSearch(search,renderResults){
+ const member=syncMember();
+ if(member?.role!=='anchor'||!search.isConnected||assignmentJoinPending||Date.now()<anchorSearchRefreshAt)return;
+ anchorSearchRefreshAt=Date.now()+5000;
  try{
-  const submissions=await assignmentSync.submissions(assignmentId);
-  if(!view.isConnected)return;
-  view.innerHTML=`<h3>${ESC(assignment.title)} · 云端提交（${submissions.length}）</h3>
-   ${submissions.map(record=>`<details class="submission-card"><summary>${ESC(record.anchorName)} · ${ESC(new Date(record.submittedAt).toLocaleString('zh-CN'))}${record.late?' · 逾期':''}</summary>
-    ${record.turns.map(turn=>`<div class="submission-turn"><b>${ESC(turn.question)}</b>
-      <p>${ESC(turn.answer)}</p>${turn.transcript&&turn.transcript!==turn.answer?`<p>转写：${ESC(turn.transcript)}</p>`:''}</div>`).join('')}
-  </details>`).join('')||'<p>暂未收到提交</p>'}`;
+  const rows=await assignmentSync.listAssignments();
+  if(!search.isConnected||syncMember()!==member||assignmentJoinPending)return;
+  cloudAssignments=rows;
+  renderResults();
+ }catch(error){
+  const status=ELEM('syncRefreshStatus');
+  if(search.isConnected&&syncMember()===member&&status)status.textContent=' 云端作业读取失败，可重试：'+error.message;
+ }
+}
+
+function bindAssignmentActions(target){
+ target.querySelectorAll('[data-join-assignment]').forEach(button=>button.onclick=()=>joinAssignment(button.dataset.joinAssignment));
+ target.querySelectorAll('[data-my-submissions]').forEach(button=>button.onclick=()=>showMySubmissions(button.dataset.mySubmissions));
+}
+function cloudClaimList(claims){
+ return `<h4>领取进度（${claims.length} 人）</h4>${claims.map(claim=>`<div class="log-row">
+  <b>${ESC(claim.anchorName)}</b><span>${claim.submittedAt?'已提交':'已领取'}</span>
+  <small>${claim.claimedAt?ESC(new Date(claim.claimedAt).toLocaleString('zh-CN')):''}</small>
+ </div>`).join('')||'<p class="scene-tip">暂无主播领取</p>'}`;
+}
+function cloudSubmissionHtml(record){
+ const audioQuestions=new Set((record.audio||[]).map(audio=>audio.questionId));
+ const cached=localSubmissions.find(s=>s.cloudId===record.id);
+ return `<details class="submission-card"><summary>${ESC(record.anchorName)} · ${ESC(new Date(record.submittedAt).toLocaleString('zh-CN'))}${record.late?' · 逾期':''}</summary>
+ ${record.turns.map(turn=>`<div class="submission-turn"><b>${ESC(turn.question)}</b>
+  <p>${ESC(turn.answer)}</p>${turn.transcript&&turn.transcript!==turn.answer?`<p>转写：${ESC(turn.transcript)}</p>`:''}
+  ${audioQuestions.has(turn.questionId)?`<button type="button" class="btn soft small" data-cloud-audio="${ESC(turn.questionId)}" data-cloud-submission="${ESC(record.id)}">播放逐题录音</button>
+  <div data-cloud-player role="status"></div>`:''}</div>`).join('')}
+ ${cached?cloudAudioStatusHtml(cached):''}</details>`;
+}
+function bindCloudPlayback(target,assignmentId){
+ target.querySelectorAll('[data-cloud-audio]').forEach(button=>{
+  button.onclick=async()=>{
+   if(button.disabled)return;
+   const holder=button.nextElementSibling,member=syncMember(),epoch=submittedPlaybackEpoch;
+   if(!member||!holder)return;
+   button.disabled=true;
+   for(const previous of holder.querySelectorAll('audio')){
+    URL.revokeObjectURL(previous.src);
+    submittedPlaybackUrls=submittedPlaybackUrls.filter(url=>url!==previous.src);
+   }
+   holder.textContent='正在读取录音…';
+   const current=()=>holder.isConnected&&syncMember()===member&&submittedPlaybackEpoch===epoch;
+   try{
+    const data=await assignmentSync.submissionAudio(assignmentId,button.dataset.cloudSubmission,button.dataset.cloudAudio);
+    if(!current())return;
+    if(!cloudAudioTypes.has(data.mimeType)||typeof data.base64!=='string'||
+      data.base64.length>Math.ceil(cloudAudioMaxBytes/3)*4)throw new Error('录音响应格式有误');
+    const bytes=Uint8Array.from(atob(data.base64),char=>char.charCodeAt(0));
+    if(!bytes.length||bytes.length>cloudAudioMaxBytes)throw new Error('录音响应大小有误');
+    const player=document.createElement('audio');
+    player.className='audio-player';
+    player.controls=true;player.preload='metadata';
+    player.src=URL.createObjectURL(new Blob([bytes],{type:data.mimeType}));
+    submittedPlaybackUrls.push(player.src);
+    holder.replaceChildren(player);
+   }catch(error){if(current())holder.textContent='录音读取失败：'+error.message;}
+   finally{button.disabled=false;}
+  };
+ });
+ bindAudioRetries(target);
+}
+function appendCloudInbox(target,assignmentId,html){
+ clearSubmittedPlayback();
+ target.innerHTML=html;
+ bindCloudPlayback(target,assignmentId);
+}
+async function showSyncInbox(assignmentId){
+ const target=ELEM('syncInbox'),assignment=assignmentById(assignmentId),member=syncMember();
+ if(!target||!assignment||member?.role!=='operator')return;
+ syncInboxAssignmentId=assignmentId;
+ clearSubmittedPlayback();
+ const view=document.createElement('section');
+ view.setAttribute('aria-live','polite');view.textContent='正在读取云端作业…';target.replaceChildren(view);
+ try{
+  const [claims,submissions]=await Promise.all([
+   assignmentSync.progress(assignmentId),assignmentSync.submissions(assignmentId),
+  ]);
+  if(!view.isConnected||syncMember()!==member)return;
+  appendCloudInbox(view,assignmentId,`<h3>${ESC(assignment.title)} · 云端提交（${submissions.length}）</h3>
+  <button type="button" class="btn soft small" data-sync-inbox-refresh>刷新领取与提交</button>
+  ${cloudClaimList(claims)}
+  ${submissions.map(cloudSubmissionHtml).join('')||'<p>暂未收到提交</p>'}`);
+  view.querySelector('[data-sync-inbox-refresh]').onclick=()=>showSyncInbox(assignmentId);
  }catch(error){if(view.isConnected)view.textContent='读取失败：'+error.message;}
 }
+async function showMySubmissions(assignmentId){
+ const target=ELEM('syncMySubmissions'),member=syncMember(),assignment=assignmentById(assignmentId);
+ if(!target||!assignment||member?.role!=='anchor')return;
+ const view=document.createElement('section');view.className='panel';
+ view.textContent='正在读取我的云端提交…';target.replaceChildren(view);
+ try{
+  const submissions=await assignmentSync.mySubmissions(assignmentId);
+  if(!view.isConnected||syncMember()!==member)return;
+  appendCloudInbox(view,assignmentId,`<h3>我的云端提交 · ${ESC(assignment.title)}</h3>
+   ${submissions.map(cloudSubmissionHtml).join('')||'<p>暂无提交记录</p>'}`);
+  view.scrollIntoView({block:'nearest'});
+ }catch(error){if(view.isConnected)view.textContent='读取失败：'+error.message;}
+}
+function renderCloudAnchorRecords(){
+ const target=ELEM('syncAnchorRecords'),selector=ELEM('syncRecordsAssignment');
+ if(!target||!selector?.value)return;
+ const query=norm(ELEM('syncAnchorLookup')?.value);
+ const matches=syncRecordList.filter(record=>!query||norm(record.anchorName).includes(query));
+ appendCloudInbox(target,selector.value,matches.map(cloudSubmissionHtml).join('')||'<p>暂无匹配的云端提交</p>');
+}
+async function refreshCloudAnchorRecords(){
+ const target=ELEM('syncAnchorRecords'),select=ELEM('syncRecordsAssignment'),member=syncMember();
+ if(!target||!select||member?.role!=='operator')return;
+ const id=select.value;
+ if(!id){target.textContent='请先发布作业。';return;}
+ syncRecordList=[];
+ syncRecordsAssignmentId=id;
+ const request=document.createElement('p');request.textContent='正在读取主播记录…';request.setAttribute('aria-busy','true');target.replaceChildren(request);
+ try{
+  const rows=await assignmentSync.submissions(id);
+  if(!request.isConnected||syncMember()!==member||select.value!==id)return;
+  syncRecordList=rows;
+  renderCloudAnchorRecords();
+ }catch(error){if(request.isConnected){request.removeAttribute('aria-busy');request.textContent='读取失败：'+error.message;}}
+}
+function bindCloudAnchorRecords(){
+ const select=ELEM('syncRecordsAssignment'),search=ELEM('syncAnchorLookup'),refresh=ELEM('syncRefreshRecords');
+ if(!select||!search||!refresh)return;
+ select.onchange=refreshCloudAnchorRecords;
+ refresh.onclick=refreshCloudAnchorRecords;
+ const filterRecords=()=>{
+  if(syncRecordsAssignmentId===select.value&&!ELEM('syncAnchorRecords')?.querySelector('[aria-busy="true"]'))renderCloudAnchorRecords();
+ };
+ search.oninput=event=>{if(!event.isComposing)filterRecords();};
+ search.oncompositionend=filterRecords;
+}
+function cloudAudioStatus(submission){
+ if(syncAudioBusy.has(submission.id))return '文字已提交，正在上传逐题录音…';
+ const pending=submission.audioPendingIds?.length||0,uploaded=submission.audioUploadedIds?.length||0;
+ const localOnly=submission.audioLocalOnly||0,notes=[];
+ if(uploaded)notes.push(`${uploaded} 段逐题录音已上传`);
+ if(pending)notes.push(`${pending} 段录音待上传，可用原设备重试`);
+ if(localOnly)notes.push(`${localOnly} 段录音超出 512 KB 或格式不支持，仅保存在本机`);
+ return notes.join('。')||'本次没有需要上传的录音。';
+}
+function cloudAudioStatusHtml(submission){
+ if(!submission?.cloudId||(!submission.audioPendingIds?.length&&!submission.audioUploadedIds?.length&&!submission.audioLocalOnly))return '';
+ return `<div data-cloud-upload="${ESC(submission.id)}">
+  <p ${page==='sessionReview'?'id="syncAudioUploadStatus"':''} class="scene-tip" role="status">${ESC(cloudAudioStatus(submission))}</p>
+  <button type="button" data-retry-cloud-audio="${ESC(submission.id)}" class="btn soft small"
+   ${!submission.audioPendingIds?.length?' hidden':''} ${syncAudioBusy.has(submission.id)?' disabled':''}>重试上传逐题录音</button>
+ </div>`;
+}
+function paintCloudAudioStatus(submission){
+ for(const holder of document.querySelectorAll('[data-cloud-upload]')){
+  if(holder.dataset.cloudUpload!==submission.id)continue;
+  holder.querySelector('[role="status"]').textContent=cloudAudioStatus(submission);
+  const button=holder.querySelector('[data-retry-cloud-audio]');
+  button.hidden=!submission.audioPendingIds?.length;
+  button.disabled=syncAudioBusy.has(submission.id);
+ }
+ const target=ELEM('syncReviewAudioStatus');
+ if(target&&!target.firstElementChild&&reviewSubmission()?.id===submission.id){
+  target.innerHTML=cloudAudioStatusHtml(submission);
+  bindAudioRetries(target);
+ }
+}
+function bindAudioRetries(target){
+ target.querySelectorAll('[data-retry-cloud-audio]').forEach(button=>{
+  button.onclick=()=>{
+   const id=button.dataset.retryCloudAudio;
+   const submission=localSubmissions.find(s=>s.id===id)||reviewSubmission();
+   if(submission?.id===id)void uploadCloudAudio(submission);
+  };
+ });
+}
+async function encodeCloudAudio(blob){
+ const bytes=new Uint8Array(await blob.arrayBuffer());
+ let binary='';
+ for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384));
+ return btoa(binary);
+}
+async function uploadCloudAudio(submission,media=null){
+ const member=syncMember();
+ if(member?.role!=='anchor'||!submission.cloudId||!submission.audioPendingIds?.length||
+   syncAudioBusy.has(submission.id))return;
+ const current=()=>syncMember()===member;
+ syncAudioBusy.add(submission.id);
+ paintCloudAudioStatus(submission);
+ try{
+  const local=media||(fallbackSubmissionMedia?.id==='submission-media:'+submission.id?fallbackSubmissionMedia:null)||
+    await getSubmittedMedia(submission.id);
+  if(!current())return;
+  if(!local?.audio?.length)throw new Error('这台设备上没有可重试的录音');
+  for(const questionId of [...submission.audioPendingIds]){
+   if(!current())return;
+   const clip=local.audio.find(row=>row.questionId===questionId);
+   if(!clip||!cloudAudioAcceptable(clip))continue;
+   try{
+    const base64=await encodeCloudAudio(clip.blob);
+    if(!current())return;
+    const result=await assignmentSync.uploadSubmissionAudio(submission.assignmentId,submission.cloudId,{
+     questionId,mimeType:audioMime(clip.blob),base64,
+    });
+    if(!current())return;
+    if(result?.audio?.questionId!==questionId)throw new Error('未确认录音保存');
+    const change=s=>({...s,audioPendingIds:(s.audioPendingIds||[]).filter(id=>id!==questionId),
+     audioUploadedIds:[...new Set([...(s.audioUploadedIds||[]),questionId])]});
+    Object.assign(submission,change(submission));
+    if(localSubmissions.some(row=>row.id===submission.id)){
+     try{localSubmissions=await updatePrefList('submissions',rows=>rows.map(row=>row.id===submission.id?change(row):row));}
+     catch{/* The cloud ack is authoritative; an IndexedDB retry is idempotent. */}
+    }
+   }catch{/* Keep this clip pending so later clips and the confirmed text remain usable. */}
+  }
+  if(current()&&submission.audioPendingIds.length)toast('文字已提交。部分录音未上传，请在原设备重试。');
+ }catch(error){if(current())toast('文字已提交。录音未上传：'+error.message);}
+ finally{
+  syncAudioBusy.delete(submission.id);
+  if(current())paintCloudAudioStatus(submission);
+ }
+}
+
 function submitStatusText(submission){
  if(submission.cloudConfirmed)return '✓ 已提交到云端'+(submission.late?'（逾期提交）':'');
  return submission.assignmentReceipt?'✓ 已保存到本机，请发送回执':'✓ 已保存到本机';
@@ -1355,7 +1661,8 @@ function reviewSubmitHtml(assignment,operatorNames,submitted){
    ${submitted?ESC(submitStatusText(submitted)):member?'提交到云端':assignment?'保存并导出回执':'保存到本机'}
   </button>
   ${submitted?.assignmentReceipt?'<button type="button" id="exportAssignmentReceipt" class="btn soft wide">导出作业回执（JSON）</button>':''}
-  <p class="scene-tip submit-local-note">${member?'主动提交后，运营可查看答复和转写。录像和录音仅保存在本机。':'数据保存在当前浏览器。跨设备交接时，请发送作业回执给运营。'}</p>
+  ${member?`<div id="syncReviewAudioStatus">${cloudAudioStatusHtml(submitted||{})}</div>`:''}
+  <p class="scene-tip submit-local-note">${member?'提交后运营可查看文字、转写及已上传的逐题录音。整场录像只保存在本机。':'数据保存在当前浏览器。跨设备交接时，请发送作业回执给运营。'}</p>
  </div>`;
 }
 function cloudSubmissionPayload(snapshot){
@@ -1380,18 +1687,26 @@ function home(){
 function roleLogin(){setTitle(pendingRole==='operator'?'运营登录':'主播登录');ELEM('view').innerHTML=`<section class="name-login"><button class="ghost-btn" id="loginBack">← 返回</button><div class="name-login-card"><span class="eyebrow">${pendingRole==='operator'?'LIVE OPERATIONS':'ANCHOR PRACTICE'}</span><h2>${pendingRole==='operator'?'输入运营姓名':'输入主播姓名'}</h2><p>填写姓名即可继续体验。本机数据不跨设备同步，姓名不是正式账号认证。</p><div class="field"><label>姓名</label><input id="simpleName" maxlength="30" autocomplete="name" placeholder="请输入姓名"></div><button id="simpleLogin" class="btn primary wide">进入</button></div></section>`;ELEM('loginBack').onclick=()=>{pendingRole='';page='home';render()};ELEM('simpleLogin').onclick=async()=>{const name=ELEM('simpleName').value.trim();if(!name)return toast('请输入姓名');userRole=pendingRole||'anchor';userName=name;pendingRole='';page='home';render();void findSavedSession()};ELEM('simpleName').addEventListener('keydown',e=>{if(e.key==='Enter')ELEM('simpleLogin').click()});}
 function resumeReviewHtml(){if(!reviewAlive())return '';const snap=lastSessionSnapshot,sub=reviewSubmission();return `<button type="button" class="resume-review" data-resume-review><span class="resume-label">${sub?(sub.cloudConfirmed?'上一场已提交到云端':'上一场已保存到本机'):'上一场还没提交'}</span><b>${ESC(snap.category)} · ${ESC(snap.platform)}${snap.assignmentTitle?' · '+ESC(snap.assignmentTitle):''}</b><small>${sub?(sub.cloudConfirmed?'运营可查看，录像仍保存在本机':'本机已保存，可回看复盘'):'本机只保留最近一场恢复记录；新练习保存后会替换，请先下载备份'}</small><em>返回本场复盘 →</em></button>`;}
 function bindResumeReview(){document.querySelectorAll('[data-resume-review]').forEach(b=>b.onclick=()=>nav('sessionReview'));if(ELEM('restoreLocalSession'))ELEM('restoreLocalSession').onclick=restoreLocalSession;}
-function assignmentRowHtml(a){const st=assignmentStatusFor(a,userName),closed=st==='已截止',joined=localAssignmentJoins.some(x=>x.assignmentId===a.id&&x.anchorName===userName);return `<div class="assignment-row"><div><b>${ESC(a.title)}</b><small>${ESC(a.operatorName)} · ${ESC(boardById(a.boardId).category)} · ${ESC(a.platform)}${a.deadline?' · 截止 '+ESC(new Date(a.deadline).toLocaleString('zh-CN')):' · 无截止时间'}</small></div><span class="pill${closed||st==='已逾期'?' warn':''}">${ESC(st)}</span><button class="btn small primary" data-join-assignment="${ESC(a.id)}"${closed?' disabled':''}>${closed?'已截止':joined?'继续训练':'加入训练'}</button></div>`;}
+function assignmentRowHtml(a){
+ const st=assignmentStatusFor(a,userName),closed=st==='已截止',joined=assignmentJoined(a,userName);
+ const action=closed?'已截止':joined?'继续训练':syncMember()?'领取并练习':'加入训练';
+ return `<div class="assignment-row"><div><b>${ESC(a.title)}</b><small>${ESC(a.operatorName)} · ${ESC(boardById(a.boardId).category)} · ${ESC(a.platform)}${a.deadline?' · 截止 '+ESC(new Date(a.deadline).toLocaleString('zh-CN')):' · 无截止时间'}</small></div>
+ <span class="pill${closed||st==='已逾期'?' warn':''}">${ESC(st)}</span>
+ <button class="btn small primary" data-join-assignment="${ESC(a.id)}"${closed?' disabled':''}>${action}</button>
+ ${syncMember()&&cloudAssignmentState(a.id)?.submitted?`<button type="button" class="btn soft small" data-my-submissions="${ESC(a.id)}">查看我的提交</button>`:''}</div>`;
+}
 function identityBar(){return `<div class="identity-bar r2-identity"><span class="r2-avatar" aria-hidden="true">${ESC([...String(userName)][0]||'·')}</span><span class="r2-identity-text"><b>${ESC(userName)}</b><small>${ESC(roleLabel())} · ${syncMember()?'云端账号':'本机体验'}</small></span><button class="ghost-btn" id="switchIdentity">${syncMember()?'退出账号':'切换身份'}</button></div>`;}
 function anchorHome(){
  const allMine=localTrainingLogs.filter(x=>x.anchorName===userName).sort((a,b)=>String(b.trainedAt||'').localeCompare(String(a.trainedAt||'')));
  const last=allMine[0]||null;
  const recent=last&&BOARDS.find(x=>x.id===last.boardId);
  const query=norm(assignmentSearch);
- const assigned=visibleAssignments().filter(a=>isAssigned(a,userName)&&(!query||norm(a.operatorName+a.title+boardById(a.boardId).category+a.platform).includes(query)));
+ const assigned=visibleAssignments().filter(a=>canSeeAssignment(a)&&(!query||norm(a.operatorName+a.title+boardById(a.boardId).category+a.platform).includes(query)));
   const mine=allMine.slice(0,5);
  const startBoard=recent||BOARDS[0],startPlatform=recent&&startBoard.platforms.includes(last.platform)?last.platform:startBoard.platforms[0];
- const submittedCount=localSubmissions.filter(x=>x.anchorName===userName).length;
- const todo=visibleAssignments().filter(x=>isAssigned(x,userName)&&(['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName))||x.schema&&assignmentStatusFor(x,userName)==='未加入'));
+ const submittedCount=syncMember()?cloudAssignments.filter(row=>row.submitted).length:
+  localSubmissions.filter(x=>x.anchorName===userName).length;
+ const todo=visibleAssignments().filter(x=>canSeeAssignment(x)&&(['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName))||x.schema&&assignmentStatusFor(x,userName)==='未加入'));
  ELEM('view').innerHTML=`${identityBar()}${syncMember()?syncRefreshHtml():''}${resumeReviewHtml()}${savedSessionHtml()}
  <section class="r2-start"><p class="r2-hello">${ESC(userName)}，今天练什么？</p>
  <div class="r2-start-card"><span class="r2-kicker">${recent?'接着上次练':'从这里开始'}</span><h2>${ESC(startBoard.category)}</h2><p class="r2-start-meta"><span>平台 · ${ESC(startPlatform)}</span><span>${ESC(practicePoolLabel(startBoard,startPlatform))}</span></p>
@@ -1400,34 +1715,57 @@ function anchorHome(){
  <div class="r2-stats"><div><b>${allMine.length}</b><span>累计练播</span></div><div><b>${submittedCount}</b><span>已提交</span></div><div><b>${todo.length}</b><span>待完成作业</span></div></div><div data-vosk-widget="card" aria-label="中文识别模型准备进度"></div></section>
  ${todo.length?`<section class="r2-todo"><h3>待完成的作业</h3><div class="assignment-results">${todo.slice(0,3).map(assignmentRowHtml).join('')}</div>${todo.length>3?`<p class="scene-tip">当前显示前 3 条（共 ${todo.length} 条），可在下方“运营布置的作业”按运营姓名筛选。</p>`:''}</section>`:''}
  <details class="hub-fold" id="assignmentFold" ${assignmentSearch?'open':''}><summary><span><b>运营布置的作业</b><small>${syncMember()?'云端作业 · 按运营姓名搜索':'本机测试 · 暂不支持跨设备同步'}</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body"><label class="field" for="assignmentSearch">搜索运营、作业名称或板块<input id="assignmentSearch" value="${ESC(assignmentSearch)}" placeholder="如：张老师 / 电视抖音"></label>${syncMember()?'':'<div class="field"><label for="assignmentPackageImport">从运营接收作业包（JSON，跨设备需手动传送）</label><input type="file" id="assignmentPackageImport" accept=".json,application/json"><small>本机姓名不是账号认证；作业包需要运营本人发送给你。</small></div>'}<div class="assignment-results" id="assignmentSearchResults">${assigned.slice(0,8).map(assignmentRowHtml).join('')||'<div class="empty compact">还没有找到相关作业，可以先自由练播。</div>'}${assigned.length>8?`<p class="scene-tip">仅显示前 8 条（共 ${assigned.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:''}</div></div></details>
- <details class="hub-fold" id="logFold"><summary><span><b>我的练习记录</b><small>共 ${allMine.length} 次 · 自己查看，不自动交给运营</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body">${mine.map(l=>`<div class="log-row"><span>${ESC(new Date(l.trainedAt).toLocaleString('zh-CN'))}</span><b>${ESC(l.category)} · ${ESC(l.platform)}</b><span>${l.assignmentId?'作业练习':'自由练习'}</span></div>`).join('')||'<div class="empty compact">还没有训练记录，完成首次练播后会显示在这里。</div>'}<button class="btn soft hub-secondary" id="openPracticeRecords">查看全部练习记录</button></div></details>
+ ${syncMember()?'<section id="syncMySubmissions" aria-live="polite"></section>':''}
+ <details class="hub-fold" id="logFold"><summary><span><b>我的练习记录</b><small>共 ${allMine.length} 次 · 本机练习记录</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body">${mine.map(l=>`<div class="log-row"><span>${ESC(new Date(l.trainedAt).toLocaleString('zh-CN'))}</span><b>${ESC(l.category)} · ${ESC(l.platform)}</b><span>${l.assignmentId?'作业练习':'自由练习'}</span></div>`).join('')||'<div class="empty compact">还没有训练记录，完成首次练播后会显示在这里。</div>'}<button class="btn soft hub-secondary" id="openPracticeRecords">查看全部练习记录</button></div></details>
 `;
  renderVoskWidgets();
  ELEM('switchIdentity').onclick=logoutIdentity;
  ELEM('freePractice').onclick=()=>openBoard(startBoard.id,startPlatform,{assignmentId:'',checkDevicesOnOpen:true});
  ELEM('r2ChangeBoard').onclick=()=>nav('catalog');
- document.querySelectorAll('.r2-todo [data-join-assignment]').forEach(x=>x.onclick=()=>joinAssignment(x.dataset.joinAssignment));
+ bindAssignmentActions(ELEM('view'));
  if(ELEM('repeatLast'))ELEM('repeatLast').onclick=()=>openBoard(recent.id,last.platform,{assignmentId:'',checkDevicesOnOpen:true});
  ELEM('openPracticeRecords').onclick=()=>nav('progress');
- const search=ELEM('assignmentSearch'),results=ELEM('assignmentSearchResults');
- const updateResults=()=>{const q=norm(assignmentSearch),matches=visibleAssignments().filter(a=>isAssigned(a,userName)&&(!q||norm(`${a.operatorName}${a.title}${boardById(a.boardId).category}${a.platform}`).includes(q)));results.innerHTML=(matches.slice(0,8).map(assignmentRowHtml).join('')||'<div class="empty compact">暂无匹配作业</div>')+(matches.length>8?`<p class="scene-tip">仅显示前 8 条（共 ${matches.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:'');results.querySelectorAll('[data-join-assignment]').forEach(b=>b.onclick=()=>joinAssignment(b.dataset.joinAssignment));};
+ const search=ELEM('assignmentSearch'),results=ELEM('assignmentSearchResults'),fold=ELEM('assignmentFold');
+ let searchPullTimer;
+ const updateResults=()=>{const q=norm(assignmentSearch),matches=visibleAssignments().filter(a=>canSeeAssignment(a)&&(!q||norm(`${a.operatorName}${a.title}${boardById(a.boardId).category}${a.platform}`).includes(q)));results.innerHTML=(matches.slice(0,8).map(assignmentRowHtml).join('')||'<div class="empty compact">暂无匹配作业</div>')+(matches.length>8?`<p class="scene-tip">仅显示前 8 条（共 ${matches.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:'');bindAssignmentActions(results);};
  if(ELEM('assignmentPackageImport'))ELEM('assignmentPackageImport').onchange=importAssignmentPackage;
  bindSyncControls();
- search.oninput=e=>{assignmentSearch=e.target.value;if(!e.isComposing)updateResults()};search.oncompositionend=e=>{assignmentSearch=e.target.value;updateResults()};updateResults();homeResultsUpdater=updateResults;bindResumeReview();
+ const pullAfterInput=()=>{
+  clearTimeout(searchPullTimer);
+  searchPullTimer=setTimeout(()=>void refreshAnchorSearch(search,updateResults),300);
+ };
+ search.oninput=e=>{
+  assignmentSearch=e.target.value;
+  if(!e.isComposing){updateResults();pullAfterInput();}
+ };
+ search.oncompositionend=e=>{assignmentSearch=e.target.value;updateResults();pullAfterInput();};
+ fold.addEventListener('toggle',()=>{if(fold.open)void refreshAnchorSearch(search,updateResults);});
+ updateResults();homeResultsUpdater=updateResults;bindResumeReview();
  syncFoldIndicators();
 }
 let assignmentExcelPreview=null, assignmentExcelEpoch=0;
 let operatorActiveTab="publish";
 function operatorHome(){
  invalidateAssignmentExcel();
- const own=visibleAssignments().filter(a=>a.operatorName===userName).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ const cloudMode=Boolean(syncMember());
+ const own=visibleAssignments().filter(a=>cloudMode||a.operatorName===userName).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
  const names=[...new Set([...localTrainingLogs.map(x=>x.anchorName),...localSubmissions.map(x=>x.anchorName)])].filter(Boolean);
  ELEM('view').innerHTML=`${identityBar()}${syncMember()?syncRefreshHtml():''}
  <section class="hub-welcome operator"><span class="eyebrow">OPERATIONS · 运营工作台</span><h2>${ESC(userName)}，把训练安排得更清楚</h2><p>发布作业、跟踪进度、查看提交。三项任务相互独立，减少来回查找。</p></section>
- <div class="ops-tabs" role="tablist" aria-label="运营任务"><button data-ops-tab="publish" role="tab" aria-selected="false">① 发布作业</button><button data-ops-tab="tracking" role="tab" aria-selected="false">② 作业进度 <small>${own.length}</small></button>${syncMember()?'':'<button data-ops-tab="lookup" role="tab" aria-selected="false">③ 主播记录</button>'}</div>
- <section id="ops-publish" class="panel hub-task" role="tabpanel" hidden><h2>发布一份训练作业</h2><p class="hub-task-tip">填写作业名称，选择训练板块，点击发布。截止时间可以不填。</p><div class="field"><label for="assignmentTitle">1. 作业名称</label><input id="assignmentTitle" placeholder="如：电视抖音产品问答"></div><div class="cols-2"><div class="field"><label for="assignmentBoard">2. 训练板块</label><select id="assignmentBoard">${BOARDS.map(b=>`<option value="${ESC(b.id)}">${ESC(b.category)} · ${ESC(b.display_platform)}</option>`).join('')}</select></div><div class="field"><label for="assignmentPlatform">平台</label><select id="assignmentPlatform"></select></div></div><div class="field"><label for="assignmentDeadline">3. 截止时间（可选）</label><input id="assignmentDeadline" type="datetime-local"></div><p class="scene-tip">本次作业面向所有主播开放领取；当前仅能搜索本机已有的作业，跨手机须先导入运营发送的 JSON。</p><div class="field"><label for="assignmentExcelFile">4. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button><div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">发布作业 →</button><p class="scene-tip">当前为本机演示；跨设备作业同步尚未上线，姓名不是正式登录认证。</p></section>
- <section id="ops-tracking" class="panel hub-task" role="tabpanel" hidden><h2>我发布的作业</h2>${syncMember()?'<p class="hub-task-tip">查看本账号发布的作业及主播主动提交的文字记录。</p><div id="syncInbox"></div>':'<p class="hub-task-tip">主播主动提交后，需手动导入 JSON 回执才能在此设备查看。</p><div class="field"><label for="assignmentReceiptImport">接收主播提交回执（JSON；需人工确认真实性）</label><input id="assignmentReceiptImport" type="file" accept=".json,application/json"></div>'}<div class="assignment-results">${own.map(a=>{if(syncMember())return syncOperatorRow(a);const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName),...localSubmissions.filter(x=>x.assignmentId===a.id&&x.operatorName===a.operatorName).map(x=>x.anchorName)])];return `<div class="assignment-manage"><div><b>${ESC(a.title)}</b><small>${ESC(boardById(a.boardId).category)} · ${ESC(a.platform)}${a.deadline?' · 截止 '+ESC(new Date(a.deadline).toLocaleString('zh-CN')):' · 无截止时间'}</small></div><div>${a.schema?`<small>Excel作业 · ${a.questions.length}题 · 固定版本 v${a.version}</small><button type="button" class="btn soft small" data-export-assignment="${ESC(a.id)}">导出作业包给主播</button>`:""}</div><div class="assignment-statuses">${anchors.map(n=>`<button class="status-chip" data-anchor-name="${ESC(n)}">${ESC(n)} · ${ESC(assignmentStatusFor(a,n))}${(c=>c?` · 练${c}次`:'')(localTrainingLogs.filter(l=>l.assignmentId===a.id&&l.anchorName===n).length)}</button>`).join('')||'<span class="muted">暂无主播加入，可让主播在“运营作业”里搜索本作业</span>'}</div></div>`}).join('')||'<div class="empty compact">还没有发布作业，可点击上方“发布作业”创建第一份任务。</div>'}</div></section>
- <section id="ops-lookup" class="panel hub-task" role="tabpanel" hidden><h2>查找主播训练记录</h2><p class="hub-task-tip">未提交的练习只显示时间、板块和次数，不显示回答、转写或回放。</p><div class="field"><label for="anchorLookup">主播姓名</label><input id="anchorLookup" placeholder="输入主播姓名搜索"></div><div id="anchorLookupResult" class="question-list">${names.slice(0,8).map(n=>`<button class="anchor-search-row" data-anchor-name="${ESC(n)}">${ESC(n)}</button>`).join('')||'<div class="empty compact">暂无主播训练记录</div>'}</div></section>`;
+ <div class="ops-tabs" role="tablist" aria-label="运营任务"><button data-ops-tab="publish" role="tab" aria-selected="false">① 发布作业</button><button data-ops-tab="tracking" role="tab" aria-selected="false">② 作业进度 <small>${own.length}</small></button><button data-ops-tab="lookup" role="tab" aria-selected="false">③ 主播记录</button></div>
+ <section id="ops-publish" class="panel hub-task" role="tabpanel" hidden><h2>发布一份训练作业</h2><p class="hub-task-tip">填写作业名称，选择训练板块，点击发布。截止时间可以不填。</p><div class="field"><label for="assignmentTitle">1. 作业名称</label><input id="assignmentTitle" placeholder="如：电视抖音产品问答"></div><div class="cols-2"><div class="field"><label for="assignmentBoard">2. 训练板块</label><select id="assignmentBoard">${BOARDS.map(b=>`<option value="${ESC(b.id)}">${ESC(b.category)} · ${ESC(b.display_platform)}</option>`).join('')}</select></div><div class="field"><label for="assignmentPlatform">平台</label><select id="assignmentPlatform"></select></div></div><div class="field"><label for="assignmentDeadline">3. 截止时间（可选）</label><input id="assignmentDeadline" type="datetime-local"></div><p class="scene-tip">${cloudMode?'作业发布后，主播可在任意设备按运营姓名搜索并领取。':'本次作业面向所有主播开放领取；跨设备请导入运营发送的 JSON。'}</p><div class="field"><label for="assignmentExcelFile">4. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button><div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">发布作业 →</button>${cloudMode?'':'<p class="scene-tip">当前为本机演示，姓名不作为正式登录认证。</p>'}</section>
+ <section id="ops-tracking" class="panel hub-task" role="tabpanel" hidden><h2>我发布的作业</h2>${syncMember()?'<p class="hub-task-tip">查看领取进度、主播提交的逐题回答与录音。</p><div id="syncInbox"></div>':'<p class="hub-task-tip">主播主动提交后，需手动导入 JSON 回执才能在此设备查看。</p><div class="field"><label for="assignmentReceiptImport">接收主播提交回执（JSON；需人工确认真实性）</label><input id="assignmentReceiptImport" type="file" accept=".json,application/json"></div>'}<div class="assignment-results">${own.map(a=>{if(syncMember())return syncOperatorRow(a);const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName),...localSubmissions.filter(x=>x.assignmentId===a.id&&x.operatorName===a.operatorName).map(x=>x.anchorName)])];return `<div class="assignment-manage"><div><b>${ESC(a.title)}</b><small>${ESC(boardById(a.boardId).category)} · ${ESC(a.platform)}${a.deadline?' · 截止 '+ESC(new Date(a.deadline).toLocaleString('zh-CN')):' · 无截止时间'}</small></div><div>${a.schema?`<small>Excel作业 · ${a.questions.length}题 · 固定版本 v${a.version}</small><button type="button" class="btn soft small" data-export-assignment="${ESC(a.id)}">导出作业包给主播</button>`:""}</div><div class="assignment-statuses">${anchors.map(n=>`<button class="status-chip" data-anchor-name="${ESC(n)}">${ESC(n)} · ${ESC(assignmentStatusFor(a,n))}${(c=>c?` · 练${c}次`:'')(localTrainingLogs.filter(l=>l.assignmentId===a.id&&l.anchorName===n).length)}</button>`).join('')||'<span class="muted">暂无主播加入，可让主播在“运营作业”里搜索本作业</span>'}</div></div>`}).join('')||'<div class="empty compact">还没有发布作业，可点击上方“发布作业”创建第一份任务。</div>'}</div></section>
+ ${cloudMode?`<section id="ops-lookup" class="panel hub-task" role="tabpanel" hidden>
+  <h2>主播记录</h2>
+  <label class="field" for="syncRecordsAssignment">查看哪份作业？
+   <select id="syncRecordsAssignment">${own.map(a=>`<option value="${ESC(a.id)}"${a.id===syncRecordsAssignmentId?' selected':''}>${ESC(a.title)}</option>`).join('')}</select>
+  </label>
+  <label class="field" for="syncAnchorLookup">按主播姓名筛选
+   <input id="syncAnchorLookup" placeholder="全部主播">
+  </label>
+  <button type="button" class="btn soft" id="syncRefreshRecords">刷新主播记录</button>
+  <div id="syncAnchorRecords" class="question-list" aria-live="polite"></div>
+ </section>`:`<section id="ops-lookup" class="panel hub-task" role="tabpanel" hidden><h2>查找主播训练记录</h2><p class="hub-task-tip">未提交的练习只显示时间、板块和次数，不显示回答、转写或回放。</p><div class="field"><label for="anchorLookup">主播姓名</label><input id="anchorLookup" placeholder="输入主播姓名搜索"></div><div id="anchorLookupResult" class="question-list">${names.slice(0,8).map(n=>`<button class="anchor-search-row" data-anchor-name="${ESC(n)}">${ESC(n)}</button>`).join('')||'<div class="empty compact">暂无主播训练记录</div>'}</div></section>`}`;
  ELEM('switchIdentity').onclick=logoutIdentity;
  const board=ELEM('assignmentBoard'),plat=ELEM('assignmentPlatform');
  const fill=()=>{const b=boardById(board.value);plat.innerHTML=b.platforms.map(p=>`<option value="${ESC(p)}">${ESC(p)}</option>`).join('')};board.onchange=fill;fill();
@@ -1438,14 +1776,32 @@ function operatorHome(){
  document.querySelectorAll('[data-export-assignment]').forEach(btn=>btn.onclick=()=>{const a=assignmentById(btn.dataset.exportAssignment);if(a?.schema)downloadJSON('TCL-运营作业-'+a.id+'.json',toExchangePackage(a));});
  if(ELEM('assignmentReceiptImport'))ELEM('assignmentReceiptImport').onchange=importAssignmentReceipt;
  bindSyncControls();
- const lookup=ELEM('anchorLookup');lookup.oninput=e=>{if(!e.isComposing)renderAnchorLookup(e.target.value)};lookup.oncompositionend=e=>renderAnchorLookup(e.target.value);
+ const lookup=ELEM('anchorLookup');
+ if(lookup){
+  lookup.oninput=e=>{if(!e.isComposing)renderAnchorLookup(e.target.value)};
+  lookup.oncompositionend=e=>renderAnchorLookup(e.target.value);
+ }
+ if(cloudMode)bindCloudAnchorRecords();
  document.querySelectorAll('[data-anchor-name]').forEach(b=>b.onclick=()=>{if(b.closest('#ops-tracking')){selectTab('lookup');ELEM('anchorLookup').value=b.dataset.anchorName;}showAnchorSummary(b.dataset.anchorName)});
- const selectTab=tab=>{if(operatorActiveTab==='lookup'&&tab!=='lookup')clearSubmittedPlayback();operatorActiveTab=tab;document.querySelectorAll('[data-ops-tab]').forEach(b=>{const current=b.dataset.opsTab===tab;b.classList.toggle('selected',current);b.setAttribute('aria-selected',String(current));b.tabIndex=0});['publish','tracking','lookup'].forEach(k=>{const p=ELEM('ops-'+k);if(p)p.hidden=k!==tab;});};
+ const selectTab=tab=>{
+  if(operatorActiveTab!==tab)clearSubmittedPlayback();
+  operatorActiveTab=tab;
+  document.querySelectorAll('[data-ops-tab]').forEach(b=>{
+   const current=b.dataset.opsTab===tab;
+   b.classList.toggle('selected',current);b.setAttribute('aria-selected',String(current));b.tabIndex=0;
+  });
+  for(const key of ['publish','tracking','lookup'])ELEM('ops-'+key).hidden=key!==tab;
+  if(cloudMode&&tab==='lookup')void refreshCloudAnchorRecords();
+ if(cloudMode&&tab==='tracking'){
+  const selection=own.find(a=>a.id===syncInboxAssignmentId)||own[0];
+  if(selection)void showSyncInbox(selection.id);
+ }
+ };
  document.querySelectorAll('[data-ops-tab]').forEach(b=>b.onclick=()=>selectTab(b.dataset.opsTab));
  selectTab(['publish','tracking','lookup'].includes(operatorActiveTab)?operatorActiveTab:'publish');
 }
 async function logoutIdentity(){if(submissionSaving||assignmentPublishPending)return toast('请等待本次保存完成');if(!canLeaveRecording())return;
- if(syncMember()){assignmentSync.signOut();localDB?.close();location.reload();return;}restoreSessionEpoch++;savedSessionCandidate=null;operatorActiveTab='publish';resetRunState();deviceCheckSeq++;stopScene();exitFocus();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};discardVideoArchive();lastSessionSnapshot=null;lastTrainingLogId='';userRole='';userName='';activeAssignmentId='';page='home';render();}
+ if(syncMember()){assignmentSync.signOut(true);localDB?.close();location.reload();return;}restoreSessionEpoch++;savedSessionCandidate=null;operatorActiveTab='publish';resetRunState();deviceCheckSeq++;stopScene();exitFocus();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};discardVideoArchive();lastSessionSnapshot=null;lastTrainingLogId='';userRole='';userName='';activeAssignmentId='';page='home';render();}
 let assignmentExcelParsing=0;
 function invalidateAssignmentExcel(message=''){
  assignmentExcelEpoch++;assignmentExcelPreview=null;assignmentExcelParsing=0;
@@ -1556,15 +1912,20 @@ async function joinAssignment(id){
  if(userRole!=='anchor'||!userName||page!=='home')return;
  if(assignmentJoinPending)return toast('正在加入作业，请稍候');
  const a=assignmentById(id);if(!a)return toast('作业不存在');
- if(!isAssigned(a,userName))return toast('此作业采用历史限定名单，当前主播姓名不匹配');
+ if(!canSeeAssignment(a))return toast('此作业采用历史限定名单，当前主播姓名不匹配');
  const ownerName=userName,ownerView=ELEM('view')?.firstElementChild;
  const current=()=>userRole==='anchor'&&userName===ownerName&&page==='home'&&ELEM('view')?.firstElementChild===ownerView;
- const joined=localAssignmentJoins.some(x=>x.assignmentId===id&&x.anchorName===ownerName);
+ const joined=assignmentJoined(a,ownerName);
  if(assignmentExpired(a)&&!joined)return toast('该作业已截止，不能再加入；可以先用「自由训练」练习');
  if(!pageAllowed('training')||!canLeaveRecording())return;
  assignmentJoinPending=true;
  try{
-  if(!joined){
+  if(syncMember()&&!joined){
+   const result=await assignmentSync.claim(id);
+   if(!result?.claimedAt)throw new Error('领取结果尚未确认');
+   if(!current())return;
+   cloudAssignments=cloudAssignments.map(row=>row.assignment.id===id?{...row,claimedAt:result.claimedAt}:row);
+  }else if(!syncMember()&&!joined){
    const join={id:uid(),assignmentId:id,anchorName:ownerName,joinedAt:nowIso()};
    localAssignmentJoins=await updatePrefList('assignmentJoins',list=>list.some(x=>x.assignmentId===id&&x.anchorName===ownerName)?list:[join,...list]);
   }
@@ -3196,18 +3557,24 @@ function sessionReviewPage(){
  ELEM('preloadVoskBtn').onclick=preloadVoskModel;
  ELEM('downloadWavBtn').onclick=downloadAudioCopy;
  if(ELEM('submitSession'))ELEM('submitSession').onclick=()=>submitSessionRecord(assignment?.operatorName||ELEM('submitOperator')?.value.trim()||'');
+ bindAudioRetries(ELEM('view'));
  renderSessionReview();renderQuestionSummary();showReviewStage('overview',{recordHistory:false});showSessionStorageState();
 }
 
 async function submitSessionRecord(operatorName){
  const snap=lastSessionSnapshot;if(userRole!=='anchor'||!userName||!snap||snap.anchorName!==userName)return toast('当前身份不能提交该记录');
  if(submissionSaving)return toast('正在保存提交，请稍候');
- if(oneShotAsrJob||questionAsrQueue.length||recorderFinalizing||speechRecognizer||videoRecorderFinalizing||transcriptBusy||r6WhisperRunning||r6WhisperQueue.length)return toast('识别或录音录像整理尚未完成，请等待后再提交');
+ if(oneShotAsrJob||questionAsrQueue.length||recorderFinalizing||speechRecognizer||videoRecorderFinalizing||transcriptBusy)return toast('识别或录音录像整理尚未完成，请等待后再提交');
  if(snap.assignmentId){const assignment=assignmentForReview(snap);if(!assignment||assignment.boardId!==snap.boardId||assignment.platform!==snap.platform||!assignment.operatorName||snap.operatorName!==assignment.operatorName||!isAssigned(assignment,snap.anchorName))return toast('作业信息不匹配，无法提交');operatorName=assignment.operatorName;}
  operatorName=String(operatorName||'').trim();if(!operatorName)return toast('请输入运营姓名');if(reviewSubmission())return toast(syncMember()?'这次训练已经提交到云端':'这次训练已经保存在本机');
+ if(r6WhisperRunning||r6WhisperQueue.length){
+  if(!syncMember()||!snap.assignmentId||!snap.turns.every(turn=>turn.answer?.trim()||turn.transcript?.trim()||turn.manualCleared))return toast('逐题转写尚未完成。你也可以在逐题复盘中核对并手动填写答案。');
+  if(!window.confirm('部分录音仍在转写。是否提交目前的答案、已经生成的转写和逐题录音？'))return;
+  r6WhisperCancelAll('本次提交使用已核对文字，原录音保留');
+ }
  const lateAssignment=assignmentForReview(snap),late=!!(lateAssignment&&assignmentExpired(lateAssignment));
  const id=uid();const turns=snap.turns.map(t=>({id:t.id,...turnReferenceSnapshot(t),prompt:t.prompt,trainingHint:t.trainingHint||'',answer:t.answer||'',transcript:t.transcript||'',rawTranscript:t.rawTranscript||'',manualEdited:!!t.manualEdited,manualCleared:!!t.manualCleared,responseSeconds:t.responseSeconds??null,durationSeconds:t.durationSeconds??null,pointsHit:t.pointsHit||[],keyPoints:t.keyPoints||[],compliance:t.compliance||[],asrStatus:t.asrStatus||''}));
- const audio=snap.turns.filter(t=>perQuestionAudio.has(t.id)).map(t=>({id:t.id,prompt:t.prompt,blob:perQuestionAudio.get(t.id)}));
+ const audio=snap.turns.filter(t=>perQuestionAudio.has(t.id)).map(t=>({id:t.id,questionId:t.questionId,prompt:t.prompt,blob:perQuestionAudio.get(t.id)}));
  const media={id:'submission-media:'+id,video:sessionVideoBlob||null,audio};
  const submission={id,sessionId:snap.id,assignmentId:snap.assignmentId||'',operatorName,anchorName:snap.anchorName,boardId:snap.boardId,category:snap.category,platform:snap.platform,submittedAt:nowIso(),durationSeconds:snap.durationSeconds,turns,videoRecorded:!!sessionVideoBlob,late};
  submissionSaving=true;const btn=ELEM('submitSession');if(btn)btn.disabled=true;
@@ -3221,15 +3588,31 @@ async function submitSessionRecord(operatorName){
    const payload=cloudSubmissionPayload(snap);
    const result=await assignmentSync.submit(payload);
    const accepted=result.submission;
-   if(accepted?.sessionId!==snap.id||accepted.assignmentId!==snap.assignmentId||!accepted.submittedAt)throw new Error('云端回执未确认，请重试');
+   if(accepted?.sessionId!==snap.id||accepted.assignmentId!==snap.assignmentId||!accepted.submittedAt||!accepted.id)throw new Error('云端回执未确认，请重试');
+   submission.cloudId=accepted.id;
+   submission.audioPendingIds=audio.filter(cloudAudioAcceptable).map(clip=>clip.questionId);
+   submission.audioUploadedIds=[];
+   submission.audioLocalOnly=audio.length-submission.audioPendingIds.length;
+   fallbackSubmissionMedia=media;
    submission.cloudConfirmed=true;submission.submittedAt=accepted.submittedAt;submission.late=accepted.late===true;
    syncSubmitStatus.set(snap.id,submission);
    cloudAssignments=cloudAssignments.map(row=>row.assignment.id===snap.assignmentId?{...row,submitted:true}:row);
   }
   const committed=await commitSubmission(submission,lastTrainingLogId,media,checkpointCursor.token,current);localSubmissions=committed.submissions;localTrainingLogs=committed.logs;notifyWorkflowChange('submissions');if(userRole!=='anchor'||userName!==snap.anchorName)return;toast(submission.cloudConfirmed?'已提交到云端，接收运营可查看':submission.assignmentReceipt?'已保存到本机，请发送 JSON 回执':'已保存到本机');
-   if(submission.assignmentReceipt)downloadJSON('TCL-主播作业提交回执-'+id+'.json',submission.assignmentReceipt);if(btn?.isConnected)btn.textContent=submitStatusText(submission);}
+   if(submission.assignmentReceipt)downloadJSON('TCL-主播作业提交回执-'+id+'.json',submission.assignmentReceipt);if(btn?.isConnected)btn.textContent=submitStatusText(submission);
+   if(submission.cloudConfirmed){
+    if(fallbackSubmissionMedia===media)fallbackSubmissionMedia=null;
+    paintCloudAudioStatus(submission);
+    void uploadCloudAudio(submission,media);
+   }
+  }
  catch(e){
-  if(submission.cloudConfirmed){if(btn?.isConnected)btn.textContent=submitStatusText(submission);toast('已提交到云端。本机归档未确认，请下载录像备份');}
+  if(submission.cloudConfirmed){
+   if(btn?.isConnected)btn.textContent=submitStatusText(submission);
+   toast('文字已提交到云端。本机归档未确认，请下载录像备份');
+   paintCloudAudioStatus(submission);
+   void uploadCloudAudio(submission,media);
+  }
   else{if(btn?.isConnected)btn.disabled=false;toast((syncMember()?'未收到云端确认，本机记录可重试：':'提交未保存：')+(e?.message||e));}
  }
  finally{submissionSaving=false;}
@@ -3405,12 +3788,22 @@ async function initialiseStorage(storageName){
  try{localDB=await dbOpen(storageName);localEntries=await dbAll('items');localRecords=(await dbAll('records')).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));const prefs=await loadPrefs();barrageIntervalMs=Number(prefGet(prefs,'barrageIntervalMs',60000))||60000;localAssignments=prefGet(prefs,'assignments',[]);localAssignmentJoins=prefGet(prefs,'assignmentJoins',[]);localTrainingLogs=prefGet(prefs,'trainingLogs',[]);localSubmissions=prefGet(prefs,'submissions',[]);}catch(e){memoryFallback=true;localEntries=[];localRecords=[];localAssignments=[];localAssignmentJoins=[];localTrainingLogs=[];localSubmissions=[];}
 }
 async function init(){
+ let restoredMember=null;
  try{
   const cfg=await fetch('./app-config.json',{cache:'no-store'}).then(r=>r.ok?r.json():{});
   if(cfg.apiBase&&/^https:\/\//.test(cfg.apiBase))cloud.base=cfg.apiBase.replace(/\/$/,'');
   try{assignmentSync=createAssignmentSync(cfg.assignmentSync);}catch(error){syncConfigError=error.message;}
  }catch{}
- if(!assignmentSync&&!syncConfigError)await initialiseStorage(STORE_NAME);
+ if(requiresAssignmentCloud&&!assignmentSync&&!syncConfigError)syncConfigError='云同步试点配置暂不可用，请刷新后重试';
+ if(assignmentSync){
+  try{
+   restoredMember=await assignmentSync.restoreSession();
+   if(restoredMember)await loadSyncIdentity(restoredMember);
+  }catch(error){
+   assignmentSync.signOut();restoredMember=null;
+   syncSessionFeedback='暂时无法校验本机绑定，请核对网络后输入原姓名重试。';
+  }
+ }else if(!syncConfigError)await initialiseStorage(STORE_NAME);
  window.addEventListener('focus',()=>void refreshWorkflowState());window.addEventListener('pageshow',e=>{
  if(!e.persisted)return;
  void refreshWorkflowState();
@@ -3428,7 +3821,9 @@ ELEM('drawerScrim').onclick=closeDrawer;
 window.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(ELEM('sidebar').classList.contains('open')){closeMenu();return}if(ELEM('trainingControls')?.classList.contains('show-live-controls')||ELEM('prepMoreSheet')?.hidden===false||ELEM('liveMoreSheet')?.hidden===false){closeDrawer();e.preventDefault();return}if(page==='sessionReview'&&reviewStage!=='overview'){backToReviewOverview();e.preventDefault();return}if(roomPhase==='ready'){ELEM('prepExit')?.click();return}if(roomPhase==='live'){requestFinishScene()}});
 window.addEventListener('popstate',e=>{if(page==='sessionReview'){const stage=e.state?.reviewStage;if(stage==='replay'||stage==='details'){showReviewStage(stage,{recordHistory:false});return;}if(reviewStage!=='overview'){showReviewStage('overview',{recordHistory:false});return;}}if(e.state?.tclApp)return;const handled=(()=>{if(ELEM('sidebar').classList.contains('open')){closeMenu();return true}if(ELEM('trainingControls')?.classList.contains('show-live-controls')||ELEM('prepMoreSheet')?.hidden===false||ELEM('liveMoreSheet')?.hidden===false){closeDrawer();return true}const sheet=ELEM('textAnswerSheet');if(sheet&&!sheet.hidden){sheet.hidden=true;return true}if(page==='sessionReview'&&reviewStage!=='overview'){backToReviewOverview();return true}if(page==='training'&&(roomPhase==='ready'||roomPhase==='check')){ELEM('prepExit')?.click();return true}if(roomPhase==='live'){requestFinishScene();return true}if(page==='roleLogin'){pendingRole='';page='home';render();return true}if(page!=='home'){nav('home');return true}return false})();if(handled)syncHistoryEntry();});document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>nav(b.dataset.page));
 document.querySelectorAll('[data-quick-page]').forEach(b=>b.onclick=()=>nav(b.dataset.quickPage));
-ELEM('backupBtn').onclick=backupForIdentity;updateMode();render();if(cloud.base){syncCloud().catch(()=>{});}}
+ELEM('backupBtn').onclick=backupForIdentity;updateMode();render();
+if(restoredMember)void refreshAfterSyncLogin(restoredMember,false);
+if(cloud.base){syncCloud().catch(()=>{});}}
 // V3.4.9：离开首页时压入一条站内历史记录，手机返回键/手势回到首页，而不是直接退出网站。
 function syncHistoryEntry(){try{if(page!=='home'&&!history.state?.tclApp)history.pushState({tclApp:true},'');}catch{}}
 function render(){clearSubmittedPlayback();clearReviewQuestionAudioUrls();if(!pageAllowed(page))page='home';document.body.dataset.page=page;if(page==='home')home();else if(page==='roleLogin')roleLogin();else if(page==='catalog')catalog();else if(page==='training')trainingHome();else if(page==='sessionReview')sessionReviewPage();else if(page==='library')library();else if(page==='legacy')legacy();else if(page==='progress')progress();else if(page==='import')importPage();else if(page==='review')reviewPage();else if(page==='settings')settingsPage();syncHistoryEntry();}

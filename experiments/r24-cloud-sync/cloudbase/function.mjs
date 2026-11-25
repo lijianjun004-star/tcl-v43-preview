@@ -6,6 +6,7 @@ import {createGatewayHandler} from './gateway.mjs';
 import {readFunctionConfig} from './function-config.mjs';
 import {createDeviceAccess} from './device-access.mjs';
 import {createDeviceGrantStore} from './device-grants-store.mjs';
+import {createCloudBaseAudio} from './cloudbase-audio.mjs';
 
 function createFunction(runtimeNamespace) {
   const {envId, prefix, allowedOrigins} = readFunctionConfig(process.env, runtimeNamespace);
@@ -15,8 +16,9 @@ function createFunction(runtimeNamespace) {
   const authenticateNative = createAuthenticator({envId, getEnrollment});
   const grants = createDeviceGrantStore(db, prefix);
   const {authenticate, handleDeviceRequest} = createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins});
-  const api = createApi({authenticate, directory, store, allowedOrigins, basePath: ''});
-  return createGatewayHandler(request => handleDeviceRequest(request, api));
+  const media = createCloudBaseAudio(cloudApp, envId);
+  const api = createApi({authenticate, directory, store, media, allowedOrigins, basePath: ''});
+  return createGatewayHandler((request, context) => handleDeviceRequest(request, api, context));
 }
 
 let handler;

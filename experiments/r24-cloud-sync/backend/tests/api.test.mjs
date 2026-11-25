@@ -15,14 +15,14 @@ const identities = {
   disabled: { id: 'a4', teamId: 't1', role: 'anchor', displayName: '陈主播', active: false },
 };
 
-function fixture() {
+function fixture(media) {
   const store = createMemoryStore();
   const accounts = structuredClone(identities);
   let now = '2026-11-24T11:00:00.000Z';
   const handle = createApi({
     authenticate: async token => accounts[token] ?? null,
     directory: { listAnchors: async () => Object.values(accounts) },
-    store,
+    store, media,
     now: () => new Date(now),
     allowedOrigins: [allowedOrigin],
     basePath: '/qa-sync',
@@ -183,7 +183,7 @@ test('complete submission binds actor ID and frozen assignment and records serve
   assert.equal(Object.hasOwn(receipt.data.submission.turns[0], 'score'), false);
   assert.equal((await call('GET', path, 'anchor')).status, 403);
   assert.equal((await call('GET', path, 'peer')).status, 404);
-  assert.deepEqual((await call('GET', path, 'publisher')).data.submissions, [receipt.data.submission]);
+  assert.deepEqual((await call('GET', path, 'publisher')).data.submissions, [{...receipt.data.submission, audio: []}]);
   const state = (await call('GET', '/assignments', 'anchor')).data.assignments[0];
   assert.equal(state.submitted, true);
   assert.equal(state.lastSubmittedAt, '2026-11-24T12:00:00.000Z');
@@ -245,4 +245,57 @@ test('pagination does not skip same-time assignments and stays viewer scoped', a
   assert.equal(second.nextCursor, null);
   const { data: outside } = await call('GET', '/assignments?cursor=' + first.nextCursor, 'outside');
   assert.deepEqual(outside, { assignments: [], nextCursor: null });
+});
+
+test('claim and operator progress are identity-scoped and retries keep the same timestamp', async () => {
+  const {call, setTime} = fixture();
+  const assignment = await make();
+  await call('POST', '/assignments', 'publisher', {assignment, recipientIds: []});
+  const prefix='/assignments/'+assignment.id;
+  assert.equal((await call('POST',prefix+'/claim','outside',{})).status,404);
+  assert.equal((await call('POST',prefix+'/claim','publisher',{})).status,403);
+  const first=await call('POST',prefix+'/claim','anchor',{});
+  assert.equal(first.status,201);
+  setTime('2026-11-24T11:40:00.000Z');
+  const repeat=await call('POST',prefix+'/claim','anchor',{});
+  assert.deepEqual(repeat.data,{claimedAt:first.data.claimedAt,replayed:true});
+  assert.equal((await call('GET',prefix+'/progress','peer')).status,404);
+  const p=(await call('GET',prefix+'/progress','publisher')).data.claims;
+  assert.deepEqual(p,[{anchorId:'a1',anchorName:'陈主播',claimedAt:first.data.claimedAt,submittedAt:null}]);
+  assert.equal((await call('GET','/assignments','anchor')).data.assignments[0].claimedAt,first.data.claimedAt);
+});
+
+test('private audio is separately retried, verified, size-limited and restricted to owner or author', async () => {
+  let fail=true;
+  const objects=new Map();
+  const {call}=fixture({
+    async put(key,mime,bytes){if(fail)throw new Error('storage offline');objects.set(key,Buffer.from(bytes));},
+    async get(key){return objects.get(key);},
+  });
+  const assignment=await make();
+  await call('POST','/assignments','publisher',{assignment,recipientIds:[]});
+  const path=submissionsPath(assignment);
+  const saved=(await call('POST',path,'anchor',{snapshot:practice(assignment)})).data.submission;
+  const upload=path+'/'+saved.id+'/audio';
+  const questionId=saved.turns[0].questionId;
+  const waveform=Buffer.from('524946460000000057415645','hex');
+  const body={questionId,mimeType:'audio/wav',base64:waveform.toString('base64')};
+  assert.equal((await call('POST',upload,'otherAnchor',body)).status,404);
+  assert.equal((await call('POST',upload,'publisher',body)).status,403);
+  assert.equal((await call('POST',upload,'anchor',{...body,base64:Buffer.alloc(524289).toString('base64')})).status,413);
+  assert.equal((await call('POST',upload,'anchor',{...body,mimeType:'audio/webm'})).status,422);
+  assert.equal((await call('POST',upload,'anchor',body)).data.error.code,'AUDIO_UPLOAD_PENDING');
+  const waiting=(await call('GET',path,'publisher')).data.submissions;
+  assert.deepEqual(waiting[0].turns,saved.turns);
+  assert.deepEqual(waiting[0].audio,[]);
+  fail=false;
+  const retry=await call('POST',upload,'anchor',body);
+  assert.equal(retry.status,200);
+  assert.equal((await call('POST',upload,'anchor',body)).data.replayed,true);
+  assert.equal(objects.size,1);
+  const playback=upload+'?questionId='+encodeURIComponent(questionId);
+  assert.equal((await call('GET',playback,'otherAnchor')).status,404);
+  assert.equal((await call('GET',playback,'peer')).status,404);
+  assert.deepEqual((await call('GET',playback,'publisher')).data,
+    {mimeType:body.mimeType,base64:body.base64});
 });

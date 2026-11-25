@@ -29,6 +29,19 @@ export function createDatabaseAdapter(db, prefix) {
   const enrollments = `${prefix}_enrollments`;
   const assignments = `${prefix}_assignments`;
   const submissions = `${prefix}_submissions`;
+  const claims = `${prefix}_claims`;
+  const submissionAudio = `${prefix}_submission_audio`;
+  const audioFields = 'id,assignment_id,submission_id,question_id,team_id,anchor_id,mime_type,bytes,sha256,object_path,ready_at';
+
+  function fromAudio(row) {
+    if (!row) return null;
+    return {
+      id: row.id, assignmentId: row.assignment_id, submissionId: row.submission_id,
+      questionId: row.question_id, teamId: row.team_id, anchorId: row.anchor_id,
+      mimeType: row.mime_type, bytes: row.bytes, sha256: row.sha256,
+      objectPath: row.object_path, readyAt: row.ready_at,
+    };
+  }
 
   function queryFrom(table, fields, filter) {
     let query = db.from(table).select(fields);
@@ -98,9 +111,43 @@ export function createDatabaseAdapter(db, prefix) {
         id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
         anchor_id: record.anchorId, submitted_at: record.submittedAt, payload: record,
       }),
-      listSubmissions: async (assignmentId, teamId) => (await pageById(
-        submissions, 'id,payload', {assignment_id: assignmentId, team_id: teamId},
+      listSubmissions: async (assignmentId, teamId, anchorId) => (await pageById(
+        submissions, 'id,payload', {
+          assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
+        },
       )).map(payload),
+      listAssignmentSubmissionStatuses: async (assignmentId, teamId) => (await pageById(
+        submissions, 'id,anchor_id,submitted_at,payload->>anchorName', {assignment_id: assignmentId, team_id: teamId},
+      )).map(row => ({anchorId: row.anchor_id, anchorName: row.anchorName, submittedAt: new Date(row.submitted_at).toISOString()})),
+      getClaim: id => getRecord(claims, id),
+      createClaim: record => insertRecord(claims, {
+        id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
+        anchor_id: record.anchorId, payload: record,
+      }),
+      listClaims: async (assignmentId, teamId) => (await pageById(
+        claims, 'id,payload', {assignment_id: assignmentId, team_id: teamId},
+      )).map(payload),
+      listAnchorClaims: async (teamId, anchorId) => (await pageById(
+        claims, 'id,payload', {team_id: teamId, anchor_id: anchorId},
+      )).map(payload),
+      getAudio: async id => fromAudio(await getRow(submissionAudio, audioFields, id)),
+      createAudio: record => insertRecord(submissionAudio, {
+        id: record.id, assignment_id: record.assignmentId, submission_id: record.submissionId,
+        question_id: record.questionId, team_id: record.teamId, anchor_id: record.anchorId,
+        mime_type: record.mimeType, bytes: record.bytes, sha256: record.sha256,
+        object_path: record.objectPath,
+      }),
+      async markAudioReady(id, readyAt) {
+        const records = await resultRows(db.from(submissionAudio).update({ready_at: readyAt})
+          .eq('id', id).is('ready_at', null).select(audioFields));
+        if (records.length > 1) throw new Error('Unexpected audio update result');
+        return fromAudio(records[0] ?? await getRow(submissionAudio, audioFields, id));
+      },
+      listSubmissionAudio: async (assignmentId, teamId, anchorId) => (await pageById(
+        submissionAudio, audioFields, {
+          assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
+        },
+      )).map(fromAudio),
       listAnchorSubmissionStatuses: async (teamId, anchorId) => (await pageById(
         submissions, 'id,assignment_id,submitted_at', {team_id: teamId, anchor_id: anchorId},
       )).map(row => ({assignmentId: row.assignment_id, submittedAt: new Date(row.submitted_at).toISOString()})),

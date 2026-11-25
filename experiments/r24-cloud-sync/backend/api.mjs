@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   isReceiptLate,
   sha256Hex,
@@ -9,6 +10,13 @@ import { boardDefinitions } from './vendor/qa3-boards.mjs';
 const MAX_BODY_BYTES = 1_000_000;
 const MAX_PAGE_BYTES = 1_000_000;
 const MAX_PAGE_ROWS = 20;
+export const MAX_AUDIO_BYTES = 512 * 1024;
+const HEX_SHA256 = /^[a-f0-9]{64}$/u;
+const audioTypes = new Map([
+  ['audio/webm', 'webm'], ['audio/ogg', 'ogg'], ['audio/mp4', 'm4a'],
+  ['audio/wav', 'wav'], ['audio/x-wav', 'wav'], ['audio/mpeg', 'mp3'],
+  ['audio/aac', 'aac'], ['audio/x-m4a', 'm4a'],
+]);
 const ASSIGNMENT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const SNAPSHOT_CONTEXT = [
   'assignmentId', 'assignmentVersion', 'assignmentSnapshotSha256',
@@ -45,7 +53,7 @@ function validIdentity(identity) {
     && typeof identity.id === 'string' && identity.id.length > 0 && identity.id.length <= 128
     && typeof identity.teamId === 'string' && identity.teamId.length > 0 && identity.teamId.length <= 128
     && typeof identity.displayName === 'string' && identity.displayName === identity.displayName.trim()
-    && identity.displayName.length > 0 && identity.displayName.length <= 40
+    && identity.displayName.length > 0 && [...identity.displayName].length <= 40
     && !/[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/u.test(identity.displayName);
 }
 
@@ -118,11 +126,15 @@ function cleanAssignment(record) {
   return { assignment: record.assignment, publishedAt: record.publishedAt };
 }
 
-function cleanSubmission(record) {
+function publicAudio({ questionId, mimeType, bytes }) {
+  return { questionId, mimeType, bytes };
+}
+
+function cleanSubmission(record, audio) {
   const { id, assignmentId, assignmentVersion, snapshotSha256, anchorId, anchorName,
     sessionId, submittedAt, late, turns } = record;
   return { id, assignmentId, assignmentVersion, snapshotSha256, anchorId, anchorName,
-    sessionId, submittedAt, late, turns };
+    sessionId, submittedAt, late, turns, ...(audio ? { audio } : {}) };
 }
 
 function descending(a, b) {
@@ -327,26 +339,235 @@ async function assignmentPage(store, principal, url) {
   if (principal.role === 'operator') return page(records, cleanAssignment, 'publishedAt', url, 'assignments');
 
   const latest = new Map();
-  const statuses = await store.listAnchorSubmissionStatuses(principal.teamId, principal.id);
+  const [statuses, claims] = await Promise.all([
+    store.listAnchorSubmissionStatuses(principal.teamId, principal.id),
+    store.listAnchorClaims(principal.teamId, principal.id),
+  ]);
+  const claimedByAssignment = new Map(claims.map(claim => [claim.assignmentId, claim.claimedAt]));
   for (const { assignmentId, submittedAt } of statuses) {
     const old = latest.get(assignmentId);
     if (!old || submittedAt > old) latest.set(assignmentId, submittedAt);
   }
   const view = record => ({
     ...cleanAssignment(record),
+    claimedAt: claimedByAssignment.get(record.id) ?? null,
     submitted: latest.has(record.id),
     lastSubmittedAt: latest.get(record.id) ?? null,
   });
   return page(records, view, 'publishedAt', url, 'assignments');
 }
 
+function resourceId(encoded, label, pattern = ASSIGNMENT_ID) {
+  let value;
+  try {
+    value = decodeURIComponent(encoded);
+  } catch {
+    problem(400, label + '_ID_INVALID', '记录 ID 格式无效');
+  }
+  if (!pattern.test(value)) problem(400, label + '_ID_INVALID', '记录 ID 格式无效');
+  return value;
+}
+
+async function claim(request, assignmentId, principal, { store, now }) {
+  anchorOnly(principal);
+  const body = await readJson(request);
+  if (Object.keys(body).length) problem(400, 'CLAIM_INVALID', '领取作业无需填写额外字段');
+  const assignment = await store.getAssignment(assignmentId);
+  assertVisible(assignment, principal);
+  const id = await sha256Hex([principal.teamId, principal.id, assignmentId]);
+  const existing = await store.getClaim(id);
+  if (existing) return { body: { claimedAt: existing.claimedAt, replayed: true } };
+  const deadline = assignment.assignment.deadline;
+  if (deadline && now().getTime() >= Date.parse(deadline)) {
+    problem(409, 'ASSIGNMENT_CLOSED', '该作业已截止，无法首次领取');
+  }
+  const record = {
+    id, assignmentId, teamId: principal.teamId, anchorId: principal.id,
+    anchorName: principal.displayName, claimedAt: now().toISOString(),
+  };
+  if (await store.createClaim(record)) return { status: 201, body: { claimedAt: record.claimedAt, replayed: false } };
+  const confirmed = await store.getClaim(id);
+  if (!confirmed) problem(503, 'WRITE_PENDING', '暂未读到领取结果，请重试');
+  return { body: { claimedAt: confirmed.claimedAt, replayed: true } };
+}
+
+async function progress(assignmentId, url, principal, store) {
+  operatorOnly(principal);
+  assertVisible(await store.getAssignment(assignmentId), principal);
+  const [claims, submissions] = await Promise.all([
+    store.listClaims(assignmentId, principal.teamId),
+    store.listAssignmentSubmissionStatuses(assignmentId, principal.teamId),
+  ]);
+  const byAnchor = new Map(claims.map(row => [row.anchorId, {
+    anchorId: row.anchorId, anchorName: row.anchorName, claimedAt: row.claimedAt, submittedAt: null,
+  }]));
+  for (const { anchorId, anchorName, submittedAt } of submissions) {
+    const row = byAnchor.get(anchorId) ?? { anchorId, anchorName, claimedAt: null, submittedAt: null };
+    if (!row.submittedAt || submittedAt > row.submittedAt) row.submittedAt = submittedAt;
+    byAnchor.set(anchorId, row);
+  }
+  const rows = [...byAnchor.values()].map(row => ({ ...row, id: row.anchorId, updatedAt: row.submittedAt ?? row.claimedAt }));
+  const view = ({ id, updatedAt, ...publicRow }) => publicRow;
+  return { body: page(rows, view, 'updatedAt', url, 'claims') };
+}
+
+async function submissionPage(assignmentId, url, principal, store, own) {
+  const assignment = await store.getAssignment(assignmentId);
+  if (own) anchorOnly(principal);
+  else operatorOnly(principal);
+  assertVisible(assignment, principal);
+  const anchorId = own ? principal.id : undefined;
+  const [submissions, audio] = await Promise.all([
+    store.listSubmissions(assignmentId, principal.teamId, anchorId),
+    store.listSubmissionAudio(assignmentId, principal.teamId, anchorId),
+  ]);
+  const attached = new Map();
+  for (const record of audio) {
+    if (!record.readyAt) continue;
+    const segments = attached.get(record.submissionId) ?? [];
+    segments.push(publicAudio(record));
+    attached.set(record.submissionId, segments);
+  }
+  const filtered = submissions.filter(record => record.assignmentId === assignmentId &&
+    record.teamId === principal.teamId && (!own || record.anchorId === anchorId));
+  const view = row => cleanSubmission(row, attached.get(row.id) ?? []);
+  return { body: page(filtered, view, 'submittedAt', url, 'submissions') };
+}
+
+const digestBytes = bytes => createHash('sha256').update(bytes).digest('hex');
+
+function matchesAudioFormat(bytes, extension) {
+  const first = bytes.subarray(0, 4);
+  const head = first.toString('ascii');
+  switch (extension) {
+    case 'webm': return first.equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
+    case 'ogg': return head === 'OggS';
+    case 'm4a': return bytes.subarray(4, 8).toString('ascii') === 'ftyp';
+    case 'wav': return head === 'RIFF' && bytes.subarray(8, 12).toString('ascii') === 'WAVE';
+    case 'mp3': return head.startsWith('ID3') || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0);
+    case 'aac': return bytes[0] === 0xff && (bytes[1] & 0xf6) === 0xf0;
+    default: return false;
+  }
+}
+
+function audioPayload(body) {
+  const { questionId, mimeType, base64 } = body;
+  if (typeof questionId !== 'string' || !ASSIGNMENT_ID.test(questionId)) {
+    problem(422, 'AUDIO_QUESTION_INVALID', '题目编号无效');
+  }
+  const normalizedType = typeof mimeType === 'string' && mimeType.length <= 128
+    ? mimeType.split(';', 1)[0].trim().toLowerCase() : '';
+  const extension = audioTypes.get(normalizedType);
+  if (!extension) problem(415, 'AUDIO_FORMAT_INVALID', '不支持此录音格式');
+  if (typeof base64 !== 'string' || !base64 || base64.length % 4 !== 0) {
+    problem(422, 'AUDIO_INVALID', '录音编码无效');
+  }
+  if (base64.length > Math.ceil(MAX_AUDIO_BYTES / 3) * 4) {
+    problem(413, 'AUDIO_TOO_LARGE', '每段录音最多 512 KiB');
+  }
+  const bytes = Buffer.from(base64, 'base64');
+  if (bytes.length > MAX_AUDIO_BYTES) problem(413, 'AUDIO_TOO_LARGE', '每段录音最多 512 KiB');
+  if (!bytes.length || bytes.toString('base64') !== base64 || !matchesAudioFormat(bytes, extension)) {
+    problem(422, 'AUDIO_INVALID', '录音编码或内容与格式不符');
+  }
+  return { questionId, mimeType: normalizedType, extension, bytes, sha256: digestBytes(bytes) };
+}
+
+async function audioParent(assignmentId, submissionId, principal, store) {
+  const assignment = await store.getAssignment(assignmentId);
+  assertVisible(assignment, principal);
+  const record = await store.getSubmission(submissionId);
+  if (!record || record.assignmentId !== assignmentId || record.teamId !== principal.teamId ||
+      (principal.role === 'anchor' && record.anchorId !== principal.id)) {
+    problem(404, 'SUBMISSION_NOT_FOUND', '找不到可访问的作业提交');
+  }
+  return record;
+}
+
+function assertAudioQuestion(submission, questionId) {
+  if (!submission.turns.some(turn => turn.questionId === questionId)) {
+    problem(404, 'AUDIO_QUESTION_INVALID', '提交中没有这道题');
+  }
+}
+
+function assertAudioAvailable(media) {
+  if (!media) problem(503, 'AUDIO_UNAVAILABLE', '音频服务暂不可用，文字记录已保留');
+}
+
+function checkedAudioBytes(bytes, record) {
+  if (!Buffer.isBuffer(bytes) || bytes.length !== record.bytes || digestBytes(bytes) !== record.sha256) {
+    problem(503, 'AUDIO_UNAVAILABLE', '录音未能通过校验，请稍后重试');
+  }
+  return bytes;
+}
+
+async function audioDownload(assignmentId, submissionId, url, principal, { store, media }) {
+  const submission = await audioParent(assignmentId, submissionId, principal, store);
+  const questionId = url.searchParams.get('questionId');
+  assertAudioQuestion(submission, questionId);
+  const id = await sha256Hex([submission.id, questionId]);
+  const record = await store.getAudio(id);
+  if (!record?.readyAt) problem(404, 'AUDIO_NOT_FOUND', '这道题还没有可播放的云端录音');
+  assertAudioAvailable(media);
+  let bytes;
+  try {
+    bytes = await media.get(record.objectPath);
+  } catch {
+    problem(503, 'AUDIO_UNAVAILABLE', '云端录音暂时无法读取，请重试');
+  }
+  return { body: { mimeType: record.mimeType, base64: checkedAudioBytes(bytes, record).toString('base64') } };
+}
+
+async function audioUpload(request, assignmentId, submissionId, principal, { store, media, now }) {
+  anchorOnly(principal);
+  const submission = await audioParent(assignmentId, submissionId, principal, store);
+  assertAudioAvailable(media);
+  const recording = audioPayload(await readJson(request));
+  const { questionId, mimeType, extension, bytes, sha256 } = recording;
+  assertAudioQuestion(submission, questionId);
+  const id = await sha256Hex([submission.id, questionId]);
+  const pending = {
+    id, submissionId, assignmentId, questionId, mimeType, bytes: bytes.length, sha256,
+    teamId: submission.teamId, anchorId: submission.anchorId,
+    objectPath: `submissions/${submission.id}/${id}.${extension}`, readyAt: null,
+  };
+  let record = await store.getAudio(id);
+  const inserted = !record && await store.createAudio(pending);
+  if (!record) record = inserted ? pending : await store.getAudio(id);
+  if (!record) problem(503, 'WRITE_PENDING', '录音状态尚未确认，文字记录已保留，请重试');
+  if (record.sha256 !== sha256 || record.mimeType !== mimeType || record.bytes !== bytes.length) {
+    problem(409, 'AUDIO_CONFLICT', '本题已有另一段录音，请重试上传原录音');
+  }
+  if (record.readyAt) return { body: { audio: publicAudio(record), replayed: true } };
+  try {
+    await media.put(record.objectPath, mimeType, bytes);
+    // Check the object before making its metadata available. This also verifies
+    // an insert-only replay after any interrupted upload.
+    checkedAudioBytes(await media.get(record.objectPath), record);
+    const ready = await store.markAudioReady(record.id, now().toISOString());
+    if (!ready?.readyAt) throw new Error('Audio readiness not confirmed');
+    return { status: inserted ? 201 : 200, body: { audio: publicAudio(ready), replayed: !inserted } };
+  } catch (error) {
+    const failure = { code: 'AUDIO_UPLOAD_PENDING', message: '文字记录已提交，录音尚未确认，可重试上传' };
+    if (['credential-request','credential-response','upload-request','upload-response','upload-confirmation',
+      'download-request','download-response'].includes(error?.storageOperation)) {
+      failure.stage = error.storageOperation;
+      if (Number.isInteger(error.storageStatus) && error.storageStatus >= 400 && error.storageStatus < 600) {
+        failure.upstreamStatus = error.storageStatus;
+      }
+    }
+    return { status: 503, body: { error: failure } };
+  }
+}
+
 async function route(request, url, path, principal, dependencies) {
   const { store, directory } = dependencies;
-  if (request.method === 'GET' && path === '/me') {
+  const { method } = request;
+  if (method === 'GET' && path === '/me') {
     const { id, role, displayName } = principal;
     return { body: { principal: { id, role, displayName } } };
   }
-  if (request.method === 'GET' && path === '/recipients') {
+  if (method === 'GET' && path === '/recipients') {
     operatorOnly(principal);
     const recipients = (await directory.listAnchors(principal.teamId))
       .filter(anchor => assignableAnchor(anchor, principal.teamId))
@@ -354,28 +575,23 @@ async function route(request, url, path, principal, dependencies) {
     return { body: { recipients } };
   }
   if (path === '/assignments') {
-    if (request.method === 'POST') return publish(request, principal, dependencies);
-    if (request.method === 'GET') {
-      return { body: await assignmentPage(store, principal, url) };
-    }
+    if (method === 'POST') return publish(request, principal, dependencies);
+    if (method === 'GET') return { body: await assignmentPage(store, principal, url) };
   }
-  const match = /^\/assignments\/([^/]+)\/submissions$/u.exec(path);
-  if (match) {
-    let assignmentId;
-    try {
-      assignmentId = decodeURIComponent(match[1]);
-    } catch {
-      problem(400, 'ASSIGNMENT_ID_INVALID', '作业 ID 格式无效');
-    }
-    if (!ASSIGNMENT_ID.test(assignmentId)) problem(400, 'ASSIGNMENT_ID_INVALID', '作业 ID 格式无效');
-    if (request.method === 'POST') return submit(request, assignmentId, principal, dependencies);
-    if (request.method === 'GET') {
-      operatorOnly(principal);
-      const assignment = await store.getAssignment(assignmentId);
-      assertVisible(assignment, principal);
-      const submissions = (await store.listSubmissions(assignmentId, principal.teamId))
-        .filter(s => s.assignmentId === assignmentId && s.teamId === principal.teamId);
-      return { body: page(submissions, cleanSubmission, 'submittedAt', url, 'submissions') };
+  const match = /^\/assignments\/([^/]+)\/(claim|progress|submissions|my-submissions)(?:\/([^/]+)\/audio)?$/u.exec(path);
+  if (!match) return problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
+  const [, rawId, action, rawSubmission] = match;
+  const assignmentId = resourceId(rawId, 'ASSIGNMENT');
+  if (rawSubmission && action === 'submissions') {
+    const submissionId = resourceId(rawSubmission, 'SUBMISSION', HEX_SHA256);
+    if (method === 'POST') return audioUpload(request, assignmentId, submissionId, principal, dependencies);
+    if (method === 'GET') return audioDownload(assignmentId, submissionId, url, principal, dependencies);
+  } else if (!rawSubmission) {
+    if (action === 'claim' && method === 'POST') return claim(request, assignmentId, principal, dependencies);
+    if (action === 'progress' && method === 'GET') return progress(assignmentId, url, principal, store);
+    if (action === 'submissions' && method === 'POST') return submit(request, assignmentId, principal, dependencies);
+    if ((action === 'submissions' || action === 'my-submissions') && method === 'GET') {
+      return submissionPage(assignmentId, url, principal, store, action === 'my-submissions');
     }
   }
   return problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
@@ -385,6 +601,7 @@ export function createApi({
   authenticate,
   directory,
   store,
+  media,
   now = () => new Date(),
   boards = boardDefinitions,
   allowedOrigins = [],
@@ -392,7 +609,7 @@ export function createApi({
   onError = () => {},
 }) {
   const dependencies = {
-    directory, store, now,
+    directory, store, now, media,
     boards: new Map(boards.map(board => [board.id, board])),
   };
   const origins = new Set(allowedOrigins);

@@ -201,7 +201,6 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
 
   const binds = activationPosts(server);
   await trainee.page.reload({ waitUntil: 'domcontentloaded' });
-  await submitName(trainee.page, anchor.displayName);
   await identityBar(trainee.page).filter({ hasText: anchor.displayName }).waitFor();
   assert.equal(activationPosts(server), binds);
   await trainee.page.locator('#assignmentFold summary').click();
@@ -220,7 +219,7 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
   assert.deepEqual([...ops.errors, ...trainee.errors, ...foreign.errors], []);
 });
 
-test('first browser requires a valid device code, same browser later uses name only', { timeout: 45_000 }, async t => {
+test('an existing name requires a valid code on a new browser and only a name on the bound browser', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const primary = await newPage();
   await submitName(primary.page, operator.displayName);
@@ -260,7 +259,8 @@ test('first browser requires a valid device code, same browser later uses name o
   assert.equal(await unknownDevice.page.locator('[data-ops-tab="publish"]').count(), 0);
 
   const usedCode = await submitCode(unknownDevice.page, operator.code);
-  assert.equal(usedCode.status(), 401);
+  assert.equal(usedCode.status(), 409);
+  assert.equal((await usedCode.json()).errorCode, 'CODE_USED');
   assert.equal(await identityBar(unknownDevice.page).count(), 0);
   assert.deepEqual([...primary.errors, ...unknownDevice.errors], []);
 });
@@ -268,7 +268,7 @@ test('first browser requires a valid device code, same browser later uses name o
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.1';
+  const shortVersion = 'R24-20261124.4';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -302,7 +302,7 @@ test('login validates the 28-character R24 format and normalizes real clipboard 
   assert.equal(activated.request().postDataJSON().code, operator.code);
   assert.equal(activationPosts(server), activationsBeforeInvalidCode + 1);
   await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
-  await mode.filter({ hasText: /^云同步试点\s*·\s*已绑定$/ }).waitFor();
+  await mode.filter({ hasText: /^云同步试点\s*·\s*已绑定（直播运营 · 合成验收运营）$/ }).waitFor();
 
   const deviceTools = page.locator('#syncDeviceTools');
   await deviceTools.locator('summary').click();
@@ -322,8 +322,8 @@ async function generateCode(page) {
   assert.ok(response.ok(), `Issue code returned HTTP ${response.status()}`);
   const result = await response.json();
   assert.match(result.code, /^R24-[a-f0-9]{24}$/);
-  const remainingDays = (Date.parse(result.expiresAt) - Date.now()) / (24 * 60 * 60 * 1000);
-  assert.ok(remainingDays >= 89.9 && remainingDays <= 90);
+  const remainingMinutes = (Date.parse(result.expiresAt) - Date.now()) / 60_000;
+  assert.ok(remainingMinutes >= 29 && remainingMinutes <= 31);
   await page.waitForFunction(code =>
     document.querySelector('#syncGeneratedDeviceCode')?.value === code, result.code);
   return result.code;
@@ -361,7 +361,7 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
     first.page.locator('#syncSaveDeviceCode').click(),
   ]);
   const saved = await readFile(await download.path(), 'utf8');
-  assert.ok(saved.includes(earlierCode));
+  assert.equal(saved, earlierCode);
 
   const currentCode = await generateCode(first.page);
   assert.notEqual(currentCode, earlierCode);
@@ -371,6 +371,7 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
   await submitName(second.page, operator.displayName);
   const stale = await submitCode(second.page, earlierCode);
   assert.equal(stale.status(), 401);
+  assert.equal((await stale.json()).errorCode, 'CODE_EXPIRED');
   assert.equal(await identityBar(second.page).count(), 0);
   const accepted = await submitCode(second.page, currentCode);
   assert.ok(accepted.ok());
@@ -383,7 +384,8 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
   const third = await newPage();
   await submitName(third.page, operator.displayName);
   const spent = await submitCode(third.page, currentCode);
-  assert.equal(spent.status(), 401);
+  assert.equal(spent.status(), 409);
+  assert.equal((await spent.json()).errorCode, 'CODE_USED');
   assert.equal(await identityBar(third.page).count(), 0);
   assert.deepEqual([...first.errors, ...second.errors, ...third.errors], []);
 });
@@ -399,7 +401,7 @@ test('login device-code shortcut guides fresh browsers and opens the panel after
 
   const guide = page.locator('#syncDeviceCodeEntryGuide');
   await openCodeTools.click();
-  await guide.filter({ hasText: '先填写姓名' }).waitFor();
+  await guide.filter({ hasText: '请填写已绑定的姓名' }).waitFor();
   await page.waitForFunction(() => document.activeElement?.id === 'syncDisplayName');
   assert.equal(await name.inputValue(), '');
   assert.deepEqual(apiRequests(), []);
@@ -407,19 +409,20 @@ test('login device-code shortcut guides fresh browsers and opens the panel after
 
   await name.fill(operator.displayName);
   await openCodeTools.click();
-  await page.locator('#syncActivationCode').waitFor();
-  await guide.filter({ hasText: '设备需要先绑定' }).waitFor();
+  await guide.filter({ hasText: '生成设备码需要已绑定的设备' }).waitFor();
   assert.equal(await identityBar(page).count(), 0);
   assert.equal(await page.locator('#syncDeviceTools').count(), 0);
   assert.deepEqual(apiRequests(), []);
+  assert.equal(await page.locator('#syncActivationCode').isVisible(), false);
 
+  await submitName(page, operator.displayName);
   const bound = await submitCode(page, operator.code);
   assert.ok(bound.ok());
   await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
   const activationBefore = activationPosts(server);
   const issueBefore = codePosts();
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.locator('#switchIdentity').click();
   await name.fill(operator.displayName);
   const [verification] = await Promise.all([
     page.waitForResponse(response => response.request().method() === 'GET' &&

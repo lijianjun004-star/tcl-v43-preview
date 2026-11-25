@@ -1,24 +1,19 @@
 import {createHash, randomBytes} from 'node:crypto';
+import {isIP} from 'node:net';
 import {readEnrollment} from './cloudbase-identity.mjs';
 
 const devicePrefix = 'r24d_';
 const deviceTokenPattern = /^r24d_[0-9a-f]{64}$(?![\s\S])/;
 const activationCodePattern = /^R24-[0-9a-f]{24}$(?![\s\S])/;
-const deviceLifetimeMs = 90 * 24 * 60 * 60 * 1000;
 const maxActivationBytes = 4096;
 const digest = value => createHash('sha256').update(value, 'utf8').digest('hex');
+const validRole = role => role === 'anchor' || role === 'operator';
 
-function activeDevice(grant, deviceDigest, now) {
-  return Boolean(grant && grant.used_at && !grant.revoked_at && grant.device_digest === deviceDigest &&
-    Date.parse(grant.device_expires_at) > now);
-}
-
-function activationReady(grant, now) {
-  return Boolean(grant && !grant.used_at && !grant.revoked_at && Date.parse(grant.activation_expires_at) > now);
-}
-
-function enrollmentName(name) {
-  return typeof name === 'string' ? name.trim().normalize('NFC') : '';
+export function normalizeEnrollmentName(raw) {
+  if (typeof raw !== 'string' || /[\p{Cc}\p{Cf}\p{Cs}]/u.test(raw)) return '';
+  const name = raw.normalize('NFKC').trim();
+  const length = [...name].length;
+  return length >= 2 && length <= 30 && !/[\p{Cc}\p{Cf}\p{Cs}]/u.test(name) ? name : '';
 }
 
 function response(body, status, headers) {
@@ -26,6 +21,30 @@ function response(body, status, headers) {
     ...headers, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
   }});
 }
+
+function activeDevice(grant, deviceDigest, now) {
+  return Boolean(grant && grant.used_at && !grant.revoked_at && grant.device_digest === deviceDigest &&
+    Date.parse(grant.device_expires_at) > now);
+}
+
+function requestClientKey(trustedIp) {
+  const version = typeof trustedIp === 'string' && !trustedIp.includes('%') && isIP(trustedIp);
+  if (!version) return {clientKey: digest('r24-identity:unknown-gateway-ip'), shared: true};
+  const canonicalIp = version === 6 ? new URL(`http://[${trustedIp}]`).hostname : trustedIp;
+  return {clientKey: digest('r24-identity:source-ip:' + canonicalIp), shared: false};
+}
+
+const enrollmentErrors = {
+  invalid: [400, 'NAME_OR_ROLE_INVALID', '请选择身份，填写 2–30 个字符的姓名'],
+  unavailable: [403, 'ENROLLMENT_UNAVAILABLE', '该姓名暂不可开通，请联系管理员'],
+  ambiguous: [409, 'NAME_AMBIGUOUS', '存在同名登记，请联系管理员核实身份'],
+  device_conflict: [409, 'DEVICE_CREDENTIAL_CONFLICT', '此设备凭证已登记或失效，请重新进入'],
+};
+const activationErrors = {
+  CODE_EXPIRED: [401, '设备码已过期或已作废。请在原设备生成新码'],
+  CODE_USED: [409, '设备码已被使用。请在原设备生成新码'],
+  CODE_MISMATCH: [401, '姓名、登记角色或设备码不匹配。请核对后重试'],
+};
 
 export function createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins, now = Date.now}) {
   const origins = new Set(allowedOrigins);
@@ -43,78 +62,105 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     return activeDevice(grant, proof, now()) ? enrollment(grant.enrollment_id) : null;
   }
 
-  async function handleDeviceRequest(request, handle) {
+  async function handleDeviceRequest(request, handle, context = {}) {
     const path = new URL(request.url).pathname;
     const issuing = path === '/device/code';
-    if ((!issuing && path !== '/device/activate') || request.method === 'OPTIONS') return handle(request);
+    const enrolling = path === '/device/auto-enroll';
+    if ((!issuing && !enrolling && path !== '/device/activate') || request.method === 'OPTIONS') {
+      return handle(request);
+    }
+
     const origin = request.headers.get('origin');
     const cors = {vary: 'Origin'};
-    if (origin && !origins.has(origin)) {
-      return response({error: {code: 'ORIGIN_DENIED', message: '来源未获授权'}}, 403, cors);
-    }
+    const error = (status, code, message, extra = {}, headers = {}) =>
+      response({errorCode: code, error: {code, message}, ...extra}, status, {...cors, ...headers});
+
+    if (origin && !origins.has(origin)) return error(403, 'ORIGIN_DENIED', '来源未获授权');
     if (origin) cors['access-control-allow-origin'] = origin;
     if (request.method !== 'POST') {
-      return response({error: {code: 'METHOD_NOT_ALLOWED', message: '此接口仅支持 POST'}}, 405, {...cors, allow: 'POST, OPTIONS'});
+      return error(405, 'METHOD_NOT_ALLOWED', '此接口仅支持 POST', {}, {allow: 'POST, OPTIONS'});
     }
-    const invalid = () => response({error: issuing
-      ? {code: 'DEVICE_AUTH_REQUIRED', message: '请先在已启用的设备上进入工作台'}
-      : {code: 'ACTIVATION_INVALID', message: '请核对已登记姓名和启用码，或联系运营获取新码'}}, 401, cors);
-    const invalidBody = () => response({error: {code: 'BODY_INVALID', message: '请求体须为不含身份字段的空对象'}}, 400, cors);
+
+    const deviceAuthRequired = () => error(401, 'DEVICE_AUTH_REQUIRED', '请先在已启用的设备上进入工作台');
+    const invalidBody = () => error(400, 'BODY_INVALID', issuing ? '请求体须为空对象' : '请求内容格式有误');
     const bearer = /^Bearer ([^\s,]+)$/i.exec(request.headers.get('authorization') ?? '')?.[1];
-    if (issuing && (!bearer || !deviceTokenPattern.test(bearer))) return invalid();
+    if (issuing && (!bearer || !deviceTokenPattern.test(bearer))) return deviceAuthRequired();
     if (request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
-      return response({error: {code: 'JSON_REQUIRED', message: '请求须使用 application/json'}}, 415, cors);
+      return error(415, 'JSON_REQUIRED', '请求须使用 application/json');
     }
 
-    let input;
     try {
-      const body = await request.arrayBuffer(); // The gateway already limits inbound request bodies.
-      if (body.byteLength > maxActivationBytes) return response({error: {code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大'}}, 413, cors);
-      input = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(body));
-    } catch {
-      return issuing ? invalidBody() : invalid();
-    }
-    if (issuing) {
-      if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).length) return invalidBody();
+      if (!issuing) {
+        const action = enrolling ? 'auto-enroll' : 'activate';
+        const access = await grants.countAttempt({...requestClientKey(context.clientIp), action});
+        if (!access.allowed) {
+          return error(429, 'RATE_LIMITED', '请求过于频繁，请稍后再试',
+            {retryAfter: access.retryAfter}, {'retry-after': String(access.retryAfter)});
+        }
+      }
+
+      const body = await request.arrayBuffer(); // The gateway caps inbound body bytes as well.
+      if (body.byteLength > maxActivationBytes) return error(413, 'PAYLOAD_TOO_LARGE', '请求内容过大');
+      let input;
       try {
-        const code = 'R24-' + randomBytes(12).toString('hex');
-        const expiresAt = await grants.issueCode({issuerDeviceDigest: digest(bearer), codeDigest: digest(code)});
-        return expiresAt ? response({code, expiresAt}, 200, cors) : invalid();
+        input = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(body));
       } catch {
-        return response({error: {code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试'}}, 503, cors);
+        return invalidBody();
       }
-    }
-    const displayName = enrollmentName(input?.displayName);
-    const {code, deviceToken} = input || {};
-    if (!displayName || displayName.length > 40 || typeof code !== 'string' || !activationCodePattern.test(code) ||
-        typeof deviceToken !== 'string' || !deviceTokenPattern.test(deviceToken)) return invalid();
+      if (!input || typeof input !== 'object' || Array.isArray(input)) return invalidBody();
 
-    try {
-      const codeDigest = digest(code);
-      const deviceDigest = digest(deviceToken);
-      let grant = await grants.findByCode(codeDigest);
-      const start = now();
-      if (!activeDevice(grant, deviceDigest, start) && !activationReady(grant, start)) return invalid();
-      const principal = await enrollment(grant.enrollment_id);
-      if (!principal || enrollmentName(principal.displayName) !== displayName) return invalid();
-
-      if (!activeDevice(grant, deviceDigest, start)) {
-        const claimTime = now();
-        grant = await grants.claim({
-          codeDigest,
-          enrollmentId: principal.id,
-          deviceDigest,
-          usedAt: new Date(claimTime).toISOString(),
-          deviceExpiresAt: new Date(claimTime + deviceLifetimeMs).toISOString(),
-        }) || await grants.findByCode(codeDigest);
-        if (!activeDevice(grant, deviceDigest, now()) || grant.enrollment_id !== principal.id) return invalid();
+      if (issuing) {
+        if (Object.keys(input).length) return invalidBody();
+        const code = 'R24-' + randomBytes(12).toString('hex');
+        const issued = await grants.issueCode({issuerDeviceDigest: digest(bearer), codeDigest: digest(code)});
+        return issued ? response({code, ...issued}, 200, cors) : deviceAuthRequired();
       }
-      const {id, role} = principal;
-      return response({principal: {id, role, displayName: principal.displayName}}, 200, cors);
+
+      if (enrolling) {
+        const name = normalizeEnrollmentName(input.name);
+        if (!name || !validRole(input.role) ||
+            typeof input.deviceCredential !== 'string' || !deviceTokenPattern.test(input.deviceCredential)) {
+          return error(...enrollmentErrors.invalid);
+        }
+        const result = await grants.enroll({
+          name, role: input.role, deviceDigest: digest(input.deviceCredential), internalDigest: randomBytes(32).toString('hex'),
+        });
+        if (result.status === 'exists' && validRole(result.registeredRole)) {
+          return error(409, 'ALREADY_ENROLLED', '该姓名已登记，请在原设备生成 R24 设备码',
+            {registeredRole: result.registeredRole});
+        }
+        if (Object.hasOwn(enrollmentErrors, result.status)) return error(...enrollmentErrors[result.status]);
+        if (result.status !== 'enrolled') throw new Error('Unexpected enrollment response');
+        return response({...publicBinding(result), status: 'enrolled'}, 200, cors);
+      }
+
+      const name = normalizeEnrollmentName(input.displayName ?? input.name);
+      const token = input.deviceToken ?? input.deviceCredential;
+      if (!name || (input.role != null && !validRole(input.role)) ||
+          typeof token !== 'string' || !deviceTokenPattern.test(token) ||
+          typeof input.code !== 'string' || !activationCodePattern.test(input.code)) {
+        return error(401, 'CODE_MISMATCH', activationErrors.CODE_MISMATCH[1]);
+      }
+      const result = await grants.activate({
+        name, role: input.role ?? null, deviceDigest: digest(token), codeDigest: digest(input.code),
+      });
+      if (Object.hasOwn(activationErrors, result.errorCode)) {
+        const [httpStatus, message] = activationErrors[result.errorCode];
+        const extra = validRole(result.registeredRole) ? {registeredRole: result.registeredRole} : {};
+        return error(httpStatus, result.errorCode, message, extra);
+      }
+      return response(publicBinding(result), 200, cors);
     } catch {
-      return response({error: {code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试'}}, 503, cors);
+      return error(503, 'SERVICE_ERROR', '服务暂不可用，请稍后重试');
     }
   }
 
   return {authenticate, handleDeviceRequest};
+}
+
+function publicBinding(result) {
+  const {id, name, role, deviceId} = result;
+  if (typeof id !== 'string' || !id || typeof name !== 'string' || !name || !validRole(role) ||
+      typeof deviceId !== 'string' || !deviceId) throw new Error('Invalid device binding response');
+  return {name, role, deviceId, principal: {id, role, displayName: name}};
 }

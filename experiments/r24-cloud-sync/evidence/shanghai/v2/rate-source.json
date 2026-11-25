@@ -1,0 +1,16 @@
+{
+  "data": {
+    "RequestId": "dd0a0446-8928-4a6d-a369-f4274af23a52",
+    "Rows": [
+      "[\"activate\",\"1\",\"0\"]",
+      "[\"auto-enroll\",\"1\",\"0\"]"
+    ],
+    "AffectedRows": 0,
+    "ExecutionTimeMs": 7,
+    "Columns": [
+      "action",
+      "fallback_buckets",
+      "ip_buckets"
+    ]
+  }
+}

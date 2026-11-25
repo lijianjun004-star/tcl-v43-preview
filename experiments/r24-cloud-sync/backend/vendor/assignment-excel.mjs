@@ -43,7 +43,8 @@ function exactText(value, label, max, options) {
 }
 
 function personName(value, label, exact = false) {
-  const result = exact ? exactText(value, label, 40) : text(value, label, 40);
+  const result = exact ? exactText(value, label, 80) : text(value, label, 80);
+  check([...result].length <= 40, `${label}超过40字`);
   check(!/[\t\r\n]/u.test(result), `${label}不能包含换行或制表符`);
   return result;
 }

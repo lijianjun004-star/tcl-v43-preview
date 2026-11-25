@@ -10,7 +10,8 @@
     "stage": "node stage.mjs"
   },
   "dependencies": {
-    "@cloudbase/node-sdk": "4.2.1"
+    "@cloudbase/node-sdk": "4.2.1",
+    "@cloudbase/signature-nodejs": "2.2.2"
   },
   "overrides": {
     "@cloudbase/node-sdk": {

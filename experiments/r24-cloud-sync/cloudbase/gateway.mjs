@@ -1,3 +1,5 @@
+import {isIP} from 'node:net';
+
 const forwardedHeaders = new Set([
   'authorization', 'origin', 'content-type',
   'access-control-request-method', 'access-control-request-headers',
@@ -52,7 +54,11 @@ export function createGatewayHandler(api) {
         : jsonError(400, 'INVALID_GATEWAY_REQUEST');
     }
     try {
-      const response = await api(request);
+      // Accept only gateway-generated metadata, not user-supplied forwarding headers.
+      const metadata = event.requestContext;
+      const clientIp = [metadata?.identity?.sourceIp, metadata?.sourceIp, metadata?.clientIp]
+        .find(value => typeof value === 'string' && isIP(value));
+      const response = await api(request, {clientIp});
       return {
         statusCode: response.status,
         headers: {...Object.fromEntries(response.headers.entries()), 'cache-control': 'no-store'},
