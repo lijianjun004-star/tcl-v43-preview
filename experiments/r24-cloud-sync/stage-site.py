@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.4"
-SHORT_VERSION = "R24-20261124.4"
-ASSET_REVISION = "r24-sync-v2-20261124.4"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.5"
+SHORT_VERSION = "R24-20261124.5"
+ASSET_REVISION = "r24-sync-v2-20261124.5"
 
 
 def digest(path):
@@ -63,6 +63,13 @@ def main():
     meta = f'<meta name="tcl-r24-sync-version" content="{SHORT_VERSION}">'.encode()
     if args.api_base:
         meta += b'<meta name="tcl-r24-sync-mode" content="cloud">'
+        mode = '<span id="modeText">本机独立预览</span>'.encode()
+        view = b'<main class="content" id="view" aria-live="polite">'
+        if html.count(mode) != 1 or html.count(view) != 1:
+            raise ValueError("QA3 loading state could not be uniquely identified")
+        html = html.replace(mode, '<span id="modeText">云同步试点 · 正在连接</span>'.encode()).replace(
+            view, view + '<p class="notice" role="status">正在加载练播房，核对本机绑定…</p>'.encode()
+        )
     entry.write_bytes(
         html.replace(head_end, meta + head_end)
         .replace(old_script, f'src="app.js?v={ASSET_REVISION}"'.encode())

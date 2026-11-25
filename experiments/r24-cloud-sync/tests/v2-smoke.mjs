@@ -10,7 +10,7 @@ import { chromium } from 'playwright-core';
 const envId = 'unknown-roadrunner-d7cap6e21f517';
 const siteHost = envId + '-1519058345.tcloudbaseapp.com';
 const apiHost = envId + '-1519058345.ap-shanghai.app.tcloudbase.com';
-const expectedVersion = 'R24-20261124.4';
+const expectedVersion = process.env.TCL_V2_EXPECTED_VERSION || 'R24-20261124.5';
 const runTag = '验收' + randomBytes(4).toString('hex');
 const names = { operator: runTag + '运营', anchor: runTag + '主播' };
 const title = runTag + '三题作业';
@@ -311,7 +311,13 @@ async function verifyInbox(page,config){
 async function deviceCode(page,config,save=false){
   const tools=page.locator('#syncDeviceTools');
   if(await tools.getAttribute('open')===null)await tools.locator('summary').click();
-  const [response]=await Promise.all([apiResponse(page,config,'POST','/device/code'),tools.locator('#syncGenerateDeviceCode').click()]);
+  let issueButton=tools.locator('#syncGenerateDeviceCode');
+  const confirmation=tools.locator('#syncRegenerateDialog');
+  if(await tools.locator('#syncDeviceCodeResult').isVisible()&&await confirmation.count()){
+    await issueButton.click();
+    issueButton=confirmation.getByRole('button',{name:'确认重新生成',exact:true});
+  }
+  const [response]=await Promise.all([apiResponse(page,config,'POST','/device/code'),issueButton.click()]);
   expectStatus(response,200,'device code issue');
   const {code,expiresAt,name,role}=await response.json();
   assert.match(code,codePattern);

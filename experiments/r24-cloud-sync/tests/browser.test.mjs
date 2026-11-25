@@ -219,7 +219,7 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
   assert.deepEqual([...ops.errors, ...trainee.errors, ...foreign.errors], []);
 });
 
-test('an existing name requires a valid code on a new browser and only a name on the bound browser', { timeout: 45_000 }, async t => {
+test('a new browser requires a valid code and a different role on a bound browser requires explicit confirmation', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const primary = await newPage();
   await submitName(primary.page, operator.displayName);
@@ -242,6 +242,17 @@ test('an existing name requires a valid code on a new browser and only a name on
 
   await primary.page.locator('#switchIdentity').click();
   await submitName(primary.page, operator.displayName);
+  const useBoundRole = primary.page.getByRole('button', { name: '以直播运营身份进入', exact: true });
+  await useBoundRole.waitFor();
+  assert.equal(await primary.page.locator('#syncRole').inputValue(), 'anchor');
+  assert.match(await primary.page.locator('#syncDeviceCodeEntryGuide').textContent(), /已登记为【直播运营】/);
+  assert.equal(await identityBar(primary.page).count(), 0);
+  assert.equal(activationPosts(server), binds);
+  await primary.page.reload();
+  await primary.page.locator('#syncDisplayName').waitFor();
+  assert.equal(await identityBar(primary.page).count(), 0);
+  await submitName(primary.page, operator.displayName);
+  await useBoundRole.click();
   await identityBar(primary.page).filter({ hasText: operator.displayName }).waitFor();
   assert.equal(activationPosts(server), binds);
   assert.equal(await primary.page.locator('#syncActivationCode').count(), 0);
@@ -268,7 +279,7 @@ test('an existing name requires a valid code on a new browser and only a name on
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.4';
+  const shortVersion = 'R24-20261124.5';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -313,11 +324,11 @@ test('login validates the 28-character R24 format and normalizes real clipboard 
 
 const deviceCodePath = '/api/tcl-r24-sync/device/code';
 
-async function generateCode(page) {
+async function generateCode(page, button = page.locator('#syncGenerateDeviceCode')) {
   const [response] = await Promise.all([
     page.waitForResponse(response => new URL(response.url()).pathname === deviceCodePath &&
       response.request().method() === 'POST'),
-    page.locator('#syncGenerateDeviceCode').click(),
+    button.click(),
   ]);
   assert.ok(response.ok(), `Issue code returned HTTP ${response.status()}`);
   const result = await response.json();
@@ -363,9 +374,19 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
   const saved = await readFile(await download.path(), 'utf8');
   assert.equal(saved, earlierCode);
 
-  const currentCode = await generateCode(first.page);
+  const generator = first.page.locator('#syncGenerateDeviceCode');
+  const confirmation = first.page.getByRole('dialog', { name: '重新生成设备码？', exact: true });
+  const issuePostsBefore = server.requests.filter(req => req.path === deviceCodePath).length;
+  await generator.click();
+  await confirmation.waitFor();
+  assert.equal(server.requests.filter(req => req.path === deviceCodePath).length, issuePostsBefore);
+  await confirmation.getByRole('button', { name: '取消', exact: true }).click();
+  await confirmation.waitFor({ state: 'hidden' });
+  assert.equal(await first.page.locator('#syncGeneratedDeviceCode').inputValue(), earlierCode);
+  await generator.click();
+  const currentCode = await generateCode(first.page, confirmation.getByRole('button', { name: '确认重新生成', exact: true }));
   assert.notEqual(currentCode, earlierCode);
-  assert.equal(first.dialogs.filter(type => type === 'confirm').length, 1);
+  assert.deepEqual(first.dialogs, []);
 
   const second = await newPage();
   await submitName(second.page, operator.displayName);
@@ -387,6 +408,18 @@ test('bound device can generate, copy, save, and renew one-time codes for a fres
   assert.equal(spent.status(), 409);
   assert.equal((await spent.json()).errorCode, 'CODE_USED');
   assert.equal(await identityBar(third.page).count(), 0);
+
+  await first.page.route('**' + deviceCodePath, async route => {
+    await first.page.locator('#syncDeviceCodeStatus').filter({ hasText: '正在生成设备码' }).waitFor();
+    assert.equal(await generator.isDisabled(), true);
+    await route.fulfill({ status: 503, json: { error: { message: '暂时无法签发' } } });
+  }, { times: 1 });
+  await generator.click();
+  await confirmation.getByRole('button', { name: '确认重新生成', exact: true }).click();
+  await first.page.locator('#syncDeviceCodeStatus').filter({ hasText: '暂时无法签发' })
+    .filter({ hasText: '旧码状态未确认' }).waitFor();
+  assert.equal(await first.page.locator('#syncDeviceCodeResult').isVisible(), false);
+  assert.equal(await generator.isEnabled(), true);
   assert.deepEqual([...first.errors, ...second.errors, ...third.errors], []);
 });
 
@@ -430,6 +463,7 @@ test('login device-code shortcut guides fresh browsers and opens the panel after
     openCodeTools.click(),
   ]);
   assert.ok(verification.ok());
+  await page.getByRole('button', { name: '以直播运营身份打开生成器', exact: true }).click();
   await page.locator('#syncDeviceTools[open] #syncGenerateDeviceCode').waitFor();
   await identityBar(page).filter({ hasText: operator.displayName }).waitFor();
   assert.equal(activationPosts(server), activationBefore);
@@ -465,4 +499,68 @@ test('local fallback uses the original XLSX/JSON path and labels only local save
   await trainee.page.locator('#submitSession').filter({ hasText: /本机/ }).waitFor();
   assert.equal(server.requests.filter(r => r.path.startsWith('/api/')).length, 0);
   assert.deepEqual([...ops.errors, ...trainee.errors], []);
+});
+
+test('reload restores the cloud workspace and saved review even while assignments are loading', { timeout: 60_000 }, async t => {
+  const { excel, newPage } = await browserFixture(t);
+  const ops = await newPage();
+  const { page, errors } = await newPage();
+  await ops.page.locator('#syncRole').selectOption('operator');
+  await signIn(ops.page, operator);
+  await fillAssignment(ops.page, excel);
+  await ops.page.locator('#publishAssignment').click();
+  await ops.page.locator('#ops-tracking').getByText(assignmentTitle, { exact: true }).waitFor({ state: 'attached' });
+
+  await signIn(page, anchor);
+  const count = page.locator('.r2-stats div').filter({ hasText: '待完成作业' }).locator('b');
+  await count.filter({ hasText: '1' }).waitFor();
+  await page.locator('#freePractice').click();
+  await page.locator('#prepQuickText').click();
+  await page.locator('#startScene').click();
+  await page.locator('#focusMic').click();
+  const answer = '刷新后仍可恢复这段合成回答';
+  await page.locator('#liveTextAnswer').fill(answer);
+  await page.locator('#liveTextSave').click();
+  await page.locator('#focusClose').click();
+  await page.getByRole('button', { name: '结束并进入复盘', exact: true }).click();
+  await page.locator('#localSessionSaveStatus[data-status="saved"]').waitFor();
+  await page.locator('#reviewHome').click();
+  await page.locator('[data-resume-review]').filter({ hasText: '上一场还没提交' }).waitFor();
+
+  const configGate = Promise.withResolvers(), assignmentGate = Promise.withResolvers();
+  try {
+    await page.route('**/sync/app-config.json', async route => {
+      await configGate.promise;
+      await route.continue();
+    }, { times: 1 });
+    await page.route('**/api/tcl-r24-sync/assignments', async route => {
+      await assignmentGate.promise;
+      await route.continue();
+    }, { times: 1 });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    const firstMode = await page.locator('#modeText').textContent();
+    const firstContent = await page.locator('#view').textContent();
+    configGate.resolve();
+    await page.locator('#modeText').filter({ hasText: '云同步试点 · 已绑定' }).waitFor();
+    const whileLoadingCount = await count.textContent();
+    const pendingReview = page.locator('#restoreLocalSession');
+    const checkpointBeforeCloud = await pendingReview.textContent({ timeout: 1000 }).catch(() => '');
+
+    // Recreate the home DOM while the original automatic request is still awaiting its result.
+    await page.locator('[data-quick-page="progress"]').click();
+    await page.locator('[data-quick-page="home"]').click();
+    assignmentGate.resolve();
+    assert.match(firstMode, /云同步试点 · 正在连接/);
+    assert.match(firstContent, /正在加载练播房/);
+    assert.equal(whileLoadingCount, '—');
+    assert.match(checkpointBeforeCloud, /上一场还没提交/);
+    await count.filter({ hasText: '1' }).waitFor();
+    await pendingReview.click();
+    await page.locator('#reviewDetails').click();
+    await page.locator('#questionSummary').getByText(answer, { exact: true }).waitFor();
+    assert.deepEqual(errors, []);
+  } finally {
+    configGate.resolve();
+    assignmentGate.resolve();
+  }
 });
