@@ -10,6 +10,8 @@
 
 公网根页和四个更新对象逐字节匹配，两个带 `.5` 版本参数的脚本 URL 同样匹配。公网清单 `r24-paraformer-excel-cloud-sync-v2-20261124.5`，36 项，SHA-256 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。CloudBase 托管前后均 131 个对象，仅试点的 `app.js`、`assignment-sync.mjs`、`index.html`、`static-manifest.json` 改变，其余 33 个试点对象与 94 个其他对象元数据一致。CLI 上传结束后的内置校验返回码 5，把带前导斜线的路径报告为缺失，托管清单和独立公网读回已核实实物。回滚使用已校验的四文件 `.4` 原件。[更新与回滚包](https://drive.google.com/file/d/1BieAv7arKRYEQzabSlcaV0Kx3H0hjr9k/view)
 
+用户要求补验运营全链路后，Codex 于 2026-11-25 17:18–17:21 UTC 对 `.5` 公网和真实上海后端完成双账号测试，共 9 项通过，页面异常为 0。运营发布三题 XLSX、主播领取及提交、运营两个入口查收同一份提交与三段录音播放全部通过。新设备绑码、旧码失效和用过的码复用被拒，已补此前 Gemini 环境的独立会话缺口。全量静态资源 37/37 与候选逐字节匹配。本机 Chromium 7/7、接口与适配器 33/33，单独验证了模型下载变慢时先提交核对过的答案。本轮未改公网程序，合成验收数据在试点保留。真机、微信、真人语音与公网单 IP 限频仍待测。[完整证据](experiments/r24-cloud-sync/evidence/shanghai/v2-5-public/README.md)
+
 ## 上海 R24 云同步试点 `.4` 基线（2026-11-25 复验）
 
 `R24-20261124.4` 已部署在 `unknown-roadrunner-d7cap6e21f517` 的 `/tcl-r24-cloud-sync-pilot/`。主播和运营首次用姓名自动开通，同名新设备使用原设备的 28 字符一次性码。沿用既有账号 ID；运营发布、主播领取、文字/转写提交和逐题录音使用试点云资源，整场录像保留在本机。[试点网站](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)

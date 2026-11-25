@@ -1,0 +1,534 @@
+{
+  "checked_utc": "2026-11-25T17:18:39.806759+00:00",
+  "origin": "https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/",
+  "expected_version": "r24-paraformer-excel-cloud-sync-v2-20261124.5",
+  "asset_count": 36,
+  "asset_matches": 36,
+  "manifest_matched": true,
+  "http_status_counts": {
+    "200": 37
+  },
+  "attempts": 37,
+  "verified_bytes": 95583906,
+  "elapsed_seconds": 29.375,
+  "rows": [
+    {
+      "path": "static-manifest.json",
+      "expected_sha256": "e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8",
+      "local_sha256": "e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8",
+      "local_bytes": 3712,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 3712,
+          "sha256": "e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "app-config.json",
+      "expected_sha256": "c819bcb8997a231aa4241110b76422b43597cd4672310c3c92b50d8eb1c67a77",
+      "local_sha256": "c819bcb8997a231aa4241110b76422b43597cd4672310c3c92b50d8eb1c67a77",
+      "local_bytes": 192,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 192,
+          "sha256": "c819bcb8997a231aa4241110b76422b43597cd4672310c3c92b50d8eb1c67a77"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "app.js",
+      "expected_sha256": "9b90858fdee81f0e7d865195cc0e73d4c5f3e2bb3e73103273ff9dd20dea3803",
+      "local_sha256": "9b90858fdee81f0e7d865195cc0e73d4c5f3e2bb3e73103273ff9dd20dea3803",
+      "local_bytes": 368588,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 368588,
+          "sha256": "9b90858fdee81f0e7d865195cc0e73d4c5f3e2bb3e73103273ff9dd20dea3803"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "asr-glossary.mjs",
+      "expected_sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
+      "local_sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245",
+      "local_bytes": 4305,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 4305,
+          "sha256": "cb8d3010dbb1b6ed1a838950e3e041e39df400cafae3a0a2fd76d6b75d626245"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "asr-normalize.mjs",
+      "expected_sha256": "069d0196627c2d13a757264c895747e1f063e62e087b2adadc40e4a1b2732211",
+      "local_sha256": "069d0196627c2d13a757264c895747e1f063e62e087b2adadc40e4a1b2732211",
+      "local_bytes": 369,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 369,
+          "sha256": "069d0196627c2d13a757264c895747e1f063e62e087b2adadc40e4a1b2732211"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "assignment-excel.mjs",
+      "expected_sha256": "b505c6226c15566f4a222875f75d314ba2f31e2759861a4551dee3cf9da1af1d",
+      "local_sha256": "b505c6226c15566f4a222875f75d314ba2f31e2759861a4551dee3cf9da1af1d",
+      "local_bytes": 24107,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 24107,
+          "sha256": "b505c6226c15566f4a222875f75d314ba2f31e2759861a4551dee3cf9da1af1d"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "assignment-sync.mjs",
+      "expected_sha256": "59d65fb705ed7ce41e3d8ad401d7dafb6add06d7a88b3053463c909e9f54f6f7",
+      "local_sha256": "59d65fb705ed7ce41e3d8ad401d7dafb6add06d7a88b3053463c909e9f54f6f7",
+      "local_bytes": 11084,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 11084,
+          "sha256": "59d65fb705ed7ce41e3d8ad401d7dafb6add06d7a88b3053463c909e9f54f6f7"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "glossary-ui.mjs",
+      "expected_sha256": "2960a2df8a4ec6b1e788b8dbd6c829c996d3956d286f394203c43be7b63acdec",
+      "local_sha256": "2960a2df8a4ec6b1e788b8dbd6c829c996d3956d286f394203c43be7b63acdec",
+      "local_bytes": 4746,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 4746,
+          "sha256": "2960a2df8a4ec6b1e788b8dbd6c829c996d3956d286f394203c43be7b63acdec"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "index.html",
+      "expected_sha256": "0578f19ea28791b14226c7aa6e21a4e6b0e76bae77b1b1beb6aee4003b986555",
+      "local_sha256": "0578f19ea28791b14226c7aa6e21a4e6b0e76bae77b1b1beb6aee4003b986555",
+      "local_bytes": 6628,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 6628,
+          "sha256": "0578f19ea28791b14226c7aa6e21a4e6b0e76bae77b1b1beb6aee4003b986555"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "legacy-65.json",
+      "expected_sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f",
+      "local_sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f",
+      "local_bytes": 70225,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 70225,
+          "sha256": "d122314e4c4f457d2cdc45235321066ae3f53c10b7eeb2a3626fa5bdcf4dca8f"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "lib/parser.js",
+      "expected_sha256": "e7c2991b4c11a92fbcd9cc1ce695805243a3ef976ead37a1c0b578a8c9ffd3cd",
+      "local_sha256": "e7c2991b4c11a92fbcd9cc1ce695805243a3ef976ead37a1c0b578a8c9ffd3cd",
+      "local_bytes": 15698,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 15698,
+          "sha256": "e7c2991b4c11a92fbcd9cc1ce695805243a3ef976ead37a1c0b578a8c9ffd3cd"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "lib/pdf.js",
+      "expected_sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b",
+      "local_sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b",
+      "local_bytes": 9480,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 9480,
+          "sha256": "3694f1c388d657e99fef2604d43ac21fe598df3d99bf6dfd66be8c95af51c98b"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "lib/qa-import.js",
+      "expected_sha256": "13028e0e6e7a7368da827a4f82d882fed08a07b6831dc1b3a31a8ffc19b087a7",
+      "local_sha256": "13028e0e6e7a7368da827a4f82d882fed08a07b6831dc1b3a31a8ffc19b087a7",
+      "local_bytes": 14093,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 14093,
+          "sha256": "13028e0e6e7a7368da827a4f82d882fed08a07b6831dc1b3a31a8ffc19b087a7"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "lib/xls.js",
+      "expected_sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c",
+      "local_sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c",
+      "local_bytes": 14831,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 14831,
+          "sha256": "11941a8ab338482ca1e575edf9e2b1478c437b8349b3a9b9447b16b5db3adc9c"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "lib/zip.js",
+      "expected_sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4",
+      "local_sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4",
+      "local_bytes": 12975,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 12975,
+          "sha256": "5e9d7907a3f7d2b3022ba7f757a2d98f8c5daa009c89035b9106b196aae64fc4"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "paraformer-bridge.mjs",
+      "expected_sha256": "4512ccad120dc571ba89bf1e0eea6b1061576107deff9fbadc5a6ef23a092417",
+      "local_sha256": "4512ccad120dc571ba89bf1e0eea6b1061576107deff9fbadc5a6ef23a092417",
+      "local_bytes": 13116,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 13116,
+          "sha256": "4512ccad120dc571ba89bf1e0eea6b1061576107deff9fbadc5a6ef23a092417"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "paraformer-worker.js",
+      "expected_sha256": "049b8c3760b8d630bb74b7610b84a9689cfd785a0dbc8d37966eb0f395f69b08",
+      "local_sha256": "049b8c3760b8d630bb74b7610b84a9689cfd785a0dbc8d37966eb0f395f69b08",
+      "local_bytes": 9544,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 9544,
+          "sha256": "049b8c3760b8d630bb74b7610b84a9689cfd785a0dbc8d37966eb0f395f69b08"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "r23-model-choice.js",
+      "expected_sha256": "1b19895d8d4972eabf446f9b94a3367ddb6c5c418781170356761143ed0955d8",
+      "local_sha256": "1b19895d8d4972eabf446f9b94a3367ddb6c5c418781170356761143ed0955d8",
+      "local_bytes": 1659,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1659,
+          "sha256": "1b19895d8d4972eabf446f9b94a3367ddb6c5c418781170356761143ed0955d8"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "style.css",
+      "expected_sha256": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+      "local_sha256": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2",
+      "local_bytes": 97687,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 97687,
+          "sha256": "35a869c93470924b66ea01ffe65ef7a578b34e8f61ab4bf1b89d98485b8ec5f2"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "training-boards.json",
+      "expected_sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11",
+      "local_sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11",
+      "local_bytes": 210876,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 210876,
+          "sha256": "e42953870a0253eddd303361105b18ddc813e7640f73407627fbacec8df06d11"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/opencc/LICENSE",
+      "expected_sha256": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e",
+      "local_sha256": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e",
+      "local_bytes": 1080,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1080,
+          "sha256": "960f7fc16d8baa126802316a7df9078a383af4fb6bc60033adb28e85c08d5e5e"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/opencc/LICENSES/Apache-2.0.txt",
+      "expected_sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308",
+      "local_sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308",
+      "local_bytes": 9165,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 9165,
+          "sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/opencc/THIRD_PARTY_LICENSES.md",
+      "expected_sha256": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806",
+      "local_sha256": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806",
+      "local_bytes": 10232,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 10232,
+          "sha256": "42c7dbe71c178fcca97ba945e9ac9ff360fb69bbfea4cb50556f6c65bfa59806"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/opencc/t2cn.mjs",
+      "expected_sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6",
+      "local_sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6",
+      "local_bytes": 109060,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 109060,
+          "sha256": "b78e83f940e73a022d8d996333e924edf07aa5b6133b8cddd46fbbff1ac339b6"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/LICENSE-Silero-VAD.txt",
+      "expected_sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b",
+      "local_sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b",
+      "local_bytes": 1075,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1075,
+          "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/LICENSE-onnxruntime.txt",
+      "expected_sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "local_sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "local_bytes": 1073,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1073,
+          "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/LICENSE-sherpa-onnx.txt",
+      "expected_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "local_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "local_bytes": 11358,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/NOTICE.md",
+      "expected_sha256": "540826ae04ab3c1b987714cf5b05851baa689d89e7c0bdc40aca6caaa9f157d5",
+      "local_sha256": "540826ae04ab3c1b987714cf5b05851baa689d89e7c0bdc40aca6caaa9f157d5",
+      "local_bytes": 2263,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 2263,
+          "sha256": "540826ae04ab3c1b987714cf5b05851baa689d89e7c0bdc40aca6caaa9f157d5"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/THIRD_PARTY_NOTICES-onnxruntime.txt",
+      "expected_sha256": "cc63920441c5681cfb1663caf1de1858349b517fc1bed9ca669a85bc526cd13e",
+      "local_sha256": "cc63920441c5681cfb1663caf1de1858349b517fc1bed9ca669a85bc526cd13e",
+      "local_bytes": 299762,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 299762,
+          "sha256": "cc63920441c5681cfb1663caf1de1858349b517fc1bed9ca669a85bc526cd13e"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/license-sources.json",
+      "expected_sha256": "b49affdf3fe6c38d397698d5a41eb165f91827be564d73c8889820f55b83fb41",
+      "local_sha256": "b49affdf3fe6c38d397698d5a41eb165f91827be564d73c8889820f55b83fb41",
+      "local_bytes": 1346,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1346,
+          "sha256": "b49affdf3fe6c38d397698d5a41eb165f91827be564d73c8889820f55b83fb41"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/manifest.json",
+      "expected_sha256": "9a9538a91e1ba4230577d1a4410fe4ac429039ced6478af15346e378cedc6df2",
+      "local_sha256": "9a9538a91e1ba4230577d1a4410fe4ac429039ced6478af15346e378cedc6df2",
+      "local_bytes": 1273,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 1273,
+          "sha256": "9a9538a91e1ba4230577d1a4410fe4ac429039ced6478af15346e378cedc6df2"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/sherpa-onnx-asr.js",
+      "expected_sha256": "ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9",
+      "local_sha256": "ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9",
+      "local_bytes": 41274,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 41274,
+          "sha256": "ab619fbad082d474ef35616072d3ace7e8f533d3725c611c1c60d7b97cac41c9"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.data",
+      "expected_sha256": "9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f",
+      "local_sha256": "9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f",
+      "local_bytes": 82547881,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 82547881,
+          "sha256": "9b89b7afaf5375704e758e85e88955abab381f81c466b24ecc7320b24d81b80f"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.js",
+      "expected_sha256": "3e0cbcad90833164f04097e51fbc99b8812dc03977382578fb73eba7f5d13ec4",
+      "local_sha256": "3e0cbcad90833164f04097e51fbc99b8812dc03977382578fb73eba7f5d13ec4",
+      "local_bytes": 95311,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 95311,
+          "sha256": "3e0cbcad90833164f04097e51fbc99b8812dc03977382578fb73eba7f5d13ec4"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "vendor/paraformer/sherpa-onnx-wasm-main-vad-asr.wasm",
+      "expected_sha256": "2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3",
+      "local_sha256": "2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3",
+      "local_bytes": 11539169,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 11539169,
+          "sha256": "2fc8dc389b23ad07f0d526b2e7c7c828543956d053db858d73cff192be7589e3"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "whisper-bridge.mjs",
+      "expected_sha256": "30f228f722f4e0cbe7f25e1669583ba59d73aa98cb1e981fc21ee999e34ff9cc",
+      "local_sha256": "30f228f722f4e0cbe7f25e1669583ba59d73aa98cb1e981fc21ee999e34ff9cc",
+      "local_bytes": 16159,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 16159,
+          "sha256": "30f228f722f4e0cbe7f25e1669583ba59d73aa98cb1e981fc21ee999e34ff9cc"
+        }
+      ],
+      "matched": true
+    },
+    {
+      "path": "whisper-worker.mjs",
+      "expected_sha256": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b",
+      "local_sha256": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b",
+      "local_bytes": 2510,
+      "attempts": [
+        {
+          "http_status": 200,
+          "bytes": 2510,
+          "sha256": "5adda0d63879d2e7f09627655799e764036e88c3e301e48bcdc1f41350c6c32b"
+        }
+      ],
+      "matched": true
+    }
+  ]
+}
