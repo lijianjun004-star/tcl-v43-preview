@@ -7,11 +7,12 @@ import { parseDocumentFile } from './lib/parser.js';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.5';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
 let assignmentSync=null, syncConfigError='', cloudAssignments=[], syncSubmitStatus=new Map();
+let syncAssignmentsLoading=false, syncAssignmentsLoaded=false, syncAssignmentsMessage='';
 let pendingCloudAssignment=null, workflowChannel=null;
 const syncMember=()=>assignmentSync?.principal||null;
 const visibleAssignments=()=>syncMember()?cloudAssignments.map(row=>row.assignment):localAssignments;
@@ -602,7 +603,7 @@ async function persistSessionCheckpoint(){
  // Serialize this tab's own rapid saves while keeping cross-tab conflict checks in IndexedDB.
  const job=checkpointWriteChain.then(commit,commit);checkpointWriteChain=job.then(()=>{});return await job;
 }
-async function findSavedSession(){
+async function findSavedSession({renderHome=true}={}){
  const owner=userName,epoch=++restoreSessionEpoch;savedSessionCandidate=null;
  const cursor={key:draftKey(owner),token:null,known:false,ready:Promise.resolve()};checkpointCursor=cursor;
  if(userRole!=='anchor'||!owner||memoryFallback||!localDB)return;
@@ -612,11 +613,12 @@ async function findSavedSession(){
   const data=await lookup;
   if(epoch!==restoreSessionEpoch||userName!==owner||userRole!=='anchor')return;
   if(data?.version===1&&data.owner===owner&&data.snapshot?.anchorName===owner&&data.snapshot.id===data.runId&&Array.isArray(data.snapshot.turns)&&data.snapshot.turns.length<=200)savedSessionCandidate=data;
-  if(page==='home')render();
+  if(renderHome&&page==='home')render();
  }catch(e){cursor.ready=Promise.resolve();if(epoch===restoreSessionEpoch)toast('无法读取本机恢复记录：'+(e?.message||e));}
 }
 function savedSessionHtml(){
  const d=savedSessionCandidate;if(reviewAlive()||!d||d.owner!==userName)return '';
+ if(syncMember()&&!d.snapshot.incomplete&&!submissionForSession(d.snapshot))return `<button type="button" id="restoreLocalSession" class="resume-review"><span class="resume-label">上一场还没提交</span><b>${ESC(d.snapshot.category)} · ${ESC(d.snapshot.platform)}${d.snapshot.assignmentTitle?' · '+ESC(d.snapshot.assignmentTitle):''}</b><small>从本机恢复已保存的逐题文字及音视频</small><em>返回本场复盘 →</em></button>`;
  return `<button type="button" id="restoreLocalSession" class="resume-review"><span class="resume-label">本机已保存的最近一场</span><b>${ESC(d.snapshot.category)} · ${ESC(d.snapshot.platform)}</b><small>${ESC(new Date(d.updatedAt).toLocaleString('zh-CN'))} · ${d.snapshot.incomplete?'中断场次，仅恢复已保存部分':'可恢复逐题文字及已保存音视频'}</small><em>恢复本场复盘 →</em></button>`;
 }
 async function restoreLocalSession(){
@@ -859,7 +861,8 @@ const isRunPage=()=>userRole==='anchor'&&!!userName&&(page==='training'||(page==
 // V3.4.9：离开复盘页时暂存本场（逐题、单题录音、整场录像留在本页内存），可从首页“返回本场复盘”；
 // 开始新的练习、切换身份或关闭网页才丢弃。
 const reviewAlive=()=>!!(lastSessionSnapshot&&runId&&lastSessionSnapshot.id===runId&&userRole==='anchor'&&lastSessionSnapshot.anchorName===userName);
-const reviewSubmission=()=>lastSessionSnapshot?(syncSubmitStatus.get(lastSessionSnapshot.id)||localSubmissions.find(x=>x.sessionId===lastSessionSnapshot.id&&x.assignmentId===lastSessionSnapshot.assignmentId&&x.anchorName===lastSessionSnapshot.anchorName)||null):null;
+const submissionForSession=snap=>syncSubmitStatus.get(snap.id)||localSubmissions.find(x=>x.sessionId===snap.id&&x.assignmentId===snap.assignmentId&&x.anchorName===snap.anchorName)||null;
+const reviewSubmission=()=>lastSessionSnapshot?submissionForSession(lastSessionSnapshot):null;
 const reviewHasContent=()=>!!(lastSessionSnapshot&&(sessionVideoBlob||lastSessionSnapshot.turns.some(t=>t.answer||t.transcript||perQuestionAudio.has(t.id))));
 const formatPracticeDuration=(sec)=>{const s=Math.max(0,Math.round(Number(sec)||0));return s<60?`${s}秒`:`${Math.floor(s/60)}分${String(s%60).padStart(2,'0')}秒`;};
 let chatExtraTimers=[];
@@ -1141,13 +1144,28 @@ async function loadSyncIdentity(member){
  userName=member.displayName;
  page='home';
  assignmentSearch='';
+ if(userRole==='anchor')await findSavedSession({renderHome:false});
 }
 
 async function refreshAfterSyncLogin(member,openGenerator){
- await refreshSyncAssignments();
  if(syncMember()!==member||page!=='home')return;
  if(openGenerator)ELEM('syncGenerateDeviceCode')?.focus();
- if(userRole==='anchor')void findSavedSession();
+ await refreshSyncAssignments();
+}
+
+function deviceCodeGuideHtml(){
+ return `<details class="field device-code-guide">
+  <summary><strong>设备码使用说明｜换手机、换浏览器、旧设备找不到</strong></summary>
+  <p>平时用同一个已绑定的浏览器，选原角色、填原姓名即可进入。第一次参加试点，选角色填姓名后点「进入工作台（首次自动开通）」。</p>
+  <ol class="note-list">
+   <li><strong>准备好新设备，再在旧设备发码。</strong>用原来已绑定的浏览器进入工作台，展开「换手机 · 生成设备码」，点「生成设备码」。核对显示的姓名与角色。</li>
+   <li><strong>把完整的码私下转到新设备。</strong>点「复制」，或点「下载备份」取得文本文件。码以 <code>R24-</code> 开头，共 28 个字符，只能用一次，生成后 30 分钟内有效。下载文件不会延长有效期。不要把码发到群里。</li>
+   <li><strong>在新设备填原姓名并绑定。</strong>打开同一个试点网址，选原角色、输入原姓名，点「进入工作台（首次自动开通）」。出现「一次性设备码」输入框后，粘贴完整的码，点「绑定并进入」。看到「已绑定」并核对自己的作业后，再停用旧设备。</li>
+  </ol>
+  <p><strong>过期、用过或忘了保存：</strong>旧浏览器还能进入，就回旧浏览器重新生成。重新生成会作废此前未使用的码。</p>
+  <p><strong>旧设备丢了或已清除浏览器数据：</strong>私下联系试点管理员，说明原姓名、原角色和遇到的问题。管理员核实后会约你重置绑定。已提交的云端作业不受影响；未提交复盘、整场录像等本机内容需要从原浏览器另行备份。</p>
+  <p>微信内置浏览器、Safari、Chrome 各自保存绑定。建议固定一个浏览器使用，换浏览器也按新设备绑定。</p>
+ </details>`;
 }
 
 function renderSyncLogin(){
@@ -1161,14 +1179,16 @@ function renderSyncLogin(){
   <label for="syncActivationCode">一次性设备码</label>
   <input id="syncActivationCode" type="text" maxlength="128" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="syncDeviceCodeFormatHint" disabled>
   <small id="syncDeviceCodeFormatHint">本试点设备码以 R24- 开头，共 28 个字符。示例：<code>${r24CodeExample}</code>。请使用原设备生成的码。</small>
-  <small>若原设备无法打开，请联系管理员重置绑定（不删历史作业记录），重置后可重新自动开通。</small>
+  <small>若旧设备无法打开，请私下联系试点管理员，核实后用原姓名和角色恢复绑定。</small>
  </div>
  <button class="btn primary wide" type="submit">进入工作台（首次自动开通）</button>
  <button class="btn soft wide" type="button" id="syncOpenDeviceCode" aria-describedby="syncDeviceCodeEntryGuide">生成设备码</button>
  <p id="syncDeviceCodeEntryGuide" class="scene-tip" role="status">首次使用请先选角色填姓名自动开通。已绑定设备可点此打开生成器为新设备发码。</p>
+ <button class="btn primary wide" type="button" id="syncUseBoundRole" aria-describedby="syncDeviceCodeEntryGuide" hidden></button>
  <p id="syncLoginError" role="alert">${ESC(syncSessionFeedback)}</p>
  </form>`}
  <p class="scene-tip">微信内置浏览器与手机 Safari 登录态不互通，建议固定用同一浏览器打开。</p>
+ ${deviceCodeGuideHtml()}
  <p class="scene-tip" id="syncReleaseVersion">版本：${ESC(syncReleaseVersion)}</p></div></section>`;
  const form=ELEM('syncLoginForm');
  if(!form)return;
@@ -1176,6 +1196,8 @@ function renderSyncLogin(){
  const field=ELEM('syncActivationField'),message=ELEM('syncLoginError');
  const button=form.querySelector('button[type="submit"]');
  const shortcut=ELEM('syncOpenDeviceCode'),guide=ELEM('syncDeviceCodeEntryGuide');
+ const useBoundRole=ELEM('syncUseBoundRole');
+ const welcome='首次使用请先选角色填姓名自动开通。已绑定设备可点此打开生成器为新设备发码。';
  let openGenerator=false,inFlight=false;
 
  function showActivation(visible){
@@ -1191,10 +1213,16 @@ function renderSyncLogin(){
   guide.textContent=`该姓名已登记为【${syncRoleName(registeredRole)}】，请用原设备生成的 28 位 R24- 设备码绑定。`;
  }
  function clearLoginMessage(){message.textContent='';delete message.dataset.errorCode;}
+ function resetRoleOffer(){
+  if(!useBoundRole.hidden)guide.textContent=welcome;
+  useBoundRole.hidden=true;
+  useBoundRole.onclick=null;
+ }
  name.oninput=()=>{
-  showActivation(false);clearLoginMessage();updateMode();
-  guide.textContent='首次使用请先选角色填姓名自动开通。已绑定设备可点此打开生成器为新设备发码。';
+  showActivation(false);clearLoginMessage();resetRoleOffer();updateMode();
+  guide.textContent=welcome;
  };
+ role.onchange=resetRoleOffer;
  function canonicalizeInput(){
   const canonical=normalizeDeviceCode(code.value);
   if(canonical)code.value=canonical;
@@ -1222,6 +1250,7 @@ function renderSyncLogin(){
   if(inFlight)return;
   inFlight=true;
   openGenerator=generatorOnly;
+  resetRoleOffer();
   button.disabled=true;shortcut.disabled=true;role.disabled=true;
   name.readOnly=true;code.readOnly=true;
   clearLoginMessage();
@@ -1233,8 +1262,18 @@ function renderSyncLogin(){
     allowEnrollment:!generatorOnly,
    });
    if(!result.member){
-    updateMode(true);
-    if(result.registeredRole){
+    updateMode(!result.boundRole);
+    if(result.boundRole){
+     const boundRole=result.boundRole,registered=syncRoleName(boundRole);
+     guide.textContent=`该姓名已登记为【${registered}】，此浏览器已有该角色的设备绑定。请确认使用已绑定的角色进入，或修改姓名。`;
+     useBoundRole.textContent=generatorOnly?`以${registered}身份打开生成器`:`以${registered}身份进入`;
+     useBoundRole.onclick=()=>{
+      role.value=boundRole;
+      void submitLogin(generatorOnly);
+     };
+     useBoundRole.hidden=false;
+     useBoundRole.focus();
+    }else if(result.registeredRole){
      showActivation(true);
      applyRegisteredRole(result.registeredRole);
     }else if(generatorOnly){
@@ -1277,13 +1316,21 @@ function deviceCodeState(){
 
 function syncRefreshHtml(){
  const state=deviceCodeState();
- return `<div class="panel"><button type="button" id="syncRefresh" class="btn soft">刷新云端作业</button>
- <span id="syncRefreshStatus" role="status"></span>
+ return `<div class="panel"><button type="button" id="syncRefresh" class="btn soft"${syncAssignmentsLoading?' disabled':''}>刷新云端作业</button>
+ <span id="syncRefreshStatus" role="status">${ESC(syncAssignmentsMessage)}</span>
  <details id="syncDeviceTools"${state.open?' open':''}>
   <summary>换手机 · 生成设备码</summary>
   <small id="syncGeneratorVersion">R24 云同步试点 · ${ESC(syncReleaseVersion)} · R24- 开头，共 28 个字符</small>
-  <p class="scene-tip">设备码用于在新设备绑定同一姓名，可用一次，有效期 30 分钟。重新生成后，此人先前未使用的码会失效。</p>
+  <p class="scene-tip">准备换设备时再生成。码只能用一次，生成后 30 分钟有效。重新生成会作废此前未使用的码。</p>
   <button type="button" id="syncGenerateDeviceCode" class="btn primary">生成设备码</button>
+  <dialog id="syncRegenerateDialog" aria-labelledby="syncRegenerateTitle" aria-describedby="syncRegenerateMessage" style="box-sizing:border-box;width:min(390px,92vw);padding:20px;border:1px solid #dce4ed;border-radius:16px;color:#192b43;background:white">
+   <h3 id="syncRegenerateTitle">重新生成设备码？</h3>
+   <p id="syncRegenerateMessage">确认后，上一枚未使用的设备码会失效。</p>
+   <div class="toolbar">
+    <button type="button" id="syncCancelRegenerate" class="btn soft" autofocus>取消</button>
+    <button type="button" id="syncConfirmRegenerate" class="btn primary">确认重新生成</button>
+   </div>
+  </dialog>
   <div class="field" id="syncDeviceCodeResult" hidden>
    <label for="syncGeneratedDeviceCode">我的设备码</label>
    <input id="syncGeneratedDeviceCode" type="text" readonly autocomplete="off" spellcheck="false">
@@ -1296,7 +1343,7 @@ function syncRefreshHtml(){
    </div>
   </div>
   <p id="syncDeviceCodeStatus" class="scene-tip" role="status"></p>
- </details></div>`;
+ </details>${deviceCodeGuideHtml()}</div>`;
 }
 
 function updateDeviceCountdown(state){
@@ -1333,29 +1380,47 @@ function bindDeviceCodePanel(){
   if(panel.isConnected)updateDeviceCountdown(state);else clearInterval(deviceCodeTicker);
  },1000);
  panel.ontoggle=()=>{if(panel.isConnected)state.open=panel.open;};
- ELEM('syncGenerateDeviceCode').onclick=async()=>{
+ const generate=ELEM('syncGenerateDeviceCode'),dialog=ELEM('syncRegenerateDialog');
+ const cancel=ELEM('syncCancelRegenerate');
+ function closeConfirmation(){
+  if(typeof dialog.close==='function'&&dialog.open)dialog.close();
+  else dialog.removeAttribute('open');
+  generate.focus();
+ }
+ cancel.onclick=closeConfirmation;
+ ELEM('syncConfirmRegenerate').onclick=()=>{closeConfirmation();void issueCode();};
+ generate.onclick=()=>{
   if(state.busy||syncMember()!==state.member)return;
-  if(state.proof&&!window.confirm('重新生成后，上一枚未使用的设备码会失效。继续吗？'))return;
-  state.busy=true;state.proof=null;state.message='';
+  if(!state.proof){void issueCode();return;}
+  if(dialog.hasAttribute('open'))return;
+  try{dialog.showModal();}
+  catch{dialog.style.position='static';dialog.setAttribute('open','');}
+  cancel.focus();
+ };
+ async function issueCode(){
+  if(state.busy||syncMember()!==state.member)return;
+  const replacing=Boolean(state.proof);
+  state.busy=true;state.proof=null;state.message='正在生成设备码…';
   paintDeviceCodePanel(state);
   try{
    const proof=await assignmentSync.issueDeviceCode();
    if(syncMember()!==state.member)return;
    state.proof=proof;
-   state.message='请私下保存设备码。打开新设备时，先输姓名，再粘贴此码。';
+   state.message=(replacing?'新码已生成。':'设备码已生成。')+'请在 30 分钟内私下把码转到新设备。用原姓名进入，出现输入框后粘贴此码。';
   }catch(error){
-   if(syncMember()===state.member)state.message=error.message;
+   if(syncMember()===state.member)state.message='设备码签发未确认：'+error.message+(replacing?'。旧码状态未确认，请重试后使用新码。':'');
   }finally{
    state.busy=false;
    paintDeviceCodePanel(state);
+   if(replacing&&generate.isConnected&&document.activeElement===document.body)generate.focus();
   }
- };
+ }
  ELEM('syncCopyDeviceCode').onclick=async()=>{
   const proof=state.proof;
   if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
   try{
    await navigator.clipboard.writeText(proof.code);
-   if(state.proof===proof)state.message='已复制，请保存在自己的备忘录或密码管理器里。';
+   if(state.proof===proof)state.message='已复制。请私下转到新设备，并在剩余有效期内绑定。';
   }catch{
    if(state.proof===proof){
     const input=ELEM('syncGeneratedDeviceCode');
@@ -1369,7 +1434,7 @@ function bindDeviceCodePanel(){
   const proof=state.proof;
   if(!proof||Date.parse(proof.expiresAt)<=Date.now()||syncMember()!==state.member)return;
   downloadText('TCL-R24-设备码.txt',proof.code,'text/plain;charset=utf-8');
-  state.message='已请求下载备份，请查看浏览器下载记录。';
+  state.message='已请求下载备份。文件中的码也只有 30 分钟有效，请在有效期内使用。';
   paintDeviceCodePanel(state);
  };
 }
@@ -1383,25 +1448,28 @@ function bindSyncControls(){
  }
 }
 async function refreshSyncAssignments(){
- const member=syncMember(),button=ELEM('syncRefresh'),status=ELEM('syncRefreshStatus');
- if(!member||!button||button.disabled||assignmentPublishPending||assignmentJoinPending)return;
- button.disabled=true;status.textContent=' 正在读取…';
+ const member=syncMember(),previousRows=cloudAssignments;
+ if(!member||syncAssignmentsLoading||assignmentPublishPending||assignmentJoinPending)return;
+ const paint=()=>{
+  const button=ELEM('syncRefresh'),status=ELEM('syncRefreshStatus');
+  if(button)button.disabled=syncAssignmentsLoading;
+  if(status)status.textContent=syncAssignmentsMessage;
+ };
+ syncAssignmentsLoading=true;syncAssignmentsMessage=' 正在读取云端作业…';paint();
  try{
   const rows=await assignmentSync.listAssignments();
-  if(syncMember()!==member||!button.isConnected||assignmentJoinPending||assignmentPublishPending)return;
-  cloudAssignments=rows;
+  if(syncMember()!==member)return;
+  if(assignmentJoinPending||assignmentPublishPending||cloudAssignments!==previousRows){syncAssignmentsMessage=' 作业刚有更新，可刷新查看最新列表';return;}
+  cloudAssignments=rows;syncAssignmentsLoaded=true;
+  syncAssignmentsMessage=` 已读取 ${rows.length} 份云端作业`;
   if(page==='home'){
-   if(userRole==='anchor'){
-    const expanded=ELEM('assignmentFold')?.open;
-    anchorHome();
-    if(expanded)ELEM('assignmentFold').open=true;
-   }else if(operatorActiveTab!=='publish'||!ELEM('assignmentTitle').value.trim()){
+   if(userRole==='anchor')updateAnchorAssignmentDashboard();
+   else if(operatorActiveTab!=='publish'||!ELEM('assignmentTitle').value.trim()){
     operatorHome();
    }
   }
-  ELEM('syncRefreshStatus').textContent=` 已读取 ${rows.length} 份云端作业`;
- }catch(error){if(status.isConnected)status.textContent=' '+error.message;}
- finally{button.disabled=false;}
+ }catch(error){if(syncMember()===member)syncAssignmentsMessage=' 云端作业读取失败，可重试：'+error.message;}
+ finally{syncAssignmentsLoading=false;if(syncMember()===member)paint();}
 }
 function syncOperatorRow(assignment){
  return `<div class="assignment-manage"><div><b>${ESC(assignment.title)}</b>
@@ -1419,19 +1487,10 @@ const cloudAudioAcceptable=clip=>Boolean(clip.questionId&&clip.blob instanceof B
 const syncAudioBusy=new Set();
 let fallbackSubmissionMedia=null;
 
-async function refreshAnchorSearch(search,renderResults){
- const member=syncMember();
- if(member?.role!=='anchor'||!search.isConnected||assignmentJoinPending||Date.now()<anchorSearchRefreshAt)return;
+function refreshAnchorSearch(search){
+ if(syncMember()?.role!=='anchor'||!search.isConnected||syncAssignmentsLoading||assignmentJoinPending||Date.now()<anchorSearchRefreshAt)return;
  anchorSearchRefreshAt=Date.now()+5000;
- try{
-  const rows=await assignmentSync.listAssignments();
-  if(!search.isConnected||syncMember()!==member||assignmentJoinPending)return;
-  cloudAssignments=rows;
-  renderResults();
- }catch(error){
-  const status=ELEM('syncRefreshStatus');
-  if(search.isConnected&&syncMember()===member&&status)status.textContent=' 云端作业读取失败，可重试：'+error.message;
- }
+ void refreshSyncAssignments();
 }
 
 function bindAssignmentActions(target){
@@ -1696,25 +1755,39 @@ function assignmentRowHtml(a){
  ${syncMember()&&cloudAssignmentState(a.id)?.submitted?`<button type="button" class="btn soft small" data-my-submissions="${ESC(a.id)}">查看我的提交</button>`:''}</div>`;
 }
 function identityBar(){return `<div class="identity-bar r2-identity"><span class="r2-avatar" aria-hidden="true">${ESC([...String(userName)][0]||'·')}</span><span class="r2-identity-text"><b>${ESC(userName)}</b><small>${ESC(roleLabel())} · ${syncMember()?'云端账号':'本机体验'}</small></span><button class="ghost-btn" id="switchIdentity">${syncMember()?'退出账号':'切换身份'}</button></div>`;}
+function anchorAssignmentStats(){
+ const todo=visibleAssignments().filter(x=>canSeeAssignment(x)&&(['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName))||x.schema&&assignmentStatusFor(x,userName)==='未加入'));
+ const cloudMode=Boolean(syncMember());
+ const submitted=cloudMode?cloudAssignments.filter(row=>row.submitted).length:localSubmissions.filter(x=>x.anchorName===userName).length;
+ const hasCounts=!cloudMode||syncAssignmentsLoaded;
+ return {todo,submittedCount:hasCounts?submitted:'—',todoCount:hasCounts?todo.length:'—'};
+}
+function anchorTodoHtml(todo){
+ return todo.length?`<section class="r2-todo"><h3>待完成的作业</h3><div class="assignment-results">${todo.slice(0,3).map(assignmentRowHtml).join('')}</div>${todo.length>3?`<p class="scene-tip">当前显示前 3 条（共 ${todo.length} 条），可在下方“运营布置的作业”按运营姓名筛选。</p>`:''}</section>`:'';
+}
+function updateAnchorAssignmentDashboard(){
+ const list=ELEM('anchorAssignmentTodo');if(!list)return;
+ const {todo,submittedCount,todoCount}=anchorAssignmentStats();
+ ELEM('anchorSubmittedCount').textContent=submittedCount;
+ ELEM('anchorTodoCount').textContent=todoCount;
+ list.innerHTML=anchorTodoHtml(todo);bindAssignmentActions(list);
+ homeResultsUpdater?.();
+}
 function anchorHome(){
  const allMine=localTrainingLogs.filter(x=>x.anchorName===userName).sort((a,b)=>String(b.trainedAt||'').localeCompare(String(a.trainedAt||'')));
  const last=allMine[0]||null;
  const recent=last&&BOARDS.find(x=>x.id===last.boardId);
- const query=norm(assignmentSearch);
- const assigned=visibleAssignments().filter(a=>canSeeAssignment(a)&&(!query||norm(a.operatorName+a.title+boardById(a.boardId).category+a.platform).includes(query)));
   const mine=allMine.slice(0,5);
  const startBoard=recent||BOARDS[0],startPlatform=recent&&startBoard.platforms.includes(last.platform)?last.platform:startBoard.platforms[0];
- const submittedCount=syncMember()?cloudAssignments.filter(row=>row.submitted).length:
-  localSubmissions.filter(x=>x.anchorName===userName).length;
- const todo=visibleAssignments().filter(x=>canSeeAssignment(x)&&(['已加入','已训练','已逾期'].includes(assignmentStatusFor(x,userName))||x.schema&&assignmentStatusFor(x,userName)==='未加入'));
+ const {todo,submittedCount,todoCount}=anchorAssignmentStats();
  ELEM('view').innerHTML=`${identityBar()}${syncMember()?syncRefreshHtml():''}${resumeReviewHtml()}${savedSessionHtml()}
  <section class="r2-start"><p class="r2-hello">${ESC(userName)}，今天练什么？</p>
  <div class="r2-start-card"><span class="r2-kicker">${recent?'接着上次练':'从这里开始'}</span><h2>${ESC(startBoard.category)}</h2><p class="r2-start-meta"><span>平台 · ${ESC(startPlatform)}</span><span>${ESC(practicePoolLabel(startBoard,startPlatform))}</span></p>
  <button class="btn primary r2-start-btn" id="freePractice">${ICON.video}<span>检查设备，准备练播</span></button>
  <button class="r2-link" id="r2ChangeBoard" type="button">换一个品类或平台 ›</button></div>
- <div class="r2-stats"><div><b>${allMine.length}</b><span>累计练播</span></div><div><b>${submittedCount}</b><span>已提交</span></div><div><b>${todo.length}</b><span>待完成作业</span></div></div><div data-vosk-widget="card" aria-label="中文识别模型准备进度"></div></section>
- ${todo.length?`<section class="r2-todo"><h3>待完成的作业</h3><div class="assignment-results">${todo.slice(0,3).map(assignmentRowHtml).join('')}</div>${todo.length>3?`<p class="scene-tip">当前显示前 3 条（共 ${todo.length} 条），可在下方“运营布置的作业”按运营姓名筛选。</p>`:''}</section>`:''}
- <details class="hub-fold" id="assignmentFold" ${assignmentSearch?'open':''}><summary><span><b>运营布置的作业</b><small>${syncMember()?'云端作业 · 按运营姓名搜索':'本机测试 · 暂不支持跨设备同步'}</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body"><label class="field" for="assignmentSearch">搜索运营、作业名称或板块<input id="assignmentSearch" value="${ESC(assignmentSearch)}" placeholder="如：张老师 / 电视抖音"></label>${syncMember()?'':'<div class="field"><label for="assignmentPackageImport">从运营接收作业包（JSON，跨设备需手动传送）</label><input type="file" id="assignmentPackageImport" accept=".json,application/json"><small>本机姓名不是账号认证；作业包需要运营本人发送给你。</small></div>'}<div class="assignment-results" id="assignmentSearchResults">${assigned.slice(0,8).map(assignmentRowHtml).join('')||'<div class="empty compact">还没有找到相关作业，可以先自由练播。</div>'}${assigned.length>8?`<p class="scene-tip">仅显示前 8 条（共 ${assigned.length} 条），请输入运营姓名或作业名称精确筛选。</p>`:''}</div></div></details>
+ <div class="r2-stats"><div><b>${allMine.length}</b><span>累计练播</span></div><div><b id="anchorSubmittedCount">${submittedCount}</b><span>已提交</span></div><div><b id="anchorTodoCount">${todoCount}</b><span>待完成作业</span></div></div><div data-vosk-widget="card" aria-label="中文识别模型准备进度"></div></section>
+ <div id="anchorAssignmentTodo">${anchorTodoHtml(todo)}</div>
+ <details class="hub-fold" id="assignmentFold" ${assignmentSearch?'open':''}><summary><span><b>运营布置的作业</b><small>${syncMember()?'云端作业 · 按运营姓名搜索':'本机测试 · 暂不支持跨设备同步'}</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body"><label class="field" for="assignmentSearch">搜索运营、作业名称或板块<input id="assignmentSearch" value="${ESC(assignmentSearch)}" placeholder="如：张老师 / 电视抖音"></label>${syncMember()?'':'<div class="field"><label for="assignmentPackageImport">从运营接收作业包（JSON，跨设备需手动传送）</label><input type="file" id="assignmentPackageImport" accept=".json,application/json"><small>本机姓名不是账号认证；作业包需要运营本人发送给你。</small></div>'}<div class="assignment-results" id="assignmentSearchResults"></div></div></details>
  ${syncMember()?'<section id="syncMySubmissions" aria-live="polite"></section>':''}
  <details class="hub-fold" id="logFold"><summary><span><b>我的练习记录</b><small>共 ${allMine.length} 次 · 本机练习记录</small></span><span class="fold-indicator">展开 ›</span></summary><div class="hub-fold-body">${mine.map(l=>`<div class="log-row"><span>${ESC(new Date(l.trainedAt).toLocaleString('zh-CN'))}</span><b>${ESC(l.category)} · ${ESC(l.platform)}</b><span>${l.assignmentId?'作业练习':'自由练习'}</span></div>`).join('')||'<div class="empty compact">还没有训练记录，完成首次练播后会显示在这里。</div>'}<button class="btn soft hub-secondary" id="openPracticeRecords">查看全部练习记录</button></div></details>
 `;
@@ -1732,14 +1805,14 @@ function anchorHome(){
  bindSyncControls();
  const pullAfterInput=()=>{
   clearTimeout(searchPullTimer);
-  searchPullTimer=setTimeout(()=>void refreshAnchorSearch(search,updateResults),300);
+  searchPullTimer=setTimeout(()=>refreshAnchorSearch(search),300);
  };
  search.oninput=e=>{
   assignmentSearch=e.target.value;
   if(!e.isComposing){updateResults();pullAfterInput();}
  };
  search.oncompositionend=e=>{assignmentSearch=e.target.value;updateResults();pullAfterInput();};
- fold.addEventListener('toggle',()=>{if(fold.open)void refreshAnchorSearch(search,updateResults);});
+ fold.addEventListener('toggle',()=>{if(fold.open)refreshAnchorSearch(search);});
  updateResults();homeResultsUpdater=updateResults;bindResumeReview();
  syncFoldIndicators();
 }

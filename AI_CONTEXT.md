@@ -4,11 +4,39 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
-## 上海 R24 云同步试点当前版本（2026-11-25 复验）
+## 上海 R24 云同步试点 `.6` 设备码使用说明（2026-11-25 UTC）
+
+登录页和主播、运营工作台均新增可展开的「设备码使用说明」，覆盖原浏览器发码、30 分钟有效期、换机绑定、过期重发、旧设备遗失后联系管理员，以及本机草稿与录像的备份。Drive 说明另含 Excel 上传和查收步骤。等用户提供首份测试作业后再检查实际模板与数据并按试点流程验收。[上海试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [详细使用说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit)
+
+本次修改只涉及说明和前端版本。CloudBase 托管原目录只更新 `app.js`、`index.html`、`static-manifest.json`，3/3 上传并通过托管校验，131 个对象中其余 128 个元数据一致。公网清单 `r24-paraformer-excel-cloud-sync-v2-20261124.6`，36 项，SHA-256 `3ff8696ff1c7c7d33d2a0e9e0e01ea3197832e2c3f6f5e9b7c28c4fe114d0a9e`。已逐字节回读公网清单、两个变更文件与原设备绑定模块。公网 Chromium 390px 可展开阅读登录页说明，无页面异常，未开通账号。登录页和工作台在本机 320、390、1440px 验证，浏览器回归 7/7。回滚可用已核验 `.5` 包 `publish/` 里的同名三个文件。
+
+用户随后要求先模拟生成作业。`.6` 使用「电视 · 京东」三题 Excel，在本机与真实上海试点各通过 9 项，页面异常为 0。运营预览发布、主播领取与提交、运营在两个入口核对三题文字并播放三段合成录音、换机及复用拒绝均通过。合成作业标识 `验收4c426f9c`，领取窗口约 45 分钟。首份用户 Excel 尚未收到。[模拟 Excel](https://docs.google.com/spreadsheets/d/1Z-gePGxTh0HOa04BF8CZUnjDsKrdBS2z/edit) · [验收记录](experiments/r24-cloud-sync/evidence/shanghai/v2-6-sim/README.md)
+
+长录像补验在本机 `.6` Chromium 使用合成音视频设备实际录制约 190 秒及 185 秒，原视频可下载，第一段跳至 170 秒仍可播放，第二段刷新后可从同一浏览器恢复。超过 180 秒被本机整场转写及 WAV 导出明确限制，自动停录流程用 6 秒测试阈值验证。实际 8 分钟、64 MiB 停录路径、真机未跑；整场视频仍不上云。[长录像验证](experiments/r24-cloud-sync/evidence/shanghai/v2-6-video/README.md)
+
+Gemini 独立确认公网 `.6` 版本和模拟 Excel，因托管浏览器缺少文件上传、第二个独立会话及麦克风，运营至主播双账号线上操作 NOT RUN。Codex 另在本机 `.6` 双会话明确验到：保存复盘后运营两入口无提交且请求数为零；主动提交后两处有唯一提交，三题和三段录音匹配。`.6` 既有公网 9 项通过仍保留为独立的 Codex 证据。没有新增线上账户。[独立核查与本机补验](experiments/r24-cloud-sync/evidence/shanghai/v2-6-independent/README.md)
+
+## 上海 R24 云同步试点 `.5` 已发布（2026-11-25 UTC）
+
+现有上海 CloudBase 的试点目录已上线 `R24-20261124.5`。部署源码固定为 `111115e3c45da55f9a4700b9a4d342e76e89e47c`。Gemini R2 已通过源码与更新包核验，并于 2026-11-25 16:30–16:38 UTC 在线复验刷新后作业数和未提交复盘恢复、重发设备码确认与反馈、角色提示和原姓名登录，三项通过，零失败。旧码失效、新设备绑定、慢请求期间切页及真机仍未做此轮线上实测；前三项已有本机 Chromium 回归。退出账号的原生确认框记为 P3 观察。[试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [离线复验](https://docs.google.com/document/d/1KelrGasnuBCMeFAqzdXBwtzvduOUnju5/edit) · [线上复验](https://docs.google.com/document/d/1beSDC9FMvPIllmAeRV_tv8Qo3tuhxioz/edit)
+
+公网根页和四个更新对象逐字节匹配，两个带 `.5` 版本参数的脚本 URL 同样匹配。公网清单 `r24-paraformer-excel-cloud-sync-v2-20261124.5`，36 项，SHA-256 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。CloudBase 托管前后均 131 个对象，仅试点的 `app.js`、`assignment-sync.mjs`、`index.html`、`static-manifest.json` 改变，其余 33 个试点对象与 94 个其他对象元数据一致。CLI 上传结束后的内置校验返回码 5，把带前导斜线的路径报告为缺失，托管清单和独立公网读回已核实实物。回滚使用已校验的四文件 `.4` 原件。[更新与回滚包](https://drive.google.com/file/d/1BieAv7arKRYEQzabSlcaV0Kx3H0hjr9k/view)
+
+用户要求补验运营全链路后，Codex 于 2026-11-25 17:18–17:21 UTC 对 `.5` 公网和真实上海后端完成双账号测试，共 9 项通过，页面异常为 0。运营发布三题 XLSX、主播领取及提交、运营两个入口查收同一份提交与三段录音播放全部通过。新设备绑码、旧码失效和用过的码复用被拒，已补此前 Gemini 环境的独立会话缺口。全量静态资源 37/37 与候选逐字节匹配。本机 Chromium 7/7、接口与适配器 33/33，单独验证了模型下载变慢时先提交核对过的答案。本轮未改公网程序，合成验收数据在试点保留。真机、微信、真人语音与公网单 IP 限频仍待测。[完整证据](experiments/r24-cloud-sync/evidence/shanghai/v2-5-public/README.md)
+
+## 上海 R24 云同步试点 `.4` 基线（2026-11-25 复验）
 
 `R24-20261124.4` 已部署在 `unknown-roadrunner-d7cap6e21f517` 的 `/tcl-r24-cloud-sync-pilot/`。主播和运营首次用姓名自动开通，同名新设备使用原设备的 28 字符一次性码。沿用既有账号 ID；运营发布、主播领取、文字/转写提交和逐题录音使用试点云资源，整场录像保留在本机。[试点网站](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/)
 
 公网 Chromium 以合成 Excel 和虚拟麦克风完成发布、领取、三题文字提交、三段录音上传与运营播放、换机和复用拒绝，0 个页面异常。公网 37/37 资源 SHA-256 一致，QA3 清单及 94 个试点外托管对象对比一致。实体手机和微信未实测。当前公网的开通和激活采用共享限流，单 IP 限频仍待网关验证。自动开通适用于试点，正式业务需验证员工身份和角色授权。[执行与复验报告](experiments/r24-cloud-sync/evidence/shanghai/v2/README.md)
+
+### Gemini 复验后的 `.5` 候选（2026-11-25）
+
+任务 `TCL-R24-SH-GEMINI-20261125`。Gemini 在 `.4` 线上复验报告了刷新首屏状态错误、作业数归零、未提交复盘入口丢失，以及重新生成设备码无反馈和已绑定角色静默切换。Codex 已从 PR #173 的固定提交 `481f51f6d09e0955bb6367c58af656ebec592e66` 实际读取源码并下载公网清单，原始 3712 字节 SHA-256 为 `d35cc5d1b3a4d81a56a0f1723f56228a286f660ed1cfd2be014b349659a488a2`，`files` 共 36 项。Gemini 的真机、录音和多会话项目保留其原报告状态。
+
+`.5` 让已绑定浏览器刷新后先恢复本机复盘，再自动呈现作业请求的结果。读取作业期间不显示零，页面切换不丢弃有效响应。重新生成设备码采用页内确认，显示生成进度和失败提示。选错已绑定角色需明确确认。Chromium 延迟响应回归在 `.4` 复现、在 `.5` 通过。独立会话以合成 Excel 和虚拟麦克风完成发布、领取、提交、三段录音播放、码轮换、跨设备绑定和复用拒绝。后端与 CloudBase 适配器 33 项通过。测试写入使用本机内存后端。
+
+候选静态清单 SHA-256 为 `e9ca90cd4471abaede609d7b41034244150e04333d3af13cb81fff12df346cb8`。列出的 36 项文件中仅 `app.js`、`assignment-sync.mjs`、`index.html` 的字节变化，部署或回滚都限这些文件及 `static-manifest.json`。发布状态见上方 `.5` 记录。实体手机、微信、真实人声音准与单 IP 限频待验证。
 
 ## R24 Excel 作业云同步试点已部署到上海（2026-11-24）
 

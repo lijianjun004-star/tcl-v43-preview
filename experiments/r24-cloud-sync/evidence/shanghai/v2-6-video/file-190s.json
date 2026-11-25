@@ -1,0 +1,27 @@
+{
+  "programs": [],
+  "stream_groups": [],
+  "streams": [
+    {
+      "codec_name": "vp8",
+      "codec_type": "video",
+      "width": 640,
+      "height": 480
+    },
+    {
+      "codec_name": "opus",
+      "codec_type": "audio"
+    }
+  ],
+  "format": {
+    "size": "9820677"
+  },
+  "video": {
+    "packetCount": 3798,
+    "lastPacketEndSeconds": 190.234
+  },
+  "audio": {
+    "packetCount": 3159,
+    "lastPacketEndSeconds": 190.217
+  }
+}

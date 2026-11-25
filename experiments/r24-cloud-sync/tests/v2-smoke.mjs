@@ -10,7 +10,7 @@ import { chromium } from 'playwright-core';
 const envId = 'unknown-roadrunner-d7cap6e21f517';
 const siteHost = envId + '-1519058345.tcloudbaseapp.com';
 const apiHost = envId + '-1519058345.ap-shanghai.app.tcloudbase.com';
-const expectedVersion = 'R24-20261124.4';
+const expectedVersion = process.env.TCL_V2_EXPECTED_VERSION || 'R24-20261124.6';
 const runTag = '验收' + randomBytes(4).toString('hex');
 const names = { operator: runTag + '运营', anchor: runTag + '主播' };
 const title = runTag + '三题作业';
@@ -304,14 +304,43 @@ async function verifyInbox(page,config){
   await page.locator('[data-ops-tab="lookup"]').click();
   await page.locator('#syncRecordsAssignment').selectOption(assignmentId);
   await page.locator('#syncAnchorLookup').fill(names.anchor);
-  await page.locator('#syncAnchorRecords details summary').filter({hasText:names.anchor}).waitFor();
+  const records=page.locator('#syncAnchorRecords');
+  const matching=records.locator('details summary').filter({hasText:names.anchor});
+  await matching.first().waitFor();
+  assert.equal(await matching.count(),1);
+  await matching.click();
+  for(const answer of answers)await records.getByText(answer,{exact:true}).waitFor();
   checks.push('运营的作业进度与主播记录均显示唯一提交和三题文字'+(audioConfirmed?'，三段云端录音均实际播放':''));
+}
+
+async function verifyOperatorReturn(page,config){
+  const [restored]=await Promise.all([apiResponse(page,config,'GET','/me'),page.reload({waitUntil:'domcontentloaded'})]);
+  expectStatus(restored,200,'operator remembered binding');
+  await page.locator('.identity-bar').filter({hasText:names.operator}).waitFor();
+  await page.locator('#switchIdentity').click();
+  await setRole(page,'anchor');
+  await page.locator(nameField).fill(names.operator);
+  const [checked]=await Promise.all([apiResponse(page,config,'GET','/me'),page.locator(submit).click()]);
+  expectStatus(checked,200,'operator wrong role check');
+  const accept=page.getByRole('button',{name:'以直播运营身份进入',exact:true});
+  await accept.waitFor();
+  assert.equal(await page.locator('.identity-bar').count(),0);
+  assert.equal(await page.locator(activationField).isVisible(),false);
+  await accept.click();
+  await page.locator('.identity-bar').filter({hasText:names.operator}).waitFor();
+  checks.push('运营刷新自动回访，退出后错选主播角色时须确认才以已绑定运营身份进入');
 }
 
 async function deviceCode(page,config,save=false){
   const tools=page.locator('#syncDeviceTools');
   if(await tools.getAttribute('open')===null)await tools.locator('summary').click();
-  const [response]=await Promise.all([apiResponse(page,config,'POST','/device/code'),tools.locator('#syncGenerateDeviceCode').click()]);
+  let issueButton=tools.locator('#syncGenerateDeviceCode');
+  const confirmation=tools.locator('#syncRegenerateDialog');
+  if(await tools.locator('#syncDeviceCodeResult').isVisible()&&await confirmation.count()){
+    await issueButton.click();
+    issueButton=confirmation.getByRole('button',{name:'确认重新生成',exact:true});
+  }
+  const [response]=await Promise.all([apiResponse(page,config,'POST','/device/code'),issueButton.click()]);
   expectStatus(response,200,'device code issue');
   const {code,expiresAt,name,role}=await response.json();
   assert.match(code,codePattern);
@@ -378,6 +407,8 @@ try {
   await enter(anchor.page,config,'anchor');
   stage='claim-record-submit';
   await runPractice(anchor.page,config);
+  stage='operator-return';
+  await verifyOperatorReturn(operator.page,config);
   stage='operator-playback';
   await verifyInbox(operator.page,config);
   stage='code-generator';
@@ -392,6 +423,17 @@ try {
   assert.equal(registered.registeredRole,'anchor');
   await fresh.page.locator(activationField).waitFor();
   assert.equal(await fresh.page.locator(rolePicker).inputValue(),'anchor');
+  let invalidPost=false;
+  const trapInvalid=request=>{
+    if(request.method()==='POST'&&routeName(new URL(request.url()),config)==='/device/activate')invalidPost=true;
+  };
+  fresh.page.on('request',trapInvalid);
+  await fresh.page.locator(activationField).fill('1234567890abcdef');
+  await fresh.page.locator(submit).click();
+  await fresh.page.locator('#syncLoginError').filter({hasText:/28/}).waitFor();
+  fresh.page.off('request',trapInvalid);
+  assert.equal(invalidPost,false);
+  checks.push('本机拦截 16 位无前缀输入，未发送激活请求');
   checks.push('新浏览器选错角色自动纠正为已有主播身份，未覆盖');
   stage='activate-replacement-and-replay';
   await activate(fresh.page,config,replaced,'CODE_EXPIRED');
@@ -425,4 +467,4 @@ try {
   if(server)await server.close();
   if(work)await rm(work,{recursive:true,force:true});
 }
-console.log(JSON.stringify({pass:!process.exitCode,stage,version:expectedVersion,checks,counts,pageErrors:errors.length,diagnostics}));
+console.log(JSON.stringify({pass:!process.exitCode,stage,version:expectedVersion,runTag,checks,counts,pageErrors:errors.length,diagnostics}));

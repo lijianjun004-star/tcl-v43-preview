@@ -118,14 +118,13 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
     return rows;
   }
 
-  function confirmMember(result, name) {
+  function verifiedMember(result, name) {
     const member = result?.principal;
     if (!member || !['anchor', 'operator'].includes(member.role) ||
         !text(member.id) || normalizeDisplayName(member.displayName) !== name) {
       throw new Error('设备绑定与所填姓名不匹配');
     }
-    principal = Object.freeze({id: member.id, role: member.role, displayName: member.displayName});
-    return principal;
+    return Object.freeze({id: member.id, role: member.role, displayName: member.displayName});
   }
 
   function forget(key) {
@@ -136,22 +135,20 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
     try { return localStorage.getItem(signedOutKey) === '1'; } catch { return false; }
   }
 
-  function accept(result, binding) {
-    const member = confirmMember(result, normalizeDisplayName(binding.name));
+  function accept(member, binding) {
     writeBinding(bindingKey, {name: member.displayName, token: binding.token, confirmed: true});
     forget(pendingKey);
     forget(signedOutKey);
     token = binding.token;
+    principal = member;
     return member;
   }
 
   async function checkBinding(binding) {
-    token = binding.token;
     try {
-      return accept(await get('/me'), binding);
+      const result = await request(base + '/me', {headers: { Authorization: `Bearer ${binding.token}` }});
+      return verifiedMember(result, normalizeDisplayName(binding.name));
     } catch (error) {
-      token = null;
-      principal = null;
       if (error.status === 401) return null;
       throw error;
     }
@@ -173,8 +170,9 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       const stored = readBinding(bindingKey);
       if (!stored?.confirmed || intentionallySignedOut()) return null;
       const member = await checkBinding(stored);
-      if (!member) forget(bindingKey);
-      return member;
+      if (member) return accept(member, stored);
+      forget(bindingKey);
+      return null;
     },
     async enter({displayName, role, rawCode = '', allowEnrollment = true}) {
       const name = validateName(displayName);
@@ -191,11 +189,14 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
           const result = await request(base + '/device/activate', {
             method: 'POST', body: {displayName: name, code, deviceToken: binding.token, role},
           });
-          return {member: accept(result,binding), opened: false};
+          return {member: accept(verifiedMember(result,name),binding), opened: false};
         }
         if (local) {
           const member = await checkBinding(local);
-          if (member) return {member, opened: false};
+          if (member) {
+            if (member.role !== role) return {member: null, boundRole: member.role};
+            return {member: accept(member, local), opened: false};
+          }
           forget(bindingKey);
         }
         if (!allowEnrollment) return {member: null, needsBinding: true};
@@ -205,7 +206,7 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
             method: 'POST', body: {name, role, deviceCredential: binding.token},
           });
           if (result.status !== 'enrolled') throw new Error('自动开通未确认，请重试');
-          return {member: accept(result,binding), opened: true};
+          return {member: accept(verifiedMember(result,name),binding), opened: true};
         } catch (error) {
           if (error.status === 409 && error.code === 'ALREADY_ENROLLED' && error.registeredRole) {
             return {member: null, needsBinding: true, registeredRole: error.registeredRole};
