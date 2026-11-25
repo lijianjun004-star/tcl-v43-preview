@@ -10,6 +10,8 @@
 
 本次修改只涉及说明和前端版本。CloudBase 托管原目录只更新 `app.js`、`index.html`、`static-manifest.json`，3/3 上传并通过托管校验，131 个对象中其余 128 个元数据一致。公网清单 `r24-paraformer-excel-cloud-sync-v2-20261124.6`，36 项，SHA-256 `3ff8696ff1c7c7d33d2a0e9e0e01ea3197832e2c3f6f5e9b7c28c4fe114d0a9e`。已逐字节回读公网清单、两个变更文件与原设备绑定模块。公网 Chromium 390px 可展开阅读登录页说明，无页面异常，未开通账号。登录页和工作台在本机 320、390、1440px 验证，浏览器回归 7/7。回滚可用已核验 `.5` 包 `publish/` 里的同名三个文件。
 
+用户随后要求先模拟生成作业。`.6` 使用「电视 · 京东」三题 Excel，在本机与真实上海试点各通过 9 项，页面异常为 0。运营预览发布、主播领取与提交、运营在两个入口核对三题文字并播放三段合成录音、换机及复用拒绝均通过。合成作业标识 `验收4c426f9c`，领取窗口约 45 分钟。首份用户 Excel 尚未收到。[模拟 Excel](https://docs.google.com/spreadsheets/d/1Z-gePGxTh0HOa04BF8CZUnjDsKrdBS2z/edit) · [验收记录](experiments/r24-cloud-sync/evidence/shanghai/v2-6-sim/README.md)
+
 ## 上海 R24 云同步试点 `.5` 已发布（2026-11-25 UTC）
 
 现有上海 CloudBase 的试点目录已上线 `R24-20261124.5`。部署源码固定为 `111115e3c45da55f9a4700b9a4d342e76e89e47c`。Gemini R2 已通过源码与更新包核验，并于 2026-11-25 16:30–16:38 UTC 在线复验刷新后作业数和未提交复盘恢复、重发设备码确认与反馈、角色提示和原姓名登录，三项通过，零失败。旧码失效、新设备绑定、慢请求期间切页及真机仍未做此轮线上实测；前三项已有本机 Chromium 回归。退出账号的原生确认框记为 P3 观察。[试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [离线复验](https://docs.google.com/document/d/1KelrGasnuBCMeFAqzdXBwtzvduOUnju5/edit) · [线上复验](https://docs.google.com/document/d/1beSDC9FMvPIllmAeRV_tv8Qo3tuhxioz/edit)
