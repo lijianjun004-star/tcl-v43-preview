@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createApi } from '../api.mjs';
+import { createAiGatewayClient } from '../ai-gateway-client.mjs';
 import { createMemoryStore } from '../memory-store.mjs';
 
 const actors = {
@@ -21,23 +22,27 @@ const question = {
   answer: '请结合观看距离和家庭使用场景确定尺寸。',
   keyPoints: ['先了解观看距离', '结合家庭使用场景'],
 };
-const modelOutput = rows => '```json\n' + JSON.stringify({ questions: rows }) + '\n```';
+const modelOutput = questions => ({questions, httpStatus: 200, retryCount: 0, usage: null});
 
-function fixture(generate) {
+function fixture(generate, {fallbackEnabled = true} = {}) {
+  const audit = [];
   const calls = [];
   const logged = [];
   const handle = createApi({
     authenticate: async token => actors[token] ?? null,
     store: createMemoryStore(),
     draftGeneration: generate && {
+      model: 'synthetic-model',
+      fallbackEnabled,
       canGenerate: actor => actor.id === actors.allowed.id,
-      generate: async (actor, prompt) => {
-        calls.push({ actor, prompt });
-        return generate();
+      generate: async (actor, prompt, context) => {
+        calls.push({ actor, prompt, context });
+        return generate(prompt);
       },
     },
     basePath: '/qa-sync',
     onError: error => logged.push(error),
+    logDraft: entry => audit.push(entry),
   });
 
   async function call(method, pathname, token, body) {
@@ -51,7 +56,7 @@ function fixture(generate) {
     }));
     return { status: response.status, headers: response.headers, data: await response.json() };
   }
-  return { call, calls, logged };
+  return { call, calls, logged, audit };
 }
 
 test('AI draft availability is limited to authenticated eligible operators', async () => {
@@ -84,7 +89,11 @@ test('valid source becomes a board-grounded prompt and returns an unpublished dr
   const response = await call('POST', draftPath, 'allowed', source);
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(response.data, { questions: [question] });
+  assert.deepEqual(response.data.questions, [question]);
+  assert.equal(response.data.source, 'openai_gateway');
+  assert.equal(response.data.degraded, false);
+  assert.equal(response.data.retryCount, 0);
+  assert.match(response.data.requestId, /^[0-9a-f-]{36}$/);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].actor, actors.allowed);
   assert.match(calls[0].prompt, /目标生成 3 道中文题/);
@@ -123,14 +132,18 @@ test('invalid board, incompatible platform, extra fields, and excessive source a
 test('duplicate, malformed, or excessive generated questions are never returned to the reviewer', async () => {
   for (const [count, response] of [
     [3, 'private upstream text, not JSON'],
+    [3, JSON.stringify({questions: [question]})],
+    [3, {questions: [question]}],
     [3, modelOutput([{ ...question, feedback: 'unexpected output field' }])],
     [3, modelOutput([question, { ...question, question: question.question.replace('？', '?') }])],
     [1, modelOutput([question, { ...question, question: '电视多久送到？' }])],
+    [1, modelOutput([{ ...question, keyPoints: [] }])],
+    [1, modelOutput([{ ...question, keyPoints: ['  '] }])],
   ]) {
     const { call, logged } = fixture(() => response);
     const result = await call('POST', draftPath, 'allowed', { ...source, count });
     assert.equal(result.status, 502);
-    assert.equal(result.data.error.code, 'AI_DRAFT_RESPONSE_INVALID');
+    assert.equal(result.data.error.code, 'INVALID_AI_JSON');
     assert.doesNotMatch(JSON.stringify(result.data), /private upstream text|unexpected output field/);
     assert.deepEqual(logged, []);
   }
@@ -147,4 +160,168 @@ test('model quota and upstream failure have safe responses without passing throu
   assert.equal(failed.data.error.code, 'AI_DRAFT_FAILED');
   assert.doesNotMatch(JSON.stringify([limited.data, failed.data]), /Private provider/);
   assert.deepEqual([...quota.logged, ...unavailable.logged], []);
+});
+
+const reviewedTable = [
+  '工作表 物流',
+  '弹幕内容\t参考话术\t评分要点\t品类\t平台',
+  [question.question, question.answer, question.keyPoints.join('；'), 'TCL 电视', '京东'].join('\t'),
+].join('\n');
+
+const syntheticFailure = (code, metadata = {}) =>
+  Object.assign(new Error('sensitive model error and private prompt'), {code, ...metadata});
+
+test('a complete operator table becomes an explicitly flagged fallback after a gateway failure', async () => {
+  for (const [code, httpStatus, retryCount] of [
+    ['GATEWAY_CONFIG_MISSING', null, 0], ['GATEWAY_HTTP_401', 401, 0],
+    ['GATEWAY_HTTP_403', 403, 0], ['GATEWAY_HTTP_502', 502, 1],
+    ['GATEWAY_TIMEOUT', null, 1], ['INVALID_AI_JSON', 200, 0],
+  ]) {
+    const {call, audit} = fixture(() => { throw syntheticFailure(code, {httpStatus, retryCount}); });
+    const {status, data} = await call('POST', draftPath, 'allowed', {...source, material: reviewedTable});
+    assert.equal(status, 200);
+    assert.deepEqual(data.questions, [question]);
+    assert.equal(data.source, 'fallback');
+    assert.equal(data.degraded, true);
+    assert.equal(data.errorCode, code);
+    assert.equal(data.retryCount, retryCount);
+    assert.ok(data.errorMessage);
+    assert.match(data.requestId, /^[0-9a-f-]{36}$/);
+    assert.equal(audit.length, 1);
+    const [entry] = audit;
+    assert.equal(entry.requestId, data.requestId);
+    assert.equal(entry.httpStatus, httpStatus);
+    assert.equal(entry.responseStatus, 200);
+    assert.equal(entry.retryCount, retryCount);
+    assert.equal(entry.errorCode, code);
+    assert.equal(entry.source, 'fallback');
+    assert.equal(entry.degraded, true);
+    assert.equal(entry.usage, null);
+    assert.ok(entry.latencyMs >= 0);
+    assert.doesNotMatch(JSON.stringify(entry), /工作表|private prompt|sensitive model|allowed|李运营/);
+    assert.deepEqual((await call('GET', '/assignments', 'allowed')).data.assignments, []);
+  }
+});
+
+test('only complete matching source rows can become a fallback when explicitly enabled', async () => {
+  for (const [material, fallbackEnabled] of [
+    [source.material, true],
+    [reviewedTable.replace('TCL 电视', 'TCL 冰箱'), true],
+    [reviewedTable.replace(/京东$/u, '抖音'), true],
+    [reviewedTable.replace(question.keyPoints.join('；'), ''), true],
+    [reviewedTable.replace('评分要点', '顾客姓名'), true],
+    [reviewedTable.replace(question.keyPoints.join('；'), '要点内容； ；另一要点'), true],
+    [reviewedTable.replace(question.keyPoints.join('；'), '要点内容；'), true],
+    [reviewedTable + '\n工作表 第二个表\n' + reviewedTable, true],
+    [reviewedTable + '\n' + reviewedTable.split('\n').at(-1), true],
+    [JSON.stringify({ questions: [{...question, answer: ' '}] }), true],
+    [reviewedTable, false],
+  ]) {
+    const {call, audit} = fixture(() => { throw syntheticFailure('GATEWAY_CONFIG_MISSING'); }, {fallbackEnabled});
+    const {status, data} = await call('POST', draftPath, 'allowed', {...source, material});
+    assert.equal(status, 503);
+    assert.equal(data.errorCode, 'GATEWAY_CONFIG_MISSING');
+    assert.equal(data.errorMessage, data.error.message);
+    assert.equal(data.source, 'none');
+    assert.equal(data.degraded, false);
+    assert.equal(data.questions, undefined);
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].requestId, data.requestId);
+    assert.deepEqual((await call('GET', '/assignments', 'allowed')).data.assignments, []);
+  }
+});
+
+test('gateway business validation failures preserve the last attempt metadata; only operator input supplies fallback', async () => {
+  const providerResult = {
+    questions: [question, {...question, question: question.question.replace('？', '?')}],
+    model: 'model-override-with-private-data', httpStatus:200, retryCount:1,
+    usage: {prompt_tokens:21, completion_tokens:15, total_tokens:36, internal:'private gateway data'},
+  };
+  const {call, audit} = fixture(() => providerResult);
+  const {status, data} = await call('POST', draftPath, 'allowed', {
+    ...source, material: JSON.stringify({questions:[{...question, question:'我家客厅适合哪种尺寸？'}]}),
+  });
+  assert.equal(status, 200);
+  assert.equal(data.source, 'fallback');
+  assert.equal(data.errorCode, 'INVALID_AI_JSON');
+  assert.equal(data.retryCount, 1);
+  assert.equal(data.questions[0].question, '我家客厅适合哪种尺寸？');
+  assert.deepEqual(audit[0].usage, {prompt_tokens:21,completion_tokens:15,total_tokens:36});
+  assert.equal(audit[0].model, 'synthetic-model');
+  assert.equal(audit[0].httpStatus, 200);
+  assert.doesNotMatch(JSON.stringify(audit), /private|internal|客厅/);
+  assert.deepEqual((await call('GET', '/assignments', 'allowed')).data.assignments, []);
+});
+
+test('access and quota failures cannot use a fallback, and only actual POST requests emit a trace', async () => {
+  for (const [token, errorCode, expected] of [
+    [null,'AUTH_REQUIRED',401], ['anchor','OPERATOR_REQUIRED',403], ['unlisted','AI_DRAFT_UNAVAILABLE',403],
+    ['allowed','AI_DRAFT_LIMIT',429], ['allowed','AI_DRAFT_QUOTA_UNAVAILABLE',503],
+  ]) {
+    const {call,calls,audit} = fixture(() => { throw syntheticFailure(errorCode); });
+    await call('GET', draftPath, token);
+    const {status,data} = await call('POST', draftPath, token, {...source,material:reviewedTable});
+    assert.equal(status, expected);
+    assert.equal(data.source, 'none');
+    assert.equal(data.error.code, errorCode);
+    assert.equal(data.errorCode, errorCode);
+    assert.equal(data.degraded, false);
+    assert.equal(data.questions, undefined);
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].responseStatus, expected);
+    assert.equal(audit[0].requestId, data.requestId);
+    assert.equal(calls.length, token === 'allowed' ? 1 : 0);
+  }
+});
+
+test('HTTP handler and real gateway client agree on retry, usage, fallback and terminal errors with a mock transport', async () => {
+  const usage = {prompt_tokens: 22, completion_tokens: 18, total_tokens: 40};
+  const envelope = {
+    choices: [{message: {role: 'assistant', content: JSON.stringify({questions: [question]})}, finish_reason: 'stop'}],
+    usage: {...usage, secretDebugField:'SENSITIVE-MARKER'},
+  };
+  const env = {AI_GATEWAY_URL:'https://gateway.example.test/v1', AI_GATEWAY_TOKEN:'SENSITIVE-MARKER'};
+  for (const scenario of [
+    {statuses:[200], code:null, source:'openai_gateway', material:source.material},
+    {statuses:[429, 200], code:null, source:'openai_gateway', material:source.material},
+    {statuses:[502, 504], code:'GATEWAY_HTTP_504', source:'fallback', material:reviewedTable},
+    {statuses:[401], code:'GATEWAY_HTTP_401', source:'none', material:source.material},
+    {statuses:[403], code:'GATEWAY_HTTP_403', source:'fallback', material:reviewedTable},
+    {statuses:[200], content:'truncated {', code:'INVALID_AI_JSON', source:'fallback', material:reviewedTable},
+    {statuses:[200], content:'{"questions":[]}', code:'INVALID_AI_JSON', source:'none', material:source.material},
+    {statuses:[], missing:'AI_GATEWAY_URL', code:'GATEWAY_CONFIG_MISSING', source:'fallback', material:reviewedTable},
+    {statuses:[], missing:'AI_GATEWAY_TOKEN', code:'GATEWAY_CONFIG_MISSING', source:'none', material:source.material},
+  ]) {
+    let fetches = 0;
+    let reservations = 0;
+    const delays = [];
+    const client = createAiGatewayClient({
+      env: scenario.missing ? {...env, [scenario.missing]:undefined} : env,
+      sleep: async delay => delays.push(delay),
+      fetchImpl: async (url, options) => {
+        assert.equal(url, 'https://gateway.example.test/v1/chat/completions');
+        assert.equal(options.headers.Authorization, 'Bearer SENSITIVE-MARKER');
+        const status = scenario.statuses[fetches++];
+        if (status !== 200) return new Response('SENSITIVE-MARKER', {status});
+        return Response.json(scenario.content ? {choices:[{message:{content:scenario.content}}], usage} : envelope);
+      },
+    });
+    const {call, audit} = fixture(prompt => client.generate(prompt, {beforeFetch: async () => {reservations++;}}));
+    const {status, data} = await call('POST', draftPath, 'allowed', {...source, material:scenario.material});
+    assert.equal(status === 200, scenario.source !== 'none');
+    assert.equal(data.source, scenario.source);
+    assert.equal(data.degraded, scenario.source === 'fallback');
+    assert.equal(data.errorCode || null, scenario.code);
+    assert.equal(fetches, scenario.statuses.length);
+    assert.equal(reservations, fetches);
+    assert.equal(data.retryCount, Math.max(0, fetches - 1));
+    assert.deepEqual(delays, fetches === 2 ? [1500] : []);
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].httpStatus, scenario.statuses.at(-1) ?? null);
+    assert.equal(audit[0].requestId, data.requestId);
+    assert.equal(audit[0].retryCount, data.retryCount);
+    assert.deepEqual(audit[0].usage, scenario.statuses.at(-1) === 200 ? usage : null);
+    assert.doesNotMatch(JSON.stringify([audit, data]), /SENSITIVE-MARKER|secretDebugField|truncated|gateway\.example/);
+    assert.deepEqual((await call('GET', '/assignments', 'allowed')).data.assignments, []);
+  }
 });

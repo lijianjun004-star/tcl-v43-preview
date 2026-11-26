@@ -1,0 +1,296 @@
+R24-20261124.10. Command invocations and captured stdout/stderr. Paths identify the local QA workspace. Final browser and SDK checks use a local candidate and synthetic data. No real gateway call.
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ npm --prefix cloudbase ci --offline --no-audit --no-fund
+
+added 78 packages in 1s
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   core-js-pure@3.51.0 (postinstall: node -e "try{require('./postinstall')}catch(e){}")
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ npm --prefix tests ci --offline --no-audit --no-fund
+
+added 1 package in 558ms
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync/tests
+$ TCL_TEST_SITE_DIR=/workspace/scratch/r24-gateway-evidence/site npm test
+
+> test
+> node --test browser.test.mjs assignment-drafts.test.mjs
+
+✔ Chinese draft instructions keep source text in a separate JSON payload (1.320336ms)
+✔ draft generation rejects empty and oversize sources instead of truncating (0.289297ms)
+✔ table source preserves sheet order, columns, and text across sheets (2.236421ms)
+✔ draft reader accepts plain and fenced JSON and returns clean fields (0.857496ms)
+✔ draft reader rejects invalid JSON, extra fields, and invalid field lengths (0.664565ms)
+✔ two independent browsers: publish a real XLSX, claim, submit, operator reads exact answers (7294.722763ms)
+✔ assignment XLSX accepts 50 MiB unpacked and keeps both the default and single-entry limits (4322.149381ms)
+✔ operator reviews an AI draft made from text or Excel before sharing its barrage with an anchor (3365.321854ms)
+{"requestId":"350af590-bdd7-4a40-ba08-4e588b4a8e2b","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":49,"degraded":false,"source":"openai_gateway","errorCode":null}
+{"requestId":"bccad6fe-fbde-4497-84fd-e690101e21a8","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":1,"degraded":false,"source":"openai_gateway","errorCode":null}
+{"requestId":"b53b26f6-2597-4d1f-a88f-614a1ae8621c","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":1,"degraded":false,"source":"openai_gateway","errorCode":null}
+✔ one-click cloud drafts use text and Excel, discard stale results, and publish only after review (4606.60005ms)
+{"requestId":"dae2c90e-5ef0-4c5c-a77a-9b14249e58f6","model":null,"httpStatus":502,"retryCount":1,"usage":null,"responseStatus":502,"latencyMs":1,"degraded":false,"source":"none","errorCode":"GATEWAY_HTTP_502"}
+{"requestId":"a171f7b1-dce1-4574-bd16-defeb42a342b","model":null,"httpStatus":502,"retryCount":1,"usage":null,"responseStatus":200,"latencyMs":1,"degraded":true,"source":"fallback","errorCode":"GATEWAY_HTTP_502"}
+✖ operator can distinguish a gateway failure and a local fallback through editing, confirmation and publishing (14044.524985ms)
+✔ a new browser requires a valid code and a different role on a bound browser requires explicit confirmation (3698.471466ms)
+✔ login validates the 28-character R24 format and normalizes real clipboard paste (1196.457403ms)
+✔ bound device can generate, copy, save, and renew one-time codes for a fresh browser (5715.563611ms)
+✔ login device-code shortcut guides fresh browsers and opens the panel after verified name entry (1613.872699ms)
+✔ local fallback uses the original XLSX/JSON path and labels only local save (3297.271601ms)
+✔ reload restores the cloud workspace and saved review even while assignments are loading (2813.222645ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 15
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52703.308086
+
+✖ failing tests:
+
+test at browser.test.mjs:561:1
+✖ operator can distinguish a gateway failure and a local fallback through editing, confirmation and publishing (14044.524985ms)
+  locator.waitFor: Timeout 12000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('#assignmentDraftPanel').locator('#assignmentDraftStatus').filter({ hasText: '至少需要一条评分要点' }) to be visible[22m
+  
+      at TestContext.<anonymous> (/workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync/tests/browser.test.mjs:619:81) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('#assignmentDraftPanel').locator('#assignmentDraftStatus').filter({ hasText: '至少需要一条评分要点' }) to be visible" ]
+  }
+exit 1
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ python3 stage-site.py /workspace/scratch/r24-qa3.qGkiOHUk/TCL_R24_Excel_QA3_Tencent_Deploy_LITE_20261123/site/tcl-r24-paraformer-excel-qa /workspace/scratch/r24-gateway-evidence/final-site --env-id r24-gateway-test --api-base https://example.invalid/tcl-r24-sync
+{"version": "r24-paraformer-excel-cloud-sync-v2-20261124.10", "files": 39, "cloudConfigured": true}
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ sha256sum /workspace/scratch/r24-gateway-evidence/final-site/static-manifest.json
+1c636308fb24c0438c94d1bef1727243bba215e3d8a6c9f99de7b0bad179fc25  /workspace/scratch/r24-gateway-evidence/final-site/static-manifest.json
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ python3 - <<'PY'
+import hashlib,json,pathlib
+root=pathlib.Path('/workspace/scratch/r24-gateway-evidence/final-site');files=json.loads((root/'static-manifest.json').read_bytes())['files'];assert all(hashlib.sha256((root/k).read_bytes()).hexdigest()==v for k,v in files.items());print(f'{len(files)}/{len(files)} asset hashes verified')
+PY
+38/38 asset hashes verified
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ node cloudbase/stage.mjs /workspace/scratch/r24-gateway-evidence/final-function
+/workspace/scratch/r24-gateway-evidence/final-function
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ npm --prefix /workspace/scratch/r24-gateway-evidence/final-function ci --offline --no-audit --no-fund
+
+added 78 packages in 2s
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   core-js-pure@3.51.0 (postinstall: node -e "try{require('./postinstall')}catch(e){}")
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs
+✔ AI draft availability is limited to authenticated eligible operators (82.118661ms)
+✔ generation capability is disabled when the model adapter is absent (0.749353ms)
+✔ valid source becomes a board-grounded prompt and returns an unpublished draft for review (3.843301ms)
+✔ invalid board, incompatible platform, extra fields, and excessive source are rejected before generation (56.48683ms)
+✔ duplicate, malformed, or excessive generated questions are never returned to the reviewer (6.468098ms)
+✔ model quota and upstream failure have safe responses without passing through provider details (0.735792ms)
+✔ a complete operator table becomes an explicitly flagged fallback after a gateway failure (3.395334ms)
+✔ only complete matching source rows can become a fallback when explicitly enabled (4.106659ms)
+✔ gateway business validation failures preserve the last attempt metadata; only operator input supplies fallback (9.891735ms)
+✔ access and quota failures cannot use a fallback, and only actual POST requests emit a trace (2.179465ms)
+✔ HTTP handler and real gateway client agree on retry, usage, fallback and terminal errors with a mock transport (8.748085ms)
+✔ root, version base, complete and trailing-slash gateway URLs use one chat route (24.730885ms)
+✔ missing gateway URL or token fails before network access or quota reservation (0.630423ms)
+✔ malformed URLs, direct provider domains, invalid timeouts and unsafe credential config fail closed (0.43613ms)
+✔ invalid or secret-bearing model configuration is never exposed in metadata (0.210448ms)
+✔ empty and oversize source fail before the first gateway request (0.172531ms)
+✔ malformed envelope, broken fences, invalid schema, truncation and refusals never retry (3.033807ms)
+✔ HTTP 300 fails immediately and discards upstream body (0.446835ms)
+✔ HTTP 400 fails immediately and discards upstream body (0.221595ms)
+✔ HTTP 401 fails immediately and discards upstream body (0.201024ms)
+✔ HTTP 403 fails immediately and discards upstream body (10.128332ms)
+✔ HTTP 404 fails immediately and discards upstream body (0.252872ms)
+✔ HTTP 408 fails immediately and discards upstream body (0.114994ms)
+✔ HTTP 500 fails immediately and discards upstream body (0.54233ms)
+✔ HTTP 501 fails immediately and discards upstream body (0.510011ms)
+✔ HTTP 429 backs off 1500 ms and reserves each attempt (0.448998ms)
+✔ HTTP 502 backs off 1500 ms and reserves each attempt (0.259502ms)
+✔ HTTP 503 backs off 1500 ms and reserves each attempt (0.207183ms)
+✔ HTTP 504 backs off 1500 ms and reserves each attempt (0.184479ms)
+✔ a second transient HTTP error ends the request with retryCount 1 (0.144418ms)
+✔ ECONNRESET retries once including nested fetch causes (0.266452ms)
+✔ ETIMEDOUT retries once including nested fetch causes (0.143327ms)
+✔ AbortError retries once including nested fetch causes (0.151208ms)
+✔ generic transport failure is sanitized and cannot retry (0.24437ms)
+✔ deadline aborts a hanging response body and a hanging fetch, without a third dispatch (56.962809ms)
+✔ failed quota reservations never dispatch, retry or expose backend details (0.599847ms)
+✔ authenticator controls identity, team, role, and activation (25.593503ms)
+✔ public publishing validates QA3 hash, board and publisher; visibility stays within team (60.471745ms)
+✔ named assignment uses IDs from trusted directory instead of same-name or out-of-team actors (8.828166ms)
+✔ parallel publish is idempotent and cannot overwrite an existing snapshot, including after a name change (5.058648ms)
+✔ complete submission binds actor ID and frozen assignment and records server receipt time (7.973205ms)
+✔ retry does not duplicate a submission or change its server time; second anchor can have same practice session ID (8.498979ms)
+✔ limits on content type, body size, CORS and invalid cursors (10.04045ms)
+✔ pagination does not skip same-time assignments and stays viewer scoped (57.63813ms)
+✔ claim and operator progress are identity-scoped and retries keep the same timestamp (2.741756ms)
+✔ private audio is separately retried, verified, size-limited and restricted to owner or author (27.14498ms)
+✔ live provider verification determines UID, and enrollment alone determines the app role (22.694922ms)
+✔ invalid, anonymous, disabled, and unenrolled accounts cannot operate (2.061767ms)
+✔ identity provider failure remains distinguishable from rejected credentials (0.437251ms)
+✔ competing retries use insert-only unique IDs and preserve the first payload (0.575651ms)
+✔ keyset pages stay in the given team, and anchor status only returns status fields (2.086645ms)
+✔ gateway carries path, query, auth and UTF-8/base64 payload to portable API (1.959112ms)
+✔ gateway prevents oversized payloads and rejects non-HTTP-style events before API routing (0.820951ms)
+✔ two CloudBase identities round-trip a published assignment and a submission through the gateway adapter (16.899249ms)
+✔ large database results fail closed instead of returning an incomplete list (61.581963ms)
+✔ shared Shanghai pilot requires explicit opt-in, known prefix, and single trusted origin (5.744955ms)
+✔ non-unique PostgreSQL insert errors remain failures (0.255947ms)
+✔ pilot generation is disabled without a valid opt-in, daily limit, and exact operator list (4.829041ms)
+✔ only exact active operators with valid prompts can reach quota and transport (2.726372ms)
+✔ missing gateway fields surface a typed error to an eligible operator without spending quota (1.029376ms)
+✔ generation forwards validated questions after reserving an attempt (33.67084ms)
+✔ unavailable quota storage and daily limit deny transport (1.478967ms)
+✔ retry reserves a second attempt after the backoff (4.968792ms)
+✔ quota exhausted after a transient failure prevents the second HTTP request (0.468278ms)
+R24 pilot private audio { operation: 'credential-response', status: null, code: null }
+✔ CloudBase audio sends raw bytes and uses runtime credentials on private upload and playback (39.44178ms)
+✔ CloudBase audio rejects invalid paths and missing credentials before opening storage (4.466353ms)
+✔ CloudBase audio accepts insert-only replay and bounds downloaded data without Content-Length (2.326617ms)
+✔ CloudBase audio exchanges a trusted SCF session for a service token at the fixed gateway (19.814326ms)
+✔ when SCF credentials are unavailable, storage can reuse the Node SDK RDB exchange (0.596352ms)
+✔ name validation normalizes NFKC, rejects controls, and counts Unicode points (1.026101ms)
+✔ auto enrollment persists only the credential digest and returns explicit role and device identity (15.600837ms)
+✔ existing enrolled identity supplies only registered role and rejects unauthenticated role escalation (1.617155ms)
+✔ activation accepts current and legacy payload field names and reports distinguishable errors (3.095619ms)
+✔ gateway metadata drives the rate bucket; headers alone never establish a caller IP (4.099537ms)
+✔ device authentication checks current enrollment; existing native tokens stay compatible (0.494949ms)
+✔ only registered device bearers issue private 28-character codes (0.988525ms)
+✔ Chinese draft instructions keep source text in a separate JSON payload (1.051459ms)
+✔ draft generation rejects empty and oversize sources instead of truncating (0.285211ms)
+✔ table source preserves sheet order, columns, and text across sheets (1.321748ms)
+✔ draft reader accepts plain and fenced JSON and returns clean fields (0.559236ms)
+✔ draft reader rejects invalid JSON, extra fields, and invalid field lengths (0.455839ms)
+ℹ tests 81
+ℹ suites 0
+ℹ pass 81
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1495.218212
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync/tests
+$ TCL_TEST_SITE_DIR=/workspace/scratch/r24-gateway-evidence/final-site npm test
+
+> test
+> node --test browser.test.mjs assignment-drafts.test.mjs
+
+✔ Chinese draft instructions keep source text in a separate JSON payload (1.062265ms)
+✔ draft generation rejects empty and oversize sources instead of truncating (0.36391ms)
+✔ table source preserves sheet order, columns, and text across sheets (4.27627ms)
+✔ draft reader accepts plain and fenced JSON and returns clean fields (0.867901ms)
+✔ draft reader rejects invalid JSON, extra fields, and invalid field lengths (1.239212ms)
+✔ two independent browsers: publish a real XLSX, claim, submit, operator reads exact answers (7445.974153ms)
+✔ assignment XLSX accepts 50 MiB unpacked and keeps both the default and single-entry limits (2862.516174ms)
+✔ operator reviews an AI draft made from text or Excel before sharing its barrage with an anchor (2702.7856ms)
+{"requestId":"d4ec958a-4c9b-4ae2-90db-04fe70713b73","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":44,"degraded":false,"source":"openai_gateway","errorCode":null}
+{"requestId":"857698f1-fc69-43ea-93c1-02fb87debe0c","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":0,"degraded":false,"source":"openai_gateway","errorCode":null}
+{"requestId":"1740bf23-779d-44a1-b4ed-423744228a73","model":null,"httpStatus":200,"retryCount":0,"usage":null,"responseStatus":200,"latencyMs":0,"degraded":false,"source":"openai_gateway","errorCode":null}
+✔ one-click cloud drafts use text and Excel, discard stale results, and publish only after review (3358.559195ms)
+{"requestId":"3b639006-74a6-4bb3-ab28-f5d1d3d42715","model":null,"httpStatus":502,"retryCount":1,"usage":null,"responseStatus":502,"latencyMs":1,"degraded":false,"source":"none","errorCode":"GATEWAY_HTTP_502"}
+{"requestId":"697d2be8-a639-4f0e-85f8-918e911194cc","model":null,"httpStatus":502,"retryCount":1,"usage":null,"responseStatus":200,"latencyMs":0,"degraded":true,"source":"fallback","errorCode":"GATEWAY_HTTP_502"}
+✔ operator can distinguish a gateway failure and a local fallback through editing, confirmation and publishing (1263.736812ms)
+✔ a new browser requires a valid code and a different role on a bound browser requires explicit confirmation (2366.18686ms)
+✔ login validates the 28-character R24 format and normalizes real clipboard paste (1171.817352ms)
+✔ bound device can generate, copy, save, and renew one-time codes for a fresh browser (2664.711809ms)
+✔ login device-code shortcut guides fresh browsers and opens the panel after verified name entry (1170.403019ms)
+✔ local fallback uses the original XLSX/JSON path and labels only local save (3286.569694ms)
+✔ reload restores the cloud workspace and saved review even while assignments are loading (2645.302263ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 31449.915541
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync/tests
+$ TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/workspace/scratch/r24-gateway-evidence/final-site node v2-smoke.mjs
+{"pass":true,"stage":"passed","version":"R24-20261124.10","runTag":"验收8b1a6e02","checks":["新运营自动开通，合成 Excel 作业写入云端","新主播自动开通并领取，录制三段合成音频，文字回答提交成功","运营刷新自动回访，退出后错选主播角色时须确认才以已绑定运营身份进入","运营的作业进度与主播记录均显示唯一提交和三题文字，三段云端录音均实际播放","28 字符 R24 码展示、剪贴板和下载内容完全一致","本机拦截 16 位无前缀输入，未发送激活请求","新浏览器选错角色自动纠正为已有主播身份，未覆盖","被替换的未用码失效，含全角与空白的有效码绑定成功并读取原作业，第三浏览器复用得到 CODE_USED","同一浏览器回访自动验证绑定并进入"],"counts":{"POST /device/auto-enroll 200":2,"GET /assignments 200":10,"POST /assignments 201":1,"blocked":2,"POST /assignments/[assignment]/claim 201":1,"POST /assignments/[assignment]/submissions 201":1,"POST /assignments/[assignment]/submissions/[submission]/audio 201":3,"GET /me 200":4,"GET /assignments/[assignment]/progress 200":3,"GET /assignments/[assignment]/submissions 200":5,"GET /assignments/[assignment]/submissions/[submission]/audio 200":3,"POST /device/code 200":2,"POST /device/auto-enroll 409":2,"POST /device/activate 401":1,"POST /device/activate 200":1,"POST /device/activate 409":1},"pageErrors":0,"diagnostics":{"media":{"secure":true,"camera":true,"recorder":true},"confirmedPendingTranscription":true}}
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ python3 tests/test_scan_gateway.py -v
+test_report_nested_fixtures_without_echoing_values (__main__.ScanGatewayTest.test_report_nested_fixtures_without_echoing_values) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.302s
+
+OK
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor
+$ python3 experiments/r24-cloud-sync/tests/scan-gateway.py --tree HEAD  # HEAD was f6234b4b0edc59e5426c69e12a7617e15cb9d55e
+tree=d9a4cb83ed1837884fd20d5f113534121444f161 scope=git-blobs+zip+tar+gzip+b64 history=excluded untracked=excluded
+limits: member=32MiB total=384MiB nesting=5 archive-entries=12000
+counts: {"archive-entries": 320, "base64": 4, "gzip": 2, "tar": 2, "tracked-entries": 173, "zip": 6} scanned-bytes=18786417
+findings=0 coverage-gaps=0 log-check=direct-sink-heuristic
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-evidence/final-function
+$ TCL_R24_SYNC_ENABLED=true TCL_R24_SYNC_ALLOW_SHARED_SHANGHAI=true TCL_R24_SYNC_ENV_ID=unknown-roadrunner-d7cap6e21f517 TCL_R24_SYNC_COLLECTION_PREFIX=tcl_r24_sync_v1 TCL_R24_SYNC_ORIGINS=https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com node - <<'NODE'
+const assert = require('node:assert/strict');
+const {main} = require('./index.js');
+(async () => {
+  for (const [httpMethod, path] of [['GET','/me'],['POST','/assignments/draft']]) {
+    const event = {httpMethod,path,headers:{origin:process.env.TCL_R24_SYNC_ORIGINS}};
+    const result = await main(event,{namespace:process.env.TCL_R24_SYNC_ENV_ID});
+    assert.equal(result.statusCode,401);
+    console.log(httpMethod,path,result.statusCode);
+  }
+  process.exit(0);
+})().catch(e => {console.error(e.name); process.exit(1)});
+NODE
+GET /me 401
+{"requestId":"4ea10a09-0f72-44fa-a5ba-acc5bbc032dd","model":null,"httpStatus":null,"retryCount":0,"usage":null,"responseStatus":401,"latencyMs":0,"degraded":false,"source":"none","errorCode":"AUTH_REQUIRED"}
+POST /assignments/draft 401
+exit 0
+
+working directory: /workspace/scratch/r24-gateway-refactor/experiments/r24-cloud-sync
+$ python3 - <<'PY'
+import pathlib,runpy
+s=runpy.run_path('tests/scan-gateway.py')
+failed=False
+for name in ['final-site','final-function']:
+    root=pathlib.Path('/workspace/scratch/r24-gateway-evidence')/name
+    matched=set(); total=0; symlinks=0
+    for p in root.rglob('*'):
+        if p.is_symlink(): symlinks+=1; continue
+        if not p.is_file(): continue
+        total+=1; data=p.read_bytes()
+        for rule,reg in s['CHECKS'].items():
+            if reg.search(data): matched.add((rule,str(p.relative_to(root))))
+    print(f'{name} regular-files={total} symlinks={symlinks} signature-matches={len(matched)}')
+    for rule,path in sorted(matched): print(rule,s['safe_name'](path))
+    failed |= bool(matched)
+raise SystemExit(int(failed))
+PY
+final-site regular-files=39 symlinks=0 signature-matches=0
+final-function regular-files=6123 symlinks=1 signature-matches=0
+exit 0

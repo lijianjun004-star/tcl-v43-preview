@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import { buildAssignmentDraftPrompt, readAssignmentDraftResponse } from '../overlay/assignment-drafts.mjs';
+import { startDraftCall, finishDraftCall, generateAssignmentDraft } from './assignment-draft-service.mjs';
+import { buildAssignmentDraftPrompt } from '../overlay/assignment-drafts.mjs';
 import {
   isReceiptLate,
   sha256Hex,
   toReceipt,
-  validateExcelQuestions,
   verifyAssignment,
 } from './vendor/assignment-excel.mjs';
 import { boardDefinitions } from './vendor/qa3-boards.mjs';
@@ -218,7 +218,7 @@ function boardFor(boards, boardId) {
   return board;
 }
 
-async function assignmentDraft(request, principal, { boards, draftGeneration }) {
+async function assignmentDraft(request, principal, { boards, draftGeneration, draftAudit }) {
   operatorOnly(principal);
   const available = draftGeneration?.canGenerate(principal) === true;
   if (request.method === 'GET') return { body: { available } };
@@ -241,19 +241,9 @@ async function assignmentDraft(request, principal, { boards, draftGeneration }) 
     problem(422, 'AI_DRAFT_INPUT_INVALID', '出题资料格式无效或超过 20000 字，请整理后重试');
   }
 
-  let response;
-  try {
-    response = await draftGeneration.generate(principal, prompt);
-  } catch (error) {
-    if (error?.code === 'AI_DRAFT_LIMIT') problem(429, 'AI_DRAFT_LIMIT', '今天的一键出题次数已用完');
-    problem(503, 'AI_DRAFT_FAILED', '暂时无法生成草稿，请稍后重试');
-  }
-  try {
-    const questions = validateExcelQuestions(readAssignmentDraftResponse(response), { category, platform, max: count });
-    return { body: { questions: questions.map(({ question, answer, keyPoints }) => ({ question, answer, keyPoints })) } };
-  } catch {
-    problem(502, 'AI_DRAFT_RESPONSE_INVALID', '生成结果未通过题目校验，请调整资料后重试');
-  }
+  return generateAssignmentDraft({
+    draftGeneration, principal, prompt, material, context: {category, platform, count}, audit: draftAudit,
+  });
 }
 
 async function assignmentOf(body, boards) {
@@ -654,6 +644,7 @@ export function createApi({
   allowedOrigins = [],
   basePath = '',
   onError = () => {},
+  logDraft = entry => console.info(JSON.stringify(entry)),
 }) {
   const dependencies = {
     directory, store, now, media, draftGeneration,
@@ -675,23 +666,29 @@ export function createApi({
         'access-control-max-age': '600',
       } });
     }
+    const url = new URL(request.url);
+    const draftAudit = request.method === 'POST' && url.pathname === basePath + '/assignments/draft'
+      ? startDraftCall(draftGeneration?.model) : null;
+    const respond = (body, status) => {
+      const result = draftAudit ? finishDraftCall(draftAudit, body, status, logDraft) : body;
+      return jsonResponse(result, status, cors);
+    };
     try {
       const token = /^Bearer ([^\s,]{1,8192})$/iu.exec(request.headers.get('authorization') ?? '')?.[1];
       if (!token) problem(401, 'AUTH_REQUIRED', '请先登录');
       const principal = await authenticate(token);
       if (!validIdentity(principal)) problem(401, 'AUTH_REQUIRED', '登录已过期或帐号未授权');
-      const url = new URL(request.url);
       if (basePath && !url.pathname.startsWith(basePath + '/')) {
         problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
       }
-      const result = await route(request, url, url.pathname.slice(basePath.length), principal, dependencies);
-      return jsonResponse(result.body, result.status ?? 200, cors);
+      const result = await route(request, url, url.pathname.slice(basePath.length), principal, draftAudit ? {...dependencies, draftAudit} : dependencies);
+      return respond(result.body, result.status ?? 200);
     } catch (error) {
       if (error instanceof ApiProblem) {
-        return jsonResponse({ error: { code: error.code, message: error.message } }, error.status, cors);
+        return respond({ error: { code: error.code, message: error.message } }, error.status);
       }
-      onError(error);
-      return jsonResponse({ error: { code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试' } }, 500, cors);
+      if (!draftAudit) onError(error);
+      return respond({ error: { code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试' } }, 500);
     }
   };
 }

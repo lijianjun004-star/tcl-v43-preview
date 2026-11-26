@@ -4,6 +4,41 @@ import {
   readAssignmentDraftResponse,
 } from './assignment-drafts.mjs';
 
+const draftErrorHints = {
+  AI_DRAFT_UNAVAILABLE: '当前账号暂无法使用一键出题。',
+  AI_DRAFT_LIMIT: '今天的一键出题次数已用完。',
+  AI_DRAFT_QUOTA_UNAVAILABLE: '暂时无法核实出题额度，请稍后重试。',
+  AI_DRAFT_INPUT_INVALID: '请检查资料格式，最多可填写 20,000 字。',
+  INVALID_AI_JSON: '返回的草稿未通过题目校验。',
+  GATEWAY_CONFIG_MISSING: '管理员需要补齐出题网关配置。',
+  GATEWAY_CONFIG_INVALID: '管理员需要核对出题网关配置。',
+  GATEWAY_TIMEOUT: '出题网关响应超时。',
+  GATEWAY_HTTP_401: '出题网关鉴权失败，请联系管理员。',
+  GATEWAY_HTTP_403: '出题网关拒绝访问，请联系管理员。',
+  GATEWAY_HTTP_404: '未找到出题网关接口，请联系管理员。',
+  GATEWAY_NETWORK_ERROR: '暂时无法连接出题网关。',
+  GATEWAY_NETWORK_RESET: '与出题网关的连接已中断。',
+  CLIENT_TIMEOUT: '等待出题结果超时，请稍后重试。',
+  CLIENT_NETWORK_ERROR: '网络连接中断，请检查网络后重试。',
+  RATE_LIMITED: '出题请求过多，请稍后再试。',
+};
+
+function draftErrorHint(code) {
+  if (Object.hasOwn(draftErrorHints, code)) return draftErrorHints[code];
+  if (/^GATEWAY_HTTP_[45]\d{2}$/u.test(code)) return '出题网关暂时无法处理请求，请凭请求编号核查。';
+  return '云端出题未完成，请稍后重试。';
+}
+
+function draftDiagnostics({requestId, retryCount, errorCode}) {
+  const details = [];
+  if (/^(?:AI_DRAFT|GATEWAY|INVALID_AI|RATE|CLIENT)_[A-Z0-9_]{1,45}$/u.test(errorCode)) details.push(errorCode);
+  if (retryCount === 1) details.push('已重试 1 次');
+  if (typeof requestId === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/iu.test(requestId)) {
+    details.push('请求编号 ' + requestId);
+  }
+  return details.length ? '（' + details.join(' · ') + '）' : '';
+}
+
 export function assignmentDraftPanelHtml() {
   return `
 <details class="hub-fold" id="assignmentDraftPanel">
@@ -16,7 +51,7 @@ export function assignmentDraftPanelHtml() {
     <div id="assignmentDraftTextFields"><div class="field"><label for="assignmentDraftSourceText">场景、资料或客户原话</label><textarea id="assignmentDraftSourceText" rows="4" placeholder="粘贴顾客需求、使用场景或产品资料"></textarea></div></div>
     <div id="assignmentDraftTableFields" hidden><div class="field"><label for="assignmentDraftSourceFile">选择 Excel 或文本表格</label><input id="assignmentDraftSourceFile" type="file" accept=".xlsx,.xls,.csv,.tsv"><small>支持 XLSX、XLS、CSV、TSV。较长资料可按主题分批。</small></div></div>
     <div id="assignmentDraftCloudControls" hidden>
-      <p class="hub-task-tip">点击生成会把所选资料的文字发送给腾讯云模型。请先去除姓名、电话、地址等个人信息，并确认资料可分享。</p>
+      <p class="hub-task-tip">点击生成会把所选文字经配置的网关发送给模型服务。请先去除姓名、电话、地址等个人信息，并确认资料可分享。</p>
       <button type="button" class="btn dark" id="assignmentDraftGenerate" aria-describedby="assignmentDraftCloudStatus">AI 一键出题</button>
     </div>
     <p class="scene-tip" id="assignmentDraftCloudStatus" role="status" hidden></p>
@@ -35,6 +70,7 @@ export function assignmentDraftPanelHtml() {
     <div class="field"><label for="assignmentDraftResponse">粘贴 AI 返回的 JSON</label><textarea id="assignmentDraftResponse" rows="4" placeholder="粘贴完整的 JSON 结果"></textarea></div>
     <button type="button" class="btn soft" id="assignmentDraftReadResponse">读取草稿</button>
     <div id="assignmentDraftReviewFields" hidden>
+      <p class="scene-tip" id="assignmentDraftOrigin" role="status"></p>
       <p class="scene-tip">请核对并修改题面、参考答案和评分要点。价款、配置和安装条款以核实后的资料为准。</p>
       <div id="assignmentDraftRows" class="question-list"></div>
       <div class="toolbar"><button type="button" class="btn dark" id="assignmentDraftConfirm">确认用于本次作业</button></div>
@@ -58,6 +94,7 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
   const promptStatus = find('PromptStatus');
   const response = find('Response');
   const reviewFields = find('ReviewFields');
+  const originNote = find('Origin');
   const rowsContainer = find('Rows');
   const draftStatus = find('Status');
   const cloudControls = find('CloudControls');
@@ -66,6 +103,8 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
   const retryButton = find('RetryAccess');
 
   let rows = [];
+  let origin = '手动导入草稿';
+  let generatedScope;
   let sourceRevision = 0;
   let draftRevision = 0;
   let promptScope;
@@ -167,10 +206,26 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
       requested = true;
       const generated = await cloud.generate({ material: source.trim(), boardId: scope.boardId, platform: scope.platform, count: desiredCount });
       if (!isCurrent()) return;
-      rows = readAssignmentDraftResponse(JSON.stringify(generated));
+      const fallback = generated?.source === 'fallback' && generated.degraded === true;
+      const fromGateway = generated?.source === 'openai_gateway' && generated.degraded === false;
+      try {
+        if (!fallback && !fromGateway) throw new Error();
+        if (fallback && !generated.errorCode) throw new Error();
+        const questions = readAssignmentDraftResponse(JSON.stringify({questions: generated.questions}));
+        if (questions.some(row => !row.keyPoints.length)) throw new Error();
+        rows = questions;
+      } catch {
+        throw Object.assign(new Error('云端草稿格式有误'), {
+          code: 'INVALID_AI_JSON', requestId: generated?.requestId, retryCount: generated?.retryCount,
+        });
+      }
+      origin = fallback ? '本地兜底草稿' : 'AI 网关草稿';
+      generatedScope = scope;
+      const reason = fallback ? '。' + draftErrorHint(generated.errorCode) : '';
+      originNote.textContent = origin + reason + draftDiagnostics(generated);
       renderDraftRows();
-      draftStatus.textContent = `已生成 ${rows.length} 道草稿题。核对后请确认用于本次作业。`;
-      setCloudStatus('草稿已生成，可在下方编辑。');
+      draftStatus.textContent = `共 ${rows.length} 道草稿题，请核对后确认用于本次作业。`;
+      setCloudStatus(fallback ? '已启用兜底，请在下方核对资料和题目。' : '草稿已生成，可在下方编辑。');
     } catch (error) {
       if (!isCurrent()) return;
       if (!requested) {
@@ -181,16 +236,10 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
         cloudAvailable = false;
         cloudControls.hidden = true;
       }
-      const hints = {
-        AI_DRAFT_UNAVAILABLE: '当前账号暂无法使用云端出题。',
-        AI_DRAFT_LIMIT: '今天的一键出题次数已用完。',
-        AI_DRAFT_INPUT_INVALID: '请检查资料格式，最多可填写 20,000 字。',
-        AI_DRAFT_RESPONSE_INVALID: '生成的草稿未通过题目校验，请调整资料后重试。',
-        RATE_LIMITED: '出题请求过多，请稍后再试。',
-      };
       const code = error?.code;
-      const hint = Object.hasOwn(hints, code) ? hints[code] : '云端出题未完成，请稍后重试。';
-      setCloudStatus(`${hint}也可以手动整理指令。`);
+      const previous = rows.length ? '下方保留了上一次的草稿。' : '';
+      setCloudStatus(draftErrorHint(code) + previous + '也可以手动整理指令。' +
+        draftDiagnostics({errorCode: code, requestId: error?.requestId, retryCount: error?.retryCount}));
     } finally {
       generating = false;
       generateButton.disabled = false;
@@ -311,6 +360,9 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
     rows = [];
     try {
       rows = readAssignmentDraftResponse(response.value);
+      origin = '手动导入草稿';
+      generatedScope = undefined;
+      originNote.textContent = origin;
       draftStatus.textContent = `已读取 ${rows.length} 道草稿题。核对后请确认用于本次作业。`;
     } catch (error) {
       draftStatus.textContent = error instanceof Error ? error.message : '读取草稿失败，请检查 JSON。';
@@ -322,7 +374,9 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
     if (!rows.length) return;
     draftChanged();
     try {
-      confirm(rows.map(row => ({ ...row, keyPoints: [...row.keyPoints] })));
+      if (generatedScope && !sameScope(generatedScope)) throw new Error('训练板块或平台已更改，请按当前范围重新出题。');
+      if (generatedScope && rows.some(row => !row.keyPoints.length)) throw new Error('每道草稿题至少需要一条评分要点。');
+      confirm(rows.map(row => ({ ...row, keyPoints: [...row.keyPoints] })), origin);
       draftStatus.textContent = `已设为本次作业，共 ${rows.length} 题。可点击「发布作业」。`;
     } catch (error) {
       draftStatus.textContent = error instanceof Error ? error.message : '请检查草稿后重新确认。';

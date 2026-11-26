@@ -76,19 +76,29 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 
 ## 一键出题的启用配置
 
-先在上海 CloudBase 控制台核实文本模型 ID、模型开关，以及当前套餐可用于 Web 触发云函数的额度。CloudBase 的小程序成长计划免费 Token 有来源限制，试点网页的请求须核对 Web 对应的套餐用量。生成使用现有云函数的 CloudBase 运行身份。[CloudBase Node.js 模型接口](https://docs.cloudbase.net/ai/model/nodejs-access) · [腾讯云用量规则](https://docs.cloudbase.net/ai/ai-inspire-plan-usage-governance)
+该候选仅从试点云函数访问管理员指定的 HTTPS Chat Completions 网关。原有设备凭证继续用于浏览器到试点云函数的鉴权。云函数到网关使用独立凭证。请由网关负责人核实服务条款、调用方和实际用户地区、资料处理范围。新加坡托管位置本身不能确认上海业务已获上游授权。[OpenAI 支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
 
-启用试点生成前，由数据库所有者应用 [每日请求限额迁移](schema-ai-drafts.sql)，确认云函数服务角色可调用专用 RPC。表只记录每日调用次数。审核后的题目继续走既有作业发布接口。
+在 CloudBase 控制台选择上海环境 → 云函数 → `tcl-r24-sync` → 配置，将以下参数并入现有函数配置。密钥值仅通过云端安全配置录入。示例中的必填值留空，须替换为运营方提供的实际值。[环境变量样例](.env.example) · [函数配置样例](cloudbaserc.example.json)
 
-| 函数环境变量 | 用途 |
-| --- | --- |
-| `TCL_R24_SYNC_AI_ENABLED` | 显式设为 `true` 后才考虑开放生成。默认关闭。 |
-| `TCL_R24_SYNC_AI_MODEL_PROVIDER` | 腾讯云文档中的 `cloudbase` 提供方。 |
-| `TCL_R24_SYNC_AI_MODEL_ID` | 已核实可用且具备额度的模型 ID。 |
-| `TCL_R24_SYNC_AI_OPERATOR_IDS` | 由管理员核实的运营账号 ID，多个用英文逗号分隔。自助开通的运营须加入此名单才可发起生成。 |
-| `TCL_R24_SYNC_AI_DAILY_LIMIT` | 整个试点按上海日期的最多调用次数，范围 1–20，默认 5。达到上限后生成返回 429。 |
+| 变量 | 必填与默认 | 用途 |
+| --- | --- | --- |
+| `AI_GATEWAY_URL` | 必填 | 已获授权的 HTTPS 网关，可填根地址、以 `/v1` 结尾的地址或完整 `/v1/chat/completions`。 |
+| `AI_GATEWAY_TOKEN` | 必填 | 网关分配给试点函数的服务凭证。 |
+| `AI_GATEWAY_MODEL` | 默认 `gpt-4o-mini` | 由网关实际开放的模型标识。 |
+| `AI_GATEWAY_TIMEOUT_MS` | 默认 `60000` 毫秒 | 单次请求时限，支持 1–60000 毫秒。超时包括读取响应。 |
+| `AI_FALLBACK_ENABLED` | 默认 `true` | `true` 允许用完整结构化资料生成规则草稿；`false` 返回包含原因和请求编号的错误。 |
+| `TCL_R24_SYNC_AI_ENABLED` | 默认关闭 | `true` 时检查可用运营名单。 |
+| `TCL_R24_SYNC_AI_OPERATOR_IDS` | 启用时必填 | 经过核实的运营账号稳定 ID，多个以英文逗号分隔。 |
+| `TCL_R24_SYNC_AI_DAILY_LIMIT` | 默认 `5` | 整个试点按上海日期计数，范围 1–20。 |
 
-每次符合条件的请求在调用模型前占用一次额度，服务超时或模型返回不合格也计入次数。配置、身份和用量 RPC 都确认有效才会发出调用。浏览器点击「AI 一键出题」后发送选中的文字或提取出的表格文字，模型草稿回到编辑面板。模型输入和未确认草稿不写入作业数据。停用时可将开关设为 `false`，手动整理指令和回填的入口继续可用。
+启用前确认试点专用日限额表和服务端 RPC 已就绪。[日限额 SQL](schema-ai-drafts.sql) 每次实际调用前预留一次额度，包括重试；连接超时可能发生在网关已开始生成之后，重试可能再次消耗 token。配置示例使用 180 秒云函数执行时限，需另行核对真实 HTTP 接入层、网关和浏览器的时限。两个 60 秒请求加 1.5 秒退避就需要 121.5 秒，此外还需留出鉴权、配额查询与网络往返时间。
+
+### 私有网关联调
+
+1. 完成上游授权及配置后，在测试环境仅向指定的合成运营开放按钮。在运营工作台的「发布作业 → AI 出题草稿」选择电视、京东，输入「顾客担心电视包装过不了电梯转角，请说明入户前如何测量」，选 1 题并点击生成。
+2. 在浏览器网络面板核对 `POST /assignments/draft` 的结果包含 `source=openai_gateway`、`degraded=false`、请求编号和一题完整草稿。用请求编号在试点函数的日志里核对 HTTP 状态、重试次数及网关实际返回的用量。操作只到草稿预览，不必发布作业。
+3. 在隔离的测试配置中使用上游提供的故障模拟或本地替身，测试拒绝鉴权、超时和非法输出。结构化资料示例为 `{"questions":[{"question":"入户前测哪里？","answer":"先核对包装和通道尺寸。","keyPoints":["核对包装尺寸","测量通道"]}]}`。开启兜底时应显示本地规则来源、原错误原因和编号；关闭兜底或资料无法提取时，应收到非 200 错误并结束加载。检查生成接口没有写入任何题目或作业。
+4. 验收记录只保留短版本、请求编号、状态、响应来源和数字用量。不要将令牌、整份请求头、作业资料或完整上游响应复制到工单中。停用试点生成时将试点功能开关设为 `false`。
 
 ## 验证
 

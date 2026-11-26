@@ -81,16 +81,17 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data) {
-        const message = text(data?.error?.message) || `请求失败（HTTP ${response.status}）`;
+        const message = text(data?.error?.message) || text(data?.errorMessage) || `请求失败（HTTP ${response.status}）`;
         throw Object.assign(new Error(message), {
           status: response.status, code: text(data?.errorCode || data?.error?.code),
+          requestId: text(data?.requestId), retryCount: data?.retryCount,
           registeredRole: roles.has(data?.registeredRole) ? data.registeredRole : null,
         });
       }
       return data;
     } catch (error) {
-      if (error.name === 'AbortError') throw new Error('请求超时，结果尚未确认，请重试');
-      if (error instanceof TypeError) throw new Error('网络请求失败，结果尚未确认，请检查连接后重试');
+      if (error.name === 'AbortError') throw Object.assign(new Error('请求超时，结果尚未确认，请重试'), {code: 'CLIENT_TIMEOUT'});
+      if (error instanceof TypeError) throw Object.assign(new Error('网络请求失败，结果尚未确认，请检查连接后重试'), {code: 'CLIENT_NETWORK_ERROR'});
       throw error;
     } finally {
       clearTimeout(timeout);
@@ -253,7 +254,8 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       if (draftGenerationInFlight) throw new Error('已有出题请求正在处理，请稍后重试');
       draftGenerationInFlight = true;
       try {
-        return await get('/assignments/draft', 'POST', { material, boardId, platform, count }, 35000);
+        // Allow the server's bounded retry and its 180-second function deadline to finish.
+        return await get('/assignments/draft', 'POST', { material, boardId, platform, count }, 190_000);
       } finally {
         draftGenerationInFlight = false;
       }

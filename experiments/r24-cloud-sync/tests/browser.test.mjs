@@ -395,7 +395,7 @@ test('operator reviews an AI draft made from text or Excel before sharing its ba
   await question.fill(finalQuestion);
   assert.doesNotMatch(await preview.textContent(), /电梯门很窄，怎么确认电视能搬进家/);
   await page.locator('#publishAssignment').click();
-  await page.locator('#toast').filter({ hasText: /确认\s*AI\s*草稿/ }).waitFor();
+  await page.locator('#toast').filter({ hasText: /确认草稿/ }).waitFor();
   assert.equal(assignmentPosts(), 0);
 
   await panel.locator('#assignmentDraftConfirm').click();
@@ -449,7 +449,7 @@ test('one-click cloud drafts use text and Excel, discard stale results, and publ
           await releaseFirst.promise;
         }
         const question = [staleQuestion, textQuestion, tableQuestion][number - 1];
-        return JSON.stringify({ questions: [{ question, answer: exampleAnswer, keyPoints: examplePoints }] });
+        return { questions: [{ question, answer: exampleAnswer, keyPoints: examplePoints }], httpStatus: 200, retryCount: 0, usage: null };
       },
     },
   });
@@ -494,6 +494,11 @@ test('one-click cloud drafts use text and Excel, discard stale results, and publ
       generate.click(),
     ]);
     assert.equal(fromText.status(), 200);
+    const textResult = await fromText.json();
+    assert.equal(textResult.source, 'openai_gateway');
+    assert.equal(textResult.degraded, false);
+    await panel.locator('#assignmentDraftOrigin').filter({ hasText: textResult.requestId }).waitFor();
+    assert.match(await panel.locator('#assignmentDraftOrigin').textContent(), /AI 网关草稿/);
     assert.deepEqual(fromText.request().postDataJSON(), {
       material: newerSource, boardId: '01', platform: '京东', count: 3,
     });
@@ -521,7 +526,7 @@ test('one-click cloud drafts use text and Excel, discard stale results, and publ
 
     await question.fill(finalQuestion);
     await page.locator('#publishAssignment').click();
-    await page.locator('#toast').filter({ hasText: /确认\s*AI\s*草稿/ }).waitFor();
+    await page.locator('#toast').filter({ hasText: /确认草稿/ }).waitFor();
     assert.equal(assignmentPosts(), 0);
     await panel.locator('#assignmentDraftConfirm').click();
     await page.locator('#assignmentExcelPreview').filter({ hasText: finalQuestion }).waitFor();
@@ -551,6 +556,85 @@ test('one-click cloud drafts use text and Excel, discard stale results, and publ
   } finally {
     releaseFirst.resolve();
   }
+});
+
+test('operator can distinguish a gateway failure and a local fallback through editing, confirmation and publishing', { timeout: 60_000 }, async t => {
+  const { newPage, server } = await browserFixture(t, {
+    draftGeneration: {
+      canGenerate: principal => principal.id === operator.id,
+      fallbackEnabled: true,
+      async generate() {
+        throw Object.assign(new Error('mock upstream details'), {code: 'GATEWAY_HTTP_502', httpStatus: 502, retryCount: 1});
+      },
+    },
+  });
+  const { page, errors } = await newPage();
+  await signIn(page, operator);
+  await page.locator('[data-ops-tab="publish"]').click();
+  await page.locator('#assignmentTitle').fill('合成兜底练习');
+  const panel = page.locator('#assignmentDraftPanel');
+  await panel.locator('summary').click();
+  const generate = panel.locator('#assignmentDraftGenerate');
+  const material = panel.locator('#assignmentDraftSourceText');
+  const origin = panel.locator('#assignmentDraftOrigin');
+  const status = panel.locator('#assignmentDraftCloudStatus');
+  const draft = {question: '大屏电视送到前要量什么？', answer: '请测量通道净宽并核对包装尺寸。', keyPoints: ['通道净宽', '包装尺寸']};
+  const postDraft = async () => {
+    const [response] = await Promise.all([
+      page.waitForResponse(r => draftResponse('POST', r)), generate.click(),
+    ]);
+    await panel.locator('#assignmentDraftGenerate:not([disabled])').waitFor();
+    return response;
+  };
+
+  await material.fill('只有背景资料，没有现成的答案。');
+  const failure = await postDraft();
+  const failed = await failure.json();
+  assert.equal(failure.ok(), false);
+  await status.filter({ hasText: failed.requestId }).waitFor();
+  assert.match(await status.textContent(), /GATEWAY_HTTP_502.*已重试 1 次/);
+  assert.doesNotMatch(await status.textContent(), /mock upstream details/);
+  assert.equal(await panel.locator('[data-assignment-draft-row]').count(), 0);
+
+  // A mixed-version or malformed HTTP success must not label arbitrary questions as AI output.
+  await page.route('**' + draftPath, route => route.fulfill({
+    json: {questions: [draft], source: 'fallback', degraded: false},
+  }), {times: 1});
+  await postDraft();
+  await status.filter({hasText: 'INVALID_AI_JSON'}).waitFor();
+  assert.equal(await panel.locator('[data-assignment-draft-row]').count(), 0);
+
+  await material.fill(JSON.stringify({questions: [draft]}));
+  const fallback = await (await postDraft()).json();
+  assert.equal(fallback.source, 'fallback');
+  await origin.filter({hasText: fallback.requestId}).waitFor();
+  assert.match(await origin.textContent(), /本地兜底草稿.*GATEWAY_HTTP_502.*已重试 1 次/);
+  assert.doesNotMatch(await status.textContent(), /草稿已生成/);
+  await checkNoOverflow(page);
+  await panel.locator('[data-draft-field="question"]').fill('电视送到家前需要准备什么？');
+  await origin.filter({hasText: fallback.requestId}).waitFor();
+  const points = panel.locator('[data-draft-field="keyPoints"]');
+  await points.fill('');
+  await panel.locator('#assignmentDraftConfirm').click();
+  await panel.locator('#assignmentDraftStatus').filter({hasText: '至少需要一条评分要点'}).waitFor();
+  await points.fill(draft.keyPoints.join('\n'));
+  const platform = page.locator('#assignmentPlatform');
+  const originalPlatform = await platform.inputValue();
+  await platform.selectOption({index: 1});
+  await panel.locator('#assignmentDraftConfirm').click();
+  await panel.locator('#assignmentDraftStatus').filter({hasText: '请按当前范围重新出题'}).waitFor();
+  await platform.selectOption(originalPlatform);
+  await panel.locator('#assignmentDraftConfirm').click();
+  await page.locator('#assignmentExcelPreview').filter({hasText: '本地兜底草稿已确认'}).waitFor();
+  await origin.filter({hasText: fallback.requestId}).waitFor();
+  assert.equal(server.requests.filter(req => req.method === 'POST' && req.path.endsWith('/assignments')).length, 0);
+  const [published] = await Promise.all([
+    page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments')),
+    page.locator('#publishAssignment').click(),
+  ]);
+  assert.equal(published.status(), 201);
+  assert.match((await published.json()).assignment.questions[0].source, /本地兜底草稿/);
+  assert.deepEqual(errors, []);
 });
 
 test('a new browser requires a valid code and a different role on a bound browser requires explicit confirmation', { timeout: 45_000 }, async t => {
@@ -613,7 +697,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.9';
+  const shortVersion = 'R24-20261124.10';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');

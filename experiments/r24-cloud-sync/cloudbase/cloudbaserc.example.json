@@ -6,7 +6,7 @@
       "name": "tcl-r24-sync",
       "runtime": "Nodejs20.19",
       "handler": "index.main",
-      "timeout": 45,
+      "timeout": 180,
       "memorySize": 256,
       "installDependency": true,
       "envVariables": {
@@ -14,7 +14,15 @@
         "TCL_R24_SYNC_ALLOW_SHARED_SHANGHAI": "false",
         "TCL_R24_SYNC_ENV_ID": "<isolated-env-id>",
         "TCL_R24_SYNC_COLLECTION_PREFIX": "tcl_r24_sync_v1",
-        "TCL_R24_SYNC_ORIGINS": "https://<isolated-site-host>"
+        "TCL_R24_SYNC_ORIGINS": "https://<isolated-site-host>",
+        "TCL_R24_SYNC_AI_ENABLED": "false",
+        "TCL_R24_SYNC_AI_OPERATOR_IDS": "<verified-operator-id>",
+        "TCL_R24_SYNC_AI_DAILY_LIMIT": "5",
+        "AI_GATEWAY_URL": "https://gateway.example.invalid",
+        "AI_GATEWAY_TOKEN": "",
+        "AI_GATEWAY_MODEL": "gpt-4o-mini",
+        "AI_GATEWAY_TIMEOUT_MS": "60000",
+        "AI_FALLBACK_ENABLED": "true"
       }
     }
   ]
