@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { chromium } from 'playwright-core';
@@ -95,6 +95,50 @@ async function fillAssignment(page, excel) {
   await page.locator('#assignmentExcelFile').setInputFiles(excel);
   await page.locator('#assignmentExcelPreviewBtn').click();
   await page.locator('#assignmentExcelPreview').getByText('3 道', { exact: false }).waitFor();
+}
+
+async function makeCapacityFixtures(excel) {
+  const directory = dirname(excel);
+  const largest = join(directory, 'expanded-xlsx-limit.xlsx');
+  const beyond = join(directory, 'above-xlsx-limit.xlsx');
+  const entryBeyond = join(directory, 'above-xlsx-single-entry-limit.xlsx');
+  // Reuse the valid worksheet from the normal fixture. Additional XML parts
+  // make the workbook exercise the exact byte caps without retaining binaries.
+  await promisify(execFile)('python3', ['-c', `
+from base64 import b64encode
+from pathlib import Path
+from random import Random
+from sys import argv
+from zipfile import ZipFile, ZIP_DEFLATED
+
+mib = 1024 * 1024
+with ZipFile(argv[1]) as src:
+    workbook = [(entry.filename, src.read(entry)) for entry in src.infolist()]
+
+def make_xlsx(path, sizes):
+    with ZipFile(path, 'w', ZIP_DEFLATED) as archive:
+        for name, content in workbook:
+            archive.writestr(name, content)
+        noise = Random(316)
+        for index, size in enumerate(sizes):
+            opening = b'<synthetic-fixture>'
+            closing = b'</synthetic-fixture>'
+            sample = b64encode(noise.randbytes(256 * 1024))
+            archive.writestr(f'customXml/item{index}.xml',
+                opening + sample + b' ' * (size - len(opening) - len(closing) - len(sample)) + closing)
+
+base = sum(len(content) for _, content in workbook)
+for path, total in [(argv[2], 50 * mib), (argv[3], 50 * mib + 1)]:
+    full, rest = divmod(total - base, 8 * mib)
+    make_xlsx(path, [8 * mib] * full + [rest])
+    with ZipFile(path) as archive:
+        entries = archive.infolist()
+        assert sum(entry.file_size for entry in entries) == total
+        assert Path(path).stat().st_size < 15 * mib
+        assert all(entry.file_size <= 12 * mib and entry.file_size / entry.compress_size <= 120 for entry in entries)
+make_xlsx(argv[4], [12 * mib + 1])
+`, excel, largest, beyond, entryBeyond]);
+  return { largest, beyond, entryBeyond };
 }
 
 async function textPractice(page, enter) {
@@ -219,6 +263,48 @@ test('two independent browsers: publish a real XLSX, claim, submit, operator rea
   assert.deepEqual([...ops.errors, ...trainee.errors, ...foreign.errors], []);
 });
 
+test('assignment XLSX accepts 50 MiB unpacked and keeps both the default and single-entry limits', { timeout: 60_000 }, async t => {
+  const { server, excel, newPage } = await browserFixture(t);
+  const { largest, beyond, entryBeyond } = await makeCapacityFixtures(excel);
+  const { page, errors } = await newPage();
+  await signIn(page, operator);
+  await fillAssignment(page, largest);
+
+  const input = page.locator('#assignmentExcelFile');
+  const normalImport = await input.evaluate(async field => {
+    const { parseDocumentFile } = await import(new URL('./lib/parser.js', document.baseURI));
+    try {
+      await parseDocumentFile(field.files[0]);
+      return null;
+    } catch (error) {
+      return error.message;
+    }
+  });
+  assert.match(normalImport, /文档解压后总容量超过/);
+
+  const cases = [
+    [beyond, /文档解压后总容量超过/],
+    [entryBeyond, /文档内部单文件体积过大/]
+  ];
+  for (const [file, error] of cases) {
+    await input.setInputFiles(file);
+    await page.locator('#assignmentExcelPreviewBtn').click();
+    await page.locator('#assignmentExcelPreview').filter({ hasText: error }).waitFor();
+    await page.locator('#publishAssignment').click();
+    await page.locator('#toast').filter({ hasText: '请先上传Excel并完成预览' }).waitFor();
+  }
+  assert.equal(server.requests.filter(req => req.method === 'POST' && req.path.endsWith('/assignments')).length, 0);
+
+  await fillAssignment(page, largest);
+  const publishing = page.waitForResponse(resp => resp.request().method() === 'POST' && resp.url().endsWith('/assignments'));
+  await page.locator('#publishAssignment').click();
+  const published = await publishing;
+  assert.equal(published.status(), 201);
+  const { assignment } = await published.json();
+  assert.deepEqual(assignment.questions.map(row => row.question), questions);
+  assert.deepEqual(errors, []);
+});
+
 test('a new browser requires a valid code and a different role on a bound browser requires explicit confirmation', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const primary = await newPage();
@@ -279,7 +365,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.6';
+  const shortVersion = 'R24-20261124.7';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');

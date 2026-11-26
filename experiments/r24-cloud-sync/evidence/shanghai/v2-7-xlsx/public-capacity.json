@@ -1,0 +1,1 @@
+{"version":"R24-20261124.7","pass":true,"noCloudWrites":true,"checks":[{"name":"at-limit","assignmentExcel":true,"rows":3},{"name":"at-limit","assignmentExcel":false,"error":"文档解压后总容量超过安全限制，请拆分文档"},{"name":"over-limit","assignmentExcel":true,"error":"文档解压后总容量超过安全限制，请拆分文档"},{"name":"over-entry","assignmentExcel":true,"error":"文档内部单文件体积过大，已触发安全阻断"}]}
