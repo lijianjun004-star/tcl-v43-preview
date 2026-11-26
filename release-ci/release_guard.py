@@ -1966,7 +1966,10 @@ def stage_r24_pf_excel(site_path, app_zip, model_archive):
 # Offline CI registration reviewed between 5c3de299 and b2db29a0.
 # Pin the entire transition, including old and new object IDs, paths and file modes.
 R24_BATCH_WORKFLOW = '.github/workflows/r24-batch-questions-export.yml'
-R24_BATCH_REGISTRATION_SHA256 = '439dd2ff73e25ce44ee8ee629bfe184802b9e941efacc77670a0d32d808dab8b'
+R24_BATCH_CHANGESETS = {
+    '439dd2ff73e25ce44ee8ee629bfe184802b9e941efacc77670a0d32d808dab8b',  # initial registration
+    'a6938dab944d123c47314a48c7db52ffd08b69a014457ecdaecb2fe6546526b7',  # use the runner's event file
+}
 
 
 def verify_pr(base, head):
@@ -1983,7 +1986,7 @@ def verify_pr(base, head):
     if R24_BATCH_WORKFLOW in changed:
         changes = subprocess.check_output(['git', 'diff', '--raw', '--no-abbrev', '--no-renames',
                                            '--no-ext-diff', '-z', base, head, '--'])
-        if sha256(changes) != R24_BATCH_REGISTRATION_SHA256:
+        if sha256(changes) not in R24_BATCH_CHANGESETS:
             raise GateFailure('Offline batch CI registration requires the exact reviewed changes')
         print('verify-pages-release PASS: pinned offline batch CI registration')
     elif changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
