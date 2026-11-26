@@ -4,6 +4,12 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## 上海 R24 `.8` AI 出题草稿（2026-11-26 UTC）
+
+用户要求把表格和场景文字变成练播题与顾客弹幕。`.8` 在「发布作业」增加「AI 出题草稿」。能在浏览器读取文字或 `.xlsx/.xls/.csv/.tsv`，整理指令并复制到现有 ChatGPT 或 Gemini，回填 JSON 后编辑顾客弹幕、参考话术和评分要点，经运营确认再发布。主播读取最终题面，现有 CloudBase 发布与题目冻结规则沿用。源资料和未发布草稿在浏览器中处理，当前工作台内一键推理需要单独授权的模型服务。[试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](experiments/r24-cloud-sync/README.md#从资料生成口播练习)
+
+本地浏览器回归 9/9、草稿校验 5/5、完整双会话合成流程 9 项通过。浏览器回归核对文字和 Excel、编辑后须重新确认、发布只发送已确认题目、主播看见修订弹幕。公网 Chromium 核对文字和 XLSX 指令、草稿解析及面板模块，未创建账号或写入作业。公网 39/39 哈希一致。托管新增两个草稿模块、更新三个试点文件，其余 128 个对象元数据一致。真实手机和外部模型回填未作现场实测。[公网功能](experiments/r24-cloud-sync/evidence/shanghai/v2-8-ai-drafts/public-draft.json) · [公网资源](experiments/r24-cloud-sync/evidence/shanghai/v2-8-ai-drafts/public-hash.jsonl) · [托管范围](experiments/r24-cloud-sync/evidence/shanghai/v2-8-ai-drafts/hosting-isolation.json)
+
 ## 上海 R24 `.7` 作业 XLSX 容量已上线（2026-11-26 UTC）
 
 用户在 `.6` 遇到「文档解压后总容量超过安全限制」。`.7` 基于实测公网 `.6` 及对应提交 `cbc479cbbedf7cbc337932da1c6abc493943e434`，把发布作业时的 XLSX 解压总量提高到 50 MiB。原文件 15 MiB、单个内部文件 12 MiB、每份 100 题及既有文件校验继续生效。常规资料导入沿用 25 MiB。公网清单 SHA-256 `6ec9e4d8df2445779cebc5d67d4eda877aa3a0ec43194b8d671887b80fa592cc`，只更新试点的 `app.js`、`index.html`、`lib/parser.js`、`static-manifest.json`。[上海试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [源码 PR #175](https://github.com/lijianjun004-star/tcl-v43-preview/pull/175)

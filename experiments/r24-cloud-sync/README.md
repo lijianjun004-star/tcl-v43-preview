@@ -1,6 +1,6 @@
 # TCL R24 Excel 作业云同步试点
 
-试点版本 `R24-20261124.6`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。登录页和工作台均可展开「设备码使用说明」。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit) · [`.5` 公网双账号验收](evidence/shanghai/v2-5-public/README.md)
+试点版本 `R24-20261124.8`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。登录页和工作台均可展开「设备码使用说明」。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit) · [`.5` 公网双账号验收](evidence/shanghai/v2-5-public/README.md)
 
 ## 登录与换设备
 
@@ -13,12 +13,18 @@
 
 ## 作业流程
 
-1. 运营上传、校验并预览 Excel，发布后同一试点团队所有主播可见。云端冻结题目、答案、品类、平台和版本哈希。
+1. 运营校验并预览已有问答 Excel，或确认 AI 出题草稿。发布后同一试点团队的主播可领取，云端冻结题目、答案、品类、平台和版本哈希。
 2. 主播按运营姓名或作业标题搜索，领取后逐题回答。页面保留本机草稿、录音和作答过程。
 3. 主播主动点「提交到云端」。云端先保存文字、转写和提交记录，再尝试上传符合大小与格式限制的逐题录音。每段最多 512 KiB。网络或录音上传失败时，已确认的文字记录仍可查看，本机有原录音时可重试。整场录像保存在原浏览器的 IndexedDB。
 4. 运营打开作业进度或刷新云端作业，可读取领取状态、提交时间、每题文字、转写和可播放的逐题录音。主播换设备后可查看同一作业及已提交的记录。浏览器内尚未提交的草稿和整场录像随原设备保留。
 
 已有试点身份、作业和提交 ID 由迁移保留。QA3 与其他页面的本机数据按各自存储规则使用。
+
+### 从资料生成口播练习
+
+在「发布作业」展开「AI 出题草稿」。选择贴入场景文字，或从 `.xlsx`、`.xls`、`.csv`、`.tsv` 读取表格。每批资料最多 20,000 字，建议按产品、场景或主题拆分。选择题数并整理指令，再把可分享的内容复制到自己的 ChatGPT 或 Gemini 生成。
+
+复制 AI 返回的完整 JSON，粘贴后点「读取草稿」。每题都可编辑顾客弹幕、参考话术和评分要点。将未核实的产品参数、价款和安装费用与对应型号及订单条款核对后，点「确认用于本次作业」，最后点「发布作业」。主播看到的是修订后的顾客弹幕。只有确认后主动发布的题目快照写入 CloudBase，整理指令和读取回复在浏览器中执行。
 
 ## 构建与验证
 
@@ -33,4 +39,4 @@ node --test backend/tests/*.test.mjs
 (cd tests && TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/absolute/path/to/candidate-cloud node v2-smoke.mjs)
 ```
 
-仅用于本机或静态演示时可以省略环境和 API 参数，候选保留原有手工 JSON 交接。云端候选含 36 个资源及 `static-manifest.json`。构建和本机测试均在独立候选目录执行。[CloudBase 适配与部署](cloudbase/README-CloudBase.md) · [API 接口](backend/API.md) · [浏览器复验](tests/README.md)
+仅用于本机或静态演示时可以省略环境和 API 参数，候选保留原有手工 JSON 交接。云端候选含 38 个资源及 `static-manifest.json`。构建和本机测试均在独立候选目录执行。[CloudBase 适配与部署](cloudbase/README-CloudBase.md) · [API 接口](backend/API.md) · [浏览器复验](tests/README.md)
