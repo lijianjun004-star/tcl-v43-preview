@@ -4,11 +4,11 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
-## 上海 R24 `.7` 作业 XLSX 容量候选（2026-11-26 UTC）
+## 上海 R24 `.7` 作业 XLSX 容量已上线（2026-11-26 UTC）
 
-用户在 `.6` 遇到「文档解压后总容量超过安全限制」。候选基于实测公网 `.6` 及对应提交 `cbc479cbbedf7cbc337932da1c6abc493943e434`，把发布作业时的 XLSX 解压总量提高到 50 MiB。原文件 15 MiB、单个内部文件 12 MiB、每份 100 题及既有文件校验继续生效。常规资料导入沿用 25 MiB。候选清单 SHA-256 `6ec9e4d8df2445779cebc5d67d4eda877aa3a0ec43194b8d671887b80fa592cc`，只更新试点的 `app.js`、`index.html`、`lib/parser.js`、`static-manifest.json`。
+用户在 `.6` 遇到「文档解压后总容量超过安全限制」。`.7` 基于实测公网 `.6` 及对应提交 `cbc479cbbedf7cbc337932da1c6abc493943e434`，把发布作业时的 XLSX 解压总量提高到 50 MiB。原文件 15 MiB、单个内部文件 12 MiB、每份 100 题及既有文件校验继续生效。常规资料导入沿用 25 MiB。公网清单 SHA-256 `6ec9e4d8df2445779cebc5d67d4eda877aa3a0ec43194b8d671887b80fa592cc`，只更新试点的 `app.js`、`index.html`、`lib/parser.js`、`static-manifest.json`。[上海试点](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [源码 PR #175](https://github.com/lijianjun004-star/tcl-v43-preview/pull/175)
 
-本地 Chromium 回归 8/8。恰好 50 MiB 的合成 XLSX 可预览发布三题，超出 1 字节及单个内部文件超限均拦截；常规资料导入的上限通过对照。完整本地合成流程 9 项通过，0 个页面异常。真实用户工作簿未提供。当前公网仍为 `.6`，CloudBase 托管 CLI 登录过期，等待重新授权发布。
+本地 Chromium 回归 8/8。恰好 50 MiB 的合成 XLSX 可预览发布三题，超出 1 字节及单个内部文件超限均拦截。完整本地合成流程 9 项通过，0 个页面异常。公网 Chromium 用 `.7` 实际解析器复验四个容量边界，未写入云端。托管 37/37 资源与候选一致，131 对象中其余 127 个元数据一致。用户原工作簿未提供，实体手机未测。[公网容量](experiments/r24-cloud-sync/evidence/shanghai/v2-7-xlsx/public-capacity.json) · [公网资源](experiments/r24-cloud-sync/evidence/shanghai/v2-7-xlsx/public-hash.jsonl) · [托管范围](experiments/r24-cloud-sync/evidence/shanghai/v2-7-xlsx/hosting-isolation.json)
 
 ## 上海 R24 云同步试点 `.6` 设备码使用说明（2026-11-25 UTC）
 
