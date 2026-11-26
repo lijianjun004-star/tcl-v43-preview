@@ -1,8 +1,14 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-25。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-26。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
+
+## 上海 R24 `.7` 作业 XLSX 容量候选（2026-11-26 UTC）
+
+用户在 `.6` 遇到「文档解压后总容量超过安全限制」。候选基于实测公网 `.6` 及对应提交 `cbc479cbbedf7cbc337932da1c6abc493943e434`，把发布作业时的 XLSX 解压总量提高到 50 MiB。原文件 15 MiB、单个内部文件 12 MiB、每份 100 题及既有文件校验继续生效。常规资料导入沿用 25 MiB。候选清单 SHA-256 `6ec9e4d8df2445779cebc5d67d4eda877aa3a0ec43194b8d671887b80fa592cc`，只更新试点的 `app.js`、`index.html`、`lib/parser.js`、`static-manifest.json`。
+
+本地 Chromium 回归 8/8。恰好 50 MiB 的合成 XLSX 可预览发布三题，超出 1 字节及单个内部文件超限均拦截；常规资料导入的上限通过对照。完整本地合成流程 9 项通过，0 个页面异常。真实用户工作簿未提供。当前公网仍为 `.6`，CloudBase 托管 CLI 登录过期，等待重新授权发布。
 
 ## 上海 R24 云同步试点 `.6` 设备码使用说明（2026-11-25 UTC）
 

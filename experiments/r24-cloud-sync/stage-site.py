@@ -9,14 +9,39 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.6"
-SHORT_VERSION = "R24-20261124.6"
-ASSET_REVISION = "r24-sync-v2-20261124.6"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.7"
+SHORT_VERSION = "R24-20261124.7"
+ASSET_REVISION = "r24-sync-v2-20261124.7"
 
 
 def digest(path):
     with path.open("rb") as file:
         return hashlib.file_digest(file, "sha256").hexdigest()
+
+
+def update_assignment_excel_limit(parser_path):
+    # Apply the pilot option to the verified QA3 parser without changing its defaults.
+    source = parser_path.read_text(encoding="utf-8")
+    replacements = (
+        ("import { readZipEntries } from './zip.js';",
+         "import { ZIP_LIMITS, readZipEntries } from './zip.js';"),
+        ("export async function parseXlsxBuffer(buffer, fileName) {\n"
+         "  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);\n"
+         "  const zip = await readZipEntries(bytes);",
+         "const ASSIGNMENT_XLSX_LIMITS = { ...ZIP_LIMITS, maxUncompressedBytes: 50 * 1024 * 1024 };\n\n"
+         "export async function parseXlsxBuffer(buffer, fileName, { assignmentExcel = false } = {}) {\n"
+         "  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);\n"
+         "  const zip = await readZipEntries(bytes, assignmentExcel ? ASSIGNMENT_XLSX_LIMITS : ZIP_LIMITS);"),
+        ("export async function parseDocumentFile(inputFile) {",
+         "export async function parseDocumentFile(inputFile, { assignmentExcel = false } = {}) {"),
+        ("return await parseXlsxBuffer(bytes, fileName);",
+         "return await parseXlsxBuffer(bytes, fileName, { assignmentExcel });"),
+    )
+    for before, after in replacements:
+        if source.count(before) != 1:
+            raise ValueError("QA3 parser no longer matches the XLSX overlay")
+        source = source.replace(before, after, 1)
+    parser_path.write_text(source, encoding="utf-8")
 
 
 def main():
@@ -76,6 +101,7 @@ def main():
     )
     for name in ("app.js", "assignment-sync.mjs"):
         shutil.copyfile(overlay / name, target / name)
+    update_assignment_excel_limit(target / "lib/parser.js")
     shutil.copyfile(overlay.parent / "backend/vendor/assignment-excel.mjs", target / "assignment-excel.mjs")
     if args.api_base:
         config = {"assignmentSync": {"envId": args.env_id, "apiBase": args.api_base}}
