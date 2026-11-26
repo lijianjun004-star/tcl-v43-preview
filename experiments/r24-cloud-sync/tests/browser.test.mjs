@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { chromium } from 'playwright-core';
+import { createAiGatewayClient } from '../backend/ai-gateway-client.mjs';
 import { startTestSite, identities } from './test-site.mjs';
 
 const fixtureScript = new URL('./fixtures.py', import.meta.url);
@@ -30,9 +31,9 @@ async function browserFixture(t, options) {
   });
   t.after(() => browser.close());
 
-  async function newPage(path = '/sync/') {
+  async function newPage(path = '/sync/', width = 390) {
     const context = await browser.newContext({
-      viewport: { width: 390, height: 844 }, acceptDownloads: true,
+      viewport: { width, height: width === 375 ? 812 : 844 }, acceptDownloads: true,
     });
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
@@ -41,6 +42,8 @@ async function browserFixture(t, options) {
     const page = await context.newPage();
     page.setDefaultTimeout(12_000);
     const errors = [];
+    const consoleErrors = [];
+    page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     const dialogs = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('dialog', dialog => {
@@ -48,7 +51,7 @@ async function browserFixture(t, options) {
       return dialog.accept();
     });
     await page.goto(server.origin + path, { waitUntil: 'domcontentloaded' });
-    return { context, page, errors, dialogs };
+    return { context, page, errors, consoleErrors, dialogs };
   }
   return { server, excel, newPage };
 }
@@ -145,7 +148,7 @@ make_xlsx(argv[4], [12 * mib + 1])
 }
 
 async function startTextPractice(page, enter) {
-  await enter();
+  if (enter) await enter();
   const start = page.locator('#startScene');
   await start.waitFor();
   const textMode = page.locator('#prepQuickText');
@@ -697,7 +700,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.10';
+  const shortVersion = 'R24-20261124.11';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -980,5 +983,291 @@ test('reload restores the cloud workspace and saved review even while assignment
   } finally {
     configGate.resolve();
     assignmentGate.resolve();
+  }
+});
+
+const practiceDraft = [
+  { question: '送电视前要量什么尺寸？', answer: '请对照包装尺寸测量电梯门和入户通道。', keyPoints: ['包装尺寸', '通道净宽'] },
+  { question: '怎样比较球赛中的运动画面？', answer: '用同一段回放对比球的轨迹和球衣号码。', keyPoints: ['同一片源', '运动细节'] },
+  { question: '挂架和基础安装都包含吗？', answer: '分别核对挂架和基础安装项目，以订单说明为准。', keyPoints: ['核对挂架', '订单说明'] },
+];
+const practiceReplies = ['先看外包装的长宽高。', '可以拿同一个比赛片段来比。', '下单前先核对这款电视的挂架。'];
+const improvedScripts = ['先核对外包装尺寸，再量电梯门和入户通道的净宽。', '播放同一段比赛，同时观察球的运动轨迹和球衣号码。', '先核对挂架与安装服务项目，再以订单说明确认费用。'];
+const assistedScores = [80, 70, 75];
+const evaluationFixture = {
+  overallScore: 75, grade: '良好',
+  items: practiceDraft.map(({keyPoints}, questionIndex) => ({
+    questionIndex, score: assistedScores[questionIndex], matchedPoints: [keyPoints[0]], missedPoints: [keyPoints[1]],
+    comment: '已提及' + keyPoints[0] + '，可以补充' + keyPoints[1] + '。', suggestedScript: improvedScripts[questionIndex],
+  })),
+};
+
+async function captureMobile(page, width, name) {
+  const measure = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+  assert.equal(measure[1], width);
+  assert.ok(measure[0] <= measure[1], name + ' overflows: ' + measure);
+  const target = process.env.TCL_EVAL_SCREENSHOTS;
+  if (target) {
+    await page.waitForFunction(() => {
+      const toast = document.getElementById('toast');
+      return !toast || !toast.textContent.trim() || (!toast.classList.contains('show') && Number(getComputedStyle(toast).opacity) < 0.01);
+    });
+    await mkdir(target, {recursive: true});
+    await page.screenshot({path: join(target, width + '-' + name + '.png'), animations: 'disabled'});
+  }
+}
+
+async function openAndCloseDrawer(page, width, buttonId, sheetId, closeId) {
+  const button = page.locator('#' + buttonId), sheet = page.locator('#' + sheetId);
+  await button.click();
+  await sheet.waitFor();
+  const close = sheet.getByRole('button', {name: '关闭', exact: true});
+  assert.equal(await close.getAttribute('id'), closeId);
+  assert.equal((await close.innerText()).trim(), '×');
+  const inside = await close.evaluate(el => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (node.textContent.trim() !== '×') continue;
+      const style = getComputedStyle(node.parentElement), bounds = el.getBoundingClientRect();
+      const text = document.createRange();
+      text.selectNodeContents(node);
+      const box = text.getBoundingClientRect();
+      return Number(style.opacity) > 0 && style.visibility === 'visible' && parseFloat(style.fontSize) >= 12 &&
+        box.width > 4 && box.height > 4 && box.left >= bounds.left && box.right <= bounds.right &&
+        box.top >= bounds.top && box.bottom <= bounds.bottom;
+    }
+    return false;
+  });
+  assert.equal(inside, true, 'Close glyph must be painted inside its control');
+  await captureMobile(page, width, sheetId);
+  await close.click();
+  await sheet.waitFor({state: 'hidden'});
+}
+
+async function autoEnter(page, role, name) {
+  await page.locator('#syncRole').selectOption(role);
+  const completed = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/device/auto-enroll'));
+  await submitName(page, name);
+  assert.equal((await completed).status(), 200);
+  await identityBar(page).filter({hasText: name}).waitFor();
+}
+
+async function verifyEvaluation(panel) {
+  const header = panel.locator('.eval-result-head');
+  await header.getByText(evaluationFixture.grade, {exact:true}).waitFor();
+  assert.equal(await header.locator('strong').innerText(), '总分 ' + evaluationFixture.overallScore + ' / 100');
+  const questions = panel.locator('.eval-item');
+  assert.equal(await questions.count(), evaluationFixture.items.length);
+  for (const item of evaluationFixture.items) {
+    const row = questions.nth(item.questionIndex);
+    assert.equal(await row.locator('h4').innerText(), '第 ' + (item.questionIndex + 1) + ' 题 · ' + item.score + ' 分');
+    await row.getByText(practiceDraft[item.questionIndex].question, {exact:true}).waitFor();
+    for (const [label, points] of [['命中要点', item.matchedPoints], ['遗漏要点', item.missedPoints]]) {
+      const group = row.locator('.eval-points').filter({hasText:label});
+      assert.deepEqual(await group.locator('.eval-point').allInnerTexts(), points);
+    }
+    assert.equal(await row.locator('p').filter({hasText:'评语'}).innerText(), '评语 ' + item.comment);
+    assert.equal(await row.locator('p').filter({hasText:'改进口播话术'}).innerText(), '改进口播话术 ' + item.suggestedScript);
+  }
+}
+
+async function scrollBelowHeader(panel) {
+  await panel.evaluate(el => {
+    el.scrollIntoView({block:'start', behavior:'instant'});
+    const topBar = document.querySelector('.topbar');
+    const offset = topBar ? topBar.getBoundingClientRect().height + 10 : 10;
+    for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.scrollTop > 0) {
+        ancestor.scrollTop -= offset;
+        break;
+      }
+    }
+  });
+}
+
+for (const width of [375, 390]) {
+  test('mobile AI evaluation at ' + width + 'px uses real assignment, review and submission routes', {timeout: 90000}, async t => {
+    const vendorCalls = [];
+    const simulatedUsage = {prompt_tokens: 100, completion_tokens: 50, total_tokens: 150};
+    const gateway = createAiGatewayClient({
+      env: {AI_GATEWAY_URL: 'https://evaluation.invalid', AI_GATEWAY_TOKEN: 'test-transport-only', AI_GATEWAY_MODEL: 'gpt-4o-mini'},
+      fetchImpl: async (url, options) => {
+        assert.equal(String(url), 'https://evaluation.invalid/v1/chat/completions');
+        const body = JSON.parse(options.body);
+        vendorCalls.push(body.response_format.type);
+        if (vendorCalls.length === 1) return Response.json({}, {status: 401});
+        const content = body.response_format.type === 'json_schema' ? evaluationFixture : {questions: practiceDraft};
+        return Response.json({choices: [{finish_reason: 'stop', message: {role: 'assistant', content: JSON.stringify(content)}}], usage: simulatedUsage});
+      },
+    });
+    const {newPage, server} = await browserFixture(t, {
+      draftGeneration: {canGenerate: actor => actor.role === 'operator', fallbackEnabled: true, model: gateway.model,
+        generate: (_actor, prompt) => gateway.generate(prompt)},
+      evaluationGeneration: gateway,
+    });
+    const operatorView = await newPage('/sync/', width), anchorView = await newPage('/sync/', width);
+    const ops = operatorView.page, trainee = anchorView.page;
+    await autoEnter(ops, 'operator', '演示运营');
+    await autoEnter(trainee, 'anchor', '演示主播');
+
+    await ops.locator('[data-ops-tab="publish"]').click();
+    await ops.locator('#assignmentTitle').fill('大屏电视 · 直播话术练习');
+    await ops.locator('#assignmentBoard').selectOption('01');
+    await ops.locator('#assignmentPlatform').selectOption('京东');
+    const draft = ops.locator('#assignmentDraftPanel');
+    await draft.locator('summary').click();
+    await draft.locator('#assignmentDraftCount').selectOption('3');
+    const material = draft.locator('#assignmentDraftSourceText');
+    const generate = draft.locator('#assignmentDraftGenerate');
+    await material.fill(JSON.stringify({questions: practiceDraft}));
+    const draftRequest = () => Promise.all([ops.waitForResponse(resp => draftResponse('POST', resp)), generate.click()]);
+    const [fallback] = await draftRequest();
+    const failed = await fallback.json();
+    assert.equal(failed.degraded, true);
+    assert.equal(failed.errorCode, 'GATEWAY_HTTP_401');
+    await draft.locator('#assignmentDraftOrigin').filter({hasText: failed.requestId}).waitFor();
+    assert.match(await draft.locator('#assignmentDraftOrigin').innerText(), /GATEWAY_HTTP_401/);
+    await scrollBelowHeader(draft.locator('#assignmentDraftOrigin'));
+    await captureMobile(ops, width, 'draft-fallback');
+    await material.fill('顾客关心电视入户的包装尺寸、球赛中的运动表现和安装范围。参考依据包括通道净宽、对照片源以及订单说明。');
+    const [generated] = await draftRequest();
+    const drafted = await generated.json();
+    assert.equal(generated.status(), 200);
+    assert.equal(drafted.source, 'openai_gateway');
+    await draft.locator('#assignmentDraftConfirm').click();
+    await ops.locator('#assignmentExcelPreview').filter({hasText: practiceDraft[0].question}).waitFor();
+    assert.equal(server.requests.filter(r => r.method === 'POST' && r.path.endsWith('/assignments')).length, 0);
+    const [published] = await Promise.all([
+      ops.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments')),
+      ops.locator('#publishAssignment').click(),
+    ]);
+    assert.equal(published.status(), 201);
+    const {assignment} = await published.json();
+    await trainee.locator('#assignmentFold summary').click();
+    await trainee.locator('#assignmentSearch').fill('演示运营');
+    await trainee.locator('#syncRefresh').click();
+    await trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click();
+    await openAndCloseDrawer(trainee, width, 'prepMore', 'prepMoreSheet', 'prepMoreClose');
+    await startTextPractice(trainee);
+    await openAndCloseDrawer(trainee, width, 'focusReview', 'liveMoreSheet', 'liveMoreClose');
+    for (const [index, {question}] of practiceDraft.entries()) {
+      await trainee.locator('#liveQText').filter({hasText: question}).waitFor();
+      await trainee.locator('#focusMic').click();
+      await trainee.locator('#liveTextAnswer').fill(practiceReplies[index]);
+      await trainee.locator('#liveTextSave').click();
+      if (index < practiceDraft.length - 1) {
+        if (index) await new Promise(resolve => setTimeout(resolve, 710));
+        await trainee.locator('#focusNext').click();
+      }
+    }
+    await trainee.locator('#focusClose').click();
+    await trainee.getByRole('button', {name: '结束并进入复盘', exact: true}).click();
+    await trainee.locator('#reviewDetails').click();
+    const [scored] = await Promise.all([
+      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
+      trainee.locator('#reviewAiEvaluate').click(),
+    ]);
+    const scoredBody = await scored.json();
+    assert.equal(scored.status(), 200, JSON.stringify(scoredBody));
+    assert.deepEqual(scoredBody.evaluation.items, evaluationFixture.items);
+    assert.deepEqual(scoredBody.evaluation.usage, simulatedUsage);
+    assert.equal(scoredBody.evaluation.source, 'openai_gateway');
+    assert.equal(scoredBody.evaluation.degraded, false);
+    const displayed = trainee.locator('#reviewAiEvaluation [data-ai-eval-result]');
+    await verifyEvaluation(displayed);
+    await scrollBelowHeader(displayed);
+    await captureMobile(trainee, width, 'anchor-evaluation');
+    await trainee.locator('#reviewDetailsBack').click();
+    const submissions = '/assignments/' + encodeURIComponent(assignment.id) + '/submissions';
+    const [sent] = await Promise.all([
+      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith(submissions)),
+      trainee.locator('#submitSession').click(),
+    ]);
+    assert.equal(sent.status(), 201, JSON.stringify(await sent.json()));
+    assert.equal(sent.request().postDataJSON().evaluationId, scoredBody.evaluationId);
+    assert.deepEqual((await sent.json()).submission.evaluation, scoredBody.evaluation);
+    await ops.locator('[data-ops-tab="lookup"]').click();
+    await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
+    await ops.locator('#syncAnchorLookup').fill('演示主播');
+    await ops.locator('#syncAnchorRecords details summary').filter({hasText: '演示主播'}).click();
+    const received = ops.locator('#syncAnchorRecords [data-ai-eval-result]');
+    await verifyEvaluation(received);
+    assert.equal(await received.locator('input,textarea,select,[contenteditable="true"]').count(), 0);
+    await scrollBelowHeader(received);
+    await captureMobile(ops, width, 'operator-evaluation');
+    assert.deepEqual(vendorCalls, ['json_object', 'json_object', 'json_schema']);
+    assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
+    assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
+    t.diagnostic('Two isolated browser sessions; simulated gateway 401 and 200; 3 evaluated answers in the operator record; both close glyphs visible/clickable; no overflow, console errors or page errors.');
+  });
+}
+
+test('mobile AI evaluation failure shows a request ID and preserves unscored submission', {timeout: 60000}, async t => {
+  let attempts = 0;
+  const evaluationGeneration = createAiGatewayClient({
+    env: {AI_GATEWAY_URL: 'https://evaluation.invalid', AI_GATEWAY_TOKEN: 'test-transport-only'},
+    fetchImpl: async (url, options) => {
+      assert.equal(String(url), 'https://evaluation.invalid/v1/chat/completions');
+      assert.equal(JSON.parse(options.body).response_format.type, 'json_schema');
+      attempts++;
+      return Response.json({}, {status:401});
+    },
+  });
+  const {excel, newPage} = await browserFixture(t, {evaluationGeneration});
+  const operatorView = await newPage('/sync/', 375), anchorView = await newPage('/sync/', 375);
+  const ops = operatorView.page, trainee = anchorView.page;
+  await autoEnter(ops, 'operator', '演示运营');
+  await autoEnter(trainee, 'anchor', '演示主播');
+  await fillAssignment(ops, excel);
+  const [published] = await Promise.all([
+    ops.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments')),
+    ops.locator('#publishAssignment').click(),
+  ]);
+  assert.equal(published.status(), 201);
+  const {assignment} = await published.json();
+  await trainee.locator('#assignmentFold summary').click();
+  await trainee.locator('#assignmentSearch').fill('演示运营');
+  await trainee.locator('#syncRefresh').click();
+  await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click());
+  await trainee.locator('#reviewDetails').click();
+  const [failed] = await Promise.all([
+    trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
+    trainee.locator('#reviewAiEvaluate').click(),
+  ]);
+  const failure = await failed.json();
+  assert.equal(failed.ok(), false);
+  assert.equal(failure.error.code, 'GATEWAY_HTTP_401');
+  assert.match(failure.requestId, /^[a-f0-9-]{36}$/i);
+  assert.equal(attempts, 1);
+  const panel = trainee.locator('#reviewAiEvaluation');
+  const message = panel.locator('[data-ai-eval-status]');
+  await message.filter({hasText: failure.requestId}).waitFor();
+  assert.match(await message.innerText(), /评选服务鉴权失败/);
+  assert.equal(await panel.locator('[data-ai-eval-result]').count(), 0);
+  await trainee.locator('#reviewDetailsBack').click();
+  const [submitted] = await Promise.all([
+    trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/' + assignment.id + '/submissions')),
+    trainee.locator('#submitSession').click(),
+  ]);
+  assert.equal(submitted.status(), 201);
+  const {submission} = await submitted.json();
+  assert.deepEqual(submission.turns.map(turn => turn.answer), answers);
+  assert.equal(Object.hasOwn(submitted.request().postDataJSON(), 'evaluationId'), false);
+  assert.equal(Object.hasOwn(submission, 'evaluation'), false);
+  await ops.locator('[data-ops-tab="lookup"]').click();
+  await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
+  await ops.locator('#syncAnchorLookup').fill('演示主播');
+  const record = ops.locator('#syncAnchorRecords details').filter({hasText:'演示主播'});
+  await record.locator('summary').click();
+  await record.getByText('未生成 AI 评选', {exact:true}).waitFor();
+  assert.equal(await record.locator('[data-ai-eval-result]').count(), 0);
+  assert.equal(attempts, 1);
+  assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
+  assert.deepEqual(operatorView.consoleErrors, []);
+  // Chromium may report the deliberate non-2xx /evaluate response as a resource error.
+  assert.ok(anchorView.consoleErrors.length <= 1);
+  for (const error of anchorView.consoleErrors) {
+    assert.ok(error.startsWith('Failed to load resource') && error.includes(String(failed.status())), error);
   }
 });

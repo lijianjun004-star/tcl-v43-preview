@@ -163,8 +163,12 @@ test('device authentication checks current enrollment; existing native tokens st
   assert.equal((await access.authenticate(token)).role,'anchor');
   assert.equal(await access.authenticate(other),null);
   assert.equal((await access.authenticate('native-user-token')).role,'anchor');
+  assert.equal(await access.authenticateBoundDevice('native-user-token'),null);
+  assert.equal((await access.authenticateBoundDevice(token)).id,row._id);
+  assert.equal(await access.authenticateBoundDevice(other),null);
   row.active = false;
   assert.equal(await access.authenticate(token),null);
+  assert.equal(await access.authenticateBoundDevice(token),null);
 });
 
 test('only registered device bearers issue private 28-character codes', async () => {

@@ -32,6 +32,16 @@ SENSITIVE_ARGUMENT = re.compile(rb"\b(?:authorization|AI_GATEWAY_TOKEN|bearer|pr
 RUNTIME = re.compile(r"^experiments/r24-cloud-sync/(?:backend|cloudbase|overlay)/[^/]+\.(?:m?js|cjs)$")
 
 
+# These are public configuration declarations in the isolated Singapore runtime.
+# Other files, archive members, duplicate declarations and all secret-shaped values remain subject to scanning.
+SCF_RUNTIME = 'experiments/r24-cloud-sync/singapore-gateway/server.js'
+SCF_DECLARATIONS = {
+    'public-api-key-variable': b'    providerKey: process.env.' + PUBLIC_KEY_NAME + b',',
+    'public-api-host': b"const CHAT_ENDPOINT = 'https://" + b'api' + b".openai.com/v1/chat/completions';",
+}
+SCF_LOG_ARGUMENT = re.compile(rb"\b(?:token|providerKey|auth|req|body|upstream|response|env)\b", re.I)
+
+
 def safe_name(path):
     name = re.sub(KEY, b"[REDACTED]", path.encode("utf-8", "backslashreplace"))
     return json.dumps(name.decode("utf-8", "replace"), ensure_ascii=True)
@@ -47,12 +57,23 @@ class Scan:
         self.bytes = 0
         self.findings = set()
         self.gaps = set()
+        self.public_declarations = set()
 
     def marked(self, path, data):
         for kind, pattern in CHECKS.items():
-            if pattern.search(data):
-                self.findings.add((kind, path))
-        if RUNTIME.fullmatch(path) and any(SENSITIVE_ARGUMENT.search(m[1]) for m in LOG_CALL.finditer(data)):
+            if not pattern.search(data):
+                continue
+            if path == SCF_RUNTIME and kind in SCF_DECLARATIONS:
+                expected = re.search(rb'^' + re.escape(SCF_DECLARATIONS[kind]) + rb'$', data, re.M)
+                if expected and not (pattern.search(data, 0, expected.start()) or pattern.search(data, expected.end())):
+                    self.public_declarations.add((kind, path))
+                    continue
+            self.findings.add((kind, path))
+        member_path = path.rsplit('!', 1)[-1]
+        if (RUNTIME.fullmatch(member_path) or member_path == SCF_RUNTIME) and any(
+            SENSITIVE_ARGUMENT.search(m[1]) or (member_path == SCF_RUNTIME and SCF_LOG_ARGUMENT.search(m[1]))
+            for m in LOG_CALL.finditer(data)
+        ):
             self.findings.add(("possible-sensitive-log-argument", path))
 
     def fits(self, path, size):
@@ -154,7 +175,8 @@ def main():
     print('tree=' + ref, 'scope=git-blobs+zip+tar+gzip+b64', 'history=excluded', 'untracked=excluded')
     print('limits: member=32MiB total=384MiB nesting=5 archive-entries=12000')
     print('counts:', json.dumps(dict(scan.counts), sort_keys=True), 'scanned-bytes=' + str(scan.bytes))
-    for label, issues in [('FINDING', scan.findings), ('COVERAGE-GAP', scan.gaps)]:
+    for label, issues in [('PUBLIC-SCF-DECLARATION', scan.public_declarations),
+                          ('FINDING', scan.findings), ('COVERAGE-GAP', scan.gaps)]:
         for kind, path in sorted(issues):
             print(label, kind, safe_name(path))
     print('findings=' + str(len(scan.findings)), 'coverage-gaps=' + str(len(scan.gaps)), 'log-check=direct-sink-heuristic')

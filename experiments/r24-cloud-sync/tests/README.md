@@ -22,3 +22,15 @@ TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/path/to/staged-site node v2-smoke.mjs
 - 本机模式可加 `TCL_V2_DELAY_ASR=1` 模拟首次加载模型较慢，确认核对后的人工答案和逐题录音仍可提交。
 
 `node v2-smoke.mjs` 的默认目标是上海公网试点，实际写入两条合成账号、一份作业、一次领取、一次提交及最多三段录音。仅在已授权的发布验收中采用此模式。脚本将目标限定在试点网址及 API，输出脱敏步骤和 HTTP 状态计数。复验旧版时用 `TCL_V2_EXPECTED_VERSION` 指定页面短版本。需要代理时用 `TCL_PILOT_PROXY` 指定。实体手机、微信和真人口播均需单独验证。
+
+## 评选与网关回归
+
+在试点工程目录运行以下命令。`tests/browser.test.mjs` 使用本地业务 API、两个独立浏览器会话及可控的模拟模型。设置 `TCL_EVAL_SCREENSHOTS` 指定截图输出目录。真实模型联调由管理员在获准的环境执行。
+
+```sh
+node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs
+node --test tests/evaluation-ui.test.mjs tests/gateway-roundtrip.test.mjs singapore-gateway/server.test.cjs
+TCL_TEST_SITE_DIR=/path/to/staged-site TCL_EVAL_SCREENSHOTS=/path/to/screenshots node --test tests/browser.test.mjs
+```
+
+复验双端流程时先对照逐题评选与本人作答，再核对运营回看的是同一次提交。两个手机宽度均检查开播前及直播中的关闭按钮、横向滚动和浏览器异常。HTTP 回环用例通过打包所用的网关服务端实现处理两类请求，上游使用测试替身。

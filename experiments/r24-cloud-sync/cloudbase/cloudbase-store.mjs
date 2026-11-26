@@ -29,6 +29,7 @@ export function createDatabaseAdapter(db, prefix) {
   const enrollments = `${prefix}_enrollments`;
   const assignments = `${prefix}_assignments`;
   const submissions = `${prefix}_submissions`;
+  const evaluations = `${prefix}_evaluations`;
   const claims = `${prefix}_claims`;
   const submissionAudio = `${prefix}_submission_audio`;
   const audioFields = 'id,assignment_id,submission_id,question_id,team_id,anchor_id,mime_type,bytes,sha256,object_path,ready_at';
@@ -45,7 +46,9 @@ export function createDatabaseAdapter(db, prefix) {
 
   function queryFrom(table, fields, filter) {
     let query = db.from(table).select(fields);
-    for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
+    for (const [column, value] of Object.entries(filter)) {
+      query = Array.isArray(value) ? query.in(column, value) : query.eq(column, value);
+    }
     return query;
   }
 
@@ -106,14 +109,32 @@ export function createDatabaseAdapter(db, prefix) {
         id: record.id, team_id: record.teamId, payload: record,
       }),
       listAssignments: async teamId => (await pageById(assignments, 'id,payload', {team_id: teamId})).map(payload),
+      getEvaluation: id => getRecord(evaluations, id),
+      createEvaluation: record => insertRecord(evaluations, {
+        id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
+        anchor_id: record.anchorId, payload: record,
+      }),
       getSubmission: id => getRecord(submissions, id),
       createSubmission: record => insertRecord(submissions, {
         id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
         anchor_id: record.anchorId, submitted_at: record.submittedAt, payload: record,
       }),
-      listSubmissions: async (assignmentId, teamId, anchorId) => (await pageById(
+      async listSubmissionHeaders(assignmentId, teamId, anchorId, cursor, limit) {
+        const scope = {assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {})};
+        const ordered = () => queryFrom(submissions, 'id,submitted_at', scope)
+          .order('submitted_at', {ascending: false}).order('id', {ascending: false}).limit(limit);
+        // Separate predicates let the SDK escape cursor values and preserve ties at page boundaries.
+        const rows = cursor
+          ? (await Promise.all([
+            resultRows(ordered().eq('submitted_at', cursor.time).lt('id', cursor.id)),
+            resultRows(ordered().lt('submitted_at', cursor.time)),
+          ])).flat().slice(0, limit)
+          : await resultRows(ordered());
+        return rows.map(row => ({id: row.id, submittedAt: new Date(row.submitted_at).toISOString()}));
+      },
+      listSubmissions: async (assignmentId, teamId, anchorId, ids) => (await pageById(
         submissions, 'id,payload', {
-          assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
+          ...(ids ? {id: ids} : {}), assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
         },
       )).map(payload),
       listAssignmentSubmissionStatuses: async (assignmentId, teamId) => (await pageById(
@@ -143,9 +164,9 @@ export function createDatabaseAdapter(db, prefix) {
         if (records.length > 1) throw new Error('Unexpected audio update result');
         return fromAudio(records[0] ?? await getRow(submissionAudio, audioFields, id));
       },
-      listSubmissionAudio: async (assignmentId, teamId, anchorId) => (await pageById(
+      listSubmissionAudio: async (assignmentId, teamId, anchorId, ids) => (await pageById(
         submissionAudio, audioFields, {
-          assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
+          ...(ids ? {submission_id: ids} : {}), assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {}),
         },
       )).map(fromAudio),
       listAnchorSubmissionStatuses: async (teamId, anchorId) => (await pageById(

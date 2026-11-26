@@ -254,15 +254,17 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       if (draftGenerationInFlight) throw new Error('已有出题请求正在处理，请稍后重试');
       draftGenerationInFlight = true;
       try {
-        // Allow the server's bounded retry and its 180-second function deadline to finish.
-        return await get('/assignments/draft', 'POST', { material, boardId, platform, count }, 190_000);
+        // Allow the server's bounded retry and the 90-second function deadline to finish.
+        return await get('/assignments/draft', 'POST', { material, boardId, platform, count }, 95_000);
       } finally {
         draftGenerationInFlight = false;
       }
     },
     listAssignments: () => list('/assignments', 'assignments'),
     publish: assignment => get('/assignments', 'POST', { assignment, recipientIds: [] }),
-    submit: snapshot => get('/assignments/' + encodeURIComponent(snapshot.assignmentId) + '/submissions', 'POST', { snapshot }),
+    evaluate: snapshot => get('/assignments/evaluate', 'POST', {snapshot}, 95_000),
+    submit: (snapshot, evaluationId) => get('/assignments/' + encodeURIComponent(snapshot.assignmentId) + '/submissions', 'POST',
+      evaluationId ? {snapshot, evaluationId} : {snapshot}),
     submissions: assignmentId => list('/assignments/' + encodeURIComponent(assignmentId) + '/submissions', 'submissions'),
     claim: assignmentId => get('/assignments/' + encodeURIComponent(assignmentId) + '/claim', 'POST', {}),
     progress: assignmentId => list('/assignments/' + encodeURIComponent(assignmentId) + '/progress', 'claims'),

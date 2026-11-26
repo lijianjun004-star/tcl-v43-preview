@@ -10,7 +10,7 @@ import { chromium } from 'playwright-core';
 const envId = 'unknown-roadrunner-d7cap6e21f517';
 const siteHost = envId + '-1519058345.tcloudbaseapp.com';
 const apiHost = envId + '-1519058345.ap-shanghai.app.tcloudbase.com';
-const expectedVersion = process.env.TCL_V2_EXPECTED_VERSION || 'R24-20261124.10';
+const expectedVersion = process.env.TCL_V2_EXPECTED_VERSION || 'R24-20261124.11';
 const runTag = '验收' + randomBytes(4).toString('hex');
 const names = { operator: runTag + '运营', anchor: runTag + '主播' };
 const title = runTag + '三题作业';

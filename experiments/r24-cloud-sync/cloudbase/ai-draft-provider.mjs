@@ -8,35 +8,46 @@ function draftError(code) {
   return Object.assign(new Error(code), {code});
 }
 
-export function createCloudBaseDraftGeneration({client, db, prefix, env = process.env}) {
-  if (env.TCL_R24_SYNC_AI_ENABLED !== 'true' ||
-      typeof client?.generate !== 'function' || typeof db?.rpc !== 'function' ||
-      typeof prefix !== 'string' || !PILOT_PREFIX.test(prefix)) return undefined;
+function sharedReservation(db, prefix, env, codePrefix) {
+  const raw = env.TCL_R24_SYNC_AI_DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT;
+  if (typeof db?.rpc !== 'function' || typeof prefix !== 'string' || !PILOT_PREFIX.test(prefix) ||
+      typeof raw !== 'string' || !/^[1-9][0-9]?$/u.test(raw) || Number(raw) > MAX_DAILY_LIMIT) return null;
+  return async () => {
+    let result;
+    try {
+      result = await db.rpc(`${prefix}_reserve_ai_draft`, {p_daily_limit: Number(raw)});
+    } catch {
+      throw draftError(codePrefix + '_QUOTA_UNAVAILABLE');
+    }
+    if (result?.error || typeof result?.data !== 'boolean') throw draftError(codePrefix + '_QUOTA_UNAVAILABLE');
+    if (!result.data) throw draftError(codePrefix + '_LIMIT');
+  };
+}
 
-  const rawLimit = env.TCL_R24_SYNC_AI_DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT;
+export function createCloudBaseEvaluationGeneration({client, db, prefix, env = process.env}) {
+  if (!env.AI_GATEWAY_URL?.trim() || !env.AI_GATEWAY_TOKEN?.trim()) return undefined;
+  const reserve = sharedReservation(db, prefix, env, 'AI_EVALUATION');
+  return {
+    async evaluate(items) {
+      if (env.TCL_R24_SYNC_AI_ENABLED !== 'true') throw draftError('AI_EVALUATION_DISABLED');
+      if (!reserve) throw draftError('AI_EVALUATION_QUOTA_UNAVAILABLE');
+      return client.evaluate(items, {beforeFetch: reserve});
+    },
+  };
+}
+
+export function createCloudBaseDraftGeneration({client, db, prefix, env = process.env}) {
+  const reserveQuota = sharedReservation(db, prefix, env, 'AI_DRAFT');
   const rawOperatorIds = env.TCL_R24_SYNC_AI_OPERATOR_IDS;
-  if (typeof rawLimit !== 'string' || !/^[1-9][0-9]?$/u.test(rawLimit) || Number(rawLimit) > MAX_DAILY_LIMIT ||
-      typeof rawOperatorIds !== 'string') return undefined;
+  if (env.TCL_R24_SYNC_AI_ENABLED !== 'true' || typeof client?.generate !== 'function' ||
+      !reserveQuota || typeof rawOperatorIds !== 'string') return undefined;
 
   const operatorIds = rawOperatorIds.split(',').map(id => id.trim());
   const allowedOperators = new Set(operatorIds);
   if (operatorIds.some(id => !ACCOUNT_ID.test(id)) || operatorIds.length !== allowedOperators.size) return undefined;
 
-  const dailyLimit = Number(rawLimit);
-
   function canGenerate(principal) {
     return principal?.active === true && principal.role === 'operator' && allowedOperators.has(principal.id);
-  }
-
-  async function reserveQuota() {
-    let result;
-    try {
-      result = await db.rpc(`${prefix}_reserve_ai_draft`, {p_daily_limit: dailyLimit});
-    } catch {
-      throw draftError('AI_DRAFT_QUOTA_UNAVAILABLE');
-    }
-    if (result?.error || typeof result?.data !== 'boolean') throw draftError('AI_DRAFT_QUOTA_UNAVAILABLE');
-    if (!result.data) throw draftError('AI_DRAFT_LIMIT');
   }
 
   async function generate(principal, prompt) {

@@ -6,7 +6,7 @@
       "name": "tcl-r24-sync",
       "runtime": "Nodejs20.19",
       "handler": "index.main",
-      "timeout": 180,
+      "timeout": 90,
       "memorySize": 256,
       "installDependency": true,
       "envVariables": {
@@ -21,7 +21,7 @@
         "AI_GATEWAY_URL": "https://gateway.example.invalid",
         "AI_GATEWAY_TOKEN": "",
         "AI_GATEWAY_MODEL": "gpt-4o-mini",
-        "AI_GATEWAY_TIMEOUT_MS": "60000",
+        "AI_GATEWAY_TIMEOUT_MS": "30000",
         "AI_FALLBACK_ENABLED": "true"
       }
     }

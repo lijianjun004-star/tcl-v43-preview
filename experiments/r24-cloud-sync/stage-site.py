@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.10"
-SHORT_VERSION = "R24-20261124.10"
-ASSET_REVISION = "r24-sync-v2-20261124.10"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.11"
+SHORT_VERSION = "R24-20261124.11"
+ASSET_REVISION = "r24-sync-v2-20261124.11"
 
 
 def digest(path):
@@ -86,6 +86,7 @@ def main():
     if html.count(head_end) != 1:
         raise ValueError("QA3 head could not be uniquely identified")
     meta = f'<meta name="tcl-r24-sync-version" content="{SHORT_VERSION}">'.encode()
+    meta += f'<link rel="stylesheet" href="assignment-evaluation.css?v={ASSET_REVISION}">'.encode()
     if args.api_base:
         meta += b'<meta name="tcl-r24-sync-mode" content="cloud">'
         mode = '<span id="modeText">本机独立预览</span>'.encode()
@@ -99,7 +100,8 @@ def main():
         html.replace(head_end, meta + head_end)
         .replace(old_script, f'src="app.js?v={ASSET_REVISION}"'.encode())
     )
-    for name in ("app.js", "assignment-sync.mjs", "assignment-drafts.mjs", "assignment-draft-panel.mjs"):
+    for name in ("app.js", "assignment-sync.mjs", "assignment-drafts.mjs", "assignment-draft-panel.mjs",
+                 "assignment-evaluation.mjs", "assignment-evaluation.css"):
         shutil.copyfile(overlay / name, target / name)
     update_assignment_excel_limit(target / "lib/parser.js")
     shutil.copyfile(overlay.parent / "backend/vendor/assignment-excel.mjs", target / "assignment-excel.mjs")
