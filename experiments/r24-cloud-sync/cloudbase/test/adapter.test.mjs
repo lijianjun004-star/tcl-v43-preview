@@ -75,16 +75,23 @@ function fakeDatabase() {
         select(fields) {
           const filters = [];
           let count = Infinity;
-          let order;
+          const order = [];
           return {
             eq(column, value) { filters.push(row => row[column] === value); return this; },
             gt(column, value) { filters.push(row => row[column] > value); return this; },
-            order(column) { order = column; return this; },
+            lt(column, value) { filters.push(row => row[column] < value); return this; },
+            in(column, values) { filters.push(row => values.includes(row[column])); return this; },
+            order(column, {ascending = true} = {}) { order.push([column, ascending]); return this; },
             limit(value) { count = value; return this; },
             then(resolve, reject) {
               return Promise.resolve().then(() => {
                 const items = [...rows.values()].filter(row => filters.every(test => test(row)));
-                if (order) items.sort((a, b) => a[order] > b[order] ? 1 : -1);
+                items.sort((a, b) => {
+                  for (const [field, asc] of order) {
+                    if (a[field] !== b[field]) return (a[field] > b[field]) === asc ? 1 : -1;
+                  }
+                  return 0;
+                });
                 return {data: items.slice(0, count).map(row => project(row, fields)), error: null};
               }).then(resolve, reject);
             },
@@ -249,4 +256,43 @@ test('non-unique PostgreSQL insert errors remain failures', async () => {
     from: () => ({insert: () => ({select: async () => ({error: {code: '42501'}})})}),
   }, 'tcl_r24_sync_test');
   await assert.rejects(store.createAssignment({id: 'safe-id', teamId: 'pilot'}), /did not confirm/);
+});
+
+test('scored submission history over 8 MiB can be paged without dropping tied timestamps or crossing scope', async () => {
+  const {store} = createDatabaseAdapter(fakeDatabase(), 'tcl_r24_sync_test');
+  const op = {id: 'tester', active: true, role: 'operator', teamId: 'pilot', displayName: '合成运营'};
+  const anchor = {...op, id: 'anchor', role: 'anchor', displayName: '合成主播'};
+  const assignmentId = 'many-sessions';
+  await store.createAssignment({id: assignmentId, teamId: 'pilot', operatorId: op.id, recipients: [], assignment: {}});
+  const feedback = '建议'.repeat(32000);
+  const times = ['2026-11-24T00:00:00.000Z', '2026-11-25T00:00:00.000Z'];
+  const ids = [];
+  for (let i = 0; i < 45; i++) {
+    const id = 'id-' + String(i).padStart(2, '0');
+    ids.push(id);
+    await store.createSubmission({id, assignmentId, teamId: 'pilot', anchorId: i % 2 ? anchor.id : 'other',
+      submittedAt: times[i % 2], turns: [{answer: '合成'}], evaluation: {items: [{comment: feedback}]}});
+  }
+  const api = createApi({store, authenticate: async t => t === 'operator' ? op : anchor});
+  async function read(token, action) {
+    let cursor = null;
+    const received = [];
+    do {
+      const query = cursor ? '?cursor=' + cursor : '';
+      const res = await api(new Request('https://test.invalid/assignments/' + assignmentId + '/' + action + query,
+        {headers: {authorization: 'Bearer ' + token}}));
+      assert.equal(res.status, 200);
+      const body = await res.json();
+      assert.ok(body.submissions.length <= 5);
+      for (const row of body.submissions) {
+        assert.equal(row.evaluation.items[0].comment.length, feedback.length);
+        received.push(row.id);
+      }
+      cursor = body.nextCursor;
+    } while (cursor);
+    return received;
+  }
+  const newer = ids.filter((_, i) => i % 2).reverse();
+  assert.deepEqual(await read('operator', 'submissions'), [...newer, ...ids.filter((_, i) => !(i % 2)).reverse()]);
+  assert.deepEqual(await read('anchor', 'my-submissions'), newer);
 });

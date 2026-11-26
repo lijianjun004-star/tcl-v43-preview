@@ -5,14 +5,16 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.10';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.11';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.10';
+import { evaluationInputKey, evaluationResultHtml, validEvaluation, evaluationFailure } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.11';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.11';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
 let assignmentSync=null, syncConfigError='', cloudAssignments=[], syncSubmitStatus=new Map();
+let pendingEvaluation=null, reviewEvaluationError=null;
 let syncAssignmentsLoading=false, syncAssignmentsLoaded=false, syncAssignmentsMessage='';
 let pendingCloudAssignment=null, workflowChannel=null;
 const syncMember=()=>assignmentSync?.principal||null;
@@ -869,6 +871,7 @@ const formatPracticeDuration=(sec)=>{const s=Math.max(0,Math.round(Number(sec)||
 let chatExtraTimers=[];
 function cancelVoskPreload(){voskPreloadSeq++;}
 function resetRunState({cancelPreload=true}={}){
+ pendingEvaluation=null;reviewEvaluationError=null;
  sessionAssignmentSnapshot=null;
 
   storedSessionRecords=new Map();storedSessionMedia.clear();clearReviewQuestionAudioUrls();clearQuestionStopWatchdog();reviewParked=false;reviewStage='overview';runId='';sessionStartedAt=0;sessionStartedMono=0;activeTurn=null;sessionTurns=[];recordingTurn=null;questionAsrQueue=[];perQuestionAudio.clear();activeQuestionIndex=-1;questionBag=[];
@@ -963,11 +966,11 @@ function createQuestionSummaryRow(turn){
  entry.raw=detail('查看模型识别原文');entry.candidate=detail('查看识别候选（未覆盖当前回答）');
  const use=document.createElement('button');use.type='button';use.className='btn soft';use.textContent='采用此候选回答';entry.candidate.box.append(use);
  use.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=toSimplified(t.whisperCandidate);t.transcript=t.answer;t.manualEdited=true;t.manualCleared=false;t.compliance=complianceHints(t.answer,t.platform);t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='已采用识别候选（请核对）';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};
- const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true'};entry.editor=editor;entry.answerCell.append(editor);
+ const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true';paintReviewEvaluation()};entry.editor=editor;entry.answerCell.append(editor);
  const save=document.createElement('button');save.type='button';save.className='btn soft';save.textContent='保存本题修改';
  save.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=editor.value.trim();t.manualEdited=true;t.manualCleared=!t.answer;t.compliance=t.answer?complianceHints(t.answer,t.platform):[];t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};entry.answerCell.append(save);
  const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
- copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
+ copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';paintReviewEvaluation();editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
  entry.actions=cell('状态');entry.status=document.createElement('div');entry.actions.append(entry.status);
  const retry=document.createElement('button');retry.type='button';retry.className='btn soft';retry.onclick=()=>retryLocalQuestion(entry.turn.id);entry.retry=retry;entry.actions.append(retry);
  return entry;
@@ -991,6 +994,7 @@ function updateQuestionSummaryRow(entry,turn){
  entry.retry.disabled=!!oneShotAsrJob||!!transcriptBusy||!!voskLoadJob||!!r6WhisperRunning;
 }
 function renderQuestionSummary(){
+ paintReviewEvaluation();
  const el=ELEM('questionSummary');
  // The detail screen is mounted but hidden in overview/replay/live. Rendering it
  // there used to rebuild hundreds of editors and audio players for each status.
@@ -1514,6 +1518,7 @@ function cloudSubmissionHtml(record){
   <p>${ESC(turn.answer)}</p>${turn.transcript&&turn.transcript!==turn.answer?`<p>转写：${ESC(turn.transcript)}</p>`:''}
   ${audioQuestions.has(turn.questionId)?`<button type="button" class="btn soft small" data-cloud-audio="${ESC(turn.questionId)}" data-cloud-submission="${ESC(record.id)}">播放逐题录音</button>
   <div data-cloud-player role="status"></div>`:''}</div>`).join('')}
+ ${evaluationResultHtml(record.evaluation,record.turns,ESC)}
  ${cached?cloudAudioStatusHtml(cached):''}</details>`;
 }
 function bindCloudPlayback(target,assignmentId){
@@ -2127,13 +2132,13 @@ ELEM('view').innerHTML=`
     <button class="prep-exit" id="prepExit" type="button" aria-label="返回训练板块">‹ 返回</button>
     <div class="pre-live-actions" id="preLiveActions"><span class="pre-live-label">${currentAssignment()?`运营作业：${ESC(currentAssignment().title)} · ${ESC(currentAssignment().operatorName)}`:'自由练播 · 摄像头画面仅自己可见'}</span><div class="pre-live-heading">${ESC(b.category)} · ${ESC(activePlatform)}</div><p class="prep-check-status" id="prepCheckStatus" role="status" aria-live="polite">请检查摄像头和麦克风…</p><div class="prep-recheck-actions"><button type="button" id="prepQuickRecheck" class="btn soft">↻ 重新检查设备</button><button type="button" id="prepQuickText" class="btn soft">仅文字练播</button></div><div data-vosk-widget="dark" aria-label="中文语音模型状态"></div><button class="btn primary pre-start-btn" id="startScene" type="button" disabled>准备中…</button><button class="prep-more-toggle" id="prepMore" type="button" aria-expanded="false" aria-controls="prepMoreSheet">${ICON.more}<span>换板块 · 弹幕间隔 · 设备</span></button><p class="prep-simulation-hint">模拟练播 · 单场最长 8 分钟 · ${usesParaformer?'录音结束或切题后转写 · 模型首次约 94 MB':'首次逐题转写需加载本机模型'}</p><p id="preLiveVoskTip" hidden>Vosk 可在「更多工具」手动准备，录后仍可补转写。</p><button id="preloadBeforeStart" hidden type="button">预下载模型</button><button id="preBack" hidden type="button">返回</button></div>
     <section class="phone-tools-sheet" id="prepMoreSheet" role="dialog" aria-modal="false" aria-label="开播前更多工具" hidden>
-      <div class="phone-tools-heading"><h3>更多工具</h3><button type="button" id="prepMoreClose" aria-label="关闭更多工具">✕</button></div>
+      <div class="phone-tools-heading"><h3>更多工具</h3><button type="button" id="prepMoreClose" class="tool-sheet-close" aria-label="关闭">×</button></div>
       <div class="phone-tools-group"><h4>训练内容</h4><div class="phone-tool-grid"><button type="button" id="prepChangeBoard">更换训练板块</button>${categoryPlatformChoices(b).map(x=>`<button type="button" data-prep-platform="${ESC(x.boardId)}" data-p="${ESC(x.platform)}" ${x.selected?'aria-current="true"':''}>${ESC(x.label)}</button>`).join('')}</div></div>
       <div class="phone-tools-group"><h4>弹幕设置</h4><label class="phone-tool-field">闲聊弹幕间隔<select id="prepBarrageInterval"><option value="30000">30 秒</option><option value="60000">1 分钟</option><option value="120000">2 分钟</option></select></label><small>该间隔控制闲聊和投诉；训练题由「下一条」手动切换。</small></div>
       <div class="phone-tools-group"><h4>设备与录制</h4><p id="prepDeviceStatus" class="phone-device-status">正在检查真实设备…</p><div class="phone-tool-grid"><button type="button" id="prepRecheck">重新检测设备</button><button type="button" id="prepTextOnly">仅文字练播</button><button type="button" id="prepPreloadVosk">准备中文识别模型</button></div><small>本机录像最多 8 分钟或约 64 MB，结束后请及时下载；录像提取音频限 3 分钟且不超过 48 MB。无法使用摄像头时可选择文字练播。</small></div>
     </section>
     <div class="r2-qcard" id="liveQuestionCard" hidden><div class="r2-qcard-top"><span id="liveQIndex">第 1 题</span><span id="liveQTimer" data-state="wait">等待回答 0:00</span></div><p id="liveQContext" class="muted" hidden></p><p id="liveQText"></p><p id="liveTurnStatus" class="r5-turn-status" role="status" aria-live="polite">准备录音</p><button type="button" class="r3-question-expand" id="liveQExpand" aria-controls="liveQText" aria-expanded="false" hidden>查看完整问题 ↓</button></div><button class="focus-close" id="focusClose" type="button">结束直播</button><button class="focus-next" id="focusNext" type="button">下一条 ›</button><button class="focus-speak" id="focusSpeak" type="button" aria-label="朗读当前弹幕">🔊 朗读</button><button class="focus-review" id="focusReview" type="button" aria-expanded="false" aria-controls="liveMoreSheet" aria-label="更多练播工具">${ICON.more}<span>工具</span></button><button class="focus-mic" id="focusMic" type="button">● 回答录音</button><div class="text-answer-sheet" id="textAnswerSheet" hidden><label for="liveTextAnswer">文字回答这条弹幕</label><textarea id="liveTextAnswer" rows="3" maxlength="800" placeholder="像直播时一样，直接打字回答当前弹幕"></textarea><div class="text-answer-actions"><button type="button" id="liveTextSave" class="btn primary small">保存回答</button><button type="button" id="liveTextClose" class="btn soft small">收起</button></div></div>
-    <section class="phone-tools-sheet" id="liveMoreSheet" role="dialog" aria-modal="false" aria-label="直播中更多工具" hidden><div class="phone-tools-heading"><h3>练播工具</h3><button type="button" id="liveMoreClose" aria-label="关闭工具">✕</button></div>
+    <section class="phone-tools-sheet" id="liveMoreSheet" role="dialog" aria-modal="false" aria-label="直播中更多工具" hidden><div class="phone-tools-heading"><h3>练播工具</h3><button type="button" id="liveMoreClose" class="tool-sheet-close" aria-label="关闭">×</button></div>
       <div class="phone-tools-group"><h4>回答辅助</h4><div class="phone-tool-grid"><button type="button" id="liveToolText">文字回答</button><button type="button" id="liveToolSpeak">朗读弹幕</button><button type="button" id="liveToolRecord">单题录音</button><button type="button" id="liveToolReference">参考要点</button></div><div class="phone-reference" id="liveReferenceBox" hidden></div></div>
       <div class="phone-tools-group"><h4>语音与弹幕</h4><div class="phone-tool-grid"><button type="button" id="liveToolRetry">本题补转写</button><button type="button" id="liveToolVosk">准备识别模型</button><button type="button" id="liveToolBrowserAsr">试用浏览器中文语音识别</button></div><div data-vosk-widget="card" aria-label="中文语音模型进度"></div><label class="phone-tool-field">闲聊弹幕间隔<select id="liveBarrageInterval"><option value="30000">30 秒</option><option value="60000">1 分钟</option><option value="120000">2 分钟</option></select></label><small>闲聊自动出现；训练题请点「下一条」。需要回放和导出，请在结束练播后打开复盘。</small></div>
     </section>
@@ -3575,6 +3580,67 @@ async function submitAnswer(){
  toast('本题练习记录已保存');
 }
 
+function hasUnsavedReviewEdits(){
+ return !!ELEM('questionSummary')?.querySelector('textarea[data-dirty="true"]');
+}
+function matchingEvaluation(snap,key=evaluationInputKey(snap)){
+ const saved=snap.aiReview;
+ return saved?.key===key && /^[a-f0-9]{64}$/.test(saved.evaluationId) &&
+  validEvaluation(saved.evaluation,snap.turns.length)?saved:null;
+}
+
+function paintReviewEvaluation(){
+ const panel=ELEM('reviewAiEvaluation'),snap=lastSessionSnapshot;
+ if(!panel||!snap||!reviewAlive())return;
+ const submitted=reviewSubmission(),key=evaluationInputKey(snap);
+ const dirty=hasUnsavedReviewEdits();
+ const waiting=pendingEvaluation?.snapshot===snap;
+ const empty=!snap.turns.length||snap.turns.some(turn=>turn.manualCleared||!(turn.answer?.trim()||turn.transcript?.trim()));
+ const current=matchingEvaluation(snap,key);
+ const failed=reviewEvaluationError;
+ let message='';
+ if(submitted)message=submitted.evaluation?'以下为已提交回答的评选。':'未生成 AI 评选';
+ else if(dirty)message='请先保存已编辑的逐题回答，再发起评选。';
+ else if(empty)message='请先为每道题填写回答或核对转写文字。';
+ else if(waiting)message='正在评选。如果现在提交作业，将按未评分保存。';
+ else if(failed?.snapshot===snap && failed.key===key)message=failed.message;
+ else if(current)message='评选已完成，提交作业时会一并交给运营。';
+ else message=snap.aiReview?'回答已更新，请重新评选。':'可使用已保存的文字或转写回答获取逐题点评。';
+ const button=ELEM('reviewAiEvaluate');
+ button.hidden=!!submitted;
+ button.disabled=!!(submitted||submissionSaving||waiting||dirty||empty||current);
+ setNodeText(button,waiting?'正在评选…':'发起 AI 评选');
+ setNodeText(panel.querySelector('[data-ai-eval-status]'),message);
+ const output=panel.querySelector('[data-ai-eval-output]');
+ const visible=submitted?submitted.evaluation:dirty?null:current?.evaluation;
+ if(output.evaluationResult!==visible){
+  output.evaluationResult=visible;
+  output.innerHTML=visible?evaluationResultHtml(visible,submitted?.turns||snap.turns,ESC):'';
+ }
+}
+
+async function evaluateReview(){
+ const snap=lastSessionSnapshot,member=syncMember(),button=ELEM('reviewAiEvaluate');
+ if(!snap||!reviewAlive()||!button||button.disabled||member?.role!=='anchor'||!snap.assignmentId||reviewSubmission())return;
+ const key=evaluationInputKey(snap),request={snapshot:snap,key};
+ pendingEvaluation=request;reviewEvaluationError=null;paintReviewEvaluation();
+ const current=()=>pendingEvaluation===request&&syncMember()===member&&lastSessionSnapshot===snap&&
+  runId===snap.id&&evaluationInputKey(snap)===key&&!submissionSaving&&!reviewSubmission();
+ try{
+  const response=await assignmentSync.evaluate(cloudSubmissionPayload(snap));
+  if(!current())return;
+  if(!/^[a-f0-9]{64}$/.test(response?.evaluationId)||!validEvaluation(response?.evaluation,snap.turns.length))
+   throw Object.assign(new Error('评选结果无效'),{code:'INVALID_AI_JSON',requestId:response?.evaluation?.requestId});
+  snap.aiReview={key,evaluationId:response.evaluationId,evaluation:response.evaluation};
+  await persistSessionCheckpoint();
+ }catch(error){
+  if(current())reviewEvaluationError={snapshot:snap,key,message:evaluationFailure(error)};
+ }finally{
+  if(pendingEvaluation===request)pendingEvaluation=null;
+  paintReviewEvaluation();
+ }
+}
+
 function buildSessionIssues(snap){
  const turns=snap?.turns||[],unanswered=turns.filter(t=>t.manualCleared||!(t.answer||t.transcript)).length,risk=turns.reduce((n,t)=>n+(t.compliance||[]).length,0),hit=turns.reduce((n,t)=>n+(t.pointsHit||[]).length,0),total=turns.reduce((n,t)=>n+(t.keyPoints||[]).length,0);const issues=[];
  if(unanswered)issues.push(`${unanswered} 条弹幕还没有形成完整文字回答`);if(total&&hit<total)issues.push(`训练要点覆盖 ${hit}/${total}，可以针对遗漏点再练一次`);if(risk)issues.push(`有 ${risk} 条合规提示需要人工复核`);if(!issues.length)issues.push('本场逐题记录完整，可根据自己的直播表现决定是否提交');return {issues,unanswered,risk,hit,total};
@@ -3647,6 +3713,10 @@ function sessionReviewPage(){
  <section id="reviewDetailsScreen" class="review-stage review-details-screen" aria-label="逐题复盘详情" hidden aria-hidden="true">
   <div class="review-subbar"><button type="button" id="reviewDetailsBack" class="review-back" aria-label="返回复盘总览">‹ <span>返回复盘</span></button><div><h2>逐题复盘</h2><small>${snap.turns.length} 条弹幕 · 按题校正</small></div><span class="review-subbadge">详情</span></div>
   <div class="review-details-intro"><b>每道弹幕逐条查看</b><p>识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。</p></div>
+  ${syncMember()?.role==='anchor'&&assignment&&snap.assignmentId?`<section class="review-ai-panel" id="reviewAiEvaluation" aria-label="AI 口播评选">
+    <h3>AI 口播评选</h3><button type="button" class="btn soft" id="reviewAiEvaluate">发起 AI 评选</button>
+    <p class="scene-tip" role="status" data-ai-eval-status></p><div data-ai-eval-output></div>
+  </section>`:''}
   <div id="questionSummary" class="review-question-cards" aria-live="polite"></div>
   <div class="review-secondary-link"><button type="button" id="reviewGoReplay" class="review-inline-link">▶ 打开本场录像 <span>›</span></button></div>
  </section>
@@ -3656,6 +3726,7 @@ function sessionReviewPage(){
  ELEM('reviewRetry').onclick=()=>openBoard(snap.boardId,snap.platform,{assignmentId:snap.assignmentId||'',checkDevicesOnOpen:true});
  ELEM('reviewReplay').onclick=()=>showReviewStage('replay');
  ELEM('reviewDetails').onclick=()=>showReviewStage('details');
+ if(ELEM('reviewAiEvaluate'))ELEM('reviewAiEvaluate').onclick=()=>void evaluateReview();
  ELEM('reviewReplayBack').onclick=backToReviewOverview;
  ELEM('reviewDetailsBack').onclick=backToReviewOverview;
  ELEM('reviewGoDetails').onclick=()=>showReviewStage('details');
@@ -3673,6 +3744,7 @@ function sessionReviewPage(){
 async function submitSessionRecord(operatorName){
  const snap=lastSessionSnapshot;if(userRole!=='anchor'||!userName||!snap||snap.anchorName!==userName)return toast('当前身份不能提交该记录');
  if(submissionSaving)return toast('正在保存提交，请稍候');
+ if(syncMember()&&snap.assignmentId&&hasUnsavedReviewEdits())return toast('请先在逐题复盘中保存已编辑的回答，再提交作业');
  if(oneShotAsrJob||questionAsrQueue.length||recorderFinalizing||speechRecognizer||videoRecorderFinalizing||transcriptBusy)return toast('识别或录音录像整理尚未完成，请等待后再提交');
  if(snap.assignmentId){const assignment=assignmentForReview(snap);if(!assignment||assignment.boardId!==snap.boardId||assignment.platform!==snap.platform||!assignment.operatorName||snap.operatorName!==assignment.operatorName||!isAssigned(assignment,snap.anchorName))return toast('作业信息不匹配，无法提交');operatorName=assignment.operatorName;}
  operatorName=String(operatorName||'').trim();if(!operatorName)return toast('请输入运营姓名');if(reviewSubmission())return toast(syncMember()?'这次训练已经提交到云端':'这次训练已经保存在本机');
@@ -3695,10 +3767,12 @@ async function submitSessionRecord(operatorName){
   if(syncMember()&&lateAssignment){
    if(!current())throw new Error('本场记录已变化，请核对后重试');
    const payload=cloudSubmissionPayload(snap);
-   const result=await assignmentSync.submit(payload);
+   const scored=matchingEvaluation(snap);
+   const result=await assignmentSync.submit(payload,scored?.evaluationId);
    const accepted=result.submission;
    if(accepted?.sessionId!==snap.id||accepted.assignmentId!==snap.assignmentId||!accepted.submittedAt||!accepted.id)throw new Error('云端回执未确认，请重试');
    submission.cloudId=accepted.id;
+   if(accepted.evaluation)submission.evaluation=accepted.evaluation;
    submission.audioPendingIds=audio.filter(cloudAudioAcceptable).map(clip=>clip.questionId);
    submission.audioUploadedIds=[];
    submission.audioLocalOnly=audio.length-submission.audioPendingIds.length;
@@ -3722,9 +3796,12 @@ async function submitSessionRecord(operatorName){
    paintCloudAudioStatus(submission);
    void uploadCloudAudio(submission,media);
   }
-  else{if(btn?.isConnected)btn.disabled=false;toast((syncMember()?'未收到云端确认，本机记录可重试：':'提交未保存：')+(e?.message||e));}
+  else{if(e?.code==='AI_EVALUATION_MISMATCH'&&lastSessionSnapshot===snap){
+    delete snap.aiReview;reviewEvaluationError={snapshot:snap,key:evaluationInputKey(snap),message:evaluationFailure(e)};
+    void persistSessionCheckpoint();
+  }if(btn?.isConnected)btn.disabled=false;toast((syncMember()?'未收到云端确认，本机记录可重试：':'提交未保存：')+(e?.message||e));}
  }
- finally{submissionSaving=false;}
+ finally{submissionSaving=false;paintReviewEvaluation();}
 }
 // V3.4.9：搜索时只刷新结果列表，不重建输入框，连续输入和中文输入法组合输入不会失焦。
 function libraryRows(){return getEntries().filter(e=>e.status==='published'&&(!librarySearch||norm([e.question,e.answer,e.category,e.platform,e.model,e.sku,e.sourceRef,...(e.keyPoints||[])].filter(Boolean).join(' ')).includes(norm(librarySearch)))&&(selectedLibraryBoard==='all'||e.boardId===selectedLibraryBoard||e.scope==='category'&&e.category===boardById(selectedLibraryBoard).category));}
@@ -3732,7 +3809,7 @@ function libraryCardHtml(q){return `<div class="q-card"><div class="q-meta"><spa
 let libraryVisibleCount=8;
 function renderLibraryList(){const list=ELEM('libraryList'),count=ELEM('libraryCount'),more=ELEM('libraryMore');if(!list)return;const rows=libraryRows(),visible=Math.min(rows.length,libraryVisibleCount);list.innerHTML=rows.slice(0,visible).map(libraryCardHtml).join('')||'<div class="empty compact">没有找到相关问答，试试其他关键词或板块。</div>';if(count)count.textContent=`已显示 ${visible} / ${rows.length} 条`;if(more){more.hidden=visible>=rows.length;more.textContent=`再显示 ${Math.min(8,rows.length-visible)} 条`;}}
 function library(){setTitle('问答知识库');libraryVisibleCount=8;ELEM('view').innerHTML=`<div class="section-title"><div><h2>从优秀回答中学习</h2><p>查看已审核发布的问答。原有教学题目只有训练要点，不伪造成熟参考答案。</p></div></div><div class="panel r3-library"><div class="cols-2"><div class="field"><label for="librarySearch">搜索问题、回答或知识点</label><div class="r3-search"><input id="librarySearch" value="${ESC(librarySearch)}" placeholder="例如：安装、噪音、耗电、退换货"><button type="button" id="libraryClear" aria-label="清除搜索内容">清除</button></div></div><div class="field"><label for="libraryBoard">筛选训练板块</label><select id="libraryBoard"><option value="all">全部板块</option>${BOARDS.map(b=>`<option value="${b.id}" ${b.id===selectedLibraryBoard?'selected':''}>${b.id} ${ESC(b.category)} · ${ESC(b.display_platform)}</option>`).join('')}</select></div></div><div class="notice blue">只有运营审核通过的资料才应进入正式学习库。当前本机演示数据不等于云端持久化；真正跨设备同步需要连接后端数据库。</div><div class="r3-library-count" id="libraryCount" role="status"></div><div class="question-list" id="libraryList"></div><button class="btn soft r3-library-more" type="button" id="libraryMore" hidden>显示更多</button></div>`;renderLibraryList();const search=ELEM('librarySearch');search.oninput=e=>{librarySearch=e.target.value;if(!e.isComposing){libraryVisibleCount=8;renderLibraryList()}};search.oncompositionend=e=>{librarySearch=e.target.value;libraryVisibleCount=8;renderLibraryList()};ELEM('libraryClear').onclick=()=>{librarySearch='';search.value='';libraryVisibleCount=8;renderLibraryList();search.focus()};ELEM('libraryMore').onclick=()=>{libraryVisibleCount+=8;renderLibraryList()};ELEM('libraryBoard').onchange=e=>{selectedLibraryBoard=e.target.value;libraryVisibleCount=8;renderLibraryList()};}
-function progress(){setTitle('我的练习记录');ELEM('view').innerHTML=`<div class="section-title"><div><h2>逐题记录</h2><p>只保存在这台设备；目前没有 AI 评分，也不会跨设备同步。</p></div><button class="btn" id="backupRecords">导出个人记录</button></div><div class="panel"><div class="question-list">${ownRecords().slice(0,100).map(r=>{const shown=r.manualCleared?'已清空回答':r.answer||r.transcript||(r.durationSeconds!=null?'仅录音，尚未转写':'尚无文字回答');return `<div class="q-card"><div class="q-meta"><span>${ESC(new Date(r.createdAt).toLocaleString('zh-CN'))}</span><span>${ESC(r.category)}</span><span>${ESC(r.platform)}</span><span>${ESC(r.asrStatus||'未转写')}</span><span>${r.durationSeconds==null?'—':ESC(r.durationSeconds)+'秒'}</span></div><h3>${ESC(r.prompt||r.question)}</h3><p>${ESC(shown)}</p>${referenceDetailsHtml(r)}<span class="pill warn">${ESC(r.result)}</span></div>`}).join('')||'<div class="empty">还没有练习记录，进入专项训练并提交回答即可保存。</div>'}</div></div>`;ELEM('backupRecords').onclick=()=>downloadJSON('TCL-我的练习记录.json',ownRecords());}
+function progress(){setTitle('我的练习记录');ELEM('view').innerHTML=`<div class="section-title"><div><h2>逐题记录</h2><p>${syncMember()?'这里展示本机逐题练习。已提交作业的 AI 评选可在云端提交记录中查看。':'这些逐题记录保存在当前浏览器。'}</p></div><button class="btn" id="backupRecords">导出个人记录</button></div><div class="panel"><div class="question-list">${ownRecords().slice(0,100).map(r=>{const shown=r.manualCleared?'已清空回答':r.answer||r.transcript||(r.durationSeconds!=null?'仅录音，尚未转写':'尚无文字回答');return `<div class="q-card"><div class="q-meta"><span>${ESC(new Date(r.createdAt).toLocaleString('zh-CN'))}</span><span>${ESC(r.category)}</span><span>${ESC(r.platform)}</span><span>${ESC(r.asrStatus||'未转写')}</span><span>${r.durationSeconds==null?'—':ESC(r.durationSeconds)+'秒'}</span></div><h3>${ESC(r.prompt||r.question)}</h3><p>${ESC(shown)}</p>${referenceDetailsHtml(r)}<span class="pill warn">${ESC(r.result)}</span></div>`}).join('')||'<div class="empty">还没有练习记录，进入专项训练并提交回答即可保存。</div>'}</div></div>`;ELEM('backupRecords').onclick=()=>downloadJSON('TCL-我的练习记录.json',ownRecords());}
 function legacy(){setTitle('原12周 · 进阶拓展');const mods=[...new Set(legacyCards.map(c=>c.module))];const rows=legacyCards.filter(c=>selectedLegacyFilter==='all'||c.module===selectedLegacyFilter);ELEM('view').innerHTML=`<div class="hero"><div><span class="eyebrow">LEGACY LEARNING · ARCHIVED</span><h2>原版 65 张话术卡 · 自由学习</h2><p>原 12 周养成体系完整保留，并与 16 个专项训练入口并列开放。历史卡片含未经核验的促销、价格、功能和服务承诺，仅供拆解表达方法，不作为真实直播标准答案。</p></div></div><div class="notice">历史话术只是学习材料。带有金额、时效、库存、服务范围等承诺的表达，必须在正式直播前验证商品及当期活动凭证。</div><div class="toolbar"><div class="segmented"><button data-legacy="all" class="${selectedLegacyFilter==='all'?'selected':''}">全部65张</button>${mods.map(m=>`<button data-legacy="${ESC(m)}" class="${m===selectedLegacyFilter?'selected':''}">${ESC(m)}</button>`).join('')}</div></div><div class="legacy-grid">${rows.map(c=>`<div class="legacy-card"><div class="q-meta"><span class="pill">${ESC(c.card_id)}</span><span class="pill">${ESC(c.module)}</span>${c.risk_labels.length?'<span class="pill warn">需核验</span>':'<span class="pill">结构参考</span>'}</div><p><b>${ESC(c.safe_teaching_objective)}</b> · ${ESC(c.group)}</p><p>历史原文：${ESC(c.original_text)}</p><div class="q-meta">${c.risk_labels.map(s=>`<span class="pill warn">${ESC(s)}</span>`).join('')}</div></div>`).join('')}</div>`;document.querySelectorAll('[data-legacy]').forEach(x=>x.onclick=()=>{selectedLegacyFilter=x.dataset.legacy;legacy()});}
 // Source columns take priority. Interface choices fill only missing values.
 function normalizedImportScope(row,ctx){

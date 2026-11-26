@@ -1,0 +1,40 @@
+/* The sheet uses icon fonts elsewhere. These close buttons use a system glyph. */
+.phone-tools-heading button.tool-sheet-close {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: #182b43;
+  background: #fff;
+  border: 1px solid #9ba9b8;
+  font: 600 28px/1 Arial, sans-serif;
+  text-indent: 0;
+}
+.tool-sheet-close:focus-visible {
+  outline: 3px solid #1d4e83;
+  outline-offset: 2px;
+}
+.review-ai-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  margin: 12px 0;
+  background: #fff;
+  border: 1px solid #d9e1ea;
+  border-radius: 14px;
+}
+.eval-result { min-width: 0; overflow-wrap: anywhere; }
+.eval-result-head, .eval-points {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+.eval-result-head { gap: 10px; }
+.eval-result-head strong { color: #182b43; font-size: 1.1rem; }
+.eval-item { padding: 10px 0; border-top: 1px solid #d9e1ea; }
+.eval-item h4, .eval-item p, .eval-points { margin: 6px 0; }
+.eval-point { padding: 1px 7px; border-radius: 5px; color: #223954; background: #edf2f7; }

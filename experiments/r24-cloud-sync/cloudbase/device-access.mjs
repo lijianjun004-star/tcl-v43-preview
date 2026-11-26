@@ -54,9 +54,12 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     return principal?.id === id ? principal : null;
   };
 
-  async function authenticate(token) {
-    if (typeof token !== 'string' || !token.startsWith(devicePrefix)) return authenticateNative(token);
-    if (!deviceTokenPattern.test(token)) return null;
+  function authenticate(token) {
+    return typeof token === 'string' && token.startsWith(devicePrefix) ? authenticateBoundDevice(token) : authenticateNative(token);
+  }
+
+  async function authenticateBoundDevice(token) {
+    if (typeof token !== 'string' || !deviceTokenPattern.test(token)) return null;
     const proof = digest(token);
     const grant = await grants.findByDevice(proof);
     return activeDevice(grant, proof, now()) ? enrollment(grant.enrollment_id) : null;
@@ -155,7 +158,7 @@ export function createDeviceAccess({grants, getEnrollment, authenticateNative, a
     }
   }
 
-  return {authenticate, handleDeviceRequest};
+  return {authenticate, authenticateBoundDevice, handleDeviceRequest};
 }
 
 function publicBinding(result) {

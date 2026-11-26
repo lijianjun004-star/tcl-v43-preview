@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export PORT="${PORT:-9000}"
+if [ -x "/var/lang/node20/bin/node" ]; then
+  exec /var/lang/node20/bin/node server.js
+elif [ -x "/var/lang/node18/bin/node" ]; then
+  exec /var/lang/node18/bin/node server.js
+else
+  exec node server.js
+fi

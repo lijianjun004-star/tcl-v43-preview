@@ -1,5 +1,6 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { startDraftCall, finishDraftCall, generateAssignmentDraft } from './assignment-draft-service.mjs';
+import { validateEvaluationInput, validateEvaluationResult } from './evaluation-schema.mjs';
 import { buildAssignmentDraftPrompt } from '../overlay/assignment-drafts.mjs';
 import {
   isReceiptLate,
@@ -139,7 +140,7 @@ function cleanSubmission(record, audio) {
   const { id, assignmentId, assignmentVersion, snapshotSha256, anchorId, anchorName,
     sessionId, submittedAt, late, turns } = record;
   return { id, assignmentId, assignmentVersion, snapshotSha256, anchorId, anchorName,
-    sessionId, submittedAt, late, turns, ...(audio ? { audio } : {}) };
+    sessionId, submittedAt, late, turns, ...(record.evaluation ? {evaluation: record.evaluation} : {}), ...(audio ? { audio } : {}) };
 }
 
 function descending(a, b) {
@@ -322,9 +323,97 @@ function buildReceipt(record, principal, incoming, previous) {
   }
 }
 
-function submissionResponse(record, payloadHash, replayed) {
+function evaluationMismatch() {
+  problem(409, 'AI_EVALUATION_MISMATCH', '评选与当前场次或回答不匹配，请重新评选或仅提交文字');
+}
+
+function evaluationKey(sessionKey, receipt) {
+  return sha256Hex(['evaluation-v1', sessionKey, receipt.snapshotSha256,
+    receipt.turns.map(turn => [turn.questionId, turn.answer, turn.transcript])]);
+}
+
+function evaluationFailure(code) {
+  const errors = {
+    GATEWAY_CONFIG_MISSING: [503, '评选网关尚未配置，请联系管理员'],
+    GATEWAY_CONFIG_INVALID: [503, '评选网关配置无效，请联系管理员'],
+    GATEWAY_TIMEOUT: [504, '评选网关超时，可稍后重试'],
+    GATEWAY_NETWORK_ERROR: [503, '评选网关暂时无法连接'],
+    GATEWAY_NETWORK_RESET: [503, '评选网关连接中断'],
+    INVALID_AI_JSON: [502, '模型结果不完整或格式异常，本次未评分'],
+    AI_EVALUATION_INPUT_INVALID: [422, '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'],
+    AI_EVALUATION_LIMIT: [429, '今天的 AI 调用额度已用完'],
+    AI_EVALUATION_DISABLED: [403, '试点尚未启用 AI 评选'],
+    AI_EVALUATION_QUOTA_UNAVAILABLE: [503, '暂时无法核实评选额度'],
+  };
+  if (typeof code === 'string' && /^GATEWAY_HTTP_[45]\d\d$/u.test(code)) {
+    problem(code === 'GATEWAY_HTTP_429' || code === 'GATEWAY_HTTP_503' ? 503 : 502, code,
+      '评选网关返回 HTTP ' + code.slice(-3) + '，请凭请求编号核查');
+  }
+  if (Object.hasOwn(errors, code)) problem(errors[code][0], code, errors[code][1]);
+  problem(503, 'AI_EVALUATION_FAILED', '暂时无法完成 AI 评选，可以继续提交文字');
+}
+
+async function evaluateAssignment(request, principal, {store, evaluationGeneration, evaluationRequestId}) {
+  anchorOnly(principal);
+  const body = await readJson(request, 128 * 1024);
+  const snapshot = body.snapshot;
+  if (Object.keys(body).length !== 1 || !isRecord(snapshot) || typeof snapshot.assignmentId !== 'string' ||
+      !ASSIGNMENT_ID.test(snapshot.assignmentId) || typeof snapshot.id !== 'string' || !ASSIGNMENT_ID.test(snapshot.id) ||
+      !Array.isArray(snapshot.turns) || snapshot.turns.length < 1 || snapshot.turns.length > 15) {
+    evaluationFailure('AI_EVALUATION_INPUT_INVALID');
+  }
+  const assignmentRecord = await store.getAssignment(snapshot.assignmentId);
+  assertVisible(assignmentRecord, principal);
+  // The canonical answer is the reviewed text. Never resurrect a deliberately cleared answer.
+  const turns = snapshot.turns.map(turn => isRecord(turn) && !Object.hasOwn(turn, 'answer')
+    ? {...turn, answer: turn.answerText ?? turn.transcript} : turn);
+  const receipt = buildReceipt(assignmentRecord, principal, {...snapshot, turns});
+  let items;
+  try {
+    items = validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
+      question: q.question, referenceAnswer: q.answer, keyPoints: q.keyPoints, answerText: receipt.turns[index].answer,
+    })));
+  } catch { evaluationFailure('AI_EVALUATION_INPUT_INVALID'); }
+
+  if (!evaluationGeneration) evaluationFailure('GATEWAY_CONFIG_MISSING');
+  const sessionKey = await sha256Hex([principal.teamId, principal.id, snapshot.assignmentId, snapshot.id]);
+  const id = await evaluationKey(sessionKey, receipt);
+  const submitted = await store.getSubmission(sessionKey);
+  if (submitted) {
+    if (submitted.evaluationId === id && submitted.evaluation) {
+      return {body: {evaluationId: id, evaluation: submitted.evaluation}};
+    }
+    problem(409, 'AI_EVALUATION_ALREADY_SUBMITTED', '这场练播已经提交，已提交记录只支持查看');
+  }
+  const existing = await store.getEvaluation(id);
+  if (existing) return {body: {evaluationId: id, evaluation: existing.evaluation}};
+  let result;
+  try {
+    result = await evaluationGeneration.evaluate(items);
+  } catch (error) { evaluationFailure(error?.code); }
+
+  let scoring;
+  try {
+    if (result.httpStatus !== 200 || !['gpt-4o-mini', 'gpt-4o'].includes(result.model)) {
+      throw new Error('Invalid upstream result');
+    }
+    scoring = validateEvaluationResult({overallScore: result.overallScore, grade: result.grade, items: result.items}, items);
+  } catch { evaluationFailure('INVALID_AI_JSON'); }
+  const usage = Object.fromEntries(['prompt_tokens', 'completion_tokens', 'total_tokens']
+    .filter(key => Number.isSafeInteger(result.usage?.[key]) && result.usage[key] >= 0)
+    .map(key => [key, result.usage[key]]));
+  const evaluation = {...scoring, model: result.model, usage: Object.keys(usage).length ? usage : null,
+    requestId: evaluationRequestId, source: 'openai_gateway', degraded: false};
+  const record = {id, assignmentId: snapshot.assignmentId, teamId: principal.teamId, anchorId: principal.id, evaluation};
+  // Insert-only storage makes concurrent completions converge on the same authoritative score.
+  const confirmed = await store.createEvaluation(record) ? record : await store.getEvaluation(id);
+  if (!confirmed) problem(503, 'WRITE_PENDING', '评选结果尚未确认，请用同一场次重试');
+  return {body: {evaluationId: id, evaluation: confirmed.evaluation}};
+}
+
+function submissionResponse(record, payloadHash, replayed, evaluationId) {
   if (!record) problem(503, 'WRITE_PENDING', '暂未读到提交写入结果，请用同一场次重试');
-  if (record.payloadHash !== payloadHash) {
+  if (record.payloadHash !== payloadHash || (evaluationId !== undefined && record.evaluationId !== evaluationId)) {
     problem(409, 'SUBMISSION_CONFLICT', '本场练播已提交，不能替换已保存的回答');
   }
   return { status: replayed ? 200 : 201, body: { submission: cleanSubmission(record), replayed } };
@@ -334,7 +423,10 @@ async function submit(request, assignmentId, principal, { store, now }) {
   anchorOnly(principal);
   const assignmentRecord = await store.getAssignment(assignmentId);
   assertVisible(assignmentRecord, principal);
-  const { snapshot } = await readJson(request);
+  const { snapshot, evaluationId } = await readJson(request);
+  if (evaluationId !== undefined && (typeof evaluationId !== 'string' || !HEX_SHA256.test(evaluationId))) {
+    problem(422, 'AI_EVALUATION_ID_INVALID', '评选编号无效');
+  }
   const sessionId = snapshot?.id;
   if (typeof sessionId !== 'string' || !ASSIGNMENT_ID.test(sessionId)) {
     problem(422, 'SUBMISSION_INVALID', '练播场次 ID 格式无效');
@@ -346,7 +438,15 @@ async function submit(request, assignmentId, principal, { store, now }) {
     snapshotSha256: receipt.snapshotSha256,
     turns: receipt.turns,
   });
-  if (current) return submissionResponse(current, payloadHash, true);
+  if (current) return submissionResponse(current, payloadHash, true, evaluationId);
+
+  let evaluation;
+  if (evaluationId !== undefined) {
+    const expectedId = await evaluationKey(id, receipt);
+    if (expectedId !== evaluationId) evaluationMismatch();
+    evaluation = (await store.getEvaluation(evaluationId))?.evaluation;
+    if (!evaluation) evaluationMismatch();
+  }
 
   const submittedAt = now().toISOString();
   const submission = {
@@ -362,9 +462,10 @@ async function submit(request, assignmentId, principal, { store, now }) {
     late: isReceiptLate({ submittedAt }, assignmentRecord.assignment),
     turns: receipt.turns,
     payloadHash,
+    ...(evaluation ? {evaluationId, evaluation} : {}),
   };
-  if (await store.createSubmission(submission)) return submissionResponse(submission, payloadHash, false);
-  return submissionResponse(await store.getSubmission(id), payloadHash, true);
+  if (await store.createSubmission(submission)) return submissionResponse(submission, payloadHash, false, evaluationId);
+  return submissionResponse(await store.getSubmission(id), payloadHash, true, evaluationId);
 }
 
 async function assignmentPage(store, principal, url) {
@@ -450,21 +551,36 @@ async function submissionPage(assignmentId, url, principal, store, own) {
   else operatorOnly(principal);
   assertVisible(assignment, principal);
   const anchorId = own ? principal.id : undefined;
-  const [submissions, audio] = await Promise.all([
-    store.listSubmissions(assignmentId, principal.teamId, anchorId),
-    store.listSubmissionAudio(assignmentId, principal.teamId, anchorId),
-  ]);
-  const attached = new Map();
-  for (const record of audio) {
-    if (!record.readyAt) continue;
-    const segments = attached.get(record.submissionId) ?? [];
-    segments.push(publicAudio(record));
-    attached.set(record.submissionId, segments);
+  const cursor = parseCursor(url.searchParams.get('cursor'));
+  const headers = await store.listSubmissionHeaders(assignmentId, principal.teamId, anchorId, cursor, MAX_PAGE_ROWS + 1);
+  const rows = [];
+  let bytes = 0;
+  const batchSize = 4;
+  for (let offset = 0; offset < Math.min(headers.length, MAX_PAGE_ROWS); offset += batchSize) {
+    const ids = headers.slice(offset, Math.min(offset + batchSize, MAX_PAGE_ROWS)).map(row => row.id);
+    const [submissions, audio] = await Promise.all([
+      store.listSubmissions(assignmentId, principal.teamId, anchorId, ids),
+      store.listSubmissionAudio(assignmentId, principal.teamId, anchorId, ids),
+    ]);
+    const byId = new Map(submissions.map(row => [row.id, row]));
+    for (const id of ids) {
+      const row = byId.get(id);
+      if (!row || row.assignmentId !== assignmentId || row.teamId !== principal.teamId || (own && row.anchorId !== anchorId)) {
+        throw new Error('Inconsistent submission page');
+      }
+      const view = cleanSubmission(row, audio.filter(a => a.readyAt && a.submissionId === id &&
+        a.anchorId === row.anchorId && a.teamId === row.teamId && a.assignmentId === row.assignmentId).map(publicAudio));
+      const rowBytes = Buffer.byteLength(JSON.stringify(view));
+      if (rows.length && bytes + rowBytes > MAX_PAGE_BYTES) break;
+      bytes += rowBytes;
+      rows.push(view);
+    }
+    if (rows.length < offset + ids.length) break;
   }
-  const filtered = submissions.filter(record => record.assignmentId === assignmentId &&
-    record.teamId === principal.teamId && (!own || record.anchorId === anchorId));
-  const view = row => cleanSubmission(row, attached.get(row.id) ?? []);
-  return { body: page(filtered, view, 'submittedAt', url, 'submissions') };
+  const last = rows.at(-1);
+  const nextCursor = last && rows.length < headers.length
+    ? Buffer.from(JSON.stringify([last.submittedAt, last.id])).toString('base64url') : null;
+  return {body: {submissions: rows, nextCursor}};
 }
 
 const digestBytes = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -611,6 +727,7 @@ async function route(request, url, path, principal, dependencies) {
     if (method === 'POST') return publish(request, principal, dependencies);
     if (method === 'GET') return { body: await assignmentPage(store, principal, url) };
   }
+  if (method === 'POST' && path === '/assignments/evaluate') return evaluateAssignment(request, principal, dependencies);
   if (path === '/assignments/draft' && (method === 'GET' || method === 'POST')) {
     return assignmentDraft(request, principal, dependencies);
   }
@@ -635,10 +752,12 @@ async function route(request, url, path, principal, dependencies) {
 
 export function createApi({
   authenticate,
+  authenticateEvaluation = authenticate,
   directory,
   store,
   media,
   draftGeneration,
+  evaluationGeneration,
   now = () => new Date(),
   boards = boardDefinitions,
   allowedOrigins = [],
@@ -647,7 +766,7 @@ export function createApi({
   logDraft = entry => console.info(JSON.stringify(entry)),
 }) {
   const dependencies = {
-    directory, store, now, media, draftGeneration,
+    directory, store, now, media, draftGeneration, evaluationGeneration,
     boards: new Map(boards.map(board => [board.id, board])),
   };
   const origins = new Set(allowedOrigins);
@@ -667,27 +786,28 @@ export function createApi({
       } });
     }
     const url = new URL(request.url);
+    const evaluationRequestId = request.method === 'POST' && url.pathname === basePath + '/assignments/evaluate' ? randomUUID() : null;
     const draftAudit = request.method === 'POST' && url.pathname === basePath + '/assignments/draft'
       ? startDraftCall(draftGeneration?.model) : null;
     const respond = (body, status) => {
       const result = draftAudit ? finishDraftCall(draftAudit, body, status, logDraft) : body;
-      return jsonResponse(result, status, cors);
+      return jsonResponse(evaluationRequestId ? {...result, requestId: evaluationRequestId} : result, status, cors);
     };
     try {
       const token = /^Bearer ([^\s,]{1,8192})$/iu.exec(request.headers.get('authorization') ?? '')?.[1];
       if (!token) problem(401, 'AUTH_REQUIRED', '请先登录');
-      const principal = await authenticate(token);
+      const principal = await (evaluationRequestId ? authenticateEvaluation(token) : authenticate(token));
       if (!validIdentity(principal)) problem(401, 'AUTH_REQUIRED', '登录已过期或帐号未授权');
       if (basePath && !url.pathname.startsWith(basePath + '/')) {
         problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
       }
-      const result = await route(request, url, url.pathname.slice(basePath.length), principal, draftAudit ? {...dependencies, draftAudit} : dependencies);
+      const result = await route(request, url, url.pathname.slice(basePath.length), principal, {...dependencies, draftAudit, evaluationRequestId});
       return respond(result.body, result.status ?? 200);
     } catch (error) {
       if (error instanceof ApiProblem) {
         return respond({ error: { code: error.code, message: error.message } }, error.status);
       }
-      if (!draftAudit) onError(error);
+      if (!draftAudit && !evaluationRequestId) onError(error);
       return respond({ error: { code: 'SERVICE_ERROR', message: '服务暂不可用，请稍后重试' } }, 500);
     }
   };

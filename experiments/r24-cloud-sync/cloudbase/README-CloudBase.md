@@ -85,13 +85,13 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 | `AI_GATEWAY_URL` | 必填 | 已获授权的 HTTPS 网关，可填根地址、以 `/v1` 结尾的地址或完整 `/v1/chat/completions`。 |
 | `AI_GATEWAY_TOKEN` | 必填 | 网关分配给试点函数的服务凭证。 |
 | `AI_GATEWAY_MODEL` | 默认 `gpt-4o-mini` | 由网关实际开放的模型标识。 |
-| `AI_GATEWAY_TIMEOUT_MS` | 默认 `60000` 毫秒 | 单次请求时限，支持 1–60000 毫秒。超时包括读取响应。 |
+| `AI_GATEWAY_TIMEOUT_MS` | 默认 `30000` 毫秒 | 单次请求时限，支持 1–30000 毫秒。超时包括读取响应。 |
 | `AI_FALLBACK_ENABLED` | 默认 `true` | `true` 允许用完整结构化资料生成规则草稿；`false` 返回包含原因和请求编号的错误。 |
 | `TCL_R24_SYNC_AI_ENABLED` | 默认关闭 | `true` 时检查可用运营名单。 |
 | `TCL_R24_SYNC_AI_OPERATOR_IDS` | 启用时必填 | 经过核实的运营账号稳定 ID，多个以英文逗号分隔。 |
 | `TCL_R24_SYNC_AI_DAILY_LIMIT` | 默认 `5` | 整个试点按上海日期计数，范围 1–20。 |
 
-启用前确认试点专用日限额表和服务端 RPC 已就绪。[日限额 SQL](schema-ai-drafts.sql) 每次实际调用前预留一次额度，包括重试；连接超时可能发生在网关已开始生成之后，重试可能再次消耗 token。配置示例使用 180 秒云函数执行时限，需另行核对真实 HTTP 接入层、网关和浏览器的时限。两个 60 秒请求加 1.5 秒退避就需要 121.5 秒，此外还需留出鉴权、配额查询与网络往返时间。
+启用前确认试点专用日限额表和服务端 RPC 已就绪。[日限额 SQL](schema-ai-drafts.sql) 每次实际调用前预留一次额度，包括重试；连接超时可能发生在网关已开始生成之后，重试可能再次消耗 token。配置示例使用 90 秒云函数执行时限。共享客户端每次 HTTP 尝试最多 30 秒，最多重试一次，退避 1.5 秒。两次请求与配额预留、退避共用 61.5 秒上限；其余时间留给鉴权、存储和返回。管理员需同时核对网关和 HTTP 入口的时限。
 
 ### 私有网关联调
 

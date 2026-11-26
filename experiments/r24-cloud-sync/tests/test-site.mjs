@@ -40,7 +40,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-export async function startTestSite({ draftGeneration } = {}) {
+export async function startTestSite({ draftGeneration, evaluationGeneration } = {}) {
   let origin;
   let api;
   const requests = [];
@@ -135,6 +135,8 @@ export async function startTestSite({ draftGeneration } = {}) {
         return res.end(Buffer.from(await result.arrayBuffer()));
       }
 
+      if (path === '/favicon.ico') { res.writeHead(204); return res.end(); }
+
       const match = /^\/(sync|local)\/(.*)$/.exec(path);
       if (!match) return sendJson(res, 404, { error: 'Unknown fixture route' });
       const [, mode, filename] = match;
@@ -171,7 +173,7 @@ export async function startTestSite({ draftGeneration } = {}) {
   origin = 'http://127.0.0.1:' + server.address().port;
   const clips = new Map();
   api = createApi({
-    draftGeneration,
+    draftGeneration, evaluationGeneration,
     media: {
       async put(path, _mimeType, bytes) {
         if (!clips.has(path)) clips.set(path, Buffer.from(bytes));

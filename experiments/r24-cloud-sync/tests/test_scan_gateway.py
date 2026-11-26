@@ -14,6 +14,28 @@ SCANNER = Path(__file__).with_name('scan-gateway.py')
 
 
 class ScanGatewayTest(unittest.TestCase):
+    def test_only_fixed_singapore_declarations_are_allowed(self):
+        import runpy
+        mod = runpy.run_path(str(SCANNER))
+        path = mod['SCF_RUNTIME']
+        declarations = list(mod['SCF_DECLARATIONS'].values())
+        good = b'\n'.join(declarations) + b'\n'
+        scan = mod['Scan']()
+        scan.marked(path, good)
+        self.assertFalse(scan.findings)
+        self.assertEqual(len(scan.public_declarations), 2)
+        for filename, data, kind in [
+            (path, good + declarations[0], 'public-api-key-variable'),
+            (path, declarations[1] + b' // altered', 'public-api-host'),
+            ('site.zip!' + path, good, 'public-api-host'),
+            (path, good + b'console.log(providerKey);\n', 'possible-sensitive-log-argument'),
+            (path, good + b'sk' + b'-ExampleNeverAUsableCredential', 'provider-key-like-literal'),
+        ]:
+            with self.subTest(kind=kind):
+                scan = mod['Scan']()
+                scan.marked(filename, data)
+                self.assertIn((kind, filename), scan.findings)
+
     def test_report_nested_fixtures_without_echoing_values(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

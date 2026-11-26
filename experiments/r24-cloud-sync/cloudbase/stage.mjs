@@ -16,6 +16,7 @@ const files = [
 files.push(
   [new URL('../backend/api.mjs', import.meta.url), 'portable/api.mjs'],
   [new URL('../backend/assignment-draft-service.mjs', import.meta.url), 'portable/assignment-draft-service.mjs'],
+  [new URL('../backend/evaluation-schema.mjs', import.meta.url), 'portable/evaluation-schema.mjs'],
   [new URL('../backend/ai-gateway-client.mjs', import.meta.url), 'portable/ai-gateway-client.mjs'],
   [new URL('../backend/vendor/assignment-excel.mjs', import.meta.url), 'portable/vendor/assignment-excel.mjs'],
   [new URL('../backend/vendor/qa3-boards.mjs', import.meta.url), 'portable/vendor/qa3-boards.mjs'],
