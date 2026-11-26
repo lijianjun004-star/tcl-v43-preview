@@ -1963,6 +1963,12 @@ def stage_r24_pf_excel(site_path, app_zip, model_archive):
     return stage_r24_pf(site_path, app_zip, model_archive, dest=R24_PF_EXCEL_DEST, frontend=r24_pf_excel_frontend)
 
 
+# Offline CI registration reviewed between 5c3de299 and b2db29a0.
+# Pin the entire transition, including old and new object IDs, paths and file modes.
+R24_BATCH_WORKFLOW = '.github/workflows/r24-batch-questions-export.yml'
+R24_BATCH_REGISTRATION_SHA256 = '439dd2ff73e25ce44ee8ee629bfe184802b9e941efacc77670a0d32d808dab8b'
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -1974,7 +1980,13 @@ def verify_pr(base, head):
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
+    if R24_BATCH_WORKFLOW in changed:
+        changes = subprocess.check_output(['git', 'diff', '--raw', '--no-abbrev', '--no-renames',
+                                           '--no-ext-diff', '-z', base, head, '--'])
+        if sha256(changes) != R24_BATCH_REGISTRATION_SHA256:
+            raise GateFailure('Offline batch CI registration requires the exact reviewed changes')
+        print('verify-pages-release PASS: pinned offline batch CI registration')
+    elif changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
         flags = [subprocess.check_output(
             ['git', 'ls-tree', '--name-only', ref, '--', R24_PF_EXCEL_ARCHIVE], text=True).strip()
             for ref in (base, head)]
