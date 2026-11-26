@@ -13,7 +13,9 @@ import zipfile
 
 SCANNER = Path(__file__).with_name('scan-gateway.py')
 WORKFLOW = '.github/workflows/r24-batch-questions-export.yml'
+INBOX_WORKFLOW = '.github/workflows/r24-materials-inbox.yml'
 EXPORTER = 'experiments/r24-cloud-sync/scripts/batch-questions-export.mjs'
+INBOX_EXPORTER = 'experiments/r24-cloud-sync/scripts/inbox-export.mjs'
 KEY_NAME = b'OPENAI' + b'_API_KEY'
 HOST = b'api' + b'.openai.com'
 BINDING = b'          BATCH_API_TOKEN: ${{ secrets.' + KEY_NAME + b' }}'
@@ -24,20 +26,20 @@ class ScanGatewayTest(unittest.TestCase):
     def test_editorial_identifiers_are_reported_and_strict_gateway_still_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name, contents in ((WORKFLOW, BINDING), (EXPORTER, ENDPOINT)):
+            for name, contents in ((WORKFLOW, BINDING), (INBOX_WORKFLOW, BINDING), (EXPORTER, ENDPOINT)):
                 file = root / name
-                file.parent.mkdir(parents=True)
+                file.parent.mkdir(parents=True, exist_ok=True)
                 file.write_bytes(contents + b'\n')
             subprocess.run(['git', 'init', '--quiet'], cwd=root, check=True)
             subprocess.run(['git', 'add', '.'], cwd=root, check=True)
             cmd = [sys.executable, str(SCANNER.resolve()), '--cached']
             allowed = subprocess.run(cmd, cwd=root, capture_output=True)
             self.assertEqual(allowed.returncode, 0)
-            self.assertEqual(allowed.stdout.count(b'PUBLIC-CI-IDENTIFIER '), 2)
+            self.assertEqual(allowed.stdout.count(b'PUBLIC-CI-IDENTIFIER '), 3)
             self.assertIn(b'findings=0 coverage-gaps=0', allowed.stdout)
             strict = subprocess.run([*cmd, '--strict-gateway'], cwd=root, capture_output=True)
             self.assertEqual(strict.returncode, 1)
-            self.assertIn(b'findings=2 coverage-gaps=0', strict.stdout)
+            self.assertIn(b'findings=3 coverage-gaps=0', strict.stdout)
             self.assertNotIn(HOST, strict.stdout)
             self.assertNotIn(KEY_NAME, strict.stdout)
 
@@ -57,6 +59,10 @@ class ScanGatewayTest(unittest.TestCase):
             (EXPORTER, ENDPOINT + b'\nconsole.error(headers);\n', 'possible-sensitive-log-argument'),
             (EXPORTER, ENDPOINT + b'\nconsole.log(apiKey);\n', 'possible-sensitive-log-argument'),
             (WORKFLOW, BINDING + b'\n    run: echo "$BATCH_API_TOKEN"', 'possible-sensitive-log-argument'),
+            (INBOX_WORKFLOW, BINDING + b'\n    run: echo "$BATCH_API_TOKEN"', 'possible-sensitive-log-argument'),
+            (INBOX_WORKFLOW, BINDING + b'\n' + BINDING, 'public-api-key-variable'),
+            ('bundle.zip!' + INBOX_WORKFLOW, BINDING, 'public-api-key-variable'),
+            (INBOX_EXPORTER, b'console.log(apiKey);\n', 'possible-sensitive-log-argument'),
         ]
         for index, (name, contents, finding) in enumerate(cases):
             with self.subTest(case=index):

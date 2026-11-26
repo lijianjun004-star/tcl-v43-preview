@@ -7,6 +7,8 @@
 ## R24 运营离线批量出题（2026-11-26）
 独立手动工作流生成 XLSX、TSV、JSON 与哈希用量清单；运营下载后在上海试点预览并审核。密钥只交给真实模型步骤。合成模式及模拟异常回归覆盖 50 题往返、重试、空答案与凭证保护。真实运行请以 Actions 记录为准。[使用说明](experiments/r24-cloud-sync/README.md)
 
+新增资料可通过 GitHub 网页上传到 `materials-inbox/`。合入 main 后按次生成审核用 Excel，周一刷新通过仓库变量指定固定资料。运营仍在上海试点预览并确认发布。运行记录可从[收件箱操作说明](materials-inbox/README.md)进入。
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
