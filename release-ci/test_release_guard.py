@@ -3326,7 +3326,7 @@ class MaterialInboxRegistrationTests(unittest.TestCase):
         path = self.inbox / 'sample.md'
         for name, value in [('sample.bin', b'a'), ('.hidden.md', b'a'),
                             ('bad\nname.txt', b'a'), ('bad.csv', b'\xff'),
-                            ('control.md', b'\x00'), ('oversized.txt', b'a' * 60004)]:
+                            ('control.md', b'\x00'), ('oversized.txt', b'a' * (100 * 1024 + 1))]:
             self.git('read-tree', self.empty)
             invalid = self.add(self.inbox / name, value)
             with self.subTest(name=name), self.assertRaises((gate.GateFailure, UnicodeDecodeError)):
@@ -3341,6 +3341,46 @@ class MaterialInboxRegistrationTests(unittest.TestCase):
         self.git('add', '--', str(path))
         with self.assertRaisesRegex(gate.GateFailure, 'regular'):
             gate.verify_pr(self.empty, self.tree())
+
+    def test_three_files_can_share_a_pr_with_documentation_and_gitkeep(self):
+        self.add(self.inbox / 'README.md', '上传指南'.encode())
+        self.add(self.inbox / '.gitkeep', b'')
+        self.add(self.inbox / 'take.tsv', b'header\tvalue\n')
+        self.add(self.inbox / 'limit.md', b'a' * (100 * 1024))
+        three = self.add(self.inbox / 'third.txt', b'third')
+        self.assertEqual(gate.verify_pr(self.empty, three), 0)
+        four = self.add(self.inbox / 'fourth.csv', b'fourth')
+        with self.assertRaisesRegex(gate.GateFailure, 'at most 3'):
+            gate.verify_pr(self.empty, four)
+        # A fourth changed data file also counts when modified in this batch.
+        self.git('read-tree', self.empty)
+        original = self.add(self.inbox / 'fourth.csv', b'earlier content')
+        with self.assertRaisesRegex(gate.GateFailure, 'at most 3'):
+            gate.verify_pr(original, four)
+
+    def test_exact_renames_and_removals_do_not_consume_quota(self):
+        for i in range(4):
+            base = self.add(self.inbox / f'old-{i}.txt', f'previous material {i}'.encode())
+        for i in range(3):
+            self.git('mv', str(self.inbox / f'old-{i}.txt'), str(self.inbox / f'moved-{i}.txt'))
+        self.git('rm', '--cached', '-q', str(self.inbox / 'old-3.txt'))
+        for i in range(3):
+            head = self.add(self.inbox / f'fresh-{i}.txt', f'new material {i}'.encode())
+        self.assertEqual(gate.verify_pr(base, head), 0)
+
+    def test_xlsx_requires_recognizable_package_before_runtime_parsing(self):
+        book = self.inbox / '资料.xlsx'
+        def package(names):
+            data = io.BytesIO()
+            with zipfile.ZipFile(data, 'w') as archive:
+                for name in names:
+                    archive.writestr(name, '<xml/>')
+            return data.getvalue()
+        canonical = ['[Content_Types].xml', 'xl/workbook.xml']
+        self.assertEqual(gate.verify_pr(self.empty, self.add(book, package(canonical))), 0)
+        for data in (b'invalid', package(['misc.txt']), package(canonical + ['../outside.xml'])):
+            with self.assertRaisesRegex(gate.GateFailure, 'XLSX'):
+                gate.verify_pr(self.empty, self.add(book, data))
 
     def test_rejects_mixed_docs_code_and_cross_boundary_rename(self):
         first = self.add(self.inbox / 'sale.md', b'public')
@@ -3359,7 +3399,7 @@ class MaterialInboxRegistrationTests(unittest.TestCase):
         self.add('.github/workflows/pages.yml', b'pages')
         approved = self.add(self.inbox / 'README.md', b'guide')
         raw = self.git('diff', '--raw', '--no-renames', '--no-abbrev', '-z', self.empty, approved)
-        with mock.patch.object(gate, 'R24_INBOX_CHANGESET', gate.sha256(raw)):
+        with mock.patch.object(gate, 'R24_INBOX_CHANGESETS', {gate.sha256(raw)}):
             self.assertEqual(gate.verify_pr(self.empty, approved), 0)
             altered = self.add('unreviewed.md', b'x')
             with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed'):
