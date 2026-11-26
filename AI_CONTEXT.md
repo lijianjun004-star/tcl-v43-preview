@@ -9,6 +9,8 @@
 
 资料收件箱支持五种格式，新增或修改的每份资料生成独立四件套。自动生成需要仓库变量 `R24_INBOX_AUTO_ENABLED=true`。单文件手动入口可勾选零模型用量演练。周一刷新另需指定固定资料。运营在上海试点预览并确认发布。[收件箱操作说明](materials-inbox/README.md)
 
+2026-11-26 UTC 已验证开启开关后的真实推送。公开的「电视球赛观影」资料合入 main 后自动生成 3 题、3 段参考话术和 9 条评分要点。`gpt-4o-mini` 返回 HTTP 200，用量 653 tokens，重试 0 次。下载产物后用上海 .8 导入器逐题读回 XLSX 和 TSV，数据与哈希一致。[验收运行 45907368994](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45907368994)
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
