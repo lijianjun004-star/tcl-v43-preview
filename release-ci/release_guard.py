@@ -1974,7 +1974,12 @@ R24_BATCH_CHANGESETS = {
 
 
 R24_INBOX_WORKFLOW = '.github/workflows/r24-materials-inbox.yml'
-R24_INBOX_CHANGESET = 'b8f9e90c386bff165a7e326a085af665e765853f90b2da661eac92002911d42a'
+R24_INBOX_CHANGESETS = {
+    'b8f9e90c386bff165a7e326a085af665e765853f90b2da661eac92002911d42a',  # initial inbox workflow
+    '1cba8da7df8a4d85dfefc6061cdd9c00d06f1e5f03575acdfc08aa84025dd140',  # opt-in per-file workflow
+}
+INBOX_MAX_FILE_BYTES = 100 * 1024
+INBOX_SUFFIXES = {'.txt', '.md', '.csv', '.tsv', '.xlsx'}
 
 # Baseline Pages workflows with the single materials-inbox push exclusion.
 # Release checks still require the complete original or updated workflow bytes.
@@ -1990,31 +1995,60 @@ def pages_workflow_matches(workflow, pin):
     return sha256(workflow.encode()) in (pin, INBOX_PAGES_WORKFLOW_PINS.get(pin))
 
 
-def verify_inbox_documents(changes):
+def verify_inbox_workbook(content):
+    # Inspect ZIP metadata only. The isolated generation job validates the workbook contents.
+    try:
+        _preflight_container(content)
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            _preflight_entries(archive.infolist())
+            if {'[Content_Types].xml', 'xl/workbook.xml'} <= set(archive.namelist()):
+                return
+    except (GateFailure, ValueError, IndexError, OSError, zipfile.BadZipFile):
+        pass
+    raise GateFailure('Expected an XLSX workbook package')
+
+
+def verify_inbox_documents(changes, base, head):
     # --raw --no-renames -z lists each change as metadata NUL path NUL.
     fields = changes.split(b'\0')
     if fields[-1] or len(fields) % 2 != 1 or len(fields) > 2 * MAX_FILE_COUNT + 1:
         raise GateFailure('Invalid or excessive material document changes')
     allowed_modes = {b'A': (b':000000', b'100644'), b'M': (b':100644', b'100644'),
                      b'D': (b':100644', b'000000')}
+    materials = set()
     for header, name in zip(fields[0:-1:2], fields[1::2]):
         path = name.decode('utf-8')
         parts = path.split('/')
+        suffix = PurePosixPath(path).suffix.lower()
+        is_keep = path == 'materials-inbox/.gitkeep'
         if (parts[0] != 'materials-inbox' or len(parts) < 2 or len(name) > 4096 or
-                any(not part or part.startswith('.') or len(part.encode()) > 255 for part in parts) or
+                any(not part or len(part.encode()) > 255 for part in parts) or
+                (not is_keep and any(part.startswith('.') for part in parts)) or
                 any(unicodedata.category(c) in ('Cc', 'Cf') or c == '\\' for c in path) or
-                PurePosixPath(path).suffix.lower() not in {'.txt', '.md', '.csv'}):
-            raise GateFailure('Material uploads may only change text documents inside materials-inbox')
+                (not is_keep and suffix not in INBOX_SUFFIXES)):
+            raise GateFailure('Material uploads may only change supported documents inside materials-inbox')
+        if not is_keep and path.lower() != 'materials-inbox/readme.md':
+            materials.add(name)
         old_mode, new_mode, _, oid, status = header.split()
         if (old_mode, new_mode) != allowed_modes.get(status):
             raise GateFailure('Material uploads require regular, non-executable files')
         if status != b'D':
             size = int(subprocess.check_output(['git', 'cat-file', '-s', oid]))
-            if size > 3 * 20_000 + 3:  # UTF-8 byte ceiling for the generator, including a possible BOM.
-                raise GateFailure('Material document exceeds the UTF-8 size limit')
-            content = subprocess.check_output(['git', 'cat-file', 'blob', oid]).decode('utf-8-sig')
-            if any(unicodedata.category(c) == 'Cc' and c not in '\t\n\r' for c in content):
+            if size > INBOX_MAX_FILE_BYTES:
+                raise GateFailure('Material document exceeds 100 KiB')
+            content = subprocess.check_output(['git', 'cat-file', 'blob', oid])
+            if suffix == '.xlsx':
+                verify_inbox_workbook(content)
+            elif any(unicodedata.category(c) == 'Cc' and c not in '\t\n\r' for c in content.decode('utf-8-sig')):
                 raise GateFailure('Material uploads must contain UTF-8 text')
+
+    # The raw diff covers both sides of all moves for path isolation. Apply the
+    # generation quota to the same added/modified files as the workflow.
+    if len(materials) > 3:
+        paths = subprocess.check_output(['git', 'diff', '--name-only', '--diff-filter=AM', '--find-renames=100%',
+                                         '-z', '--no-ext-diff', '--no-textconv', base, head, '--', 'materials-inbox'])
+        if len(materials.intersection(paths.split(b'\0'))) > 3:
+            raise GateFailure('A material batch accepts at most 3 added or modified files')
 
 
 def verify_pr(base, head):
@@ -2035,11 +2069,11 @@ def verify_pr(base, head):
         changes = subprocess.check_output(['git', 'diff', '--raw', '--no-abbrev', '--no-renames',
                                            '--no-ext-diff', '-z', base, head, '--'])
         if changes_offline_workflow:
-            if sha256(changes) not in R24_BATCH_CHANGESETS | {R24_INBOX_CHANGESET}:
+            if sha256(changes) not in R24_BATCH_CHANGESETS | R24_INBOX_CHANGESETS:
                 raise GateFailure('Offline batch CI registration requires the exact reviewed changes')
             print('verify-pages-release PASS: pinned offline batch CI registration')
         else:
-            verify_inbox_documents(changes)
+            verify_inbox_documents(changes, base, head)
             print('verify-pages-release PASS: isolated material documents')
     elif changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
         flags = [subprocess.check_output(
