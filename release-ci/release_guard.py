@@ -15,6 +15,7 @@ import struct
 import zlib
 import subprocess
 import tempfile
+import unicodedata
 import tarfile
 from datetime import datetime, timezone
 from pathlib import PurePosixPath
@@ -1557,7 +1558,7 @@ def r25_rebuild_previous_stages(root, zipbytes, trusted_inputs):
 
 
 def verify_r25_additive_release(before, after, encoded, zipbytes, trusted_inputs):
-    if sha256(before.encode()) != R25_BASELINE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+    if not pages_workflow_matches(before, R25_BASELINE_WORKFLOW_SHA) or before.count(LAB_ANCHOR) != 1:
         raise GateFailure('R2.5 requires exact protected Pages workflow')
     if after != before.replace(LAB_ANCHOR, r25_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('R2.5 changed unrelated Pages workflow content')
@@ -1573,7 +1574,7 @@ def verify_r25_additive_release(before, after, encoded, zipbytes, trusted_inputs
 
 
 def verify_r25_rollback(before, after, removed_archive, zipbytes, trusted_inputs):
-    if sha256(after.encode()) != R25_BASELINE_WORKFLOW_SHA:
+    if not pages_workflow_matches(after, R25_BASELINE_WORKFLOW_SHA):
         raise GateFailure('R2.5 rollback must restore exact protected workflow')
     if before != after.replace(LAB_ANCHOR, r25_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('R2.5 rollback must remove only exact R2.5 stage')
@@ -1621,7 +1622,7 @@ def verify_r25_archive_update(workflow, old_encoded, new_encoded, zipbytes, trus
         raise GateFailure('R2.5 update cannot change protected site.zip')
     step = r25_stage_step()
     if (workflow.count(step) != 1 or
-            sha256(workflow.replace(step, '', 1).encode()) != R25_BASELINE_WORKFLOW_SHA):
+            not pages_workflow_matches(workflow.replace(step, '', 1), R25_BASELINE_WORKFLOW_SHA)):
         raise GateFailure('R2.5 update must retain the exact existing Pages workflow')
     old_data, new_data = r25_resource_bytes(old_encoded), r25_resource_bytes(new_encoded)
     added, removed = ((added_forward, frozenset()) if pair == forward
@@ -1744,7 +1745,7 @@ def r24_pf_excel_stage_step():
 
 
 def verify_r24_pf_excel_release_workflow(before, after):
-    if sha256(before.encode()) != R24_PF_EXCEL_BASE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+    if not pages_workflow_matches(before, R24_PF_EXCEL_BASE_WORKFLOW_SHA) or before.count(LAB_ANCHOR) != 1:
         raise GateFailure('Excel preview requires the exact protected Pages workflow')
     if after != before.replace(LAB_ANCHOR, r24_pf_excel_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('Excel preview must add only its isolated stage before Pages configuration')
@@ -1829,7 +1830,7 @@ def r24_pf_rc_stage_step():
 
 
 def verify_r24_pf_rc_release_workflow(before, after):
-    if sha256(before.encode()) != R24_PF_RC_BASE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+    if not pages_workflow_matches(before, R24_PF_RC_BASE_WORKFLOW_SHA) or before.count(LAB_ANCHOR) != 1:
         raise GateFailure('Paraformer RC requires the exact protected Pages workflow')
     if after != before.replace(LAB_ANCHOR, r24_pf_rc_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('Paraformer RC release must add only its stage before Pages configuration')
@@ -1840,7 +1841,7 @@ def verify_r24_pf_rc_rollback_workflow(before, after):
 
 
 def verify_r24_pf_release_workflow(before, after):
-    if sha256(before.encode()) != R24_PF_BASE_WORKFLOW_SHA or before.count(LAB_ANCHOR) != 1:
+    if not pages_workflow_matches(before, R24_PF_BASE_WORKFLOW_SHA) or before.count(LAB_ANCHOR) != 1:
         raise GateFailure('Paraformer requires the exact protected Pages workflow')
     if after != before.replace(LAB_ANCHOR, r24_pf_stage_step() + LAB_ANCHOR, 1):
         raise GateFailure('Paraformer release must add only its stage before Pages configuration')
@@ -1972,6 +1973,50 @@ R24_BATCH_CHANGESETS = {
 }
 
 
+R24_INBOX_WORKFLOW = '.github/workflows/r24-materials-inbox.yml'
+R24_INBOX_CHANGESET = 'b8f9e90c386bff165a7e326a085af665e765853f90b2da661eac92002911d42a'
+
+# Baseline Pages workflows with the single materials-inbox push exclusion.
+# Release checks still require the complete original or updated workflow bytes.
+INBOX_PAGES_WORKFLOW_PINS = {
+    R25_BASELINE_WORKFLOW_SHA: '9d95761e1a1e38007755d05679a49abac4825f4528f1e657e542ece17dca58a4',
+    R24_PF_BASE_WORKFLOW_SHA: '89f0518155f07f7f9e3a250e9ea1925eff9b04b7fd0b34ee7b42a5b537e22adb',
+    R24_PF_RC_BASE_WORKFLOW_SHA: 'ef8201495bfb42b04a5184389499e9c894f4edd0bed7ee51d4a6ea6c094a266b',
+    R24_PF_EXCEL_BASE_WORKFLOW_SHA: '32d4e8bafd0cb988e7ff46750143ae63c1fe09c5207165f52fd07c23733f617b',
+}
+
+
+def pages_workflow_matches(workflow, pin):
+    return sha256(workflow.encode()) in (pin, INBOX_PAGES_WORKFLOW_PINS.get(pin))
+
+
+def verify_inbox_documents(changes):
+    # --raw --no-renames -z lists each change as metadata NUL path NUL.
+    fields = changes.split(b'\0')
+    if fields[-1] or len(fields) % 2 != 1 or len(fields) > 2 * MAX_FILE_COUNT + 1:
+        raise GateFailure('Invalid or excessive material document changes')
+    allowed_modes = {b'A': (b':000000', b'100644'), b'M': (b':100644', b'100644'),
+                     b'D': (b':100644', b'000000')}
+    for header, name in zip(fields[0:-1:2], fields[1::2]):
+        path = name.decode('utf-8')
+        parts = path.split('/')
+        if (parts[0] != 'materials-inbox' or len(parts) < 2 or len(name) > 4096 or
+                any(not part or part.startswith('.') or len(part.encode()) > 255 for part in parts) or
+                any(unicodedata.category(c) in ('Cc', 'Cf') or c == '\\' for c in path) or
+                PurePosixPath(path).suffix.lower() not in {'.txt', '.md', '.csv'}):
+            raise GateFailure('Material uploads may only change text documents inside materials-inbox')
+        old_mode, new_mode, _, oid, status = header.split()
+        if (old_mode, new_mode) != allowed_modes.get(status):
+            raise GateFailure('Material uploads require regular, non-executable files')
+        if status != b'D':
+            size = int(subprocess.check_output(['git', 'cat-file', '-s', oid]))
+            if size > 3 * 20_000 + 3:  # UTF-8 byte ceiling for the generator, including a possible BOM.
+                raise GateFailure('Material document exceeds the UTF-8 size limit')
+            content = subprocess.check_output(['git', 'cat-file', 'blob', oid]).decode('utf-8-sig')
+            if any(unicodedata.category(c) == 'Cc' and c not in '\t\n\r' for c in content):
+                raise GateFailure('Material uploads must contain UTF-8 text')
+
+
 def verify_pr(base, head):
     """Classify every PR; release PRs execute only this baseline verifier."""
     for ref in (base, head):
@@ -1979,16 +2024,23 @@ def verify_pr(base, head):
             raise GateFailure('Expected pinned Git commit SHA')
     def show(ref, path):
         return subprocess.check_output(['git', 'show', f'{ref}:{path}'])
-    changed = set(subprocess.check_output(['git', 'diff', '--name-only', base, head], text=True).splitlines())
+    changed = set(subprocess.check_output(['git', 'diff', '--name-only', '--no-renames', base, head], text=True).splitlines())
     release = {'site.zip', '.github/workflows/pages.yml'}
     ci = {'.github/workflows/verify-pages-pr.yml', '.github/workflows/r21-real-model-smoke.yml', 'release-ci/release_guard.py', 'release-ci/test_release_guard.py', 'release-ci/stage_r21.py', 'release-ci/stage_r23.py', 'release-ci/r23_browser_e2e.py', 'release-ci/r21_real_model_probe.py'}
     docs = {name for name in changed if name.endswith('.md') and not name.startswith(('.github/', 'release-ci/'))}
-    if R24_BATCH_WORKFLOW in changed:
+    # git quotes non-ASCII names by default. Verify the raw NUL-delimited paths below.
+    touches_inbox = any(p.startswith(('materials-inbox/', '"materials-inbox/')) for p in changed)
+    changes_offline_workflow = bool(changed & {R24_BATCH_WORKFLOW, R24_INBOX_WORKFLOW})
+    if changes_offline_workflow or touches_inbox:
         changes = subprocess.check_output(['git', 'diff', '--raw', '--no-abbrev', '--no-renames',
                                            '--no-ext-diff', '-z', base, head, '--'])
-        if sha256(changes) not in R24_BATCH_CHANGESETS:
-            raise GateFailure('Offline batch CI registration requires the exact reviewed changes')
-        print('verify-pages-release PASS: pinned offline batch CI registration')
+        if changes_offline_workflow:
+            if sha256(changes) not in R24_BATCH_CHANGESETS | {R24_INBOX_CHANGESET}:
+                raise GateFailure('Offline batch CI registration requires the exact reviewed changes')
+            print('verify-pages-release PASS: pinned offline batch CI registration')
+        else:
+            verify_inbox_documents(changes)
+            print('verify-pages-release PASS: isolated material documents')
     elif changed == {R24_PF_EXCEL_ARCHIVE, '.github/workflows/pages.yml'}:
         flags = [subprocess.check_output(
             ['git', 'ls-tree', '--name-only', ref, '--', R24_PF_EXCEL_ARCHIVE], text=True).strip()
