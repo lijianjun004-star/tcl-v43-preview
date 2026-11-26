@@ -25,9 +25,10 @@ function sensitive(text, apiKey) {
   return credentialText.test(text) || Boolean(apiKey && text.includes(apiKey));
 }
 
-function readOptions(input, apiKey) {
+function readOptions(input, apiKey, materialLimit = 20_000) {
+  if (![20_000, 102_400].includes(materialLimit)) fail('INVALID_MATERIAL');
   const {material, category = '电视', platform = '京东', model = 'gpt-4o-mini', count = 10, dryRun = false} = input;
-  if (typeof material !== 'string' || !material.trim() || material.length > 20_000 ||
+  if (typeof material !== 'string' || !material.trim() || material.length > materialLimit ||
       unsafeText.test(material) || sensitive(material, apiKey)) fail('INVALID_MATERIAL');
   if (typeof category !== 'string' || !category.trim() || category.length > 100 ||
       /[\t\r\n]/u.test(category) || unsafeText.test(category) || sensitive(category, apiKey) ||
@@ -164,7 +165,7 @@ async function generatedBatch(options, {apiKey, fetchImpl = fetch, sleep = delay
 }
 
 export async function runBatch(input, dependencies = {}) {
-  const options = readOptions(input, dependencies.apiKey);
+  const options = readOptions(input, dependencies.apiKey, dependencies.materialLimit);
   const result = options.dryRun
     ? {questions: fixtureQuestions(options), httpStatus: null, retryCount: 0, usage: null}
     : await generatedBatch(options, dependencies);
