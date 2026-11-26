@@ -1,0 +1,65 @@
+name: R24 batch questions export
+
+on:
+  workflow_dispatch:
+    inputs:
+      material:
+        description: '可用于此公开仓库的练播资料，1–20000 字符'
+        type: string
+        required: true
+      category:
+        description: 品类
+        type: string
+        required: true
+        default: 电视
+      platform:
+        description: 平台
+        type: choice
+        required: true
+        default: 京东
+        options: [京东, 天猫, 抖音]
+      count:
+        description: 出题数量（1–50）
+        type: number
+        required: true
+        default: 10
+      model:
+        description: 模型
+        type: choice
+        required: true
+        default: gpt-4o-mini
+        options: [gpt-4o-mini, gpt-4o]
+      dry_run:
+        description: 使用合成样例验证文件格式（零模型请求）
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    env:
+      BATCH_INPUT_FILE: ${{ github.event_path }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Run synthetic export
+        if: inputs.dry_run
+        run: node experiments/r24-cloud-sync/scripts/batch-questions-export.mjs "$RUNNER_TEMP/review"
+      - name: Generate offline questions
+        if: ${{ !inputs.dry_run }}
+        env:
+          BATCH_API_TOKEN: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-cloud-sync/scripts/batch-questions-export.mjs "$RUNNER_TEMP/review"
+      - name: Upload reviewed-format files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: r24-batch-questions
+          path: ${{ runner.temp }}/review/
+          retention-days: 14
+          if-no-files-found: error
