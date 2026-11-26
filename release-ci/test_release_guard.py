@@ -3260,6 +3260,38 @@ class R24ExcelPreviewRepositoryTests(unittest.TestCase):
             self.assertNotIn(step, workflow)
 
 
+class OfflineBatchRegistrationTests(unittest.TestCase):
+    def test_only_the_reviewed_git_transition_is_accepted(self):
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            def git(*args):
+                return subprocess.check_output(['git', *args])
+
+            git('init', '--quiet')
+            base = git('write-tree').decode().strip()
+            workflow = Path(gate.R24_BATCH_WORKFLOW)
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text('name: sample\n')
+            git('add', '--', str(workflow))
+            approved = git('write-tree').decode().strip()
+            record = git('diff', '--raw', '--no-abbrev', '--no-renames', '-z', base, approved)
+            with mock.patch.object(gate, 'R24_BATCH_REGISTRATION_SHA256', hashlib.sha256(record).hexdigest()):
+                self.assertEqual(gate.verify_pr(base, approved), 0)
+                for variant in ('additional document', 'changed content', 'executable mode'):
+                    with self.subTest(variant=variant):
+                        git('read-tree', approved)
+                        if variant == 'additional document':
+                            Path('extra.md').write_text('extra')
+                            git('add', '--', 'extra.md')
+                        elif variant == 'changed content':
+                            workflow.write_text('name: changed\n')
+                            git('add', '--', str(workflow))
+                        else:
+                            git('update-index', '--chmod=+x', str(workflow))
+                        altered = git('write-tree').decode().strip()
+                        with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed changes'):
+                            gate.verify_pr(base, altered)
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
