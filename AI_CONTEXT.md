@@ -4,6 +4,18 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## R24 仓库 OpenAI API 接入验证（2026-11-26 UTC）
+
+17:29 UTC 用户允许消耗 token 后，仓库使用 `gpt-4.1-mini` 实测「基础安装是否包含挂架和挂装」合成案例。一次调用生成一条弹幕、参考话术和 5 项评分要点。OpenAI 返回输入 353、输出 183，共 536 tokens。执行地点为 GitHub Actions。[完整生成结果与 token 记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45868098866)
+
+用户将现有项目密钥保存为仓库 Actions secret `OPENAI_API_KEY`。独立验证分支通过 `/v1/models` 鉴权（HTTP 200），再通过 R24 的 `POST /assignments/draft` 处理器向官方 Responses API 发起一次合成出题。模型 `gpt-4.1-mini` 生成一条关于电视入户转角的顾客弹幕、参考话术和 4 条评分要点，通过既有作业校验。测试仅运行在 GitHub Actions，未发布作业。该次调用最多输出 512 tokens，实际账单金额未核对。本机接口与草稿回归 25/25 通过。[鉴权记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864371985) · [真实出题记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864860826)
+
+上海公网仍是 `R24-20261124.8`。OpenAI 调用代码仅用于受支持的服务端环境，上海试点未新增模型调用路径。OpenAI 的地区说明涵盖访问和提供访问。[官方支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
+
+2026-11-26 17:10 UTC 手动重跑仓库出题任务，第 2 次执行成功，生成 1 条关于电梯转角的顾客弹幕、参考话术和 5 条评分要点。同期在上海 `.8` 新建 1 个合成运营账号，`/me` 返回 200，登录后的 `GET /assignments/draft` 和 `POST /assignments/draft` 均返回 404 `ROUTE_NOT_FOUND`。上海端未调用模型，未发布作业。CloudBase 管理端的环境和用量查询当时返回 `AUTH_FAILED`。[手动重跑证据](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864860826/attempts/2)
+
+同日用户完成腾讯云设备授权后，已从管理端读到上海环境及当前账期资源点。`DescribeAIModels` 显示 `cloudbase` 内置分组已开启，`Models` 为空。`DescribeManagedAIModelList` 在平台目录列出 `hy4-flash`。使用官方 Node SDK 和临时登录凭证，以一份合成电视入户材料向上海环境网关测试。首次连接超时，按工作区现有网络代理重测后，网关返回 HTTP 403 `Unsupported model in group cloudbase`，未生成草稿。未更改环境级模型开关或部署网站。下一步需确定能否在共享环境为该分组启用单个模型，再复测。[模型管理接口说明](https://cloud.tencent.com/document/api/876/139677)
+
 ## 上海 R24 `.9` 一键出题候选（2026-11-26 UTC）
 
 任务 `R24-AI-20261126` 选择上海 CloudBase 内置文本模型。`.9` 已在独立分支接通运营端文字和表格生成、编辑草稿、确认发布与主播领取。模型入口默认关闭，启用后要求已审核的运营账号 ID，并由试点数据库在调用前预留每日额度。上线前须核实上海环境可供网页触发云函数使用的套餐额度和模型 ID。目前腾讯云 CLI 授权未恢复，真实额度未核验，数据库迁移、模型调用、部署和 Gemini 公网复验均未执行。公网仍为 `.8`。[本机验收及复验单](experiments/r24-cloud-sync/evidence/shanghai/v2-9-ai-model/README.md) · [启用配置](experiments/r24-cloud-sync/cloudbase/README-CloudBase.md#一键出题的启用配置)

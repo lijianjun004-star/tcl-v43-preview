@@ -1,0 +1,19 @@
+name: R24 OpenAI synthetic assignment draft
+on:
+  push:
+    branches: [verify/r24-openai-key]
+    paths: [.github/workflows/r24-openai-draft.yml]
+permissions:
+  contents: read
+jobs:
+  draft:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Generate one synthetic draft and report the measured token usage
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-cloud-sync/tests/openai-draft-smoke.mjs
