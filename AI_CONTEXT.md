@@ -4,6 +4,10 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## 上海 R24 `.9` 一键出题候选（2026-11-26 UTC）
+
+任务 `R24-AI-20261126` 选择上海 CloudBase 内置文本模型。`.9` 已在独立分支接通运营端文字和表格生成、编辑草稿、确认发布与主播领取。模型入口默认关闭，启用后要求已审核的运营账号 ID，并由试点数据库在调用前预留每日额度。上线前须核实上海环境可供网页触发云函数使用的套餐额度和模型 ID。目前腾讯云 CLI 授权未恢复，真实额度未核验，数据库迁移、模型调用、部署和 Gemini 公网复验均未执行。公网仍为 `.8`。[本机验收及复验单](experiments/r24-cloud-sync/evidence/shanghai/v2-9-ai-model/README.md) · [启用配置](experiments/r24-cloud-sync/cloudbase/README-CloudBase.md#一键出题的启用配置)
+
 ## 上海 R24 `.8` AI 出题草稿（2026-11-26 UTC）
 
 用户要求把表格和场景文字变成练播题与顾客弹幕。`.8` 在「发布作业」增加「AI 出题草稿」。能在浏览器读取文字或 `.xlsx/.xls/.csv/.tsv`，整理指令并复制到现有 ChatGPT 或 Gemini，回填 JSON 后编辑顾客弹幕、参考话术和评分要点，经运营确认再发布。主播读取最终题面，现有 CloudBase 发布与题目冻结规则沿用。源资料和未发布草稿在浏览器中处理，当前工作台内一键推理需要单独授权的模型服务。[试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](experiments/r24-cloud-sync/README.md#从资料生成口播练习)

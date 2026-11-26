@@ -22,6 +22,8 @@
 | GET | `/recipients` | 运营读取本团队启用的主播。公开发布可以省略此请求。 |
 | POST | `/assignments` | 运营传 `{assignment,recipientIds}`。公开发布时 `recipientIds` 和 `assignment.assignedTo` 均为空数组。服务端复算冻结快照哈希并校验品类、平台和原题，返回 `{assignment,publishedAt,replayed}`。 |
 | GET | `/assignments` | 运营读取自己发布的作业，主播读取团队中可领取的作业。主播行含本人 `claimedAt`、`submitted` 和 `lastSubmittedAt`。 |
+| GET | `/assignments/draft` | 已登录运营读取 `{available}`，表示当前账号是否已开放一键出题。 |
+| POST | `/assignments/draft` | 已开放的运营传 `{material,boardId,platform,count}`，返回 `{questions:[{question,answer,keyPoints}]}`。 |
 | POST | `/assignments/:id/claim` | 主播传 `{}`，返回 `{claimedAt,replayed}`。同一主播重复领取返回同一时间，新领取超过截止时间将被拒绝。 |
 | GET | `/assignments/:id/progress` | 发布运营读取 `{claims,nextCursor}`，每项包括 `anchorId,anchorName,claimedAt,submittedAt`。 |
 | POST | `/assignments/:id/submissions` | 主播传 `{snapshot}`，返回 `{submission,replayed}`。先保存文字和转写。 |
@@ -39,6 +41,8 @@
 ```
 
 `turns` 必须覆盖每道冻结原题并按原顺序提交。服务端记录提交人账号、时间和逾期情况。发布、领取和提交首次写入为 201，同内容安全重试为 200。沿用作业 ID 或同场次键但内容不同会返回 409。列表最多每页 20 条且受响应大小限制，传 `?cursor=<nextCursor>` 继续。
+
+一键出题的资料最多 20,000 字，目标题数为 1–15。返回值是待复核草稿，运营确认后另行调用常规发布接口。未开放返回 403 `AI_DRAFT_UNAVAILABLE`，每日限额返回 429 `AI_DRAFT_LIMIT`，模型暂时不可用返回 503 `AI_DRAFT_FAILED`，不合规结果返回 502 `AI_DRAFT_RESPONSE_INVALID`。
 
 ## 逐题录音
 

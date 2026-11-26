@@ -16,13 +16,13 @@ const assignmentTitle = '合成跨设备三题作业';
 const questions = [1, 2, 3].map(index => `请介绍 TEST-A${index} 的合成测试功能？`);
 const answers = [1, 2, 3].map(index => `人工回答第${index}题：TEST-A${index} 为合成型号，信息仅用于流程测试。`);
 
-async function browserFixture(t) {
+async function browserFixture(t, options) {
   const work = await mkdtemp(join(tmpdir(), 'tcl-sync-browser-'));
   t.after(() => rm(work, { recursive: true, force: true }));
   const excel = join(work, 'three-questions.xlsx');
   await promisify(execFile)('python3', [fixtureScript.pathname, excel]);
 
-  const server = await startTestSite();
+  const server = await startTestSite(options);
   t.after(() => server.close());
   const browser = await chromium.launch({
     executablePath,
@@ -54,6 +54,9 @@ async function browserFixture(t) {
 }
 
 const activationPath = '/api/tcl-r24-sync/device/activate';
+const draftPath = '/api/tcl-r24-sync/assignments/draft';
+const draftResponse = (method, response) => response.request().method() === method &&
+  new URL(response.url()).pathname === draftPath;
 const activationPosts = server => server.requests.filter(req =>
   req.path === activationPath && req.method === 'POST').length;
 const identityBar = page => page.locator('.identity-bar');
@@ -141,13 +144,17 @@ make_xlsx(argv[4], [12 * mib + 1])
   return { largest, beyond, entryBeyond };
 }
 
-async function textPractice(page, enter) {
+async function startTextPractice(page, enter) {
   await enter();
   const start = page.locator('#startScene');
   await start.waitFor();
   const textMode = page.locator('#prepQuickText');
   if (await textMode.isVisible()) await textMode.click();
   await start.click();
+}
+
+async function textPractice(page, enter) {
+  await startTextPractice(page, enter);
   for (const [index, question] of questions.entries()) {
     await page.locator('#liveQText').filter({ hasText: question }).waitFor();
     await page.locator('#focusMic').click();
@@ -306,7 +313,12 @@ test('assignment XLSX accepts 50 MiB unpacked and keeps both the default and sin
 });
 
 test('operator reviews an AI draft made from text or Excel before sharing its barrage with an anchor', { timeout: 60_000 }, async t => {
-  const { server, excel, newPage } = await browserFixture(t);
+  const { server, excel, newPage } = await browserFixture(t, {
+    draftGeneration: {
+      canGenerate: () => false,
+      async generate() { assert.fail('an operator outside the model allowlist must stay on the manual flow'); },
+    },
+  });
   const { page, context, errors } = await newPage();
   const title = '合成安装场景：AI 草稿转作业';
   const sourceText = '合成资料：电视到货前需要确认包装尺寸和安装位置。';
@@ -327,7 +339,12 @@ test('operator reviews an AI draft made from text or Excel before sharing its ba
   await page.locator('#assignmentBoard').selectOption('01');
   await page.locator('#assignmentPlatform').selectOption('京东');
   const panel = page.locator('#assignmentDraftPanel');
-  await panel.locator('summary').click();
+  const [availability] = await Promise.all([
+    page.waitForResponse(response => draftResponse('GET', response)),
+    panel.locator('summary').click(),
+  ]);
+  assert.deepEqual(await availability.json(), { available: false });
+  assert.equal(await panel.locator('#assignmentDraftGenerate').isVisible(), false);
   await checkNoOverflow(page);
 
   await panel.locator('#assignmentDraftSourceMode').selectOption('text');
@@ -405,14 +422,135 @@ test('operator reviews an AI draft made from text or Excel before sharing its ba
   await trainee.page.locator('#assignmentFold summary').click();
   await trainee.page.locator('#assignmentSearch').fill(operator.displayName);
   await trainee.page.locator('#syncRefresh').click();
-  await trainee.page.locator(`#assignmentSearchResults [data-join-assignment="${assignment.id}"]`).click();
-  const start = trainee.page.locator('#startScene');
-  await start.waitFor();
-  const textMode = trainee.page.locator('#prepQuickText');
-  if (await textMode.isVisible()) await textMode.click();
-  await start.click();
+  await startTextPractice(trainee.page,
+    () => trainee.page.locator(`#assignmentSearchResults [data-join-assignment="${assignment.id}"]`).click());
   await trainee.page.locator('#liveQText').filter({ hasText: finalQuestion }).waitFor();
   assert.deepEqual([...errors, ...trainee.errors], []);
+});
+
+test('one-click cloud drafts use text and Excel, discard stale results, and publish only after review', { timeout: 60_000 }, async t => {
+  const firstStarted = Promise.withResolvers();
+  const releaseFirst = Promise.withResolvers();
+  const calls = [];
+  const staleQuestion = '这道已换资料的题目不应出现在编辑器中。';
+  const textQuestion = '电视配送前应该量哪些位置？';
+  const tableQuestion = '送装前应提前核对哪些合成型号资料？';
+  const finalQuestion = '安装前我应该核对哪些资料和型号？';
+  const exampleAnswer = '请对照商品页核对产品型号、包装尺寸和安装环境。';
+  const examplePoints = ['产品型号', '包装尺寸', '安装环境'];
+  const { server, excel, newPage } = await browserFixture(t, {
+    draftGeneration: {
+      canGenerate: principal => principal.id === operator.id,
+      async generate(principal, prompt) {
+        calls.push({ principal: principal.id, prompt });
+        const number = calls.length;
+        if (number === 1) {
+          firstStarted.resolve();
+          await releaseFirst.promise;
+        }
+        const question = [staleQuestion, textQuestion, tableQuestion][number - 1];
+        return JSON.stringify({ questions: [{ question, answer: exampleAnswer, keyPoints: examplePoints }] });
+      },
+    },
+  });
+  const { page, errors } = await newPage();
+  const title = '合成一键出题作业';
+  const sourceText = '合成电视送装资料：先核对入户门和电梯空间。';
+  const newerSource = '合成电视配送资料：核对包装尺寸、入户门及楼道宽度。';
+  const assignmentPosts = () => server.requests.filter(req =>
+    req.method === 'POST' && req.path.endsWith('/assignments')).length;
+
+  try {
+    await signIn(page, operator);
+    await page.locator('[data-ops-tab="publish"]').click();
+    await page.locator('#assignmentTitle').fill(title);
+    await page.locator('#assignmentBoard').selectOption('01');
+    await page.locator('#assignmentPlatform').selectOption('京东');
+    const panel = page.locator('#assignmentDraftPanel');
+    const [capability] = await Promise.all([
+      page.waitForResponse(response => draftResponse('GET', response)),
+      panel.locator('summary').click(),
+    ]);
+    assert.deepEqual(await capability.json(), { available: true });
+    const generate = panel.locator('#assignmentDraftGenerate');
+    await generate.waitFor();
+    await panel.locator('#assignmentDraftCount').selectOption('3');
+    const source = panel.locator('#assignmentDraftSourceText');
+    await source.fill(sourceText);
+    await generate.click();
+    await firstStarted.promise;
+    assert.equal(await generate.isDisabled(), true);
+    await generate.dispatchEvent('click');
+    await source.fill(newerSource);
+    releaseFirst.resolve();
+    await panel.locator('#assignmentDraftGenerate:not([disabled])').waitFor();
+    const rows = panel.locator('[data-assignment-draft-row]');
+    assert.equal(server.requests.filter(req => req.method === 'POST' && req.path === draftPath).length, 1);
+    assert.equal(await rows.count(), 0);
+    assert.equal(assignmentPosts(), 0);
+
+    const [fromText] = await Promise.all([
+      page.waitForResponse(response => draftResponse('POST', response)),
+      generate.click(),
+    ]);
+    assert.equal(fromText.status(), 200);
+    assert.deepEqual(fromText.request().postDataJSON(), {
+      material: newerSource, boardId: '01', platform: '京东', count: 3,
+    });
+    const question = rows.first().locator('[data-draft-field="question"]');
+    await page.waitForFunction(expected =>
+      document.querySelector('[data-draft-field="question"]')?.value === expected, textQuestion);
+
+    await panel.locator('#assignmentDraftSourceMode').selectOption('table');
+    await panel.locator('#assignmentDraftSourceFile').setInputFiles(excel);
+    const [fromTable] = await Promise.all([
+      page.waitForResponse(response => draftResponse('POST', response)),
+      generate.click(),
+    ]);
+    assert.equal(fromTable.status(), 200);
+    const { material, ...settings } = fromTable.request().postDataJSON();
+    assert.deepEqual(settings, { boardId: '01', platform: '京东', count: 3 });
+    assert.ok(material.includes(questions[0]) && material.includes(questions[2]));
+    assert.equal(material.includes(newerSource), false);
+    assert.deepEqual(calls.map(call => call.principal), [operator.id, operator.id, operator.id]);
+    assert.ok(calls[0].prompt.includes(sourceText));
+    assert.ok(calls[1].prompt.includes(newerSource));
+    assert.ok(calls[2].prompt.includes(questions[2]));
+    await page.waitForFunction(expected =>
+      document.querySelector('[data-draft-field="question"]')?.value === expected, tableQuestion);
+
+    await question.fill(finalQuestion);
+    await page.locator('#publishAssignment').click();
+    await page.locator('#toast').filter({ hasText: /确认\s*AI\s*草稿/ }).waitFor();
+    assert.equal(assignmentPosts(), 0);
+    await panel.locator('#assignmentDraftConfirm').click();
+    await page.locator('#assignmentExcelPreview').filter({ hasText: finalQuestion }).waitFor();
+    const [published] = await Promise.all([
+      page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/assignments')),
+      page.locator('#publishAssignment').click(),
+    ]);
+    assert.equal(published.status(), 201);
+    assert.equal(assignmentPosts(), 1);
+    const { assignment } = await published.json();
+    assert.equal(assignment.title, title);
+    assert.equal(assignment.questions.length, 1);
+    assert.equal(assignment.questions[0].question, finalQuestion);
+    assert.equal(assignment.questions[0].answer, exampleAnswer);
+    assert.deepEqual(assignment.questions[0].keyPoints, examplePoints);
+    assert.equal(JSON.stringify(published.request().postDataJSON()).includes(material), false);
+
+    const trainee = await newPage();
+    await signIn(trainee.page, anchor);
+    await trainee.page.locator('#assignmentFold summary').click();
+    await trainee.page.locator('#assignmentSearch').fill(operator.displayName);
+    await trainee.page.locator('#syncRefresh').click();
+    await startTextPractice(trainee.page,
+      () => trainee.page.locator(`#assignmentSearchResults [data-join-assignment="${assignment.id}"]`).click());
+    await trainee.page.locator('#liveQText').filter({ hasText: finalQuestion }).waitFor();
+    assert.deepEqual([...errors, ...trainee.errors], []);
+  } finally {
+    releaseFirst.resolve();
+  }
 });
 
 test('a new browser requires a valid code and a different role on a bound browser requires explicit confirmation', { timeout: 45_000 }, async t => {
@@ -475,7 +613,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.8';
+  const shortVersion = 'R24-20261124.9';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
