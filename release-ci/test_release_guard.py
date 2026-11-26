@@ -3292,6 +3292,97 @@ class OfflineBatchRegistrationTests(unittest.TestCase):
                             gate.verify_pr(base, altered)
 
 
+class MaterialInboxRegistrationTests(unittest.TestCase):
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.enterContext(contextlib.chdir(folder.name))
+        self.git('init', '--quiet')
+        self.empty = self.tree()
+        self.inbox = Path('materials-inbox')
+        self.inbox.mkdir()
+
+    def git(self, *args):
+        return subprocess.check_output(['git', *args])
+
+    def tree(self):
+        return self.git('write-tree').decode().strip()
+
+    def add(self, filename, content):
+        path = Path(filename)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_bytes(content)
+        self.git('add', '--', str(path))
+        return self.tree()
+
+    def test_accepts_multilingual_material_and_regular_edits_or_removals(self):
+        first = self.add(self.inbox / '电视' / '屏幕介绍.TXT', '公开资料'.encode())
+        second = self.add(self.inbox / '电视' / '屏幕介绍.TXT', '已核实卖点'.encode())
+        third = self.add(self.inbox / '表格.csv', b'a,b\r\n1,2\r\n')
+        for left, right in [(self.empty, first), (first, second), (second, third), (third, self.empty)]:
+            self.assertEqual(gate.verify_pr(left, right), 0)
+
+    def test_rejects_symlinks_executables_hidden_paths_and_nontext(self):
+        path = self.inbox / 'sample.md'
+        for name, value in [('sample.bin', b'a'), ('.hidden.md', b'a'),
+                            ('bad\nname.txt', b'a'), ('bad.csv', b'\xff'),
+                            ('control.md', b'\x00'), ('oversized.txt', b'a' * 60004)]:
+            self.git('read-tree', self.empty)
+            invalid = self.add(self.inbox / name, value)
+            with self.subTest(name=name), self.assertRaises((gate.GateFailure, UnicodeDecodeError)):
+                gate.verify_pr(self.empty, invalid)
+        self.git('read-tree', self.empty)
+        self.add(path, b'x')
+        self.git('update-index', '--chmod=+x', '--', str(path))
+        with self.assertRaisesRegex(gate.GateFailure, 'regular'):
+            gate.verify_pr(self.empty, self.tree())
+        path.unlink()
+        path.symlink_to('../outside.md')
+        self.git('add', '--', str(path))
+        with self.assertRaisesRegex(gate.GateFailure, 'regular'):
+            gate.verify_pr(self.empty, self.tree())
+
+    def test_rejects_mixed_docs_code_and_cross_boundary_rename(self):
+        first = self.add(self.inbox / 'sale.md', b'public')
+        for name in ('README.md', 'release-ci/policy.py', '.github/workflows/pages.yml'):
+            self.git('read-tree', first)
+            bad = self.add(name, b'additional')
+            with self.subTest(name=name), self.assertRaises(gate.GateFailure):
+                gate.verify_pr(self.empty, bad)
+        self.git('read-tree', first)
+        self.git('mv', str(self.inbox / 'sale.md'), 'renamed.md')
+        with self.assertRaises(gate.GateFailure):
+            gate.verify_pr(first, self.tree())
+
+    def test_automation_install_requires_exact_whole_change_including_data_and_pages(self):
+        self.add(gate.R24_INBOX_WORKFLOW, b'name: sample')
+        self.add('.github/workflows/pages.yml', b'pages')
+        approved = self.add(self.inbox / 'README.md', b'guide')
+        raw = self.git('diff', '--raw', '--no-renames', '--no-abbrev', '-z', self.empty, approved)
+        with mock.patch.object(gate, 'R24_INBOX_CHANGESET', gate.sha256(raw)):
+            self.assertEqual(gate.verify_pr(self.empty, approved), 0)
+            altered = self.add('unreviewed.md', b'x')
+            with self.assertRaisesRegex(gate.GateFailure, 'exact reviewed'):
+                gate.verify_pr(self.empty, altered)
+
+    def test_pages_route_pins_cover_only_reviewed_push_filter(self):
+        pages = (HERE.parent / '.github/workflows/pages.yml').read_text()
+        exclusion = "    paths-ignore: ['materials-inbox/**']\n"
+        original = pages.replace(exclusion, '', 1)
+        filtered = original.replace('    branches: [main]\n', '    branches: [main]\n' + exclusion, 1)
+        for stage, pin in [(gate.r24_pf_excel_stage_step, gate.R24_PF_EXCEL_BASE_WORKFLOW_SHA),
+                           (gate.r24_pf_rc_stage_step, gate.R24_PF_RC_BASE_WORKFLOW_SHA),
+                           (gate.r24_pf_stage_step, gate.R24_PF_BASE_WORKFLOW_SHA),
+                           (gate.r25_stage_step, gate.R25_BASELINE_WORKFLOW_SHA)]:
+            if stage() not in original:
+                continue
+            original = original.replace(stage(), '', 1)
+            filtered = filtered.replace(stage(), '', 1)
+            self.assertTrue(gate.pages_workflow_matches(original, pin))
+            self.assertTrue(gate.pages_workflow_matches(filtered, pin))
+            self.assertFalse(gate.pages_workflow_matches(filtered.replace('materials-inbox', 'site.zip'), pin))
+
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
 
