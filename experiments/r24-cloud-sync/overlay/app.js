@@ -5,10 +5,10 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.9';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.10';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.9';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.10';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -1857,10 +1857,10 @@ function operatorHome(){
    getAvailability:assignmentSync.getDraftAvailability,
    generate:assignmentSync.generateDraft,
   }:null,
-  invalidate:()=>{if(assignmentPreview?.source==='ai')invalidateAssignmentPreview('AI 草稿已修改，请重新确认');},
+  invalidate:()=>{if(assignmentPreview?.source==='ai')invalidateAssignmentPreview('草稿已修改，请重新确认');},
   confirm:confirmAssignmentDraft,
  });
- ['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentPreview('作业条件已变化，请重新预览 Excel 或确认 AI 草稿'))));
+ ['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentPreview('作业条件已变化，请重新预览 Excel 或确认草稿'))));
  ELEM('assignmentExcelFile').addEventListener('change',()=>invalidateAssignmentPreview('文件已更换，请重新解析预览'));
  document.querySelectorAll('[data-export-assignment]').forEach(btn=>btn.onclick=()=>{const a=assignmentById(btn.dataset.exportAssignment);if(a?.schema)downloadJSON('TCL-运营作业-'+a.id+'.json',toExchangePackage(a));});
  if(ELEM('assignmentReceiptImport'))ELEM('assignmentReceiptImport').onchange=importAssignmentReceipt;
@@ -1912,15 +1912,15 @@ function showAssignmentPreview(questions,label){
  const panel=ELEM('assignmentExcelPreview');
  panel.innerHTML='<p><b>'+ESC(label)+'（尚未发布）</b></p>'+questions.map((q,i)=>'<p>'+ESC(String(i+1))+'. '+ESC(q.question)+' · 型号：'+ESC(q.model||'未填')+' · SKU：'+ESC(q.sku||'未填')+' · 参考答案：'+ESC(q.answer)+' · 评分要点：'+ESC(q.keyPoints.join('；')||'未填')+'</p>').join('');
 }
-function confirmAssignmentDraft(rows){
+function confirmAssignmentDraft(rows,origin){
  if(userRole!=='operator'||page!=='home'||assignmentPublishPending)throw new Error('当前无法确认作业草稿');
  const boardId=ELEM('assignmentBoard').value,platform=ELEM('assignmentPlatform').value;
- const questions=validateExcelQuestions(rows.map((row,i)=>({...row,source:'运营已核对的AI作业草稿',locator:`AI 草稿第 ${i+1} 题`})),
+ const questions=validateExcelQuestions(rows.map((row,i)=>({...row,source:'运营已核对的'+origin,locator:`${origin}第 ${i+1} 题`})),
   {category:boardById(boardId).category,platform});
  invalidateAssignmentPreview();
  assignmentPreview={source:'ai',epoch:assignmentPreviewEpoch,owner:userName,role:userRole,view:ELEM('view')?.firstElementChild,
   input:ELEM('assignmentDraftPanel'),boardId,platform,fingerprint:assignmentFormFingerprint(),questions};
- showAssignmentPreview(questions,'已确认 '+questions.length+' 道 AI 草稿题目');
+ showAssignmentPreview(questions,origin+'已确认，共 '+questions.length+' 题');
 }
 async function previewAssignmentExcel(){
  if(userRole!=='operator'||page!=='home')return;
@@ -1990,7 +1990,7 @@ async function publishAssignment(){
  const current=()=>activeView()&&preview===assignmentPreview&&assignmentViewCurrent(preview);
  const title=ELEM('assignmentTitle')?.value.trim(),boardId=ELEM('assignmentBoard')?.value,platform=ELEM('assignmentPlatform')?.value,deadline=ELEM('assignmentDeadline')?.value||'';
  if(!title)return toast('请输入作业名称');
- if(!preview||!assignmentViewCurrent(preview))return toast('请先上传Excel并完成预览，或确认 AI 草稿后发布');
+ if(!preview||!assignmentViewCurrent(preview))return toast('请先上传Excel并完成预览，或确认草稿后发布');
  const end=deadline?new Date(deadline):null;
  if(end&&!Number.isFinite(end.getTime()))return toast('截止时间无效，请重新选择');
  if(end&&end.getTime()<=Date.now())return toast('截止时间需要晚于现在');

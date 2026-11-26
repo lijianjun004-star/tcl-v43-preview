@@ -1,62 +1,56 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {createAiGatewayClient} from '../../backend/ai-gateway-client.mjs';
 import {createCloudBaseDraftGeneration} from '../ai-draft-provider.mjs';
 
 const prefix = 'tcl_r24_sync_test';
 const operator = {id: 'uid-operator', role: 'operator', active: true};
-const prompt = '请根据资料生成题目。';
+const prompt = '请按 JSON 格式生成一题。';
 const enabled = {
   TCL_R24_SYNC_AI_ENABLED: 'true',
-  TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase',
-  TCL_R24_SYNC_AI_MODEL_ID: 'hy3',
   TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator, uid-other',
+  AI_GATEWAY_URL: 'https://gateway.example.invalid',
+  AI_GATEWAY_TOKEN: 'fixture-value-for-local-tests',
 };
+const row = {question: '入户前需要测量什么？', answer: '请测量电梯门和走廊转角。', keyPoints: ['核对包装尺寸']};
 
-function setup({env = enabled, reserve = async () => ({data: true}),
-  run = async () => ({text: '{"questions":[]}'})} = {}) {
-  const calls = [];
-  const cloudApp = {
-    ai() {
-      return {
-        createModel(provider) {
-          calls.push(['provider', provider]);
-          return {
-            generateText(input) {
-              calls.push(['model', input]);
-              return run();
-            },
-          };
-        },
-      };
-    },
-  };
-  const db = {rpc(name, args) {
-    calls.push(['reserve', name, args]);
-    return reserve(args);
-  }};
-  return {calls, generation: createCloudBaseDraftGeneration({cloudApp, db, prefix, env})};
+function accepted() {
+  return Response.json({
+    choices: [{finish_reason: 'stop', message: {role: 'assistant', content: JSON.stringify({questions: [row]})}}],
+  });
 }
 
-test('model capability is off by default and invalid opt-in cannot activate it', () => {
-  assert.equal(setup({env: {}}).generation, undefined);
+function setup({env = enabled, reserve = () => ({data: true}), respond = accepted} = {}) {
+  const calls = [];
+  const client = createAiGatewayClient({
+    env,
+    fetchImpl: async () => {
+      calls.push('fetch');
+      return respond();
+    },
+    sleep: async ms => { calls.push(['wait', ms]); },
+  });
+  const db = {rpc(name, args) {
+    calls.push([name, args]);
+    return reserve();
+  }};
+  return {calls, generation: createCloudBaseDraftGeneration({client, db, prefix, env})};
+}
+
+const reservation = [prefix + '_reserve_ai_draft', {p_daily_limit: 5}];
+
+test('pilot generation is disabled without a valid opt-in, daily limit, and exact operator list', () => {
   for (const partial of [
-    {TCL_R24_SYNC_AI_ENABLED: 'false'},
-    {TCL_R24_SYNC_AI_MODEL_PROVIDER: 'vendor-proxy'},
-    {TCL_R24_SYNC_AI_MODEL_ID: undefined},
-    {TCL_R24_SYNC_AI_MODEL_ID: 'https://example.invalid/model'},
-    {TCL_R24_SYNC_AI_OPERATOR_IDS: undefined},
-    {TCL_R24_SYNC_AI_OPERATOR_IDS: '*'},
-    {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,uid-operator'},
-    {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,'},
-    {TCL_R24_SYNC_AI_DAILY_LIMIT: ''},
-    {TCL_R24_SYNC_AI_DAILY_LIMIT: '0'},
-    {TCL_R24_SYNC_AI_DAILY_LIMIT: '21'},
+    {TCL_R24_SYNC_AI_ENABLED: undefined}, {TCL_R24_SYNC_AI_ENABLED: 'false'},
+    {TCL_R24_SYNC_AI_OPERATOR_IDS: undefined}, {TCL_R24_SYNC_AI_OPERATOR_IDS: '*'},
+    {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,uid-operator'}, {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,'},
+    {TCL_R24_SYNC_AI_DAILY_LIMIT: ''}, {TCL_R24_SYNC_AI_DAILY_LIMIT: '0'}, {TCL_R24_SYNC_AI_DAILY_LIMIT: '21'},
   ]) {
     assert.equal(setup({env: {...enabled, ...partial}}).generation, undefined);
   }
 });
 
-test('only exact active operator IDs can reserve quota or invoke the model', async () => {
+test('only exact active operators with valid prompts can reach quota and transport', async () => {
   const {generation, calls} = setup();
   assert.equal(generation.canGenerate(operator), true);
   assert.equal(generation.canGenerate({...operator, id: 'uid-other'}), true);
@@ -71,55 +65,55 @@ test('only exact active operator IDs can reserve quota or invoke the model', asy
   assert.deepEqual(calls, []);
 });
 
-test('the model starts after a single successful quota reservation with bounded generation parameters', async () => {
-  const {generation, calls} = setup();
-  assert.equal(await generation.generate(operator, prompt), '{"questions":[]}');
-  assert.deepEqual(calls, [
-    ['reserve', 'tcl_r24_sync_test_reserve_ai_draft', {p_daily_limit: 5}],
-    ['provider', 'cloudbase'],
-    ['model', {
-      model: 'hy3', messages: [{role: 'user', content: prompt}], maxSteps: 1, max_tokens: 4096,
-    }],
-  ]);
+test('missing gateway fields surface a typed error to an eligible operator without spending quota', async () => {
+  for (const field of ['AI_GATEWAY_URL', 'AI_GATEWAY_TOKEN']) {
+    const {generation, calls} = setup({env: {...enabled, [field]: undefined}});
+    assert.equal(generation.canGenerate(operator), true);
+    assert.equal(generation.fallbackEnabled, true);
+    await assert.rejects(generation.generate(operator, prompt), {code: 'GATEWAY_CONFIG_MISSING'});
+    assert.deepEqual(calls, []);
+  }
+  for (const value of ['false', '', 'invalid']) {
+    assert.equal(setup({env: {...enabled, AI_FALLBACK_ENABLED: value}}).generation.fallbackEnabled, false);
+  }
 });
 
-test('quota denial and database failures never initialize or call the model', async () => {
+test('generation forwards validated questions after reserving an attempt', async () => {
+  const {generation, calls} = setup();
+  assert.equal(generation.model, 'gpt-4o-mini');
+  const result = await generation.generate(operator, prompt);
+  assert.deepEqual(result.questions, [row]);
+  assert.equal(result.httpStatus, 200);
+  assert.equal(result.retryCount, 0);
+  assert.deepEqual(calls, [reservation, 'fetch']);
+});
+
+test('unavailable quota storage and daily limit deny transport', async () => {
   for (const [reserve, code] of [
-    [async () => ({data: false}), 'AI_DRAFT_LIMIT'],
-    [async () => ({data: true, error: {message: 'private storage error'}}), 'AI_DRAFT_QUOTA_UNAVAILABLE'],
-    [async () => ({data: 'true'}), 'AI_DRAFT_QUOTA_UNAVAILABLE'],
-    [async () => { throw new Error('private storage error'); }, 'AI_DRAFT_QUOTA_UNAVAILABLE'],
+    [() => ({data: false}), 'AI_DRAFT_LIMIT'],
+    [() => ({data: true, error: {message: 'unexpected storage detail'}}), 'AI_DRAFT_QUOTA_UNAVAILABLE'],
+    [() => ({data: 'true'}), 'AI_DRAFT_QUOTA_UNAVAILABLE'],
+    [() => { throw new Error('unexpected storage detail'); }, 'AI_DRAFT_QUOTA_UNAVAILABLE'],
   ]) {
     const {generation, calls} = setup({env: {...enabled, TCL_R24_SYNC_AI_DAILY_LIMIT: '20'}, reserve});
-    await assert.rejects(generation.generate(operator, prompt), {code, message: code});
-    assert.deepEqual(calls, [['reserve', 'tcl_r24_sync_test_reserve_ai_draft', {p_daily_limit: 20}]]);
+    await assert.rejects(generation.generate(operator, prompt), {code});
+    assert.deepEqual(calls, [[prefix + '_reserve_ai_draft', {p_daily_limit: 20}]]);
   }
 });
 
-test('model failures and unbounded or unusable responses never expose upstream details', async () => {
-  for (const [run, code] of [
-    [async () => { throw new Error('private provider error'); }, 'AI_DRAFT_PROVIDER_UNAVAILABLE'],
-    [async () => ({text: prompt, error: 'private provider error'}), 'AI_DRAFT_PROVIDER_INVALID_RESPONSE'],
-    [async () => ({text: '\n '}), 'AI_DRAFT_PROVIDER_INVALID_RESPONSE'],
-    [async () => ({text: 'x'.repeat(150_001)}), 'AI_DRAFT_PROVIDER_INVALID_RESPONSE'],
-  ]) {
-    const {generation} = setup({run});
-    await assert.rejects(generation.generate(operator, prompt), {code, message: code});
-  }
+test('retry reserves a second attempt after the backoff', async () => {
+  let sent = 0;
+  const {generation, calls} = setup({respond: () => ++sent === 1 ? new Response(null, {status: 502}) : accepted()});
+  const result = await generation.generate(operator, prompt);
+  assert.equal(result.retryCount, 1);
+  assert.deepEqual(calls, [reservation, 'fetch', ['wait', 1500], reservation, 'fetch']);
 });
 
-test('a provider that never responds hits the local deadline without refunding quota', async t => {
-  t.mock.timers.enable({apis: ['setTimeout']});
-  let signalStarted;
-  const started = new Promise(resolve => { signalStarted = resolve; });
-  const {generation, calls} = setup({run: () => {
-    signalStarted();
-    return new Promise(() => {});
-  }});
-  const failed = assert.rejects(generation.generate(operator, prompt), {code: 'AI_DRAFT_TIMEOUT'});
-  await started;
-  t.mock.timers.tick(24_000);
-  await failed;
-  assert.equal(calls.filter(([stage]) => stage === 'reserve').length, 1);
-  assert.equal(calls.filter(([stage]) => stage === 'model').length, 1);
+test('quota exhausted after a transient failure prevents the second HTTP request', async () => {
+  let reservations = 0;
+  const {generation, calls} = setup({
+    reserve: () => ({data: ++reservations === 1}), respond: () => new Response(null, {status: 503}),
+  });
+  await assert.rejects(generation.generate(operator, prompt), {code: 'AI_DRAFT_LIMIT'});
+  assert.deepEqual(calls, [reservation, 'fetch', ['wait', 1500], reservation]);
 });

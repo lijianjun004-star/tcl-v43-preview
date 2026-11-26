@@ -4,11 +4,15 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## R24 `.10` 私有网关候选（2026-11-26 UTC）
+
+上海出题候选已在独立分支改用环境变量指定的 HTTPS 网关。仅固定状态或瞬时超时/连接重置可退避重试一次，每次 HTTP 尝试占用一次试点额度。运营可辨认网关草稿、从原资料解析的本地兜底或带请求编号的失败。候选已做 Mock 接口、Chromium 和原作业回归。真实新加坡 SCF 网关端到端联调尚未执行。上海公开页面仍是 `.8`，现行函数超时 45 秒，管理端只读查询确认网关地址及令牌变量缺失。[执行报告和逐文件变更](experiments/r24-cloud-sync/evidence/gateway-refactor/README.md) · [环境变量与上线前联调步骤](experiments/r24-cloud-sync/cloudbase/README-CloudBase.md#一键出题的启用配置)
+
 ## R24 仓库 OpenAI API 接入验证（2026-11-26 UTC）
 
 17:29 UTC 用户允许消耗 token 后，仓库使用 `gpt-4.1-mini` 实测「基础安装是否包含挂架和挂装」合成案例。一次调用生成一条弹幕、参考话术和 5 项评分要点。OpenAI 返回输入 353、输出 183，共 536 tokens。执行地点为 GitHub Actions。[完整生成结果与 token 记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45868098866)
 
-用户将现有项目密钥保存为仓库 Actions secret `OPENAI_API_KEY`。独立验证分支通过 `/v1/models` 鉴权（HTTP 200），再通过 R24 的 `POST /assignments/draft` 处理器向官方 Responses API 发起一次合成出题。模型 `gpt-4.1-mini` 生成一条关于电视入户转角的顾客弹幕、参考话术和 4 条评分要点，通过既有作业校验。测试仅运行在 GitHub Actions，未发布作业。该次调用最多输出 512 tokens，实际账单金额未核对。本机接口与草稿回归 25/25 通过。[鉴权记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864371985) · [真实出题记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864860826)
+用户将现有项目密钥保存为GitHub Actions 的加密变量。独立验证分支通过 `/v1/models` 鉴权（HTTP 200），再通过 R24 的 `POST /assignments/draft` 处理器向官方 Responses API 发起一次合成出题。模型 `gpt-4.1-mini` 生成一条关于电视入户转角的顾客弹幕、参考话术和 4 条评分要点，通过既有作业校验。测试仅运行在 GitHub Actions，未发布作业。该次调用最多输出 512 tokens，实际账单金额未核对。本机接口与草稿回归 25/25 通过。[鉴权记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864371985) · [真实出题记录](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864860826)
 
 上海公网仍是 `R24-20261124.8`。OpenAI 调用代码仅用于受支持的服务端环境，上海试点未新增模型调用路径。OpenAI 的地区说明涵盖访问和提供访问。[官方支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
 

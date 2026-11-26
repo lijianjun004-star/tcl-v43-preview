@@ -7,24 +7,19 @@ import {readFunctionConfig} from './function-config.mjs';
 import {createDeviceAccess} from './device-access.mjs';
 import {createDeviceGrantStore} from './device-grants-store.mjs';
 import {createCloudBaseAudio} from './cloudbase-audio.mjs';
-import {createCloudBaseDraftGeneration, MODEL_TIMEOUT_MS} from './ai-draft-provider.mjs';
+import {createCloudBaseDraftGeneration} from './ai-draft-provider.mjs';
+import {createAiGatewayClient} from './portable/ai-gateway-client.mjs';
 
 function createFunction(runtimeNamespace) {
   const {envId, prefix, allowedOrigins} = readFunctionConfig(process.env, runtimeNamespace);
-  const connection = {env: envId, region: 'ap-shanghai'};
-  const cloudApp = cloudbase.init({...connection, timeout: 12_000});
+  const cloudApp = cloudbase.init({env: envId, region: 'ap-shanghai', timeout: 12_000});
   const db = cloudApp.rdb();
   const {getEnrollment, directory, store} = createDatabaseAdapter(db, prefix);
   const authenticateNative = createAuthenticator({envId, getEnrollment});
   const grants = createDeviceGrantStore(db, prefix);
   const {authenticate, handleDeviceRequest} = createDeviceAccess({grants, getEnrollment, authenticateNative, allowedOrigins});
   const media = createCloudBaseAudio(cloudApp, envId);
-  let modelApp;
-  const draftGeneration = createCloudBaseDraftGeneration({
-    cloudApp: {ai: () => (modelApp ??= cloudbase.init({...connection, timeout: MODEL_TIMEOUT_MS})).ai()},
-    db,
-    prefix,
-  });
+  const draftGeneration = createCloudBaseDraftGeneration({client: createAiGatewayClient(), db, prefix});
   const api = createApi({authenticate, directory, store, media, draftGeneration, allowedOrigins, basePath: ''});
   return createGatewayHandler((request, context) => handleDeviceRequest(request, api, context));
 }
