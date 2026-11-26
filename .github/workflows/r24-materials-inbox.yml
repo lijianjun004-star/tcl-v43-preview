@@ -3,7 +3,20 @@ name: R24 资料自动出题
 on:
   push:
     branches: [main]
-    paths: ['materials-inbox/**']
+    paths:
+      - 'materials-inbox/**'
+      - '!materials-inbox/README.md'
+      - '!materials-inbox/.gitkeep'
+  workflow_dispatch:
+    inputs:
+      file:
+        description: '已提交的完整文件路径，以 materials-inbox/ 开头'
+        type: string
+        required: true
+      dry_run:
+        description: '使用合成题目演练，零模型请求'
+        type: boolean
+        default: false
   schedule:
     - cron: '0 1 * * 1' # Monday 09:00 in Shanghai
 
@@ -14,30 +27,48 @@ jobs:
   export:
     if: >-
       github.ref == 'refs/heads/main' && github.run_attempt == '1' &&
-      ((github.event_name == 'push' && !github.event.forced && !github.event.deleted && !github.event.created) ||
-      (github.event_name == 'schedule' && vars.R24_WEEKLY_FILE != ''))
+      (github.event_name != 'push' || (!github.event.forced && !github.event.deleted && !github.event.created))
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: 说明跳过原因
+        if: >-
+          github.event_name != 'workflow_dispatch' &&
+          (vars.R24_INBOX_AUTO_ENABLED != 'true' || (github.event_name == 'schedule' && vars.R24_WEEKLY_FILE == ''))
+        run: |
+          printf '%s\n' '已跳过自动出题，模型请求为 0。自动运行需要 R24_INBOX_AUTO_ENABLED=true，周任务还需要指定 R24_WEEKLY_FILE。' >> "$GITHUB_STEP_SUMMARY"
+      - id: checkout
+        if: >-
+          github.event_name == 'workflow_dispatch' ||
+          (vars.R24_INBOX_AUTO_ENABLED == 'true' && (github.event_name != 'schedule' || vars.R24_WEEKLY_FILE != ''))
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           fetch-depth: 0
           sparse-checkout: |
             experiments/r24-cloud-sync
             materials-inbox
+      - id: weekly
+        name: 选择固定资料
+        if: steps.checkout.outcome == 'success' && github.event_name == 'schedule'
+        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs weekly-index
       - id: material
         name: 检查资料与触发范围
+        if: steps.checkout.outcome == 'success'
         env:
-          R24_WEEKLY_FILE: ${{ vars.R24_WEEKLY_FILE }}
+          R24_INBOX_AUTO_ENABLED: ${{ vars.R24_INBOX_AUTO_ENABLED == 'true' && vars.R24_INBOX_AUTO_ENABLED || '' }}
+          R24_WEEKLY_INDEX: ${{ github.event_name == 'schedule' && fromJSON(steps.weekly.outputs.lookup)[vars.R24_WEEKLY_FILE] || '' }}
         run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs prepare
+      - name: 零消耗演练
+        if: steps.material.outputs.mode == 'dry'
+        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs dry
       - name: 生成题库草稿
-        if: steps.material.outputs.ready == 'true'
+        if: steps.material.outputs.mode == 'live'
         env:
           BATCH_API_TOKEN: ${{ secrets.OPENAI_API_KEY }}
-        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs generate
+        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs live
       - name: 保存供运营预览的题库
-        if: steps.material.outputs.ready == 'true'
+        if: steps.material.outputs.mode == 'dry' || steps.material.outputs.mode == 'live'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: r24-questions-${{ github.run_id }}

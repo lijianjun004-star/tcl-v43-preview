@@ -4,7 +4,7 @@ import { chmodSync, mkdirSync, mkdtempSync, renameSync, rmSync, symlinkSync, wri
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { collectMaterial } from '../scripts/inbox-materials.mjs';
+import { collectMaterials } from '../scripts/inbox-materials.mjs';
 
 const inbox = 'materials-inbox/';
 
@@ -29,121 +29,140 @@ function repository(t) {
   return { cwd, git, write, commit };
 }
 
-test('one push collects new UTF-8 documents from all pushed commits in stable order', t => {
+test('a multi-commit push selects added and modified files only, at their committed revision', async t => {
   const { cwd, write, commit } = repository(t);
+  const old = inbox + 'a/旧资料.txt';
+  write(old, '最早的说明');
+  write(inbox + '保持不变.md', '略过该文件');
+  write(inbox + 'old.csv', '删除的文件');
+  write(inbox + 'previous.txt', '仅改名的文件');
   const before = commit();
-  const csv = inbox + 'a/品类.CSV';
-  const markdown = inbox + '公开.MD';
-  const plain = inbox + '电视.txt';
-  write(plain, '  请说明电视入户条件。\n');
-  write(markdown, '\ufeff如何测量电梯？\r\n请以测量结果为准。');
+  const tsv = inbox + '产品.TSV';
+  const csv = inbox + '公开.CSV';
+  write(old, '电视使用说明');
+  write(csv, '问题,依据\n安装范围,商品页面');
   commit();
-  write(csv, '问题,依据\n核对安装范围,商品页面');
-  write('outside.txt', '其他业务资料');
-  write(inbox + 'a/ReadMe.Md', '子目录说明');
-  write(inbox + 'README.md', '上传说明');
-  write(inbox + '资料.pdf', Buffer.from([1, 0xff]));
+  write(tsv, '\ufeff需求\t答复\r\n安装\t请核对条件');
+  renameSync(join(cwd, inbox + 'previous.txt'), join(cwd, inbox + 'new-name.txt'));
+  rmSync(join(cwd, inbox + 'old.csv'));
+  write(inbox + 'README.md', '说明');
+  write(inbox + '.gitkeep', '忽略');
+  write(inbox + '资料.pdf', Buffer.from([0xff]));
+  write('outside.txt', '其他业务');
   const after = commit();
-  write(plain, '此修改尚未提交');
-  assert.deepEqual(collectMaterial({ cwd, before, after }), {
-    files: [csv, markdown, plain],
-    material: '问题,依据\n核对安装范围,商品页面\n\n如何测量电梯？\n请以测量结果为准。\n\n请说明电视入户条件。',
+  write(old, '未提交的修改');
+  const files = await collectMaterials({ cwd, before, after });
+  assert.equal(files.length, 3);
+  assert.deepEqual(Object.fromEntries(files.map(x => [x.path, x.material])), {
+    [old]: '电视使用说明', [csv]: '问题,依据\n安装范围,商品页面', [tsv]: '需求\t答复\n安装\t请核对条件',
   });
+  for (const file of files) {
+    assert.deepEqual([file.category, file.platform, file.count, file.model], ['电视', '京东', 10, 'gpt-4o-mini']);
+  }
+  assert.deepEqual(await collectMaterials({ cwd, before: after, after }), []);
 });
 
-test('edits, deletes, exact copies, moves into the inbox and links cannot start a batch', t => {
-  const { cwd, write, commit } = repository(t);
-  write(inbox + 'editable.txt', '旧作业');
-  write(inbox + 'removed.txt', '下架作业');
-  write('to-move.txt', '产品页参数');
-  write('original.txt', '新设备送货范围');
-  const before = commit();
-  write(inbox + 'editable.txt', '编辑后的资料');
-  rmSync(join(cwd, inbox, 'removed.txt'));
-  renameSync(join(cwd, 'to-move.txt'), join(cwd, inbox, 'moved.txt'));
-  write(inbox + 'copy.md', '新设备送货范围');
-  write(inbox + 'executable.txt', '属性为可执行的文件');
-  chmodSync(join(cwd, inbox, 'executable.txt'), 0o755);
-  symlinkSync('../original.txt', join(cwd, inbox, 'alias.txt'));
-  const after = commit();
-  assert.equal(collectMaterial({ cwd, before, after }), null);
-});
-
-test('same new material uploaded twice in the same batch contributes only once', t => {
+test('two new files with identical contents are independent sources and outputs', async t => {
   const { cwd, write, commit } = repository(t);
   const before = commit();
-  write(inbox + 'b.txt', '产品送装说明');
-  write(inbox + 'a.md', '产品送装说明');
-  const result = collectMaterial({ cwd, before, after: commit() });
-  assert.equal(result.files.length, 1);
-  assert.equal(result.material, '产品送装说明');
+  write(inbox + 'a.txt', '同一公开资料');
+  write(inbox + 'b.md', '同一公开资料');
+  const files = await collectMaterials({ cwd, before, after: commit() });
+  assert.deepEqual(files.map(x => x.path), [inbox + 'a.txt', inbox + 'b.md']);
 });
 
-test('weekly collection uses only the selected committed regular inbox document', t => {
+test('enforces three file count and 100 KiB byte boundaries before making any model request', async t => {
+  const { cwd, write, commit } = repository(t);
+  const http = t.mock.method(globalThis, 'fetch', () => assert.fail('unexpected HTTP'));
+  const before = commit();
+  for (let i = 0; i < 4; i++) write(inbox + i + '.txt', i === 0 ? Buffer.from([0xff]) : '公开资料');
+  const four = commit();
+  await assert.rejects(collectMaterials({ cwd, before, after: four }), { code: 'INBOX_TOO_MANY_FILES' });
+  write(inbox + '0.txt', Buffer.from([0xc3]));
+  write(inbox + '1.txt', Buffer.alloc(102401, 97));
+  // 0.txt cannot be decoded, but all files' sizes are checked first.
+  await assert.rejects(collectMaterials({ cwd, before: four, after: commit() }),
+    { code: 'INBOX_FILE_TOO_LARGE', safePath: inbox + '1.txt' });
+  write(inbox + '1.txt', Buffer.alloc(102400, 97));
+  const [accepted] = await collectMaterials({ cwd, after: commit(), selectedFile: inbox + '1.txt' });
+  assert.equal(accepted.material.length, 102400);
+  assert.equal(http.mock.callCount(), 0);
+});
+
+test('sensitive material aborts the entire selection with only category and safe filename, zero HTTP', async t => {
+  const { cwd, write, commit } = repository(t);
+  const http = t.mock.method(globalThis, 'fetch', () => assert.fail('unexpected HTTP'));
+  const safe = inbox + 'a.txt';
+  const path = inbox + 'z.txt';
+  const cases = [
+    [['13', '8000', '00123'].join(''), 'MOBILE'],
+    [['110101', '19990420', '123X'].join(''), 'IDENTITY'],
+    [['synthetic', '@', 'example.invalid'].join(''), 'EMAIL'],
+    [['sk', 'syntheticTestOnly'].join('-'), 'API_KEY'],
+    [['sk', 'syntheticTestOnly'].join('_'), 'API_KEY'],
+  ];
+  let before = commit();
+  for (const [secret, kind] of cases) {
+    write(safe, '公开说明 ' + kind);
+    write(path, '资料内的合成测试值 ' + secret);
+    const after = commit();
+    await assert.rejects(collectMaterials({ cwd, before, after }), error => {
+      assert.equal(error.code, 'INBOX_SENSITIVE_' + kind);
+      assert.equal(error.message, error.code);
+      assert.equal(error.safePath, path);
+      assert.ok(!JSON.stringify(error).includes(secret));
+      return true;
+    });
+    before = after;
+  }
+  const privateName = inbox + cases[0][0] + '.txt';
+  write(privateName, '公开产品信息');
+  await assert.rejects(collectMaterials({ cwd, before, after: commit() }),
+    { code: 'INBOX_SENSITIVE_MOBILE', safePath: '[文件名已隐藏]' });
+  assert.equal(http.mock.callCount(), 0);
+});
+
+test('single-file selection reads only a regular tracked file from the specified commit', async t => {
   const { cwd, write, commit } = repository(t);
   const path = inbox + '公开/送装.csv';
   write(path, '场景,确认通道尺寸');
-  write(inbox + '电视.txt', '与本次定时资料无关');
+  write(inbox + '其他.txt', '与定时选择无关');
   write('outside.md', '外部资料');
-  write(inbox + 'executable.txt', '属性为可执行的定期文件');
-  chmodSync(join(cwd, inbox, 'executable.txt'), 0o755);
-  symlinkSync('../outside.md', join(cwd, inbox, 'link.md'));
+  write(inbox + 'executable.txt', '属性为可执行的文件');
+  chmodSync(join(cwd, inbox + 'executable.txt'), 0o755);
+  symlinkSync('../outside.md', join(cwd, inbox + 'link.md'));
   const after = commit();
   write(path, '尚未提交的更新');
-  assert.deepEqual(collectMaterial({ cwd, after, weeklyFile: path }), {
-    material: '场景,确认通道尺寸', files: [path],
-  });
-  assert.equal(collectMaterial({ cwd, after, weeklyFile: '' }), null);
-  for (const weeklyFile of ['outside.md', inbox + '../outside.md', inbox + '/电视.txt',
+  const [file] = await collectMaterials({ cwd, after, selectedFile: path });
+  assert.deepEqual([file.path, file.material], [path, '场景,确认通道尺寸']);
+  for (const selectedFile of ['outside.md', inbox + '../outside.md', inbox + '/电视.txt',
     '/tmp/电视.txt', inbox + 'link.md', inbox + 'executable.txt', inbox + 'missing.md', inbox + 'README.md',
-    inbox + 'unsafe\\name.md', inbox + '*.txt', inbox + 'Excel.xlsx']) {
-    assert.throws(() => collectMaterial({ cwd, after, weeklyFile }), Error, weeklyFile);
+    inbox + 'unsafe\\name.md', inbox + '*.txt', '', null]) {
+    await assert.rejects(collectMaterials({ cwd, after, selectedFile }), Error);
   }
 });
 
-test('rejects malformed, empty or credential-shaped material without disclosing its content', t => {
-  const { cwd, write, commit } = repository(t);
-  const cases = [
+test('malformed, empty or unsafe material and unsafe paths are rejected without reflecting raw text', async t => {
+  const { cwd, git, write, commit } = repository(t);
+  const path = inbox + '有效.txt';
+  write(path, '公开商品卖点');
+  let before = commit();
+  for (const [content, expected] of [
     [Buffer.from([0xe4, 0xb8]), 'INBOX_INVALID_UTF8'],
     [' \t\r\n', 'INBOX_INVALID_MATERIAL'],
     ['输入\u0000结尾', 'INBOX_INVALID_MATERIAL'],
     ['输入\u202e结尾', 'INBOX_INVALID_MATERIAL'],
-    [['sk', 'syntheticUnitTestValueOnly'].join('-'), 'INBOX_INVALID_MATERIAL'],
-  ];
-  let before = commit();
-  for (const [index, [content, code]] of cases.entries()) {
-    write(inbox + index + '.txt', content);
+  ]) {
+    write(path, content);
     const after = commit();
-    assert.throws(() => collectMaterial({ cwd, before, after }), { code, message: code });
+    await assert.rejects(collectMaterials({ cwd, before, after }), { code: expected, message: expected });
     before = after;
   }
-});
-
-test('limits the entire batch including separators and counts UTF-16 units', t => {
-  const { cwd, write, commit } = repository(t);
-  const baseline = commit();
-  const path = inbox + '边界.txt';
-  write(path, '电'.repeat(20_000));
-  const exactly = commit();
-  assert.equal(collectMaterial({ cwd, before: baseline, after: exactly }).material.length, 20_000);
-  write(inbox + 'b.md', '字');
-  assert.throws(() => collectMaterial({ cwd, before: baseline, after: commit() }), { code: 'INBOX_TOO_LARGE' });
-  write(path, '📺'.repeat(10_001));
-  assert.throws(() => collectMaterial({ cwd, weeklyFile: path, after: commit() }), { code: 'INBOX_TOO_LARGE' });
-  write(path, Buffer.alloc(65_000, 97));
-  assert.throws(() => collectMaterial({ cwd, weeklyFile: path, after: commit() }), { code: 'INBOX_TOO_LARGE' });
-});
-
-test('rejects non-commit objects, unbounded revisions and unsafe filenames', t => {
-  const { cwd, git, write, commit } = repository(t);
-  const path = inbox + '有效.txt';
-  write(path, '公开商品卖点');
-  const before = commit();
   write(inbox + 'bad\nname.txt', '业务说明');
   const after = commit();
-  assert.throws(() => collectMaterial({ cwd, before, after }), { code: 'INBOX_INVALID_PATH' });
+  await assert.rejects(collectMaterials({ cwd, before, after }), { code: 'INBOX_INVALID_PATH' });
   for (const id of ['HEAD', '--all', '0'.repeat(40), git('rev-parse', before + ':' + path)]) {
-    assert.throws(() => collectMaterial({ cwd, before: id, after }), { code: 'INBOX_INVALID_COMMIT' });
-    assert.throws(() => collectMaterial({ cwd, before, after: id }), { code: 'INBOX_INVALID_COMMIT' });
+    await assert.rejects(collectMaterials({ cwd, before: id, after }), { code: 'INBOX_INVALID_COMMIT' });
+    await assert.rejects(collectMaterials({ cwd, before, after: id }), { code: 'INBOX_INVALID_COMMIT' });
   }
 });

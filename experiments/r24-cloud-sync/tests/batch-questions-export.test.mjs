@@ -253,3 +253,16 @@ test('Actions fails closed when its event path is missing or the trigger is not 
     assert.deepEqual(await readdir(join(out, '..')), []);
   }
 });
+
+test('manual material retains the 20,000-unit limit and the inbox accepts a bounded 100 KiB input', async () => {
+  let calls = 0;
+  const fetchImpl = () => { calls++; return ok(); };
+  const material = 'x'.repeat(102_400);
+  await assert.rejects(runBatch({...input, material}, options(await directory(), fetchImpl)), {code: 'INVALID_MATERIAL'});
+  await assert.rejects(runBatch({...input, material: material + 'x'}, options(await directory(), fetchImpl,
+    {materialLimit: 102_400})), {code: 'INVALID_MATERIAL'});
+  assert.equal(calls, 0);
+  const summary = await runBatch({...input, material}, options(await directory(), fetchImpl, {materialLimit: 102_400}));
+  assert.equal(calls, 1);
+  assert.equal(summary.exportedCount, 1);
+});
