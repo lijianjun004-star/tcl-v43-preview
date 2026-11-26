@@ -180,12 +180,13 @@ export async function runBatch(input, dependencies = {}) {
 }
 
 async function cliInput(env) {
-  if (env.BATCH_INPUT_FILE) {
+  if (env.GITHUB_ACTIONS === 'true') {
+    if (env.GITHUB_EVENT_NAME !== 'workflow_dispatch' || !env.GITHUB_EVENT_PATH) fail('INVALID_DISPATCH_EVENT');
     // Read the dispatch payload locally so user material need not appear in the
     // Actions step's printed environment or interpolated shell commands.
     let payload;
     try {
-      payload = JSON.parse(await readFile(env.BATCH_INPUT_FILE, 'utf8'));
+      payload = JSON.parse(await readFile(env.GITHUB_EVENT_PATH, 'utf8'));
     } catch {
       fail('INVALID_DISPATCH_EVENT');
     }
