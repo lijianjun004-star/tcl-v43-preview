@@ -32,9 +32,13 @@ LOG_CALL = re.compile(rb"(?:console|logger)\s*\.\s*(?:log|info|warn|error|debug|
 SENSITIVE_ARGUMENT = re.compile(rb"\b(?:authorization|AI_GATEWAY_TOKEN|bearer|process\.env|headers|stack)\b", re.I)
 RUNTIME = re.compile(r"^experiments/r24-cloud-sync/(?:backend|cloudbase|overlay)/[^/]+\.(?:m?js|cjs)$")
 WORKFLOW = ".github/workflows/r24-batch-questions-export.yml"
+INBOX_WORKFLOW = ".github/workflows/r24-materials-inbox.yml"
 EXPORTER = "experiments/r24-cloud-sync/scripts/batch-questions-export.mjs"
+INBOX_EXPORTER = "experiments/r24-cloud-sync/scripts/inbox-export.mjs"
+KEY_BINDING = ("public-api-key-variable", b"          BATCH_API_TOKEN: ${{ secrets." + PUBLIC_KEY_NAME + b" }}")
 EDITORIAL_BINDINGS = {
-    WORKFLOW: ("public-api-key-variable", b"          BATCH_API_TOKEN: ${{ secrets." + PUBLIC_KEY_NAME + b" }}"),
+    WORKFLOW: KEY_BINDING,
+    INBOX_WORKFLOW: KEY_BINDING,
     EXPORTER: ("public-api-host", b"const endpoint = 'https://" + HOST_NAME + b"/v1/chat/completions';"),
 }
 EDITORIAL_SENSITIVE = re.compile(rb"\b(?:BATCH_API_TOKEN|apiKey)\b", re.I)
@@ -74,12 +78,13 @@ class Scan:
                         continue
             self.findings.add((kind, path))
         member_path = path.rsplit('!', 1)[-1]
-        if (RUNTIME.fullmatch(member_path) or member_path == EXPORTER) and any(
-            SENSITIVE_ARGUMENT.search(m[1]) or (member_path == EXPORTER and EDITORIAL_SENSITIVE.search(m[1]))
+        editorial_runtime = member_path in (EXPORTER, INBOX_EXPORTER)
+        if (RUNTIME.fullmatch(member_path) or editorial_runtime) and any(
+            SENSITIVE_ARGUMENT.search(m[1]) or (editorial_runtime and EDITORIAL_SENSITIVE.search(m[1]))
             for m in LOG_CALL.finditer(data)
         ):
             self.findings.add(("possible-sensitive-log-argument", path))
-        if member_path == WORKFLOW and SHELL_ECHO.search(data):
+        if member_path in (WORKFLOW, INBOX_WORKFLOW) and SHELL_ECHO.search(data):
             self.findings.add(("possible-sensitive-log-argument", path))
 
     def fits(self, path, size):
@@ -168,7 +173,7 @@ class Scan:
 def main():
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument('--strict-gateway', action='store_true',
-                     help='also reject the two public offline CI architecture identifiers')
+                     help='also reject all public offline CI architecture declarations')
     group = cli.add_mutually_exclusive_group()
     group.add_argument('--cached', action='store_true', help='scan the Git index, including staged changes')
     group.add_argument('--tree', default='HEAD', help='scan the named commit or tree (default HEAD)')

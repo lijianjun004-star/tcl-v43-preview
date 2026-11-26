@@ -1,0 +1,46 @@
+name: R24 资料自动出题
+
+on:
+  push:
+    branches: [main]
+    paths: ['materials-inbox/**']
+  schedule:
+    - cron: '0 1 * * 1' # Monday 09:00 in Shanghai
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: >-
+      github.ref == 'refs/heads/main' && github.run_attempt == '1' &&
+      ((github.event_name == 'push' && !github.event.forced && !github.event.deleted && !github.event.created) ||
+      (github.event_name == 'schedule' && vars.R24_WEEKLY_FILE != ''))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          sparse-checkout: |
+            experiments/r24-cloud-sync
+            materials-inbox
+      - id: material
+        name: 检查资料与触发范围
+        env:
+          R24_WEEKLY_FILE: ${{ vars.R24_WEEKLY_FILE }}
+        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs prepare
+      - name: 生成题库草稿
+        if: steps.material.outputs.ready == 'true'
+        env:
+          BATCH_API_TOKEN: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-cloud-sync/scripts/inbox-export.mjs generate
+      - name: 保存供运营预览的题库
+        if: steps.material.outputs.ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: r24-questions-${{ github.run_id }}
+          path: ${{ runner.temp }}/r24-inbox-review/
+          retention-days: 14
+          if-no-files-found: error
