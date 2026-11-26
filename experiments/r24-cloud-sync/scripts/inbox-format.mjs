@@ -42,8 +42,7 @@ function validate(key, value) {
 function fromFilename(path) {
   const filename = posix.basename(path, posix.extname(path));
   const [category, platform, countField] = filename.split('_');
-  if (!countField || !(countField.endsWith('题') || platforms.includes(platform))) return {};
-  if (!countField.endsWith('题')) fail('INBOX_INVALID_COUNT');
+  if (!countField?.endsWith('题')) return {};
   return {
     category: validate('category', category.trim()),
     platform: validate('platform', platform.trim()),

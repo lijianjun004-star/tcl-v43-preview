@@ -8,6 +8,7 @@ const path = 'materials-inbox/卖点.txt';
 
 test('ordinary names use defaults and preserve the text and CSV or TSV body', () => {
   assert.deepEqual(readMetadata({path, text: material}), {...defaults, material});
+  assert.deepEqual(readMetadata({path: 'materials-inbox/新品_京东_送装.xlsx', text: material}), {...defaults, material});
   const markdown = '---\n\n# 安装须知\n' + material;
   assert.equal(readMetadata({path, text: markdown}).material, markdown);
   const sheet = '品类\t平台\r\n电视\t抖音';
