@@ -222,7 +222,7 @@ test('CLI reads the manual dispatch payload, including a literal false, without 
   const confidential = '仅供本地测试的合成培训资料';
   const inputs = {material: confidential + '\n说明中包含 "双引号"。', category: '电视', platform: '天猫',
     count: '1', model: 'gpt-4o-mini', dry_run: true};
-  const env = {PATH: process.env.PATH, BATCH_INPUT_FILE: event};
+  const env = {PATH: process.env.PATH, GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_EVENT_PATH: event};
   await writeFile(event, JSON.stringify({inputs}));
   const outputDir = await directory();
   const r = spawnSync(process.execPath, [cli, outputDir], {env, encoding: 'utf8'});
@@ -238,4 +238,18 @@ test('CLI reads the manual dispatch payload, including a literal false, without 
   assert.notEqual(liveWithoutKey.status, 0);
   assert.ok(!(liveWithoutKey.stdout + liveWithoutKey.stderr).includes(confidential));
   assert.deepEqual(await readdir(join(noKeyOutput, '..')), []);
+});
+
+test('Actions fails closed when its event path is missing or the trigger is not manual', async () => {
+  for (const [eventName, eventPath] of [['workflow_dispatch', ''], ['push', '/dev/null']]) {
+    const out = await directory();
+    const r = spawnSync(process.execPath, [cli, out], {encoding: 'utf8', env: {
+      PATH: process.env.PATH, GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: eventName, GITHUB_EVENT_PATH: eventPath,
+      BATCH_MATERIAL: '合成资料', BATCH_DRY_RUN: 'true',
+    }});
+    assert.ifError(r.error);
+    assert.equal(r.status, 1);
+    assert.equal(r.stderr.trim(), 'INVALID_DISPATCH_EVENT');
+    assert.deepEqual(await readdir(join(out, '..')), []);
+  }
 });
