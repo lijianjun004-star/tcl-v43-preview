@@ -4,7 +4,7 @@
   },
   "name": "tcl-r24-sync-acceptance",
   "scripts": {
-    "test": "node --test browser.test.mjs"
+    "test": "node --test browser.test.mjs assignment-drafts.test.mjs"
   },
   "private": true
 }

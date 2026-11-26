@@ -5,6 +5,7 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
 import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.5';
@@ -1464,7 +1465,9 @@ async function refreshSyncAssignments(){
   syncAssignmentsMessage=` 已读取 ${rows.length} 份云端作业`;
   if(page==='home'){
    if(userRole==='anchor')updateAnchorAssignmentDashboard();
-   else if(operatorActiveTab!=='publish'||!ELEM('assignmentTitle').value.trim()){
+   else if(operatorActiveTab!=='publish'||!(ELEM('assignmentDraftPanel')?.open||
+     ['assignmentTitle','assignmentExcelFile','assignmentDraftSourceText','assignmentDraftSourceFile','assignmentDraftResponse']
+      .some(id=>ELEM(id)?.value.trim()))){
     operatorHome();
    }
   }
@@ -1816,17 +1819,17 @@ function anchorHome(){
  updateResults();homeResultsUpdater=updateResults;bindResumeReview();
  syncFoldIndicators();
 }
-let assignmentExcelPreview=null, assignmentExcelEpoch=0;
+let assignmentPreview=null, assignmentPreviewEpoch=0;
 let operatorActiveTab="publish";
 function operatorHome(){
- invalidateAssignmentExcel();
+ invalidateAssignmentPreview();
  const cloudMode=Boolean(syncMember());
  const own=visibleAssignments().filter(a=>cloudMode||a.operatorName===userName).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
  const names=[...new Set([...localTrainingLogs.map(x=>x.anchorName),...localSubmissions.map(x=>x.anchorName)])].filter(Boolean);
  ELEM('view').innerHTML=`${identityBar()}${syncMember()?syncRefreshHtml():''}
  <section class="hub-welcome operator"><span class="eyebrow">OPERATIONS · 运营工作台</span><h2>${ESC(userName)}，把训练安排得更清楚</h2><p>发布作业、跟踪进度、查看提交。三项任务相互独立，减少来回查找。</p></section>
  <div class="ops-tabs" role="tablist" aria-label="运营任务"><button data-ops-tab="publish" role="tab" aria-selected="false">① 发布作业</button><button data-ops-tab="tracking" role="tab" aria-selected="false">② 作业进度 <small>${own.length}</small></button><button data-ops-tab="lookup" role="tab" aria-selected="false">③ 主播记录</button></div>
- <section id="ops-publish" class="panel hub-task" role="tabpanel" hidden><h2>发布一份训练作业</h2><p class="hub-task-tip">填写作业名称，选择训练板块，点击发布。截止时间可以不填。</p><div class="field"><label for="assignmentTitle">1. 作业名称</label><input id="assignmentTitle" placeholder="如：电视抖音产品问答"></div><div class="cols-2"><div class="field"><label for="assignmentBoard">2. 训练板块</label><select id="assignmentBoard">${BOARDS.map(b=>`<option value="${ESC(b.id)}">${ESC(b.category)} · ${ESC(b.display_platform)}</option>`).join('')}</select></div><div class="field"><label for="assignmentPlatform">平台</label><select id="assignmentPlatform"></select></div></div><div class="field"><label for="assignmentDeadline">3. 截止时间（可选）</label><input id="assignmentDeadline" type="datetime-local"></div><p class="scene-tip">${cloudMode?'作业发布后，主播可在任意设备按运营姓名搜索并领取。':'本次作业面向所有主播开放领取；跨设备请导入运营发送的 JSON。'}</p><div class="field"><label for="assignmentExcelFile">4. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。文件最多 15 MB，XLSX 解压后总量最多 50 MB。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button><div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">发布作业 →</button>${cloudMode?'':'<p class="scene-tip">当前为本机演示，姓名不作为正式登录认证。</p>'}</section>
+ <section id="ops-publish" class="panel hub-task" role="tabpanel" hidden><h2>发布一份训练作业</h2><p class="hub-task-tip">填写作业名称，选择训练板块，点击发布。截止时间可以不填。</p><div class="field"><label for="assignmentTitle">1. 作业名称</label><input id="assignmentTitle" placeholder="如：电视抖音产品问答"></div><div class="cols-2"><div class="field"><label for="assignmentBoard">2. 训练板块</label><select id="assignmentBoard">${BOARDS.map(b=>`<option value="${ESC(b.id)}">${ESC(b.category)} · ${ESC(b.display_platform)}</option>`).join('')}</select></div><div class="field"><label for="assignmentPlatform">平台</label><select id="assignmentPlatform"></select></div></div><div class="field"><label for="assignmentDeadline">3. 截止时间（可选）</label><input id="assignmentDeadline" type="datetime-local"></div><p class="scene-tip">${cloudMode?'作业发布后，主播可在任意设备按运营姓名搜索并领取。':'本次作业面向所有主播开放领取；跨设备请导入运营发送的 JSON。'}</p><div class="field"><label for="assignmentExcelFile">4. 上传本次作业 Excel</label><input type="file" id="assignmentExcelFile" accept=".xlsx,.xls"/><small>一行一题：问题、参考答案、型号、SKU、评分点。只用于本次作业，不进入公共题库。文件最多 15 MB，XLSX 解压后总量最多 50 MB。</small></div><button type="button" class="btn soft" id="assignmentExcelPreviewBtn">解析并预览作业题目</button>${assignmentDraftPanelHtml()}<div id="assignmentExcelPreview" role="status" aria-live="polite"></div><button id="publishAssignment" class="btn primary wide hub-publish">发布作业 →</button>${cloudMode?'':'<p class="scene-tip">当前为本机演示，姓名不作为正式登录认证。</p>'}</section>
  <section id="ops-tracking" class="panel hub-task" role="tabpanel" hidden><h2>我发布的作业</h2>${syncMember()?'<p class="hub-task-tip">查看领取进度、主播提交的逐题回答与录音。</p><div id="syncInbox"></div>':'<p class="hub-task-tip">主播主动提交后，需手动导入 JSON 回执才能在此设备查看。</p><div class="field"><label for="assignmentReceiptImport">接收主播提交回执（JSON；需人工确认真实性）</label><input id="assignmentReceiptImport" type="file" accept=".json,application/json"></div>'}<div class="assignment-results">${own.map(a=>{if(syncMember())return syncOperatorRow(a);const anchors=[...new Set([...(a.assignedTo||[]),...localAssignmentJoins.filter(j=>j.assignmentId===a.id).map(j=>j.anchorName),...localSubmissions.filter(x=>x.assignmentId===a.id&&x.operatorName===a.operatorName).map(x=>x.anchorName)])];return `<div class="assignment-manage"><div><b>${ESC(a.title)}</b><small>${ESC(boardById(a.boardId).category)} · ${ESC(a.platform)}${a.deadline?' · 截止 '+ESC(new Date(a.deadline).toLocaleString('zh-CN')):' · 无截止时间'}</small></div><div>${a.schema?`<small>Excel作业 · ${a.questions.length}题 · 固定版本 v${a.version}</small><button type="button" class="btn soft small" data-export-assignment="${ESC(a.id)}">导出作业包给主播</button>`:""}</div><div class="assignment-statuses">${anchors.map(n=>`<button class="status-chip" data-anchor-name="${ESC(n)}">${ESC(n)} · ${ESC(assignmentStatusFor(a,n))}${(c=>c?` · 练${c}次`:'')(localTrainingLogs.filter(l=>l.assignmentId===a.id&&l.anchorName===n).length)}</button>`).join('')||'<span class="muted">暂无主播加入，可让主播在“运营作业”里搜索本作业</span>'}</div></div>`}).join('')||'<div class="empty compact">还没有发布作业，可点击上方“发布作业”创建第一份任务。</div>'}</div></section>
  ${cloudMode?`<section id="ops-lookup" class="panel hub-task" role="tabpanel" hidden>
   <h2>主播记录</h2>
@@ -1844,8 +1847,14 @@ function operatorHome(){
  const fill=()=>{const b=boardById(board.value);plat.innerHTML=b.platforms.map(p=>`<option value="${ESC(p)}">${ESC(p)}</option>`).join('')};board.onchange=fill;fill();
  ELEM('publishAssignment').onclick=async()=>{await publishAssignment();};
  ELEM('assignmentExcelPreviewBtn').onclick=previewAssignmentExcel;
- ['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentExcel('作业条件已变化，请重新预览Excel'))));
- ELEM('assignmentExcelFile').addEventListener('change',()=>invalidateAssignmentExcel('文件已更换，请重新解析预览'));
+ bindAssignmentDraftPanel({
+  panel:ELEM('assignmentDraftPanel'),parseDocumentFile,
+  getAssignmentScope:()=>({category:boardById(board.value).category,platform:plat.value}),
+  invalidate:()=>{if(assignmentPreview?.source==='ai')invalidateAssignmentPreview('AI 草稿已修改，请重新确认');},
+  confirm:confirmAssignmentDraft,
+ });
+ ['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].forEach(id=>['input','change'].forEach(event=>ELEM(id).addEventListener(event,()=>invalidateAssignmentPreview('作业条件已变化，请重新预览 Excel 或确认 AI 草稿'))));
+ ELEM('assignmentExcelFile').addEventListener('change',()=>invalidateAssignmentPreview('文件已更换，请重新解析预览'));
  document.querySelectorAll('[data-export-assignment]').forEach(btn=>btn.onclick=()=>{const a=assignmentById(btn.dataset.exportAssignment);if(a?.schema)downloadJSON('TCL-运营作业-'+a.id+'.json',toExchangePackage(a));});
  if(ELEM('assignmentReceiptImport'))ELEM('assignmentReceiptImport').onchange=importAssignmentReceipt;
  bindSyncControls();
@@ -1876,8 +1885,10 @@ function operatorHome(){
 async function logoutIdentity(){if(submissionSaving||assignmentPublishPending)return toast('请等待本次保存完成');if(!canLeaveRecording())return;
  if(syncMember()){assignmentSync.signOut(true);localDB?.close();location.reload();return;}restoreSessionEpoch++;savedSessionCandidate=null;operatorActiveTab='publish';resetRunState();deviceCheckSeq++;stopScene();exitFocus();roomPhase='check';deviceCheck={camera:false,microphone:false,recorder:false,ready:false,mode:'hardware',checked:false};discardVideoArchive();lastSessionSnapshot=null;lastTrainingLogId='';userRole='';userName='';activeAssignmentId='';page='home';render();}
 let assignmentExcelParsing=0;
-function invalidateAssignmentExcel(message=''){
- assignmentExcelEpoch++;assignmentExcelPreview=null;assignmentExcelParsing=0;
+function invalidateAssignmentPreview(message=''){
+ const draftStatus=ELEM('assignmentDraftStatus');
+ if(message&&assignmentPreview?.source==='ai'&&draftStatus)draftStatus.textContent=message;
+ assignmentPreviewEpoch++;assignmentPreview=null;assignmentExcelParsing=0;
  const panel=ELEM('assignmentExcelPreview'),button=ELEM('assignmentExcelPreviewBtn');
  if(panel)panel.textContent=message;if(button)button.disabled=false;
 }
@@ -1885,7 +1896,24 @@ function assignmentFormFingerprint(){
  return JSON.stringify(['assignmentTitle','assignmentBoard','assignmentPlatform','assignmentDeadline'].map(id=>ELEM(id)?.value??''));
 }
 function assignmentViewCurrent(ctx){
- return userRole===ctx.role&&userName===ctx.owner&&page==='home'&&ELEM('view')?.firstElementChild===ctx.view&&ELEM('assignmentExcelFile')===ctx.input&&ctx.input.isConnected&&ctx.input.files?.[0]===ctx.file&&assignmentExcelEpoch===ctx.epoch&&assignmentFormFingerprint()===ctx.fingerprint;
+ if(userRole!==ctx.role||userName!==ctx.owner||page!=='home'||ELEM('view')?.firstElementChild!==ctx.view||
+  assignmentPreviewEpoch!==ctx.epoch||assignmentFormFingerprint()!==ctx.fingerprint)return false;
+ if(ctx.source==='ai')return ELEM('assignmentDraftPanel')===ctx.input&&ctx.input.isConnected;
+ return ELEM('assignmentExcelFile')===ctx.input&&ctx.input.isConnected&&ctx.input.files?.[0]===ctx.file;
+}
+function showAssignmentPreview(questions,label){
+ const panel=ELEM('assignmentExcelPreview');
+ panel.innerHTML='<p><b>'+ESC(label)+'（尚未发布）</b></p>'+questions.map((q,i)=>'<p>'+ESC(String(i+1))+'. '+ESC(q.question)+' · 型号：'+ESC(q.model||'未填')+' · SKU：'+ESC(q.sku||'未填')+' · 参考答案：'+ESC(q.answer)+' · 评分要点：'+ESC(q.keyPoints.join('；')||'未填')+'</p>').join('');
+}
+function confirmAssignmentDraft(rows){
+ if(userRole!=='operator'||page!=='home'||assignmentPublishPending)throw new Error('当前无法确认作业草稿');
+ const boardId=ELEM('assignmentBoard').value,platform=ELEM('assignmentPlatform').value;
+ const questions=validateExcelQuestions(rows.map((row,i)=>({...row,source:'运营已核对的AI作业草稿',locator:`AI 草稿第 ${i+1} 题`})),
+  {category:boardById(boardId).category,platform});
+ invalidateAssignmentPreview();
+ assignmentPreview={source:'ai',epoch:assignmentPreviewEpoch,owner:userName,role:userRole,view:ELEM('view')?.firstElementChild,
+  input:ELEM('assignmentDraftPanel'),boardId,platform,fingerprint:assignmentFormFingerprint(),questions};
+ showAssignmentPreview(questions,'已确认 '+questions.length+' 道 AI 草稿题目');
 }
 async function previewAssignmentExcel(){
  if(userRole!=='operator'||page!=='home')return;
@@ -1894,16 +1922,17 @@ async function previewAssignmentExcel(){
  if(!file)return toast('请先选择Excel作业文件');
  if(file.size===0||file.size>15*1024*1024)return toast('作业Excel须为1字节至15MB，请检查或拆分后导入');
  if(!/\.(xlsx|xls)$/i.test(file.name))return toast('作业只支持XLSX或XLS');
- const ctx={epoch:++assignmentExcelEpoch,owner:userName,role:userRole,view:ELEM('view')?.firstElementChild,input,file,boardId:ELEM('assignmentBoard').value,platform:ELEM('assignmentPlatform').value,fingerprint:assignmentFormFingerprint()};
- assignmentExcelPreview=null;assignmentExcelParsing=ctx.epoch;button.disabled=true;panel.textContent='正在读取并检查Excel题目…';
+ invalidateAssignmentPreview('正在读取并检查Excel题目…');
+ const ctx={source:'excel',epoch:assignmentPreviewEpoch,owner:userName,role:userRole,view:ELEM('view')?.firstElementChild,input,file,boardId:ELEM('assignmentBoard').value,platform:ELEM('assignmentPlatform').value,fingerprint:assignmentFormFingerprint()};
+ assignmentExcelParsing=ctx.epoch;button.disabled=true;
  try{
   const parsed=await parseDocumentFile(file,{assignmentExcel:true});if(!assignmentViewCurrent(ctx))return;
   const expectedCount=assertExcelOneRowPerQuestion(parsed),extracted=assertExcelExtractionComplete(expectedCount,extractQA(parsed));
   const questions=validateExcelQuestions(extracted,{category:boardById(ctx.boardId).category,platform:ctx.platform});
   if(!assignmentViewCurrent(ctx))return;
-  assignmentExcelPreview={...ctx,questions};
-  panel.innerHTML='<p><b>已解析 '+questions.length+' 道专属作业题目（尚未发布）</b></p>'+questions.map((q,i)=>'<p>'+ESC(String(i+1))+'. '+ESC(q.question)+' · 型号：'+ESC(q.model||'未填')+' · SKU：'+ESC(q.sku||'未填')+' · 参考答案：'+ESC(q.answer)+' · 评分要点：'+ESC(q.keyPoints.join('；')||'未填')+'</p>').join('');
- }catch(e){if(assignmentViewCurrent(ctx)){assignmentExcelPreview=null;panel.textContent='Excel解析失败：'+String(e?.message||e);}}
+  assignmentPreview={...ctx,questions};
+  showAssignmentPreview(questions,'已解析 '+questions.length+' 道专属作业题目');
+ }catch(e){if(assignmentViewCurrent(ctx)){assignmentPreview=null;panel.textContent='Excel解析失败：'+String(e?.message||e);}}
  finally{if(assignmentExcelParsing===ctx.epoch)assignmentExcelParsing=0;if(assignmentViewCurrent(ctx))button.disabled=false;}
 }
 async function importAssignmentPackage(ev){
@@ -1949,12 +1978,12 @@ async function publishAssignment(){
  if(userRole!=='operator'||!userName||page!=='home')return;
  if(!syncMember()&&(memoryFallback||!localDB))return toast('本机数据库不可用，无法可靠发布作业，请保留Excel后重试');
  if(assignmentPublishPending)return toast('作业正在保存，请稍候');
- const ownerName=userName,ownerView=ELEM('view')?.firstElementChild,button=ELEM('publishAssignment'),preview=assignmentExcelPreview;
+ const ownerName=userName,ownerView=ELEM('view')?.firstElementChild,button=ELEM('publishAssignment'),preview=assignmentPreview;
  const activeView=()=>userRole==='operator'&&userName===ownerName&&page==='home'&&ELEM('view')?.firstElementChild===ownerView;
- const current=()=>activeView()&&preview===assignmentExcelPreview&&assignmentViewCurrent(preview);
+ const current=()=>activeView()&&preview===assignmentPreview&&assignmentViewCurrent(preview);
  const title=ELEM('assignmentTitle')?.value.trim(),boardId=ELEM('assignmentBoard')?.value,platform=ELEM('assignmentPlatform')?.value,deadline=ELEM('assignmentDeadline')?.value||'';
  if(!title)return toast('请输入作业名称');
- if(!preview||!assignmentViewCurrent(preview))return toast('请先上传Excel并完成预览，确认题目无误后发布');
+ if(!preview||!assignmentViewCurrent(preview))return toast('请先上传Excel并完成预览，或确认 AI 草稿后发布');
  const end=deadline?new Date(deadline):null;
  if(end&&!Number.isFinite(end.getTime()))return toast('截止时间无效，请重新选择');
  if(end&&end.getTime()<=Date.now())return toast('截止时间需要晚于现在');

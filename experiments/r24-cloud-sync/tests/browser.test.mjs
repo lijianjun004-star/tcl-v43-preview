@@ -305,6 +305,116 @@ test('assignment XLSX accepts 50 MiB unpacked and keeps both the default and sin
   assert.deepEqual(errors, []);
 });
 
+test('operator reviews an AI draft made from text or Excel before sharing its barrage with an anchor', { timeout: 60_000 }, async t => {
+  const { server, excel, newPage } = await browserFixture(t);
+  const { page, context, errors } = await newPage();
+  const title = '合成安装场景：AI 草稿转作业';
+  const sourceText = '合成资料：电视到货前需要确认包装尺寸和安装位置。';
+  const exampleReply = {
+    questions: [
+      { question: '电视能搬进电梯吗？', answer: '先核对包装尺寸和电梯门净宽。', keyPoints: ['包装尺寸', '电梯门净宽'] },
+      { question: '挂装前需要确认什么？', answer: '先确认墙面和插座位置。', keyPoints: ['墙面', '插座'] },
+      { question: '送货前需要准备什么？', answer: '先预留通道并确认入户时间。', keyPoints: ['预留通道'] },
+    ],
+  };
+  const firstEdit = '电梯门很窄，怎么确认电视能搬进家？';
+  const finalQuestion = '电梯门很窄，电视外箱该量哪几个尺寸？';
+  const assignmentPosts = () => server.requests.filter(req =>
+    req.method === 'POST' && req.path.endsWith('/assignments')).length;
+
+  await signIn(page, operator);
+  await page.locator('[data-ops-tab="publish"]').click();
+  await page.locator('#assignmentBoard').selectOption('01');
+  await page.locator('#assignmentPlatform').selectOption('京东');
+  const panel = page.locator('#assignmentDraftPanel');
+  await panel.locator('summary').click();
+  await checkNoOverflow(page);
+
+  await panel.locator('#assignmentDraftSourceMode').selectOption('text');
+  await panel.locator('#assignmentDraftCount').selectOption('3');
+  const source = panel.locator('#assignmentDraftSourceText');
+  await source.fill(sourceText);
+  const titleField = page.locator('#assignmentTitle');
+  assert.equal(await titleField.inputValue(), '');
+  await Promise.all([
+    page.waitForResponse(response => response.request().method() === 'GET' && response.url().endsWith('/assignments')),
+    page.locator('#syncRefresh').click(),
+  ]);
+  await page.locator('#syncRefresh:not([disabled])').waitFor();
+  assert.equal(await panel.evaluate(details => details.open), true);
+  assert.equal(await source.inputValue(), sourceText);
+  await titleField.fill(title);
+
+  await panel.locator('#assignmentDraftBuildPrompt').click();
+  const prompt = panel.locator('#assignmentDraftPrompt');
+  const fromText = await prompt.inputValue();
+  assert.ok(fromText.includes(sourceText));
+  assert.match(fromText, /"questions"/);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await panel.locator('#assignmentDraftCopyPrompt').click();
+  await page.waitForFunction(async text => await navigator.clipboard.readText() === text, fromText);
+
+  await panel.locator('#assignmentDraftSourceMode').selectOption('table');
+  await panel.locator('#assignmentDraftSourceFile').setInputFiles(excel);
+  await panel.locator('#assignmentDraftBuildPrompt').click();
+  await page.waitForFunction(question =>
+    document.querySelector('#assignmentDraftPrompt')?.value.includes(question), questions[0]);
+  const fromTable = await prompt.inputValue();
+  assert.doesNotMatch(fromTable, /合成资料：电视到货前/);
+  assert.ok(fromTable.includes(questions[2]));
+
+  // A synthetic response stands in for the copy sent to an AI tool and pasted back by the operator.
+  await panel.locator('#assignmentDraftResponse').fill(JSON.stringify(exampleReply));
+  await panel.locator('#assignmentDraftReadResponse').click();
+  const rows = panel.locator('[data-assignment-draft-row]');
+  await rows.nth(2).waitFor();
+  const question = rows.first().locator('[data-draft-field="question"]');
+  await question.fill(firstEdit);
+  await panel.locator('#assignmentDraftConfirm').click();
+  const preview = page.locator('#assignmentExcelPreview');
+  await preview.filter({ hasText: firstEdit }).waitFor();
+  assert.equal(assignmentPosts(), 0);
+
+  await question.fill(finalQuestion);
+  assert.doesNotMatch(await preview.textContent(), /电梯门很窄，怎么确认电视能搬进家/);
+  await page.locator('#publishAssignment').click();
+  await page.locator('#toast').filter({ hasText: /确认\s*AI\s*草稿/ }).waitFor();
+  assert.equal(assignmentPosts(), 0);
+
+  await panel.locator('#assignmentDraftConfirm').click();
+  await preview.filter({ hasText: finalQuestion }).waitFor();
+  const [published] = await Promise.all([
+    page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/assignments')),
+    page.locator('#publishAssignment').click(),
+  ]);
+  assert.equal(published.status(), 201);
+  assert.equal(assignmentPosts(), 1);
+  const { assignment } = await published.json();
+  assert.equal(assignment.title, title);
+  assert.deepEqual(assignment.questions.map(row => row.question), [
+    finalQuestion, ...exampleReply.questions.slice(1).map(row => row.question),
+  ]);
+  assert.equal(assignment.questions[0].answer, exampleReply.questions[0].answer);
+  assert.deepEqual(assignment.questions[0].keyPoints, exampleReply.questions[0].keyPoints);
+  const posted = JSON.stringify(published.request().postDataJSON());
+  assert.ok(!posted.includes(sourceText));
+  assert.ok(!posted.includes(questions[0]));
+
+  const trainee = await newPage();
+  await signIn(trainee.page, anchor);
+  await trainee.page.locator('#assignmentFold summary').click();
+  await trainee.page.locator('#assignmentSearch').fill(operator.displayName);
+  await trainee.page.locator('#syncRefresh').click();
+  await trainee.page.locator(`#assignmentSearchResults [data-join-assignment="${assignment.id}"]`).click();
+  const start = trainee.page.locator('#startScene');
+  await start.waitFor();
+  const textMode = trainee.page.locator('#prepQuickText');
+  if (await textMode.isVisible()) await textMode.click();
+  await start.click();
+  await trainee.page.locator('#liveQText').filter({ hasText: finalQuestion }).waitFor();
+  assert.deepEqual([...errors, ...trainee.errors], []);
+});
+
 test('a new browser requires a valid code and a different role on a bound browser requires explicit confirmation', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const primary = await newPage();
@@ -365,7 +475,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.7';
+  const shortVersion = 'R24-20261124.8';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
