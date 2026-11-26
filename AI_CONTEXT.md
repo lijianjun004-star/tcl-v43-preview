@@ -10,6 +10,8 @@
 
 上海公网仍是 `R24-20261124.8`。OpenAI 调用代码仅用于受支持的服务端环境，上海试点未新增模型调用路径。OpenAI 的地区说明涵盖访问和提供访问。[官方支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
 
+2026-11-26 17:10 UTC 手动重跑仓库出题任务，第 2 次执行成功，生成 1 条关于电梯转角的顾客弹幕、参考话术和 5 条评分要点。同期在上海 `.8` 新建 1 个合成运营账号，`/me` 返回 200，登录后的 `GET /assignments/draft` 和 `POST /assignments/draft` 均返回 404 `ROUTE_NOT_FOUND`。上海端未调用模型，未发布作业。CloudBase 管理端的环境和用量查询当时返回 `AUTH_FAILED`。[手动重跑证据](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45864860826/attempts/2)
+
 ## 上海 R24 `.9` 一键出题候选（2026-11-26 UTC）
 
 任务 `R24-AI-20261126` 选择上海 CloudBase 内置文本模型。`.9` 已在独立分支接通运营端文字和表格生成、编辑草稿、确认发布与主播领取。模型入口默认关闭，启用后要求已审核的运营账号 ID，并由试点数据库在调用前预留每日额度。上线前须核实上海环境可供网页触发云函数使用的套餐额度和模型 ID。目前腾讯云 CLI 授权未恢复，真实额度未核验，数据库迁移、模型调用、部署和 Gemini 公网复验均未执行。公网仍为 `.8`。[本机验收及复验单](experiments/r24-cloud-sync/evidence/shanghai/v2-9-ai-model/README.md) · [启用配置](experiments/r24-cloud-sync/cloudbase/README-CloudBase.md#一键出题的启用配置)
