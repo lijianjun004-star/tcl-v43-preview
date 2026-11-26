@@ -3274,7 +3274,7 @@ class OfflineBatchRegistrationTests(unittest.TestCase):
             git('add', '--', str(workflow))
             approved = git('write-tree').decode().strip()
             record = git('diff', '--raw', '--no-abbrev', '--no-renames', '-z', base, approved)
-            with mock.patch.object(gate, 'R24_BATCH_REGISTRATION_SHA256', hashlib.sha256(record).hexdigest()):
+            with mock.patch.object(gate, 'R24_BATCH_CHANGESETS', {hashlib.sha256(record).hexdigest()}):
                 self.assertEqual(gate.verify_pr(base, approved), 0)
                 for variant in ('additional document', 'changed content', 'executable mode'):
                     with self.subTest(variant=variant):
