@@ -1,0 +1,46 @@
+name: R24 offline TV question workbook
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/r24-offline-editorial-batch-20261126]
+    paths: [.github/workflows/r24-offline-editorial-batch.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  workbook:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Prepare workbook writer
+        run: |
+          python3 -m venv "$RUNNER_TEMP/r24-workbook-venv"
+          echo 'XlsxWriter==3.2.9 --hash=sha256:9a5db42bc5dff014806c58a20b9eae7322a134abb6fce3c92c181bfb275ec5b3' |
+            "$RUNNER_TEMP/r24-workbook-venv/bin/pip" install --require-hashes --only-binary=:all: -r /dev/stdin
+
+      - name: Generate a fixed synthetic editorial batch
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-cloud-sync/tools/offline-editorial-batch.mjs "$RUNNER_TEMP/r24-editorial"
+
+      - name: Export review workbook
+        run: |
+          "$RUNNER_TEMP/r24-workbook-venv/bin/python" experiments/r24-cloud-sync/tools/export-review-workbook.py \
+            "$RUNNER_TEMP/r24-editorial/questions.json" "$RUNNER_TEMP/r24-editorial/R24-TV-review.xlsx"
+
+      - name: Save the offline review files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: R24-offline-TV-review
+          path: |
+            ${{ runner.temp }}/r24-editorial/R24-TV-review.xlsx
+            ${{ runner.temp }}/r24-editorial/questions.json
+            ${{ runner.temp }}/r24-editorial/usage.json
+          if-no-files-found: error
+          retention-days: 3
