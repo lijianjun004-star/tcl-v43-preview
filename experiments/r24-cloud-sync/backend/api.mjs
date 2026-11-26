@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
+import { buildAssignmentDraftPrompt, readAssignmentDraftResponse } from '../overlay/assignment-drafts.mjs';
 import {
   isReceiptLate,
   sha256Hex,
   toReceipt,
+  validateExcelQuestions,
   verifyAssignment,
 } from './vendor/assignment-excel.mjs';
 import { boardDefinitions } from './vendor/qa3-boards.mjs';
@@ -10,6 +12,9 @@ import { boardDefinitions } from './vendor/qa3-boards.mjs';
 const MAX_BODY_BYTES = 1_000_000;
 const MAX_PAGE_BYTES = 1_000_000;
 const MAX_PAGE_ROWS = 20;
+const MAX_DRAFT_BODY_BYTES = 128 * 1024;
+const MAX_DRAFT_QUESTIONS = 15;
+const DRAFT_FIELDS = ['material', 'boardId', 'platform', 'count'];
 export const MAX_AUDIO_BYTES = 512 * 1024;
 const HEX_SHA256 = /^[a-f0-9]{64}$/u;
 const audioTypes = new Map([
@@ -87,10 +92,10 @@ function jsonResponse(body, status, cors) {
   });
 }
 
-async function readJson(request) {
+async function readJson(request, maxBytes = MAX_BODY_BYTES) {
   const mediaType = request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
   if (mediaType !== 'application/json') problem(415, 'JSON_REQUIRED', '请求须使用 application/json');
-  if (Number(request.headers.get('content-length')) > MAX_BODY_BYTES) {
+  if (Number(request.headers.get('content-length')) > maxBytes) {
     problem(413, 'PAYLOAD_TOO_LARGE', '请求内容过大');
   }
   if (!request.body) problem(400, 'JSON_INVALID', '请求缺少 JSON 对象');
@@ -104,7 +109,7 @@ async function readJson(request) {
       const { done, value } = await reader.read();
       if (done) break;
       bytes += value.byteLength;
-      if (bytes > MAX_BODY_BYTES) {
+      if (bytes > maxBytes) {
         await reader.cancel();
         problem(413, 'PAYLOAD_TOO_LARGE', '请求内容过大');
       }
@@ -211,6 +216,44 @@ function boardFor(boards, boardId) {
   const board = boards.get(boardId);
   if (!board) problem(422, 'BOARD_INVALID', '作业板块无效');
   return board;
+}
+
+async function assignmentDraft(request, principal, { boards, draftGeneration }) {
+  operatorOnly(principal);
+  const available = draftGeneration?.canGenerate(principal) === true;
+  if (request.method === 'GET') return { body: { available } };
+  if (!available) problem(403, 'AI_DRAFT_UNAVAILABLE', '当前账号未开通一键出题');
+
+  const body = await readJson(request, MAX_DRAFT_BODY_BYTES);
+  if (Object.keys(body).length !== DRAFT_FIELDS.length || !DRAFT_FIELDS.every(field => Object.hasOwn(body, field))
+      || !Number.isInteger(body.count) || body.count < 1 || body.count > MAX_DRAFT_QUESTIONS) {
+    problem(422, 'AI_DRAFT_INPUT_INVALID', '请提供作业板块、平台和资料，并选择 1–15 道题');
+  }
+  const board = boardFor(boards, body.boardId);
+  const { category } = board;
+  const { material, platform, count } = body;
+  if (!board.platforms.includes(platform)) problem(422, 'AI_DRAFT_INPUT_INVALID', '所选平台与作业板块不匹配');
+
+  let prompt;
+  try {
+    prompt = buildAssignmentDraftPrompt(material, { category, platform, count });
+  } catch {
+    problem(422, 'AI_DRAFT_INPUT_INVALID', '出题资料格式无效或超过 20000 字，请整理后重试');
+  }
+
+  let response;
+  try {
+    response = await draftGeneration.generate(principal, prompt);
+  } catch (error) {
+    if (error?.code === 'AI_DRAFT_LIMIT') problem(429, 'AI_DRAFT_LIMIT', '今天的一键出题次数已用完');
+    problem(503, 'AI_DRAFT_FAILED', '暂时无法生成草稿，请稍后重试');
+  }
+  try {
+    const questions = validateExcelQuestions(readAssignmentDraftResponse(response), { category, platform, max: count });
+    return { body: { questions: questions.map(({ question, answer, keyPoints }) => ({ question, answer, keyPoints })) } };
+  } catch {
+    problem(502, 'AI_DRAFT_RESPONSE_INVALID', '生成结果未通过题目校验，请调整资料后重试');
+  }
 }
 
 async function assignmentOf(body, boards) {
@@ -578,6 +621,9 @@ async function route(request, url, path, principal, dependencies) {
     if (method === 'POST') return publish(request, principal, dependencies);
     if (method === 'GET') return { body: await assignmentPage(store, principal, url) };
   }
+  if (path === '/assignments/draft' && (method === 'GET' || method === 'POST')) {
+    return assignmentDraft(request, principal, dependencies);
+  }
   const match = /^\/assignments\/([^/]+)\/(claim|progress|submissions|my-submissions)(?:\/([^/]+)\/audio)?$/u.exec(path);
   if (!match) return problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
   const [, rawId, action, rawSubmission] = match;
@@ -602,6 +648,7 @@ export function createApi({
   directory,
   store,
   media,
+  draftGeneration,
   now = () => new Date(),
   boards = boardDefinitions,
   allowedOrigins = [],
@@ -609,7 +656,7 @@ export function createApi({
   onError = () => {},
 }) {
   const dependencies = {
-    directory, store, now, media,
+    directory, store, now, media, draftGeneration,
     boards: new Map(boards.map(board => [board.id, board])),
   };
   const origins = new Set(allowedOrigins);

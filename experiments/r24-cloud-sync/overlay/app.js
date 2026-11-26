@@ -5,10 +5,10 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.9';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.5';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.9';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -1847,9 +1847,16 @@ function operatorHome(){
  const fill=()=>{const b=boardById(board.value);plat.innerHTML=b.platforms.map(p=>`<option value="${ESC(p)}">${ESC(p)}</option>`).join('')};board.onchange=fill;fill();
  ELEM('publishAssignment').onclick=async()=>{await publishAssignment();};
  ELEM('assignmentExcelPreviewBtn').onclick=previewAssignmentExcel;
+ const draftMember=syncMember();
  bindAssignmentDraftPanel({
   panel:ELEM('assignmentDraftPanel'),parseDocumentFile,
-  getAssignmentScope:()=>({category:boardById(board.value).category,platform:plat.value}),
+  getAssignmentScope:()=>({boardId:board.value,category:boardById(board.value).category,platform:plat.value}),
+  scopeInputs:[board,plat],
+  cloud:draftMember?.role==='operator'?{
+   isCurrent:()=>syncMember()===draftMember,
+   getAvailability:assignmentSync.getDraftAvailability,
+   generate:assignmentSync.generateDraft,
+  }:null,
   invalidate:()=>{if(assignmentPreview?.source==='ai')invalidateAssignmentPreview('AI 草稿已修改，请重新确认');},
   confirm:confirmAssignmentDraft,
  });

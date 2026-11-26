@@ -67,10 +67,11 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
   const signedOutKey = bindingKey + ':signed-out';
   let token = null;
   let principal = null;
+  let draftGenerationInFlight = false;
 
-  async function request(url, { method = 'GET', body, headers = {} } = {}) {
+  async function request(url, { method = 'GET', body, headers = {}, timeoutMs = 15000 } = {}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetch(url, {
         method, signal: controller.signal, cache: 'no-store',
@@ -96,9 +97,9 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
     }
   }
 
-  async function get(path, method = 'GET', body) {
+  async function get(path, method = 'GET', body, timeoutMs) {
     if (!token) throw new Error('请先通过姓名进入');
-    return request(base + path, { method, body, headers: { Authorization: `Bearer ${token}` } });
+    return request(base + path, { method, body, timeoutMs, headers: { Authorization: `Bearer ${token}` } });
   }
 
   async function list(path, key) {
@@ -235,6 +236,27 @@ export function createAssignmentSync(settings, pageUrl = location.href) {
       if (normalizeDisplayName(result.name) !== normalizeDisplayName(principal?.displayName) ||
           result.role !== principal?.role) throw new Error('签发身份未确认，请重新进入工作台');
       return {code: result.code, expiresAt: result.expiresAt, name: result.name, role: result.role};
+    },
+    async getDraftAvailability() {
+      if (principal?.role !== 'operator') return false;
+      try {
+        const result = await get('/assignments/draft');
+        if (typeof result.available !== 'boolean') throw new Error('出题服务状态未确认');
+        return result.available;
+      } catch (error) {
+        if (error.status === 404) return false;
+        throw error;
+      }
+    },
+    async generateDraft({ material, boardId, platform, count }) {
+      if (principal?.role !== 'operator') throw new Error('请先进入直播运营工作台');
+      if (draftGenerationInFlight) throw new Error('已有出题请求正在处理，请稍后重试');
+      draftGenerationInFlight = true;
+      try {
+        return await get('/assignments/draft', 'POST', { material, boardId, platform, count }, 35000);
+      } finally {
+        draftGenerationInFlight = false;
+      }
     },
     listAssignments: () => list('/assignments', 'assignments'),
     publish: assignment => get('/assignments', 'POST', { assignment, recipientIds: [] }),

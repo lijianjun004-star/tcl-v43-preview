@@ -40,7 +40,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-export async function startTestSite() {
+export async function startTestSite({ draftGeneration } = {}) {
   let origin;
   let api;
   const requests = [];
@@ -171,6 +171,7 @@ export async function startTestSite() {
   origin = 'http://127.0.0.1:' + server.address().port;
   const clips = new Map();
   api = createApi({
+    draftGeneration,
     media: {
       async put(path, _mimeType, bytes) {
         if (!clips.has(path)) clips.set(path, Buffer.from(bytes));

@@ -74,6 +74,22 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 
 部署限本试点函数和路径。函数更新后验证未登录的 `GET /me` 返回 401，并验证新设备开通接口。托管仅上传候选更新文件和 `static-manifest.json`，禁止使用 `--prune`。发布前后核对试点之外的托管对象及 QA3 清单。账号密码、设备码、设备凭证和管理令牌禁止写入源码或发布证据。
 
+## 一键出题的启用配置
+
+先在上海 CloudBase 控制台核实文本模型 ID、模型开关，以及当前套餐可用于 Web 触发云函数的额度。CloudBase 的小程序成长计划免费 Token 有来源限制，试点网页的请求须核对 Web 对应的套餐用量。生成使用现有云函数的 CloudBase 运行身份。[CloudBase Node.js 模型接口](https://docs.cloudbase.net/ai/model/nodejs-access) · [腾讯云用量规则](https://docs.cloudbase.net/ai/ai-inspire-plan-usage-governance)
+
+启用试点生成前，由数据库所有者应用 [每日请求限额迁移](schema-ai-drafts.sql)，确认云函数服务角色可调用专用 RPC。表只记录每日调用次数。审核后的题目继续走既有作业发布接口。
+
+| 函数环境变量 | 用途 |
+| --- | --- |
+| `TCL_R24_SYNC_AI_ENABLED` | 显式设为 `true` 后才考虑开放生成。默认关闭。 |
+| `TCL_R24_SYNC_AI_MODEL_PROVIDER` | 腾讯云文档中的 `cloudbase` 提供方。 |
+| `TCL_R24_SYNC_AI_MODEL_ID` | 已核实可用且具备额度的模型 ID。 |
+| `TCL_R24_SYNC_AI_OPERATOR_IDS` | 由管理员核实的运营账号 ID，多个用英文逗号分隔。自助开通的运营须加入此名单才可发起生成。 |
+| `TCL_R24_SYNC_AI_DAILY_LIMIT` | 整个试点按上海日期的最多调用次数，范围 1–20，默认 5。达到上限后生成返回 429。 |
+
+每次符合条件的请求在调用模型前占用一次额度，服务超时或模型返回不合格也计入次数。配置、身份和用量 RPC 都确认有效才会发出调用。浏览器点击「AI 一键出题」后发送选中的文字或提取出的表格文字，模型草稿回到编辑面板。模型输入和未确认草稿不写入作业数据。停用时可将开关设为 `false`，手动整理指令和回填的入口继续可用。
+
 ## 验证
 
 运行 [接口测试](../backend/API.md) 和 [浏览器复验](../tests/README.md)，检查发布、领取、提交、运营播放、换机、错角色提示和复用拒绝。测试合成账号只使用合成 Excel 和录音。云端列表每批至多读取 10 条，超过 100 批或约 8 MiB 会拒绝请求。扩大试点前需将筛选和分页下推到数据库。
