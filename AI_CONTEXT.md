@@ -11,6 +11,17 @@
 
 2026-11-26 UTC 已验证开启开关后的真实推送。公开的「电视球赛观影」资料合入 main 后自动生成 3 题、3 段参考话术和 9 条评分要点。`gpt-4o-mini` 返回 HTTP 200，用量 653 tokens，重试 0 次。下载产物后用上海 .8 导入器逐题读回 XLSX 和 TSV，数据与哈希一致。[验收运行 45907368994](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45907368994)
 
+## R24 `.11` 候选版 Claude 独立复验（2026-11-27 北京时间）
+
+Claude 云端会话按复验包 `R24-Claude-QA-20261127.zip`（SHA-256 `d032019878bcfebf591e735ecba4a3e1807ee7937ea33c78d360d7c45934d5e4`）中的 `README-Claude.md` 执行。固定候选为 `5764bab9e6fd3feb1c5b4e0ccbdb9ec083071cb6`，tree `d0df8cc4e9b68d684272bafd3b1a4c8ad7144bde`，与 GitHub 上同一提交一致，草稿 [PR #193](https://github.com/lijianjun004-star/tcl-v43-preview/pull/193) 未合并。上海公网仍为 `.8`。
+
+- **离线，09:11–09:20**：在 UTF-8 locale 下，按交付报告口径共 377 项通过、0 失败、0 跳过。其中发布门禁 233/233，后端/适配/草稿 98/98，评选 UI、回环与网关 16/16，Chromium 375/390px 19/19，PGlite 5/5，V2 本机冒烟通过，扫描器 `findings=0 coverage-gaps=0`。重建的站点清单 `52724256…417e` 和网关 ZIP `4cdcfdbd…7c8` 与交付报告逐字节一致。运行环境为 Node 22.23.5 与 Chrome for Testing 158.0.8127.36。
+- **公网，09:14–09:24**：清单 HTTP 200，版本 `r24-paraformer-excel-cloud-sync-v2-20261124.8`，38 个资源，清单 SHA `01d7a6fc…1604`，首页原始字节与 `files["index.html"]` 一致，38/38 资源哈希一致。浏览器先出现腾讯云「风险提醒」测试域名提示页（HTTP 404），点「确定访问」后进入。在 4 个全新 Chromium 会话（主播、运营 × 375/390px 模拟视口）中，姓名留空点「生成设备码」，均显示「请填写已绑定的姓名，再点「生成设备码」。首次使用请先选角色，点击「进入工作台」。」点击后 0 个网络请求，全程无写请求、无页面异常。
+- **NOT RUN — 待部署**：`.11` 公网在线出题、主播 AI 评分、跨设备运营回看。另外 NOT RUN：隔离环境端到端联调、新加坡网关与真实模型、Node 20.19、实体 iPhone/Android/微信。
+- **发现的问题**：P3，属测试环境依赖，非产品缺陷。容器未设 locale（POSIX）时，Chromium 会把中文下载文件名替换为 `download`，浏览器用例 15 因此失败（18/19）；设置 `LANG=C.UTF-8` 后 19/19 通过。建议测试与 CI 固定 `LANG=C.UTF-8`。
+- **输入来源说明**：Drive 上 78 MB 的 QA3 包为私有文件，未下载，其 ZIP SHA `2f07989a…` 未核验。改用 GitHub Pages 已发布的 `tcl-r24-paraformer-excel-qa/` 作为输入：清单 SHA 等于固定值 `ce897151…`，35/35 资源哈希一致。
+- 本轮未写入共享数据、未改令牌、未部署。原始日志、截图和脚本的证据包已在会话中交给用户，未入库。
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
