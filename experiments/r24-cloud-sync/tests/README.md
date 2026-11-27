@@ -34,3 +34,16 @@ TCL_TEST_SITE_DIR=/path/to/staged-site TCL_EVAL_SCREENSHOTS=/path/to/screenshots
 ```
 
 复验双端流程时先对照逐题评选与本人作答，再核对运营回看的是同一次提交。Chromium 在 375px 和 390px 校验网关记录，在 393px 校验混元记录。三个宽度均检查开播前及直播中的关闭按钮、横向滚动和浏览器异常。混元用例还核对额度用完的提示、草稿确认和双方看到的模型名称。HTTP 回环用例通过打包所用的网关服务端实现处理两类请求，上游使用测试替身。
+
+## 仓库异步评分的静态门禁
+
+在仓库根目录运行自测，再扫描准备发布的 Git 提交。准备提交时也可用 `--cached` 核对已暂存的 Git 树。
+
+```sh
+python3 experiments/r24-cloud-sync/tests/test_scan_gateway.py -v
+python3 experiments/r24-cloud-sync/tests/scan-gateway.py --tree HEAD
+```
+
+上海页面、后端、云函数和交付归档中的官方模型域名及密钥变量名均会被报告。新加坡网关沿用原有两处声明。仓库评分目录中，许可范围只含已审阅文件内各自的精确引用行。三个持有模型 Secret 的工作流按文件路径和完整 SHA-256 核对。更改触发事件、权限或步骤后，需要重新审阅该工作流再更新摘要。实际密钥形态的字串和可疑的直接日志输出仍分别检查。
+
+扫描输出分别列出新加坡声明、仓库评分声明、异常与未扫描项。以退出码、findings、coverage-gaps 和声明位置一起判断结果；人工复核仍需检查业务数据流和运行时配置。

@@ -2,17 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createApi} from '../api.mjs';
 import {createMemoryStore} from '../memory-store.mjs';
-import {makeAssignment} from '../vendor/assignment-excel.mjs';
-import {createAiGatewayClient, createHunyuanClient} from '../ai-gateway-client.mjs';
-import {createCloudBaseEvaluationGeneration} from '../../cloudbase/ai-draft-provider.mjs';
+import {makeAssignment, sha256Hex} from '../vendor/assignment-excel.mjs';
+import {createHunyuanClient} from '../ai-gateway-client.mjs';
+import {createCloudBaseDraftGeneration} from '../../cloudbase/ai-draft-provider.mjs';
 
 const path = '/assignments/evaluate';
 const prefix = 'tcl_r24_sync_test';
-const env = {
-  TCL_R24_SYNC_AI_ENABLED: 'true',
-  AI_GATEWAY_URL: 'https://gateway.example.invalid',
-  AI_GATEWAY_TOKEN: 'test-proxy-credential',
-};
+const env = {TCL_R24_SYNC_AI_ENABLED:'true', TCL_R24_SYNC_AI_OPERATOR_IDS:'o1',
+  TCL_R24_SYNC_AI_MODEL_PROVIDER:'cloudbase', TCL_R24_SYNC_AI_MODEL_ID:'hy3'};
 const accounts = Object.fromEntries([
   ['anchor', 'a1', 'anchor', '合成主播'], ['second', 'a2', 'anchor', '另一主播'],
   ['operator', 'o1', 'operator', '合成运营'], ['peer', 'o2', 'operator', '另一运营'],
@@ -25,25 +22,21 @@ const score = {
 };
 const usage = {prompt_tokens: 80, completion_tokens: 90, total_tokens: 170};
 
-function reply(content = JSON.stringify(score), finish = 'stop', stats = usage) {
-  return Response.json({choices: [{message: {role: 'assistant', content}, finish_reason: finish}], usage: stats});
-}
-
-async function fixture({configuration = env, reserve = () => ({data: true}), receive = () => reply(),
-  nativeReceive, keyPoints = ['核对尺寸', '咨询配送']} = {}) {
-  const store = createMemoryStore();
-  const calls = [];
-  const reservations = [];
-  const waits = [];
-  const client = nativeReceive ? createHunyuanClient({env: configuration, cloudApp: {
-    ai: () => ({createModel: () => ({generateText(options) { calls.push(options); return nativeReceive(); }})}),
-  }}) : createAiGatewayClient({env: configuration,
-    fetchImpl: async (url, options) => { calls.push(JSON.parse(options.body)); return receive(calls.length, options); },
-    sleep: async ms => { waits.push(ms); },
-  });
-  const db = {rpc(name, args) { reservations.push([name, args]); return reserve(reservations.length); }};
-  const evaluationGeneration = createCloudBaseEvaluationGeneration({client, db, prefix, env: configuration});
-  const api = createApi({store, evaluationGeneration, authenticate: async t => t === 'native-user' ? accounts.anchor : accounts[t],
+async function fixture({keyPoints = ['核对尺寸', '咨询配送'], store = createMemoryStore(), draftEnv = env} = {}) {
+  const counters = {legacyEvalCalls:0, cloudModelCalls:0, quotaReservations:0};
+  const client = createHunyuanClient({env:draftEnv, cloudApp:{ai:() => ({createModel:() => ({
+    generateText() {
+      counters.cloudModelCalls++;
+      const content=JSON.stringify({questions:[{question:'电视如何入户？',answer:'请核对包装尺寸及通道宽度。',keyPoints:['核对尺寸']}]});
+      return {rawResponses:[{choices:[{finish_reason:'stop',message:{role:'assistant',content}}]}]};
+    },
+  })})}});
+  const db = {rpc() {counters.quotaReservations++; return {data: true};}};
+  const draftGeneration = createCloudBaseDraftGeneration({client,db,prefix,env:draftEnv});
+  const api = createApi({store,draftGeneration,logDraft:()=>{},
+    // A pre-upgrade caller can still pass this removed option. It must never be called.
+    evaluationGeneration:{evaluate(){counters.legacyEvalCalls++; throw Error('obsolete dependency used');}},
+    authenticate: async t => t === 'native-user' ? accounts.anchor : accounts[t],
     authenticateEvaluation: async t => accounts[t],
     directory: {listAnchors: async () => Object.values(accounts).filter(a => a.role === 'anchor')}});
   async function call(method = 'POST', pathname = path, token = 'anchor', body) {
@@ -65,30 +58,29 @@ async function fixture({configuration = env, reserve = () => ({data: true}), rec
     turns: [{questionId: q.id, question: q.question, answer: '请测量电梯门的宽度。', transcript: '请测量电梯门的宽度。',
       model: q.model, sku: q.sku, asrStatus: '已人工核对'}]};
   const base = '/assignments/' + frozen.id;
-  return {store, snapshot, calls, reservations, waits, call, q, base,
+  return {store, snapshot, counters, call, q, base,
     evaluate: (s = snapshot, token = 'anchor') => call('POST', path, token, {snapshot: s}),
     submit: (s = snapshot, evaluationId, token = 'anchor') => call('POST', base + '/submissions', token, {snapshot: s, evaluationId})};
 }
 
-test('bound anchor grades against frozen rubric, persists immutable result only with matching submitted answers', async () => {
-  const f = await fixture();
-  // Untrusted local hints are not the assignment rubric.
-  f.snapshot.turns[0].keyPoints = ['客户合成伪造内容'];
-  f.snapshot.turns[0].referenceAnswer = '客户合成伪造内容';
-  const scored = await f.evaluate();
-  assert.equal(scored.status, 200);
-  assert.match(scored.evaluationId, /^[a-f0-9]{64}$/);
-  assert.match(scored.requestId, /^[a-f0-9-]{36}$/);
-  assert.deepEqual(scored.evaluation, {...score, requestId: scored.requestId, model: 'gpt-4o-mini',
-    source: 'openai_gateway', degraded: false, usage});
-  assert.equal(JSON.stringify(f.calls[0]).includes('客户合成伪造内容'), false);
-  assert.equal(JSON.stringify(f.calls[0]).includes(f.snapshot.anchorName), false);
-  assert.equal(JSON.stringify(f.calls[0]).includes(f.q.answer), true);
-  assert.deepEqual(f.reservations, [[prefix + '_reserve_ai_draft', {p_daily_limit: 5}]]);
-  assert.deepEqual((await f.call('GET', f.base + '/submissions', 'operator')).submissions, []);
-  assert.deepEqual((await f.evaluate()).evaluation, scored.evaluation);
-  assert.equal(f.calls.length, 1);
+function assertNoScoringCalls(f) {
+  assert.deepEqual(f.counters,{legacyEvalCalls:0,cloudModelCalls:0,quotaReservations:0});
+}
 
+async function seedHistorical(f, model) {
+  const sessionKey = await sha256Hex(['pilot','a1',f.snapshot.assignmentId,f.snapshot.id]);
+  const evaluationId = await sha256Hex(['evaluation-v1',sessionKey,f.snapshot.assignmentSnapshotSha256,
+    f.snapshot.turns.map(t => [t.questionId,t.answer,t.transcript])]);
+  const evaluation = {...score, requestId:'frozen-history', model,
+    source:model==='hy3'?'cloudbase_hunyuan':'openai_gateway', usage, degraded:false};
+  await f.store.createEvaluation({id:evaluationId, teamId:'pilot', anchorId:'a1', assignmentId:f.snapshot.assignmentId, evaluation});
+  return {evaluationId, evaluation};
+}
+
+test('bound anchor reads immutable historical results and can attach only a matching evaluation', async () => {
+  const f = await fixture();
+  const scored = await seedHistorical(f, 'hy3');
+  assert.deepEqual((await f.evaluate()).evaluation, scored.evaluation);
   const wrong = structuredClone(f.snapshot);
   wrong.turns[0].answer = '修改了本次最终回答。';
   assert.equal((await f.submit(wrong, scored.evaluationId)).error.code, 'AI_EVALUATION_MISMATCH');
@@ -102,7 +94,7 @@ test('bound anchor grades against frozen rubric, persists immutable result only 
   assert.equal((await f.submit(f.snapshot, scored.evaluationId)).replayed, true);
   assert.deepEqual((await f.evaluate()).evaluation, scored.evaluation);
   assert.equal((await f.evaluate(wrong)).error.code, 'AI_EVALUATION_ALREADY_SUBMITTED');
-  assert.equal(f.calls.length, 1);
+  assertNoScoringCalls(f);
   const log = await f.call('GET', f.base + '/submissions', 'operator');
   assert.deepEqual(log.submissions[0].evaluation, scored.evaluation);
   assert.deepEqual((await f.call('GET', f.base + '/my-submissions', 'anchor')).submissions[0].evaluation, scored.evaluation);
@@ -117,7 +109,36 @@ test('legacy unscored submission and client-supplied scores cannot manufacture o
   assert.ok(!Object.hasOwn(submission.submission, 'evaluation'));
   assert.ok(!Object.hasOwn((await f.call('GET', f.base + '/submissions', 'operator')).submissions[0], 'evaluation'));
   assert.equal((await f.evaluate()).error.code, 'AI_EVALUATION_ALREADY_SUBMITTED');
-  assert.equal(f.calls.length, 0);
+  assertNoScoringCalls(f);
+});
+
+test('upgraded clients omit the old evaluation ID; one exact trusted candidate is attached on concurrent submit', async () => {
+  const f = await fixture({draftEnv:{}});
+  const historical = await seedHistorical(f, 'hy3');
+  const responses = await Promise.all([f.submit(), f.submit()]);
+  assert.deepEqual(responses.map(r => r.status).sort(), [200,201]);
+  for (const response of responses) {
+    assert.deepEqual(response.submission.evaluation, historical.evaluation);
+  }
+  const persisted = await f.store.getSubmission(responses[0].submission.id);
+  assert.equal(persisted.evaluationId, historical.evaluationId);
+  assert.deepEqual((await f.evaluate()).evaluation, historical.evaluation);
+  assertNoScoringCalls(f);
+});
+
+test('an altered answer, transcript, session or account cannot reuse another historical candidate', async () => {
+  for (const field of ['answer','transcript','session','account']) {
+    const f = await fixture();
+    await seedHistorical(f,'hy3');
+    const snapshot = structuredClone(f.snapshot);
+    if (field === 'session') snapshot.id = 'other-session';
+    else if (field === 'account') snapshot.anchorName = accounts.second.displayName;
+    else snapshot.turns[0][field] = '请实际测量电梯门和通道。';
+    const response = await f.submit(snapshot, undefined, field === 'account' ? 'second' : 'anchor');
+    assert.equal(response.status,201);
+    assert.equal(response.submission.evaluation,undefined);
+    assertNoScoringCalls(f);
+  }
 });
 
 test('auth, rubric, frozen context and input bounds reject invalid evaluation before spending quota', async () => {
@@ -140,92 +161,63 @@ test('auth, rubric, frozen context and input bounds reject invalid evaluation be
     assert.equal(failure.status, 422);
     assert.equal(failure.evaluation, undefined);
   }
-  assert.equal(f.calls.length, 0);
-  assert.equal(f.reservations.length, 0);
+  assertNoScoringCalls(f);
   const emptyRubric = await fixture({keyPoints: []});
   assert.equal((await emptyRubric.evaluate()).error.code, 'AI_EVALUATION_INPUT_INVALID');
-  assert.equal(emptyRubric.calls.length, 0);
+  assertNoScoringCalls(emptyRubric);
 });
 
-test('missing gateway yields request ID, quota denial uses zero HTTP, and text submission remains available', async () => {
-  for (const [settings, code, status, quotaCount] of [
-    [{configuration: {...env, AI_GATEWAY_URL: ''}}, 'GATEWAY_CONFIG_MISSING', 503, 0],
-    [{configuration: {...env, TCL_R24_SYNC_AI_ENABLED: 'false'}}, 'AI_EVALUATION_DISABLED', 403, 0],
-    [{reserve: () => ({data: false})}, 'AI_EVALUATION_LIMIT', 429, 1],
-    [{reserve: () => ({error: {message: 'private internal detail'}})}, 'AI_EVALUATION_QUOTA_UNAVAILABLE', 503, 1],
-  ]) {
-    const f = await fixture(settings);
-    const fail = await f.evaluate();
-    assert.equal(fail.status, status);
-    assert.equal(fail.error.code, code);
-    assert.ok(fail.requestId && !fail.evaluation);
-    assert.equal(JSON.stringify(fail).includes('private internal detail'), false);
-    assert.equal(f.calls.length, 0);
-    assert.equal(f.reservations.length, quotaCount);
-    assert.equal((await f.submit()).status, 201);
+test('new legacy requests consistently direct users to submit; draft generation still works independently', async t => {
+  const f = await fixture();
+  const calls = await Promise.all([f.evaluate(),f.evaluate()]);
+  for (const res of calls) {
+    assert.equal(res.status,409);
+    assert.equal(res.error.code,'AI_EVALUATION_AFTER_SUBMIT');
+    assert.match(res.error.message,/提交后自动评分/);
+    assert.ok(res.requestId);
+    assert.equal(res.evaluation,undefined);
   }
+  const legacy = structuredClone(f.snapshot);
+  delete legacy.turns[0].answer;
+  assert.equal((await f.evaluate(legacy)).error.code,'AI_EVALUATION_AFTER_SUBMIT');
+  assert.equal((await f.submit()).status,201);
+  assertNoScoringCalls(f);
+  t.diagnostic('After two concurrent evaluation requests, a transcript-only request and submission: ' + JSON.stringify(f.counters));
+  const published = await f.call('POST','/assignments/draft','operator',{
+    boardId:'01',platform:'京东',material:'合成资料，电视包装需要先核对尺寸。',count:1,
+  });
+  assert.equal(published.status,200);
+  assert.equal(published.source,'cloudbase_hunyuan');
+  assert.deepEqual(f.counters,{legacyEvalCalls:0,cloudModelCalls:1,quotaReservations:1});
+  t.diagnostic('After one authorized operator draft with the same adapter: ' + JSON.stringify(f.counters));
 });
 
-test('empty and truncated results fail closed; a completed score with missing usage retains null', async () => {
-  for (const receive of [() => reply('{}'), () => reply('{invalid'), () => reply(JSON.stringify(score), 'length')]) {
-    const f = await fixture({receive});
-    const failure = await f.evaluate();
-    assert.equal(failure.status, 502);
-    assert.equal(failure.error.code, 'INVALID_AI_JSON');
-    assert.equal(failure.evaluation, undefined);
-    assert.equal(f.calls.length, 1);
-    assert.equal((await f.submit()).submission.evaluation, undefined);
-  }
-  const f = await fixture({receive: () => reply(JSON.stringify(score), 'stop', null)});
-  const snapshot = structuredClone(f.snapshot);
-  delete snapshot.turns[0].answer; // An ASR-only caller supplies transcript.
-  assert.equal((await f.evaluate(snapshot)).evaluation.usage, null);
+test('existing OpenAI cache remains readable with cloud generation disabled and no model configured', async () => {
+  const f=await fixture({draftEnv:{}});
+  assert.equal((await f.call('GET','/assignments/draft','operator')).available,false);
+  const original=await seedHistorical(f,'gpt-4o-mini');
+  assert.deepEqual((await f.evaluate()).evaluation,original.evaluation);
+  assertNoScoringCalls(f);
 });
 
-test('401 is terminal; 429, 502 and a timeout use one 1500ms backoff and one reservation per attempt', async () => {
-  const auth = await fixture({receive: () => new Response(null, {status: 401})});
-  assert.equal((await auth.evaluate()).error.code, 'GATEWAY_HTTP_401');
-  assert.deepEqual(auth.waits, []);
-  assert.equal(auth.calls.length, 1);
-  for (const fail of [429, 502, 'timeout']) {
-    const f = await fixture({configuration: {...env, AI_GATEWAY_TIMEOUT_MS: '25'},
-      receive: (n, options) => {
-        if (n === 2) return reply();
-        if (fail === 'timeout') return new Promise((_, reject) =>
-          options.signal.addEventListener('abort', () => reject(new Error('timeout')), {once: true}));
-        return new Response(null, {status: fail});
-      }});
-    assert.equal((await f.evaluate()).status, 200);
-    assert.equal(f.calls.length, 2);
-    assert.equal(f.reservations.length, 2);
-    assert.deepEqual(f.waits, [1500]);
-  }
-});
-
-test('native Shanghai scores keep model provenance through submission, retries and operator replay', async () => {
-  const configuration = {TCL_R24_SYNC_AI_ENABLED: 'true', TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase', TCL_R24_SYNC_AI_MODEL_ID: 'hy3'};
-  const nativeReceive = async () => ({rawResponses: [await reply().json()]});
-  const f = await fixture({configuration, nativeReceive});
-  const scored = await f.evaluate();
-  assert.equal(scored.status, 200);
-  assert.deepEqual(scored.evaluation, {...score, model: 'hy3', source: 'cloudbase_hunyuan',
-    requestId: scored.requestId, usage, degraded: false});
-  assert.deepEqual((await f.submit(f.snapshot, scored.evaluationId)).submission.evaluation, scored.evaluation);
-  assert.deepEqual((await f.call('GET', f.base + '/submissions', 'operator')).submissions[0].evaluation, scored.evaluation);
-  assert.deepEqual((await f.evaluate()).evaluation, scored.evaluation);
-  assert.equal(f.calls.length, 1);
-  assert.equal(f.reservations.length, 1);
-
-  const exhausted = await fixture({configuration, nativeReceive() {
-    throw new Error('AI+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，错误信息：private-diagnostic');
-  }});
-  const denied = await exhausted.evaluate();
-  assert.equal(denied.status, 503);
-  assert.equal(denied.error.code, 'HUNYUAN_TOKEN_QUOTA_EXCEEDED');
-  assert.match(denied.error.message, /腾讯云混元模型额度/);
-  assert.match(denied.requestId, /^[0-9a-f-]{36}$/);
-  assert.equal(denied.evaluation, undefined);
-  assert.equal(JSON.stringify(denied).includes('private-diagnostic'), false);
-  assert.equal((await exhausted.submit()).submission.evaluation, undefined);
-  assert.equal(exhausted.calls.length, 1);
+test('storage failure, malformed payload and revoked identity never activate a provider fallback', async t => {
+  const store=createMemoryStore();
+  const readHistory=store.getEvaluation;
+  store.getEvaluation=async()=>{throw Error('private database detail');};
+  const f=await fixture({store});
+  const cacheFailure=await f.evaluate();
+  assert.equal(cacheFailure.status,503);
+  assert.equal(cacheFailure.error.code,'AI_EVALUATION_HISTORY_UNAVAILABLE');
+  assert.ok(!JSON.stringify(cacheFailure).includes('private database detail'));
+  assert.equal((await f.call('POST',path,'anchor',{snapshot:null})).status,422);
+  assert.equal((await f.evaluate(f.snapshot,'revoked')).status,401);
+  assert.equal((await f.submit()).error.code,'AI_EVALUATION_HISTORY_UNAVAILABLE');
+  assert.deepEqual((await f.call('GET',f.base+'/submissions','operator')).submissions,[]);
+  store.getEvaluation=readHistory;
+  const previous=await seedHistorical(f,'hy3');
+  const retry=await f.submit();
+  assert.equal(retry.status,201);
+  assert.deepEqual(retry.submission.evaluation,previous.evaluation);
+  assertNoScoringCalls(f);
+  t.diagnostic('After temporary history failure 503, malformed snapshot 422, revoked credential 401 and recovered submission: ' + JSON.stringify(f.counters));
 });

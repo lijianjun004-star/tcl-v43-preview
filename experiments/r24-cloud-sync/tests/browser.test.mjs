@@ -706,7 +706,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.12';
+  const shortVersion = 'R24-20261124.13-async-rc1';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -1101,7 +1101,7 @@ function simulatedModelClient(source, vendorCalls, usage) {
         if (vendorCalls.length === 1) {
           throw new Error('AI+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，错误信息：Token usage exceeded quota limit.');
         }
-        const content = JSON.stringify(vendorCalls.length === 3 ? evaluationFixture : {questions: practiceDraft});
+        const content = JSON.stringify({questions: practiceDraft});
         return {text: content, rawResponses: [{
           choices: [{finish_reason: 'stop', message: {role: 'assistant', content}}], usage,
         }]};
@@ -1122,24 +1122,29 @@ function simulatedModelClient(source, vendorCalls, usage) {
       const body = JSON.parse(options.body);
       vendorCalls.push(body.response_format.type);
       if (vendorCalls.length === 1) return Response.json({}, {status: 401});
-      const content = body.response_format.type === 'json_schema' ? evaluationFixture : {questions: practiceDraft};
+      const content = {questions: practiceDraft};
       return Response.json({choices: [{finish_reason: 'stop', message: {role: 'assistant', content: JSON.stringify(content)}}], usage});
     },
   });
 }
 
 for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'], [393, 'cloudbase_hunyuan']]) {
-  test('mobile AI evaluation at ' + width + 'px uses real assignment, review and submission routes (' + source + ')', {timeout: 90000}, async t => {
+  test('mobile post-submission review at ' + width + 'px uses readback and no model request (' + source + ')', {timeout: 90000}, async t => {
     const vendorCalls = [];
     const simulatedUsage = {prompt_tokens: 100, completion_tokens: 50, total_tokens: 150};
     const gateway = simulatedModelClient(source, vendorCalls, simulatedUsage);
     const hunyuan = source === 'cloudbase_hunyuan';
     const modelName = hunyuan ? 'hy3' : 'gpt-4o-mini';
     const label = hunyuan ? '腾讯混元 · hy3' : 'OpenAI · gpt-4o-mini';
+    let repositoryReview = {status:'waiting'};
+    const evaluation = {...evaluationFixture, model:'gpt-6.1-terra', source:'openai_offline', degraded:false};
+    let legacyEvaluation;
     const {newPage, server} = await browserFixture(t, {
       draftGeneration: {canGenerate: actor => actor.role === 'operator', fallbackEnabled: true, model: gateway.model, source,
         generate: (_actor, prompt) => gateway.generate(prompt)},
-      evaluationGeneration: gateway,
+      repositoryReviews: async (_assignmentId, _principal, ids) => repositoryReview
+        ? ids.map(id => ({id,repository_review:repositoryReview})) : [],
+      legacyEvaluation: () => legacyEvaluation,
     });
     const operatorView = await newPage('/sync/', width), anchorView = await newPage('/sync/', width);
     const ops = operatorView.page, trainee = anchorView.page;
@@ -1202,22 +1207,8 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
     await trainee.locator('#focusClose').click();
     await trainee.getByRole('button', {name: '结束并进入复盘', exact: true}).click();
     await trainee.locator('#reviewDetails').click();
-    const [scored] = await Promise.all([
-      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
-      trainee.locator('#reviewAiEvaluate').click(),
-    ]);
-    const scoredBody = await scored.json();
-    assert.equal(scored.status(), 200, JSON.stringify(scoredBody));
-    assert.deepEqual(scoredBody.evaluation.items, evaluationFixture.items);
-    assert.deepEqual(scoredBody.evaluation.usage, simulatedUsage);
-    assert.equal(scoredBody.evaluation.source, source);
-    assert.equal(scoredBody.evaluation.model, modelName);
-    assert.equal(scoredBody.evaluation.degraded, false);
-    const displayed = trainee.locator('#reviewAiEvaluation [data-ai-eval-result]');
-    await verifyEvaluation(displayed);
-    await displayed.locator('[data-ai-model]').filter({hasText: label}).waitFor();
-    await scrollBelowHeader(displayed);
-    await captureMobile(trainee, width, 'anchor-evaluation');
+    assert.equal(await trainee.locator('#reviewAiEvaluate').count(), 0);
+    assert.equal(await trainee.locator('#reviewAiEvaluation').isVisible(), false);
     await trainee.locator('#reviewDetailsBack').click();
     const submissions = '/assignments/' + encodeURIComponent(assignment.id) + '/submissions';
     const [sent] = await Promise.all([
@@ -1225,30 +1216,88 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
       trainee.locator('#submitSession').click(),
     ]);
     assert.equal(sent.status(), 201, JSON.stringify(await sent.json()));
-    assert.equal(sent.request().postDataJSON().evaluationId, scoredBody.evaluationId);
-    assert.deepEqual((await sent.json()).submission.evaluation, scoredBody.evaluation);
+    assert.deepEqual(Object.keys(sent.request().postDataJSON()), ['snapshot']);
+    assert.deepEqual((await sent.json()).submission.repositoryReview, {status:'waiting'});
+    const reviewPanel = trainee.locator('#reviewAiEvaluation');
+    await reviewPanel.getByText('等待后台 AI 评选', {exact:true}).waitFor();
+    await scrollBelowHeader(reviewPanel);
+    await captureMobile(trainee, width, 'anchor-review-waiting');
+
     await ops.locator('[data-ops-tab="lookup"]').click();
     await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
     await ops.locator('#syncAnchorLookup').fill('演示主播');
-    await ops.locator('#syncAnchorRecords details summary').filter({hasText: '演示主播'}).click();
-    const received = ops.locator('#syncAnchorRecords [data-ai-eval-result]');
+    const operatorRecord = ops.locator('#syncAnchorRecords details').filter({hasText:'演示主播'});
+    await operatorRecord.locator('summary').click();
+    await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'等待后台 AI 评选'}).waitFor();
+    repositoryReview = {status:'processing'};
+    await reviewPanel.locator('#reviewAiRefresh').click();
+    await reviewPanel.getByText('正在后台 AI 评选', {exact:true}).waitFor();
+    await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'正在后台 AI 评选'}).waitFor();
+    repositoryReview = {status:'pending_review',evaluation};
+
+    const displayed = reviewPanel.locator('[data-ai-eval-result]');
+    await verifyEvaluation(displayed);
+    await displayed.locator('[data-ai-model]').filter({hasText: 'OpenAI · gpt-6.1-terra'}).waitFor();
+    await reviewPanel.getByText('待运营复核', {exact:true}).waitFor();
+    await scrollBelowHeader(displayed);
+    await captureMobile(trainee, width, 'anchor-evaluation');
+    const received = operatorRecord.locator('[data-ai-eval-result]');
     await verifyEvaluation(received);
-    await received.locator('[data-ai-model]').filter({hasText: label}).waitFor();
+    await received.locator('[data-ai-model]').filter({hasText: 'OpenAI · gpt-6.1-terra'}).waitFor();
     assert.equal(await received.locator('input,textarea,select,[contenteditable="true"]').count(), 0);
     await scrollBelowHeader(received);
     await captureMobile(ops, width, 'operator-evaluation');
-    assert.deepEqual(vendorCalls, hunyuan ? ['hy3', 'hy3', 'hy3'] : ['json_object', 'json_object', 'json_schema']);
+    if (width===390) {
+      await trainee.locator('#reviewHome').click();
+      await trainee.locator('#syncDeviceTools summary').click();
+      const code = await generateCode(trainee);
+      const other = await newPage('/sync/', width);
+      await submitName(other.page, '演示主播');
+      await other.page.locator('#syncActivationCode').waitFor();
+      assert.equal((await submitCode(other.page, code)).status(), 200);
+      await other.page.locator('#assignmentFold summary').click();
+      await other.page.locator('[data-my-submissions="' + assignment.id + '"]').click();
+      const transcript = other.page.locator('#syncMySubmissions details');
+      await transcript.locator('summary').click();
+      const secondDeviceResult = transcript.locator('[data-ai-eval-result]');
+      await verifyEvaluation(secondDeviceResult);
+      await scrollBelowHeader(secondDeviceResult);
+      await captureMobile(other.page, width, 'anchor-second-device-evaluation');
+      assert.deepEqual(other.errors, []);
+
+      await ops.locator('[data-ops-tab="tracking"]').click();
+      await ops.locator('[data-sync-submissions="' + assignment.id + '"]').click();
+      const tracking = ops.locator('#syncInbox details');
+      await tracking.locator('summary').click();
+      await verifyEvaluation(tracking.locator('[data-ai-eval-result]'));
+
+      // Present an earlier stored score through the same read-only route.
+      repositoryReview = undefined;
+      legacyEvaluation = {...evaluationFixture, overallScore: 91, grade: '优秀',
+        model:'hy3', source:'cloudbase_hunyuan', degraded:false};
+      await ops.locator('[data-sync-inbox-refresh]').click();
+      await tracking.locator('summary').click();
+      const previousResult = tracking.locator('[data-ai-eval-result]');
+      await previousResult.getByText('总分 91 / 100', {exact:true}).waitFor();
+      await previousResult.locator('[data-ai-model]').filter({hasText:'腾讯混元 · hy3'}).waitFor();
+      assert.equal(await tracking.locator('[data-ai-eval-status]').count(), 0);
+      await scrollBelowHeader(previousResult);
+      await captureMobile(ops, width, 'operator-historical-evaluation');
+    }
+    assert.deepEqual(vendorCalls, hunyuan ? ['hy3', 'hy3'] : ['json_object', 'json_object']);
+    assert.equal(server.requests.filter(r=>r.path.endsWith('/assignments/evaluate')).length, 0);
     assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
     assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
-    t.diagnostic('Two isolated browser sessions; simulated provider failure and success; 3 evaluated answers in the operator record; both close glyphs visible/clickable; no overflow, console errors or page errors.');
+    t.diagnostic('Isolated browser sessions, read-only asynchronous review states, no synchronous score request, and three preserved scored answers.');
   });
 }
 
-for (const source of ['openai_gateway', 'cloudbase_hunyuan']) {
-  test('mobile AI evaluation failure shows a request ID and preserves unscored submission (' + source + ')', {timeout: 60000}, async t => {
-    const vendorCalls = [];
-    const evaluationGeneration = simulatedModelClient(source, vendorCalls, null);
-    const {excel, newPage} = await browserFixture(t, {evaluationGeneration});
+for (const status of [undefined, 'needs_attention']) {
+  test('confirmed submissions show only the queue status provided by the server (' + (status || 'absent') + ')', {timeout: 60000}, async t => {
+    const repositoryReviews = async (_assignmentId, _principal, ids) => status
+      ? ids.map(id => ({id,repository_review:{status}}))
+      : [];
+    const {excel, newPage, server} = await browserFixture(t, {repositoryReviews});
     const operatorView = await newPage('/sync/', 375), anchorView = await newPage('/sync/', 375);
     const ops = operatorView.page, trainee = anchorView.page;
     await autoEnter(ops, 'operator', '演示运营');
@@ -1264,22 +1313,8 @@ for (const source of ['openai_gateway', 'cloudbase_hunyuan']) {
     await trainee.locator('#assignmentSearch').fill('演示运营');
     await trainee.locator('#syncRefresh').click();
     await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click());
-    await trainee.locator('#reviewDetails').click();
-    const [failed] = await Promise.all([
-      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
-      trainee.locator('#reviewAiEvaluate').click(),
-    ]);
-    const failure = await failed.json();
-    assert.equal(failed.ok(), false);
-    assert.equal(failure.error.code, source === 'cloudbase_hunyuan' ? 'HUNYUAN_TOKEN_QUOTA_EXCEEDED' : 'GATEWAY_HTTP_401');
-    assert.match(failure.requestId, /^[a-f0-9-]{36}$/i);
-    assert.deepEqual(vendorCalls, [source === 'cloudbase_hunyuan' ? 'hy3' : 'json_schema']);
-    const panel = trainee.locator('#reviewAiEvaluation');
-    const message = panel.locator('[data-ai-eval-status]');
-    await message.filter({hasText: failure.requestId}).waitFor();
-    assert.match(await message.innerText(), source === 'cloudbase_hunyuan' ? /上海试点的腾讯云模型额度已用完/ : /评选服务鉴权失败/);
-    assert.equal(await panel.locator('[data-ai-eval-result]').count(), 0);
-    await trainee.locator('#reviewDetailsBack').click();
+    assert.equal(await trainee.locator('#reviewAiEvaluate').count(), 0);
+    assert.equal(await trainee.locator('#reviewAiEvaluation').isVisible(), false);
     const [submitted] = await Promise.all([
       trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/' + assignment.id + '/submissions')),
       trainee.locator('#submitSession').click(),
@@ -1287,22 +1322,27 @@ for (const source of ['openai_gateway', 'cloudbase_hunyuan']) {
     assert.equal(submitted.status(), 201);
     const {submission} = await submitted.json();
     assert.deepEqual(submission.turns.map(turn => turn.answer), answers);
-    assert.equal(Object.hasOwn(submitted.request().postDataJSON(), 'evaluationId'), false);
+    assert.deepEqual(Object.keys(submitted.request().postDataJSON()), ['snapshot']);
     assert.equal(Object.hasOwn(submission, 'evaluation'), false);
+    assert.deepEqual(submission.repositoryReview, status ? {status} : undefined);
+
+    const label = status ? '需要运营处理' : '未生成 AI 评选';
+    const anchorPanel = trainee.locator('#reviewAiEvaluation');
+    await anchorPanel.getByText(label, {exact:true}).waitFor();
+    assert.equal(await anchorPanel.getByText(/等待后台|正在后台/).count(), 0);
     await ops.locator('[data-ops-tab="lookup"]').click();
     await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
     await ops.locator('#syncAnchorLookup').fill('演示主播');
     const record = ops.locator('#syncAnchorRecords details').filter({hasText:'演示主播'});
     await record.locator('summary').click();
-    await record.getByText('未生成 AI 评选', {exact:true}).waitFor();
+    await record.locator('[data-cloud-evaluation]').getByText(label, {exact:true}).waitFor();
     assert.equal(await record.locator('[data-ai-eval-result]').count(), 0);
-    assert.deepEqual(vendorCalls, [source === 'cloudbase_hunyuan' ? 'hy3' : 'json_schema']);
+    assert.equal(server.requests.filter(r => r.path.endsWith('/assignments/evaluate')).length, 0);
+    const anchorReads = () => server.requests.filter(r => r.method==='GET' && r.path.endsWith('/my-submissions')).length;
+    assert.equal(anchorReads(),status ? 0 : 1);
+    await new Promise(resolve => setTimeout(resolve,1600));
+    assert.equal(anchorReads(),status ? 0 : 1,'An absent or terminal queue state must not start a polling loop');
     assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
-    assert.deepEqual(operatorView.consoleErrors, []);
-    // Chromium may report the deliberate non-2xx /evaluate response as a resource error.
-    assert.ok(anchorView.consoleErrors.length <= 1);
-    for (const error of anchorView.consoleErrors) {
-      assert.ok(error.startsWith('Failed to load resource') && error.includes(String(failed.status())), error);
-    }
+    assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
   });
 }

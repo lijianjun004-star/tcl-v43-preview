@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { startDraftCall, finishDraftCall, generateAssignmentDraft } from './assignment-draft-service.mjs';
-import { isHunyuanModel } from './ai-gateway-client.mjs';
-import { validateEvaluationInput, validateEvaluationResult } from './evaluation-schema.mjs';
+import { validateEvaluationInput } from './evaluation-schema.mjs';
 import { buildAssignmentDraftPrompt } from '../overlay/assignment-drafts.mjs';
 import {
   isReceiptLate,
@@ -142,6 +141,19 @@ function cleanSubmission(record, audio) {
     sessionId, submittedAt, late, turns } = record;
   return { id, assignmentId, assignmentVersion, snapshotSha256, anchorId, anchorName,
     sessionId, submittedAt, late, turns, ...(record.evaluation ? {evaluation: record.evaluation} : {}), ...(audio ? { audio } : {}) };
+}
+
+function publicRepositoryReview(value) {
+  if (!value) return undefined;
+  if (['waiting', 'processing', 'needs_attention'].includes(value.status)) return {status: value.status};
+  const e = value.evaluation;
+  if (value.status !== 'pending_review' || !isRecord(e) || e.source !== 'openai_offline' ||
+      !Array.isArray(e.items) || !e.items.every(isRecord)) return {status: 'needs_attention'};
+  return {status: value.status, evaluation: {
+    ...selectFields(e, ['overallScore', 'grade', 'model', 'source']), degraded: false,
+    items: e.items.map(item => selectFields(item,
+      ['questionIndex', 'score', 'matchedPoints', 'missedPoints', 'comment', 'suggestedScript'])),
+  }};
 }
 
 function descending(a, b) {
@@ -325,7 +337,7 @@ function buildReceipt(record, principal, incoming, previous) {
 }
 
 function evaluationMismatch() {
-  problem(409, 'AI_EVALUATION_MISMATCH', '评选与当前场次或回答不匹配，请重新评选或仅提交文字');
+  problem(409, 'AI_EVALUATION_MISMATCH', '旧评选与当前场次或回答不匹配，请核对回答后提交本次作答');
 }
 
 function evaluationKey(sessionKey, receipt) {
@@ -333,36 +345,26 @@ function evaluationKey(sessionKey, receipt) {
     receipt.turns.map(turn => [turn.questionId, turn.answer, turn.transcript])]);
 }
 
-function evaluationFailure(code) {
-  const errors = {
-    GATEWAY_CONFIG_MISSING: [503, '评选网关尚未配置，请联系管理员'],
-    GATEWAY_CONFIG_INVALID: [503, '评选网关配置无效，请联系管理员'],
-    GATEWAY_TIMEOUT: [504, '评选网关超时，可稍后重试'],
-    GATEWAY_NETWORK_ERROR: [503, '评选网关暂时无法连接'],
-    GATEWAY_NETWORK_RESET: [503, '评选网关连接中断'],
-    HUNYUAN_TOKEN_QUOTA_EXCEEDED: [503, '腾讯云混元模型额度已用完，请联系管理员核查模型额度'],
-    INVALID_AI_JSON: [502, '模型结果不完整或格式异常，本次未评分'],
-    AI_EVALUATION_INPUT_INVALID: [422, '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'],
-    AI_EVALUATION_LIMIT: [429, '今天的 AI 调用额度已用完'],
-    AI_EVALUATION_DISABLED: [403, '试点尚未启用 AI 评选'],
-    AI_EVALUATION_QUOTA_UNAVAILABLE: [503, '暂时无法核实评选额度'],
-  };
-  if (typeof code === 'string' && /^GATEWAY_HTTP_[45]\d\d$/u.test(code)) {
-    problem(code === 'GATEWAY_HTTP_429' || code === 'GATEWAY_HTTP_503' ? 503 : 502, code,
-      '评选网关返回 HTTP ' + code.slice(-3) + '，请凭请求编号核查');
+async function historicalEvaluation(store, id, principal, assignmentId) {
+  try {
+    const row = await store.getEvaluation(id);
+    if (row == null) return null;
+    if (row.id === id && row.teamId === principal.teamId && row.anchorId === principal.id &&
+        row.assignmentId === assignmentId && isRecord(row.evaluation)) return row.evaluation;
+  } catch {
+    // An inconclusive lookup must not initialize a second paid attempt.
   }
-  if (Object.hasOwn(errors, code)) problem(errors[code][0], code, errors[code][1]);
-  problem(503, 'AI_EVALUATION_FAILED', '暂时无法完成 AI 评选，可以继续提交文字');
+  problem(503, 'AI_EVALUATION_HISTORY_UNAVAILABLE', '暂时无法核对本次作答的旧评选，请保留当前作答并稍后重试。');
 }
 
-async function evaluateAssignment(request, principal, {store, evaluationGeneration, evaluationRequestId}) {
+async function readLegacyEvaluation(request, principal, {store}) {
   anchorOnly(principal);
   const body = await readJson(request, 128 * 1024);
   const snapshot = body.snapshot;
   if (Object.keys(body).length !== 1 || !isRecord(snapshot) || typeof snapshot.assignmentId !== 'string' ||
       !ASSIGNMENT_ID.test(snapshot.assignmentId) || typeof snapshot.id !== 'string' || !ASSIGNMENT_ID.test(snapshot.id) ||
       !Array.isArray(snapshot.turns) || snapshot.turns.length < 1 || snapshot.turns.length > 15) {
-    evaluationFailure('AI_EVALUATION_INPUT_INVALID');
+    problem(422, 'AI_EVALUATION_INPUT_INVALID', '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限');
   }
   const assignmentRecord = await store.getAssignment(snapshot.assignmentId);
   assertVisible(assignmentRecord, principal);
@@ -370,14 +372,6 @@ async function evaluateAssignment(request, principal, {store, evaluationGenerati
   const turns = snapshot.turns.map(turn => isRecord(turn) && !Object.hasOwn(turn, 'answer')
     ? {...turn, answer: turn.answerText ?? turn.transcript} : turn);
   const receipt = buildReceipt(assignmentRecord, principal, {...snapshot, turns});
-  let items;
-  try {
-    items = validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
-      question: q.question, referenceAnswer: q.answer, keyPoints: q.keyPoints, answerText: receipt.turns[index].answer,
-    })));
-  } catch { evaluationFailure('AI_EVALUATION_INPUT_INVALID'); }
-
-  if (!evaluationGeneration) evaluationFailure('GATEWAY_CONFIG_MISSING');
   const sessionKey = await sha256Hex([principal.teamId, principal.id, snapshot.assignmentId, snapshot.id]);
   const id = await evaluationKey(sessionKey, receipt);
   const submitted = await store.getSubmission(sessionKey);
@@ -387,33 +381,14 @@ async function evaluateAssignment(request, principal, {store, evaluationGenerati
     }
     problem(409, 'AI_EVALUATION_ALREADY_SUBMITTED', '这场练播已经提交，已提交记录只支持查看');
   }
-  const existing = await store.getEvaluation(id);
-  if (existing) return {body: {evaluationId: id, evaluation: existing.evaluation}};
-  let result;
+  const existing = await historicalEvaluation(store, id, principal, snapshot.assignmentId);
+  if (existing) return {body: {evaluationId: id, evaluation: existing}};
   try {
-    result = await evaluationGeneration.evaluate(items);
-  } catch (error) { evaluationFailure(error?.code); }
-
-  let scoring;
-  const source = evaluationGeneration.source ?? 'openai_gateway';
-  try {
-    const validModel = source === 'openai_gateway' ? ['gpt-4o-mini', 'gpt-4o'].includes(result?.model) :
-      source === 'cloudbase_hunyuan' && isHunyuanModel(result?.model) && evaluationGeneration.model === result.model;
-    if (!validModel || result.httpStatus !== 200) {
-      throw new Error('Invalid upstream result');
-    }
-    scoring = validateEvaluationResult({overallScore: result.overallScore, grade: result.grade, items: result.items}, items);
-  } catch { evaluationFailure('INVALID_AI_JSON'); }
-  const usage = Object.fromEntries(['prompt_tokens', 'completion_tokens', 'total_tokens']
-    .filter(key => Number.isSafeInteger(result.usage?.[key]) && result.usage[key] >= 0)
-    .map(key => [key, result.usage[key]]));
-  const evaluation = {...scoring, model: result.model, usage: Object.keys(usage).length ? usage : null,
-    requestId: evaluationRequestId, source, degraded: false};
-  const record = {id, assignmentId: snapshot.assignmentId, teamId: principal.teamId, anchorId: principal.id, evaluation};
-  // Insert-only storage makes concurrent completions converge on the same authoritative score.
-  const confirmed = await store.createEvaluation(record) ? record : await store.getEvaluation(id);
-  if (!confirmed) problem(503, 'WRITE_PENDING', '评选结果尚未确认，请用同一场次重试');
-  return {body: {evaluationId: id, evaluation: confirmed.evaluation}};
+    validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
+      question: q.question, referenceAnswer: q.answer, keyPoints: q.keyPoints, answerText: receipt.turns[index].answer,
+    })));
+  } catch { problem(422, 'AI_EVALUATION_INPUT_INVALID', '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'); }
+  problem(409, 'AI_EVALUATION_AFTER_SUBMIT', '请先确认并提交本次作答，已开通的作业会在提交后自动评分。');
 }
 
 function submissionResponse(record, payloadHash, replayed, evaluationId) {
@@ -424,7 +399,7 @@ function submissionResponse(record, payloadHash, replayed, evaluationId) {
   return { status: replayed ? 200 : 201, body: { submission: cleanSubmission(record), replayed } };
 }
 
-async function submit(request, assignmentId, principal, { store, now }) {
+async function submit(request, assignmentId, principal, { store, now, notifyRepositoryQueue }) {
   anchorOnly(principal);
   const assignmentRecord = await store.getAssignment(assignmentId);
   assertVisible(assignmentRecord, principal);
@@ -443,15 +418,28 @@ async function submit(request, assignmentId, principal, { store, now }) {
     snapshotSha256: receipt.snapshotSha256,
     turns: receipt.turns,
   });
-  if (current) return submissionResponse(current, payloadHash, true, evaluationId);
-
-  let evaluation;
-  if (evaluationId !== undefined) {
-    const expectedId = await evaluationKey(id, receipt);
-    if (expectedId !== evaluationId) evaluationMismatch();
-    evaluation = (await store.getEvaluation(evaluationId))?.evaluation;
-    if (!evaluation) evaluationMismatch();
+  async function confirmed(record, replayed) {
+    const response = submissionResponse(record, payloadHash, replayed, evaluationId);
+    if (!store.listRepositoryReviews) return response;
+    try {
+      const rows = await store.listRepositoryReviews(assignmentId, principal, [id]);
+      const row = rows.find(entry => entry.id === id);
+      const review = publicRepositoryReview(row?.repository_review);
+      if (review) response.body.submission.repositoryReview = review;
+      if (!replayed && review?.status === 'waiting' && notifyRepositoryQueue) {
+        await notifyRepositoryQueue();
+      }
+    } catch {
+      // Commit already succeeded. The authorized read feed and cron recover a missed wake.
+    }
+    return response;
   }
+  if (current) return confirmed(current, true);
+
+  const expectedId = await evaluationKey(id, receipt);
+  if (evaluationId !== undefined && expectedId !== evaluationId) evaluationMismatch();
+  const evaluation = await historicalEvaluation(store, expectedId, principal, assignmentId);
+  if (evaluationId !== undefined && !evaluation) evaluationMismatch();
 
   const submittedAt = now().toISOString();
   const submission = {
@@ -467,10 +455,10 @@ async function submit(request, assignmentId, principal, { store, now }) {
     late: isReceiptLate({ submittedAt }, assignmentRecord.assignment),
     turns: receipt.turns,
     payloadHash,
-    ...(evaluation ? {evaluationId, evaluation} : {}),
+    ...(evaluation ? {evaluationId: expectedId, evaluation} : {}),
   };
-  if (await store.createSubmission(submission)) return submissionResponse(submission, payloadHash, false, evaluationId);
-  return submissionResponse(await store.getSubmission(id), payloadHash, true, evaluationId);
+  if (await store.createSubmission(submission)) return confirmed(submission, false);
+  return confirmed(await store.getSubmission(id), true);
 }
 
 async function assignmentPage(store, principal, url) {
@@ -563,11 +551,13 @@ async function submissionPage(assignmentId, url, principal, store, own) {
   const batchSize = 4;
   for (let offset = 0; offset < Math.min(headers.length, MAX_PAGE_ROWS); offset += batchSize) {
     const ids = headers.slice(offset, Math.min(offset + batchSize, MAX_PAGE_ROWS)).map(row => row.id);
-    const [submissions, audio] = await Promise.all([
+    const [submissions, audio, reviews] = await Promise.all([
       store.listSubmissions(assignmentId, principal.teamId, anchorId, ids),
       store.listSubmissionAudio(assignmentId, principal.teamId, anchorId, ids),
+      store.listRepositoryReviews?.(assignmentId, principal, ids) ?? [],
     ]);
     const byId = new Map(submissions.map(row => [row.id, row]));
+    const reviewById = new Map(reviews.map(row => [row.id, publicRepositoryReview(row.repository_review)]));
     for (const id of ids) {
       const row = byId.get(id);
       if (!row || row.assignmentId !== assignmentId || row.teamId !== principal.teamId || (own && row.anchorId !== anchorId)) {
@@ -575,6 +565,7 @@ async function submissionPage(assignmentId, url, principal, store, own) {
       }
       const view = cleanSubmission(row, audio.filter(a => a.readyAt && a.submissionId === id &&
         a.anchorId === row.anchorId && a.teamId === row.teamId && a.assignmentId === row.assignmentId).map(publicAudio));
+      if (reviewById.has(id)) view.repositoryReview = reviewById.get(id);
       const rowBytes = Buffer.byteLength(JSON.stringify(view));
       if (rows.length && bytes + rowBytes > MAX_PAGE_BYTES) break;
       bytes += rowBytes;
@@ -732,7 +723,7 @@ async function route(request, url, path, principal, dependencies) {
     if (method === 'POST') return publish(request, principal, dependencies);
     if (method === 'GET') return { body: await assignmentPage(store, principal, url) };
   }
-  if (method === 'POST' && path === '/assignments/evaluate') return evaluateAssignment(request, principal, dependencies);
+  if (method === 'POST' && path === '/assignments/evaluate') return readLegacyEvaluation(request, principal, dependencies);
   if (path === '/assignments/draft' && (method === 'GET' || method === 'POST')) {
     return assignmentDraft(request, principal, dependencies);
   }
@@ -762,7 +753,7 @@ export function createApi({
   store,
   media,
   draftGeneration,
-  evaluationGeneration,
+  notifyRepositoryQueue,
   now = () => new Date(),
   boards = boardDefinitions,
   allowedOrigins = [],
@@ -771,7 +762,7 @@ export function createApi({
   logDraft = entry => console.info(JSON.stringify(entry)),
 }) {
   const dependencies = {
-    directory, store, now, media, draftGeneration, evaluationGeneration,
+    directory, store, now, media, notifyRepositoryQueue, draftGeneration,
     boards: new Map(boards.map(board => [board.id, board])),
   };
   const origins = new Set(allowedOrigins);
@@ -806,7 +797,7 @@ export function createApi({
       if (basePath && !url.pathname.startsWith(basePath + '/')) {
         problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
       }
-      const result = await route(request, url, url.pathname.slice(basePath.length), principal, {...dependencies, draftAudit, evaluationRequestId});
+      const result = await route(request, url, url.pathname.slice(basePath.length), principal, {...dependencies, draftAudit});
       return respond(result.body, result.status ?? 200);
     } catch (error) {
       if (error instanceof ApiProblem) {

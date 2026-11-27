@@ -3,6 +3,12 @@ on:
   schedule:
     - cron: '8,23,38,53 * * * *'
   workflow_dispatch:
+    inputs:
+      signal:
+        description: 队列唤醒原因
+        type: choice
+        options: [sweep, submission_saved]
+        default: sweep
 permissions:
   contents: write
 concurrency:

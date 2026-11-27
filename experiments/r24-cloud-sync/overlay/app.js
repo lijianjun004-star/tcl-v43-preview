@@ -5,16 +5,15 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.12';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.13-async-rc1';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { evaluationInputKey, evaluationResultHtml, validEvaluation, evaluationFailure } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.12';
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.12';
+import { evaluationReadbackHtml, isRepositoryReviewPending, repositoryReviewLabel } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.13-async-rc1';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.13-async-rc1';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
 let assignmentSync=null, syncConfigError='', cloudAssignments=[], syncSubmitStatus=new Map();
-let pendingEvaluation=null, reviewEvaluationError=null;
 let syncAssignmentsLoading=false, syncAssignmentsLoaded=false, syncAssignmentsMessage='';
 let pendingCloudAssignment=null, workflowChannel=null;
 const syncMember=()=>assignmentSync?.principal||null;
@@ -871,7 +870,6 @@ const formatPracticeDuration=(sec)=>{const s=Math.max(0,Math.round(Number(sec)||
 let chatExtraTimers=[];
 function cancelVoskPreload(){voskPreloadSeq++;}
 function resetRunState({cancelPreload=true}={}){
- pendingEvaluation=null;reviewEvaluationError=null;
  sessionAssignmentSnapshot=null;
 
   storedSessionRecords=new Map();storedSessionMedia.clear();clearReviewQuestionAudioUrls();clearQuestionStopWatchdog();reviewParked=false;reviewStage='overview';runId='';sessionStartedAt=0;sessionStartedMono=0;activeTurn=null;sessionTurns=[];recordingTurn=null;questionAsrQueue=[];perQuestionAudio.clear();activeQuestionIndex=-1;questionBag=[];
@@ -966,11 +964,11 @@ function createQuestionSummaryRow(turn){
  entry.raw=detail('查看模型识别原文');entry.candidate=detail('查看识别候选（未覆盖当前回答）');
  const use=document.createElement('button');use.type='button';use.className='btn soft';use.textContent='采用此候选回答';entry.candidate.box.append(use);
  use.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=toSimplified(t.whisperCandidate);t.transcript=t.answer;t.manualEdited=true;t.manualCleared=false;t.compliance=complianceHints(t.answer,t.platform);t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='已采用识别候选（请核对）';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};
- const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true';paintReviewEvaluation()};entry.editor=editor;entry.answerCell.append(editor);
+ const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true'};entry.editor=editor;entry.answerCell.append(editor);
  const save=document.createElement('button');save.type='button';save.className='btn soft';save.textContent='保存本题修改';
  save.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=editor.value.trim();t.manualEdited=true;t.manualCleared=!t.answer;t.compliance=t.answer?complianceHints(t.answer,t.platform):[];t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};entry.answerCell.append(save);
  const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
- copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';paintReviewEvaluation();editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
+ copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
  entry.actions=cell('状态');entry.status=document.createElement('div');entry.actions.append(entry.status);
  const retry=document.createElement('button');retry.type='button';retry.className='btn soft';retry.onclick=()=>retryLocalQuestion(entry.turn.id);entry.retry=retry;entry.actions.append(retry);
  return entry;
@@ -994,7 +992,6 @@ function updateQuestionSummaryRow(entry,turn){
  entry.retry.disabled=!!oneShotAsrJob||!!transcriptBusy||!!voskLoadJob||!!r6WhisperRunning;
 }
 function renderQuestionSummary(){
- paintReviewEvaluation();
  const el=ELEM('questionSummary');
  // The detail screen is mounted but hidden in overview/replay/live. Rendering it
  // there used to rebuild hundreds of editors and audio players for each status.
@@ -1510,15 +1507,60 @@ function cloudClaimList(claims){
   <small>${claim.claimedAt?ESC(new Date(claim.claimedAt).toLocaleString('zh-CN')):''}</small>
  </div>`).join('')||'<p class="scene-tip">暂无主播领取</p>'}`;
 }
+const repositoryReviewPolls=new WeakMap();
+const repositoryReviewDelays=[1500,3000,6000,12000];
+function watchRepositoryReviews(target,records,{load,update,visible,immediate=false,onError}){
+ const member=syncMember(),previous=repositoryReviewPolls.get(target),ticket={};
+ clearTimeout(previous?.timer);
+ repositoryReviewPolls.set(target,ticket);
+ let attempt=0;
+ const current=()=>target.isConnected&&syncMember()===member&&repositoryReviewPolls.get(target)===ticket&&visible();
+ const schedule=()=>{
+  if(!current()||attempt>=repositoryReviewDelays.length||!records.some(record=>isRepositoryReviewPending(record.repositoryReview)))return;
+  ticket.timer=setTimeout(refresh,repositoryReviewDelays[attempt++]);
+ };
+ async function refresh(){
+  if(!current())return;
+  try{
+   const next=await load();
+   if(!current())return;
+   records=next;
+   update(records);
+  }catch{
+   if(current())onError?.();
+  }
+  schedule();
+ }
+ if(immediate)void refresh();
+ else schedule();
+}
+function setEvaluationReadback(holder,record){
+ const html=evaluationReadbackHtml(record,ESC);
+ if(holder.evaluationMarkup===html)return;
+ holder.innerHTML=html;
+ holder.evaluationMarkup=html;
+}
+function updateCloudEvaluationReadbacks(view,records){
+ const byId=new Map(records.map(record=>[record.id,record]));
+ for(const holder of view.querySelectorAll('[data-cloud-evaluation]')){
+  const record=byId.get(holder.dataset.cloudEvaluation);
+  if(!record)continue;
+  setEvaluationReadback(holder,record);
+  const indicator=holder.parentElement.querySelector('[data-cloud-review-indicator]');
+  const status=repositoryReviewLabel(record.repositoryReview);
+  indicator.hidden=!status;
+  setNodeText(indicator,status);
+ }
+}
 function cloudSubmissionHtml(record){
  const audioQuestions=new Set((record.audio||[]).map(audio=>audio.questionId));
- const cached=localSubmissions.find(s=>s.cloudId===record.id);
- return `<details class="submission-card"><summary>${ESC(record.anchorName)} · ${ESC(new Date(record.submittedAt).toLocaleString('zh-CN'))}${record.late?' · 逾期':''}</summary>
+ const cached=localSubmissions.find(s=>s.cloudId===record.id),status=repositoryReviewLabel(record.repositoryReview);
+ return `<details class="submission-card"><summary>${ESC(record.anchorName)} · ${ESC(new Date(record.submittedAt).toLocaleString('zh-CN'))}${record.late?' · 逾期':''} <span class="pill" data-cloud-review-indicator${status?'':' hidden'}>${ESC(status)}</span></summary>
  ${record.turns.map(turn=>`<div class="submission-turn"><b>${ESC(turn.question)}</b>
   <p>${ESC(turn.answer)}</p>${turn.transcript&&turn.transcript!==turn.answer?`<p>转写：${ESC(turn.transcript)}</p>`:''}
   ${audioQuestions.has(turn.questionId)?`<button type="button" class="btn soft small" data-cloud-audio="${ESC(turn.questionId)}" data-cloud-submission="${ESC(record.id)}">播放逐题录音</button>
   <div data-cloud-player role="status"></div>`:''}</div>`).join('')}
- ${evaluationResultHtml(record.evaluation,record.turns,ESC)}
+ <div data-cloud-evaluation="${ESC(record.id)}">${evaluationReadbackHtml(record,ESC)}</div>
  ${cached?cloudAudioStatusHtml(cached):''}</details>`;
 }
 function bindCloudPlayback(target,assignmentId){
@@ -1575,6 +1617,8 @@ async function showSyncInbox(assignmentId){
   ${cloudClaimList(claims)}
   ${submissions.map(cloudSubmissionHtml).join('')||'<p>暂未收到提交</p>'}`);
   view.querySelector('[data-sync-inbox-refresh]').onclick=()=>showSyncInbox(assignmentId);
+  watchRepositoryReviews(view,submissions,{load:()=>assignmentSync.submissions(assignmentId),
+   update:rows=>updateCloudEvaluationReadbacks(view,rows),visible:()=>page==='home'&&operatorActiveTab==='tracking'&&syncInboxAssignmentId===assignmentId});
  }catch(error){if(view.isConnected)view.textContent='读取失败：'+error.message;}
 }
 async function showMySubmissions(assignmentId){
@@ -1586,7 +1630,11 @@ async function showMySubmissions(assignmentId){
   const submissions=await assignmentSync.mySubmissions(assignmentId);
   if(!view.isConnected||syncMember()!==member)return;
   appendCloudInbox(view,assignmentId,`<h3>我的云端提交 · ${ESC(assignment.title)}</h3>
+   <button type="button" class="btn soft small" data-sync-my-submissions-refresh>刷新提交与评选</button>
    ${submissions.map(cloudSubmissionHtml).join('')||'<p>暂无提交记录</p>'}`);
+  view.querySelector('[data-sync-my-submissions-refresh]').onclick=()=>showMySubmissions(assignmentId);
+  watchRepositoryReviews(view,submissions,{load:()=>assignmentSync.mySubmissions(assignmentId),
+   update:rows=>updateCloudEvaluationReadbacks(view,rows),visible:()=>page==='home'});
   view.scrollIntoView({block:'nearest'});
  }catch(error){if(view.isConnected)view.textContent='读取失败：'+error.message;}
 }
@@ -1610,6 +1658,8 @@ async function refreshCloudAnchorRecords(){
   if(!request.isConnected||syncMember()!==member||select.value!==id)return;
   syncRecordList=rows;
   renderCloudAnchorRecords();
+  watchRepositoryReviews(target,rows,{load:()=>assignmentSync.submissions(id),visible:()=>page==='home'&&operatorActiveTab==='lookup'&&select.value===id,
+   update:next=>{syncRecordList=next;updateCloudEvaluationReadbacks(target,next);}});
  }catch(error){if(request.isConnected){request.removeAttribute('aria-busy');request.textContent='读取失败：'+error.message;}}
 }
 function bindCloudAnchorRecords(){
@@ -1728,7 +1778,12 @@ function reviewSubmitHtml(assignment,operatorNames,submitted){
    ${submitted?ESC(submitStatusText(submitted)):member?'提交到云端':assignment?'保存并导出回执':'保存到本机'}
   </button>
   ${submitted?.assignmentReceipt?'<button type="button" id="exportAssignmentReceipt" class="btn soft wide">导出作业回执（JSON）</button>':''}
-  ${member?`<div id="syncReviewAudioStatus">${cloudAudioStatusHtml(submitted||{})}</div>`:''}
+  ${member?`<div id="syncReviewAudioStatus">${cloudAudioStatusHtml(submitted||{})}</div>
+  <section class="review-ai-panel" id="reviewAiEvaluation" aria-label="云端 AI 评选" hidden>
+   <h3>云端 AI 评选</h3>
+   <button type="button" class="btn soft small" id="reviewAiRefresh">刷新评选状态</button>
+   <p class="scene-tip" role="status" data-ai-eval-load></p><div data-ai-eval-output aria-live="polite"></div>
+  </section>`:''}
   <p class="scene-tip submit-local-note">${member?'提交后运营可查看文字、转写及已上传的逐题录音。整场录像只保存在本机。':'数据保存在当前浏览器。跨设备交接时，请发送作业回执给运营。'}</p>
  </div>`;
 }
@@ -3583,62 +3638,40 @@ async function submitAnswer(){
 function hasUnsavedReviewEdits(){
  return !!ELEM('questionSummary')?.querySelector('textarea[data-dirty="true"]');
 }
-function matchingEvaluation(snap,key=evaluationInputKey(snap)){
- const saved=snap.aiReview;
- return saved?.key===key && /^[a-f0-9]{64}$/.test(saved.evaluationId) &&
-  validEvaluation(saved.evaluation,snap.turns.length)?saved:null;
-}
-
 function paintReviewEvaluation(){
- const panel=ELEM('reviewAiEvaluation'),snap=lastSessionSnapshot;
- if(!panel||!snap||!reviewAlive())return;
- const submitted=reviewSubmission(),key=evaluationInputKey(snap);
- const dirty=hasUnsavedReviewEdits();
- const waiting=pendingEvaluation?.snapshot===snap;
- const empty=!snap.turns.length||snap.turns.some(turn=>turn.manualCleared||!(turn.answer?.trim()||turn.transcript?.trim()));
- const current=matchingEvaluation(snap,key);
- const failed=reviewEvaluationError;
- let message='';
- if(submitted)message=submitted.evaluation?'以下为已提交回答的评选。':'未生成 AI 评选';
- else if(dirty)message='请先保存已编辑的逐题回答，再发起评选。';
- else if(empty)message='请先为每道题填写回答或核对转写文字。';
- else if(waiting)message='正在评选。如果现在提交作业，将按未评分保存。';
- else if(failed?.snapshot===snap && failed.key===key)message=failed.message;
- else if(current)message='评选已完成，提交作业时会一并交给运营。';
- else message=snap.aiReview?'回答已更新，请重新评选。':'可使用已保存的文字或转写回答获取逐题点评。';
- const button=ELEM('reviewAiEvaluate');
- button.hidden=!!submitted;
- button.disabled=!!(submitted||submissionSaving||waiting||dirty||empty||current);
- setNodeText(button,waiting?'正在评选…':'发起 AI 评选');
- setNodeText(panel.querySelector('[data-ai-eval-status]'),message);
- const output=panel.querySelector('[data-ai-eval-output]');
- const visible=submitted?submitted.evaluation:dirty?null:current?.evaluation;
- if(output.evaluationResult!==visible){
-  output.evaluationResult=visible;
-  output.innerHTML=visible?evaluationResultHtml(visible,submitted?.turns||snap.turns,ESC):'';
- }
+ const panel=ELEM('reviewAiEvaluation'),submitted=reviewSubmission();
+ if(!panel)return;
+ panel.hidden=!submitted?.cloudConfirmed;
+ if(!panel.hidden)setEvaluationReadback(panel.querySelector('[data-ai-eval-output]'),submitted);
 }
 
-async function evaluateReview(){
- const snap=lastSessionSnapshot,member=syncMember(),button=ELEM('reviewAiEvaluate');
- if(!snap||!reviewAlive()||!button||button.disabled||member?.role!=='anchor'||!snap.assignmentId||reviewSubmission())return;
- const key=evaluationInputKey(snap),request={snapshot:snap,key};
- pendingEvaluation=request;reviewEvaluationError=null;paintReviewEvaluation();
- const current=()=>pendingEvaluation===request&&syncMember()===member&&lastSessionSnapshot===snap&&
-  runId===snap.id&&evaluationInputKey(snap)===key&&!submissionSaving&&!reviewSubmission();
- try{
-  const response=await assignmentSync.evaluate(cloudSubmissionPayload(snap));
-  if(!current())return;
-  if(!/^[a-f0-9]{64}$/.test(response?.evaluationId)||!validEvaluation(response?.evaluation,snap.turns.length))
-   throw Object.assign(new Error('评选结果无效'),{code:'INVALID_AI_JSON',requestId:response?.evaluation?.requestId});
-  snap.aiReview={key,evaluationId:response.evaluationId,evaluation:response.evaluation};
-  await persistSessionCheckpoint();
- }catch(error){
-  if(current())reviewEvaluationError={snapshot:snap,key,message:evaluationFailure(error)};
- }finally{
-  if(pendingEvaluation===request)pendingEvaluation=null;
-  paintReviewEvaluation();
- }
+function refreshReviewEvaluation({immediate=true}={}){
+ const panel=ELEM('reviewAiEvaluation'),submitted=reviewSubmission(),snap=lastSessionSnapshot;
+ if(!panel||!submitted?.cloudConfirmed||!snap?.assignmentId||syncMember()?.role!=='anchor')return;
+ const refresh=ELEM('reviewAiRefresh'),message=panel.querySelector('[data-ai-eval-load]');
+ if(refresh.disabled)return;
+ const initial={id:submitted.cloudId,repositoryReview:submitted.repositoryReview};
+ watchRepositoryReviews(panel,[initial],{
+  immediate,
+  visible:()=>page==='sessionReview'&&lastSessionSnapshot===snap&&reviewSubmission()===submitted,
+  load:async()=>{
+   refresh.disabled=true;
+   setNodeText(message,'正在读取云端评选…');
+   try{
+    const rows=await assignmentSync.mySubmissions(snap.assignmentId);
+    return rows.filter(row=>row.id===submitted.cloudId);
+   }finally{refresh.disabled=false;}
+  },
+  update:rows=>{
+   const record=rows[0];
+   if(!record){setNodeText(message,'暂未读到这条云端提交，请刷新重试。');return;}
+   submitted.evaluation ||= record.evaluation;
+   submitted.repositoryReview=record.repositoryReview;
+   setNodeText(message,'');
+   paintReviewEvaluation();
+  },
+  onError:()=>setNodeText(message,'评选状态读取未完成，请稍后刷新。'),
+ });
 }
 
 function buildSessionIssues(snap){
@@ -3713,10 +3746,6 @@ function sessionReviewPage(){
  <section id="reviewDetailsScreen" class="review-stage review-details-screen" aria-label="逐题复盘详情" hidden aria-hidden="true">
   <div class="review-subbar"><button type="button" id="reviewDetailsBack" class="review-back" aria-label="返回复盘总览">‹ <span>返回复盘</span></button><div><h2>逐题复盘</h2><small>${snap.turns.length} 条弹幕 · 按题校正</small></div><span class="review-subbadge">详情</span></div>
   <div class="review-details-intro"><b>每道弹幕逐条查看</b><p>识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。</p></div>
-  ${syncMember()?.role==='anchor'&&assignment&&snap.assignmentId?`<section class="review-ai-panel" id="reviewAiEvaluation" aria-label="AI 口播评选">
-    <h3>AI 口播评选</h3><button type="button" class="btn soft" id="reviewAiEvaluate">发起 AI 评选</button>
-    <p class="scene-tip" role="status" data-ai-eval-status></p><div data-ai-eval-output></div>
-  </section>`:''}
   <div id="questionSummary" class="review-question-cards" aria-live="polite"></div>
   <div class="review-secondary-link"><button type="button" id="reviewGoReplay" class="review-inline-link">▶ 打开本场录像 <span>›</span></button></div>
  </section>
@@ -3726,7 +3755,7 @@ function sessionReviewPage(){
  ELEM('reviewRetry').onclick=()=>openBoard(snap.boardId,snap.platform,{assignmentId:snap.assignmentId||'',checkDevicesOnOpen:true});
  ELEM('reviewReplay').onclick=()=>showReviewStage('replay');
  ELEM('reviewDetails').onclick=()=>showReviewStage('details');
- if(ELEM('reviewAiEvaluate'))ELEM('reviewAiEvaluate').onclick=()=>void evaluateReview();
+ if(ELEM('reviewAiRefresh'))ELEM('reviewAiRefresh').onclick=()=>refreshReviewEvaluation();
  ELEM('reviewReplayBack').onclick=backToReviewOverview;
  ELEM('reviewDetailsBack').onclick=backToReviewOverview;
  ELEM('reviewGoDetails').onclick=()=>showReviewStage('details');
@@ -3739,6 +3768,8 @@ function sessionReviewPage(){
  if(ELEM('submitSession'))ELEM('submitSession').onclick=()=>submitSessionRecord(assignment?.operatorName||ELEM('submitOperator')?.value.trim()||'');
  bindAudioRetries(ELEM('view'));
  renderSessionReview();renderQuestionSummary();showReviewStage('overview',{recordHistory:false});showSessionStorageState();
+ paintReviewEvaluation();
+ refreshReviewEvaluation();
 }
 
 async function submitSessionRecord(operatorName){
@@ -3767,12 +3798,12 @@ async function submitSessionRecord(operatorName){
   if(syncMember()&&lateAssignment){
    if(!current())throw new Error('本场记录已变化，请核对后重试');
    const payload=cloudSubmissionPayload(snap);
-   const scored=matchingEvaluation(snap);
-   const result=await assignmentSync.submit(payload,scored?.evaluationId);
+   const result=await assignmentSync.submit(payload);
    const accepted=result.submission;
    if(accepted?.sessionId!==snap.id||accepted.assignmentId!==snap.assignmentId||!accepted.submittedAt||!accepted.id)throw new Error('云端回执未确认，请重试');
    submission.cloudId=accepted.id;
    if(accepted.evaluation)submission.evaluation=accepted.evaluation;
+   if(accepted.repositoryReview)submission.repositoryReview=accepted.repositoryReview;
    submission.audioPendingIds=audio.filter(cloudAudioAcceptable).map(clip=>clip.questionId);
    submission.audioUploadedIds=[];
    submission.audioLocalOnly=audio.length-submission.audioPendingIds.length;
@@ -3796,12 +3827,15 @@ async function submitSessionRecord(operatorName){
    paintCloudAudioStatus(submission);
    void uploadCloudAudio(submission,media);
   }
-  else{if(e?.code==='AI_EVALUATION_MISMATCH'&&lastSessionSnapshot===snap){
-    delete snap.aiReview;reviewEvaluationError={snapshot:snap,key:evaluationInputKey(snap),message:evaluationFailure(e)};
-    void persistSessionCheckpoint();
-  }if(btn?.isConnected)btn.disabled=false;toast((syncMember()?'未收到云端确认，本机记录可重试：':'提交未保存：')+(e?.message||e));}
+  else{if(btn?.isConnected)btn.disabled=false;toast((syncMember()?'未收到云端确认，本机记录可重试：':'提交未保存：')+(e?.message||e));}
  }
- finally{submissionSaving=false;paintReviewEvaluation();}
+ finally{
+  submissionSaving=false;
+  if(submission.cloudConfirmed){
+   paintReviewEvaluation();
+   refreshReviewEvaluation({immediate:!submission.repositoryReview&&!submission.evaluation});
+  }
+ }
 }
 // V3.4.9：搜索时只刷新结果列表，不重建输入框，连续输入和中文输入法组合输入不会失焦。
 function libraryRows(){return getEntries().filter(e=>e.status==='published'&&(!librarySearch||norm([e.question,e.answer,e.category,e.platform,e.model,e.sku,e.sourceRef,...(e.keyPoints||[])].filter(Boolean).join(' ')).includes(norm(librarySearch)))&&(selectedLibraryBoard==='all'||e.boardId===selectedLibraryBoard||e.scope==='category'&&e.category===boardById(selectedLibraryBoard).category));}

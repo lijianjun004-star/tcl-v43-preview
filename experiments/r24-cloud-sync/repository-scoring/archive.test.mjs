@@ -16,7 +16,7 @@ const sha = createHash('sha1').update('blob ' + canonical.length + '\0').update(
 const content = canonical.toString('base64');
 const file = {type: 'file', path, encoding: 'base64', content: content.match(/.{1,60}/g).join('\n'), sha};
 const created = {content: {type: 'file', path, sha}};
-const metadata = [200, {private: true, full_name: repo, default_branch: 'main'}];
+const metadata = [200, {private: true, visibility: 'private', full_name: repo, default_branch: 'main'}];
 const branchInfo = [200, {name: branch, protected: false}];
 function script(responses = []) {
   const calls = [];
@@ -51,6 +51,14 @@ test('destination can be checked before paying for a model call', async () => {
   const {archive, calls} = script([metadata, branchInfo]);
   assert.deepEqual(await archive.verifyDestination(), {repo, branch, protected: false});
   assert.equal(calls.length, 2);
+});
+
+test('enterprise-internal and missing visibility fail on metadata alone', async () => {
+  for (const visibility of ['internal', undefined]) {
+    const {archive, calls} = script([[200, {...metadata[1], private: true, visibility}]]);
+    await assert.rejects(archive.verifyDestination(), {code: 'ARCHIVE_UNSAFE_DESTINATION'});
+    assert.deepEqual(calls.map(c => [c.method, c.url]), [['GET', 'https://api.github.com/repos/' + repo]]);
+  }
 });
 
 test('identical existing bytes are accepted without writing, even for a differently ordered input', async () => {
@@ -129,4 +137,20 @@ test('a fake success for the wrong file is rejected, never updated or retried', 
   const {archive, calls} = script([metadata, branchInfo, [404, {}], [201, {content: {...created.content, path: 'different'}}]]);
   await assert.rejects(archive(receipt()), {code: 'ARCHIVE_INVALID_RESPONSE'});
   assert.equal(calls.length, 4);
+});
+
+test('OpenAI review receipts require Terra; recovery separately admits known historical OpenAI receipts', async()=>{
+  const fresh={...receipt(),origin:'openai_review',model:'gpt-6.1-terra'};
+  assert.equal(validateScoreReceipt(fresh).model,'gpt-6.1-terra');
+  for (const name of ['gpt-4o','gpt-4o-mini','hy3','hy3-preview']) {
+    const legacy={...fresh,model:name};
+    assert.throws(()=>validateScoreReceipt(legacy),{code:'ARCHIVE_INVALID_RECEIPT'});
+    assert.equal(validateScoreReceipt({...legacy,origin:'submission'}).model,name);
+    if (name.startsWith('gpt-')) assert.equal(validateScoreReceipt(legacy,{historical:true}).model,name);
+    else {
+      const {archive,calls}=script();
+      await assert.rejects(archive(legacy,{historical:true}),{code:'ARCHIVE_INVALID_RECEIPT'});
+      assert.equal(calls.length,0);
+    }
+  }
 });

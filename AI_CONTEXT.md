@@ -1,5 +1,17 @@
 # 练播房：模型通用项目上下文
 
+## OpenAI 提交后评分候选 R24-20261124.13-async-rc1（2026-11-27）
+
+从仓库异步评分基线 72fce13 建独立候选。上海试点及正式数据本轮未发布或迁移。新评分只走提交后 OpenAI worker，历史成绩和运营出题保留。旧版已付费且答文、转写、身份、场次及快照完全匹配的候选可复用。正式员工使用前仍待指定私有库、配置授权并确认上线。
+
+- 使用冻结的旧 R2 规则和原始 A/B/C，各调用 gpt-6.1-terra 一次，low 和 max_completion_tokens=8192。首次分数依次 100、75、0。A 命中第 3 条，B 遗漏该条，C 指出价格与效果缺乏依据。实际总计 2,389 tokens，已含推理 46。[首轮证据](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45943096358)
+- 第三关以隔离 PGlite、业务 API 和合成账号提交，重复返回 200/201，真实 OpenAI 调用一次，612 tokens，已含推理 10。归档故障期间主播和所属运营可读，恢复无重复计费。合成 QA 分支创建最小回执，远端 GET 200。正式私库与上海唤醒尚未联调，实体手机未测。[完整链路](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45943446578)
+- 辅助评分保持待复核。网页预览、GitHub 运行与公网生产分别验收。停止评分时保留提交、队列和历史，仅在已有混元断流的版本间回滚。
+
+- Gemini 对固定提交 028423a 的独立复验为有条件通过，0 P0 / 0 P1 / 0 P2 / 2 P3。其原包 SHA-256 为 `d33f1004f3c503cad2df826339846df4e1bfb1e09d90d7e986ff724e6e3c953d`，包内清单 6/6 已核对。[独立报告与日志](https://drive.google.com/file/d/1A6AHTEM_NJzkKLc8t4-CrvqLpeUwdcOu/view)
+- Codex 按 P3-1 修订仓库评分引用的扫描规则，保留上海目录与归档的零放行。旧门禁退出 1（13 项），修订后通过 7/7 项自测，扫描异常与覆盖缺口均为 0。对原候选本地复跑队列、权限与归档 36/36（含三组专项 10/10）、后端 66/66、CloudBase 41/41、浏览器与 UI 26/26、合成业务流程 9/9，本轮新增付费调用 0。P3-2 仍待正式私库唤醒、实体手机真人口播及独立人工留出集校准。北京时间 13:57 上海静态试点页面和清单仍为 .12。[草稿 PR](https://github.com/lijianjun004-star/tcl-v43-preview/pull/197)
+
+
 更新日期：2026-11-27。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。

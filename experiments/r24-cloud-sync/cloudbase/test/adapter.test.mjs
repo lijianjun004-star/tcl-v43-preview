@@ -258,6 +258,19 @@ test('non-unique PostgreSQL insert errors remain failures', async () => {
   await assert.rejects(store.createAssignment({id: 'safe-id', teamId: 'pilot'}), /did not confirm/);
 });
 
+test('optional evaluation table can be absent; ambiguous lookup failures must not start a new review', async () => {
+  for (const code of ['42P01','PGRST205','42501','57014']) {
+    const {store} = createDatabaseAdapter({
+      from(table) {
+        assert.equal(table, 'tcl_r24_sync_test_evaluations');
+        return {select:() => ({eq:() => ({limit:async () => ({error:{code}})})})};
+      },
+    }, 'tcl_r24_sync_test');
+    if (code === '42P01') assert.equal(await store.getEvaluation('old'),null);
+    else await assert.rejects(store.getEvaluation('old'),/request failed/);
+  }
+});
+
 test('scored submission history over 8 MiB can be paged without dropping tied timestamps or crossing scope', async () => {
   const {store} = createDatabaseAdapter(fakeDatabase(), 'tcl_r24_sync_test');
   const op = {id: 'tester', active: true, role: 'operator', teamId: 'pilot', displayName: '合成运营'};

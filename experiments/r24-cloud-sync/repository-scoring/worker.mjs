@@ -4,8 +4,11 @@ import {
 import {validateScoreReceipt} from './archive.mjs';
 
 const endpoint = 'https://api.openai.com/v1/chat/completions';
-const model = 'gpt-4o-mini';
-const modelIds = new Set(['gpt-4o-mini', 'gpt-4o', 'hy3', 'hy3-preview']);
+const model = 'gpt-6.1-terra';
+const reasoningEffort = 'low';
+const maxCompletionTokens = 8192;
+const rubricVersion = 'r24-evaluation-v1';
+const modelIds = new Set([model, 'gpt-4o-mini', 'gpt-4o', 'hy3', 'hy3-preview']);
 const usageFields = ['prompt_tokens','completion_tokens','total_tokens'];
 const safeJobId = /^[a-f0-9]{64}$/;
 const safeLease = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -13,14 +16,21 @@ const fail = code => {throw new Error(code);};
 
 function safeModel(value) {
   if (modelIds.has(value)) return value;
-  if (typeof value === 'string' && /^gpt-4o-mini-\d{4}-\d{2}-\d{2}$/.test(value)) return model;
+  if (typeof value === 'string' && /^gpt-6\.1-terra-\d{4}-\d{2}-\d{2}$/.test(value)) return model;
+  if (typeof value === 'string' && /^gpt-4o-mini-\d{4}-\d{2}-\d{2}$/.test(value)) return 'gpt-4o-mini';
   if (typeof value === 'string' && /^gpt-4o-\d{4}-\d{2}-\d{2}$/.test(value)) return 'gpt-4o';
   fail('INVALID_MODEL');
 }
 
-function metering(value) {
+function metering(value, reportReasoning) {
   const result = {};
   for (const k of usageFields) if (Number.isSafeInteger(value?.[k]) && value[k] >= 0) result[k] = value[k];
+  const reasoning = value?.completion_tokens_details?.reasoning_tokens;
+  if (reportReasoning || reasoning !== undefined) {
+    result.completion_tokens_details = {
+      reasoning_tokens: Number.isSafeInteger(reasoning) && reasoning >= 0 ? reasoning : null,
+    };
+  }
   return Object.keys(result).length ? result : null;
 }
 
@@ -52,7 +62,7 @@ export function createOpenAIScorer(apiKey, {fetchImpl = fetch, timeoutMs = 45000
     const input = validateEvaluationInput(items);
     const prompt = JSON.stringify(input.map((item, questionIndex) => ({questionIndex, ...item})));
     const body = {model, stream:false, store:false, response_format:evaluationResponseFormat,
-      max_tokens:Math.min(8192, 512+650*input.length),
+      reasoning_effort:reasoningEffort, max_completion_tokens:maxCompletionTokens,
       messages:[{role:'system',content:evaluationInstructions},{role:'user',content:prompt}]};
     if (prompt.includes(apiKey)) fail('INPUT_CREDENTIAL_DETECTED');
     const start = performance.now();
@@ -66,9 +76,9 @@ export function createOpenAIScorer(apiKey, {fetchImpl = fetch, timeoutMs = 45000
         fail('OPENAI_HTTP_ERROR');
       }
       const envelope = await readEnvelope(response);
-      const returnedModel = safeModel(envelope?.model);
+      const returnedModel = envelope?.model;
       const choice = envelope?.choices?.[0];
-      if (returnedModel !== model || envelope.error || envelope.object !== 'chat.completion' ||
+      if (safeModel(returnedModel) !== model || envelope.error || envelope.object !== 'chat.completion' ||
           !Array.isArray(envelope.choices) || envelope.choices.length !== 1 || choice?.finish_reason !== 'stop' ||
           choice?.message?.role !== 'assistant' || choice.message.refusal || choice.message.tool_calls ||
           choice.message.function_call || typeof choice.message.content !== 'string') fail('INVALID_RESPONSE');
@@ -76,7 +86,9 @@ export function createOpenAIScorer(apiKey, {fetchImpl = fetch, timeoutMs = 45000
       const serialized = JSON.stringify(result);
       if (serialized.includes(apiKey) || /\bsk[-_][a-z0-9_-]{12,}/i.test(serialized)) fail('INVALID_RESPONSE');
       const requestId = safeRequestId(response.headers.get('x-request-id'));
-      return {...result, model:returnedModel, source:'openai_offline', usage:metering(envelope.usage),
+      return {...result, model:returnedModel, requestedModel:model, returnedModel,
+        source:'openai_offline', rubricVersion, reasoningEffort, maxCompletionTokens,
+        usage:metering(envelope.usage, true),
         requestId:requestId && !requestId.includes(apiKey) ? requestId : null, elapsedMs:Math.round(performance.now()-start)};
     } catch {
       // Never forward upstream error bodies, response excerpts, exceptions or private input to runner logs.
@@ -89,10 +101,12 @@ function buildResult(jobId, origin, input, raw) {
   if (!raw || typeof raw !== 'object') fail('INVALID_RESULT');
   const result = validateEvaluationResult(scoringFields(raw), input);
   const modelId = safeModel(raw.model);
-  if (origin === 'openai_review' && modelId !== model) fail('UNEXPECTED_MODEL');
+  const newReview = origin === 'openai_review';
+  if (newReview && (modelId !== model || raw.source !== 'openai_offline')) fail('UNEXPECTED_MODEL');
   const source = origin === 'openai_review' ? 'openai_offline' :
     (['openai_gateway','cloudbase_hunyuan','openai_offline'].includes(raw.source) ? raw.source : null);
-  const stored = {...result, model:modelId, source, usage:metering(raw.usage), requestId:safeRequestId(raw.requestId),
+  const stored = {...result, model:modelId, source, usage:metering(raw.usage, newReview), requestId:safeRequestId(raw.requestId),
+    ...(newReview ? {requestedModel:model, returnedModel:raw.model, rubricVersion, reasoningEffort, maxCompletionTokens} : {}),
     elapsedMs:Number.isSafeInteger(raw.elapsedMs) && raw.elapsedMs >= 0 ? raw.elapsedMs : null};
   const receipt = validateScoreReceipt({
     schemaVersion:1, jobId, origin, model:modelId, overallScore:result.overallScore, grade:result.grade,
@@ -123,7 +137,7 @@ export async function processOne({queue, score, archive, lease}) {
   let receipt;
   if (job.state === 'scored') {
     try {
-      receipt = validateScoreReceipt(job.receipt);
+      receipt = validateScoreReceipt(job.receipt, {historical:true});
       if (receipt.jobId !== jobId) fail('RECEIPT_JOB_MISMATCH');
     } catch {return hold(queue,jobId,lease,'invalid_receipt');}
   } else if (job.state === 'ready') {
@@ -156,7 +170,7 @@ export async function processOne({queue, score, archive, lease}) {
   } else {fail('INVALID_CLAIM_STATE');}
 
   try {
-    const outcome = await archive(receipt);
+    const outcome = await archive(receipt, {historical:job.state === 'scored'});
     if (!(outcome === true || ['archived','already_archived'].includes(outcome?.status))) return {status:'archive_pending'};
   } catch {return {status:'archive_pending'};}
   try {return {status:await queue.ack(jobId,lease) === true ? 'archived' : 'ack_pending'};}

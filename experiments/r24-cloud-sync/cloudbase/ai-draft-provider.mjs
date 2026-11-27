@@ -8,7 +8,7 @@ function draftError(code) {
   return Object.assign(new Error(code), {code});
 }
 
-function sharedReservation(db, prefix, env, codePrefix) {
+function draftReservation(db, prefix, env) {
   const raw = env.TCL_R24_SYNC_AI_DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT;
   if (typeof db?.rpc !== 'function' || typeof prefix !== 'string' || !PILOT_PREFIX.test(prefix) ||
       typeof raw !== 'string' || !/^[1-9][0-9]?$/u.test(raw) || Number(raw) > MAX_DAILY_LIMIT) return null;
@@ -17,29 +17,15 @@ function sharedReservation(db, prefix, env, codePrefix) {
     try {
       result = await db.rpc(`${prefix}_reserve_ai_draft`, {p_daily_limit: Number(raw)});
     } catch {
-      throw draftError(codePrefix + '_QUOTA_UNAVAILABLE');
+      throw draftError('AI_DRAFT_QUOTA_UNAVAILABLE');
     }
-    if (result?.error || typeof result?.data !== 'boolean') throw draftError(codePrefix + '_QUOTA_UNAVAILABLE');
-    if (!result.data) throw draftError(codePrefix + '_LIMIT');
-  };
-}
-
-export function createCloudBaseEvaluationGeneration({client, db, prefix, env = process.env}) {
-  if (client?.source !== 'cloudbase_hunyuan' && (!env.AI_GATEWAY_URL?.trim() || !env.AI_GATEWAY_TOKEN?.trim())) return undefined;
-  const reserve = sharedReservation(db, prefix, env, 'AI_EVALUATION');
-  return {
-    source: client?.source ?? 'openai_gateway',
-    model: client?.model,
-    async evaluate(items) {
-      if (env.TCL_R24_SYNC_AI_ENABLED !== 'true') throw draftError('AI_EVALUATION_DISABLED');
-      if (!reserve) throw draftError('AI_EVALUATION_QUOTA_UNAVAILABLE');
-      return client.evaluate(items, {beforeFetch: reserve});
-    },
+    if (result?.error || typeof result?.data !== 'boolean') throw draftError('AI_DRAFT_QUOTA_UNAVAILABLE');
+    if (!result.data) throw draftError('AI_DRAFT_LIMIT');
   };
 }
 
 export function createCloudBaseDraftGeneration({client, db, prefix, env = process.env}) {
-  const reserveQuota = sharedReservation(db, prefix, env, 'AI_DRAFT');
+  const reserveQuota = draftReservation(db, prefix, env);
   const rawOperatorIds = env.TCL_R24_SYNC_AI_OPERATOR_IDS;
   if (env.TCL_R24_SYNC_AI_ENABLED !== 'true' || typeof client?.generate !== 'function' ||
       !reserveQuota || typeof rawOperatorIds !== 'string') return undefined;

@@ -1,0 +1,77 @@
+name: R24 Terra fixed first-pass evaluation
+on:
+  push:
+    branches: [feat/r24-openai-async-terra]
+    paths: ['experiments/r24-cloud-sync/repository-scoring/terra-round1-preflight-recovery.txt']
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  evaluate:
+    if: >-
+      github.repository == 'lijianjun004-star/tcl-v43-preview' && !github.event.created &&
+      !github.event.deleted && !github.event.forced && github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify one-time synthetic trigger
+        id: trigger
+        env:
+          BEFORE: ${{ github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker=experiments/r24-cloud-sync/repository-scoring/terra-round1-preflight-recovery.txt
+          test "$(git diff --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
+          test "$(git diff --diff-filter=A --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
+          test -z "$(git log -1 --format=%H "$BEFORE" -- "$marker")"
+          printf 'R24-TERRA-R2-PREFLIGHT-RECOVERY-V1\n' | cmp - "$marker"
+          mkdir -p "$RUNNER_TEMP/terra-first-pass/audit"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+
+      - name: Confirm the earlier preflight never reached OpenAI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/lijianjun004-star/tcl-v43-preview/actions/runs/45942987929/jobs \
+            --jq '[.jobs[].steps[] | select(.name=="Record the first response for each fixed sample") | .conclusion] == ["skipped"]' | grep -Fx true
+      - name: Install the static scanner if needed
+        run: |
+          if ! command -v rg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install --yes ripgrep
+          fi
+          rg --version
+
+      - name: Prove scoring isolation and frozen request parity before using the credential
+        if: steps.trigger.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          audit="$RUNNER_TEMP/terra-first-pass/audit"
+          node --test experiments/r24-cloud-sync/backend/tests/assignment-evaluation.test.mjs experiments/r24-cloud-sync/cloudbase/test/hunyuan.test.mjs | tee "$audit/isolation-tests.txt"
+          bash experiments/r24-cloud-sync/repository-scoring/check-no-scoring-fallback.sh | tee "$audit/static-scan.txt"
+          node experiments/r24-cloud-sync/repository-scoring/terra-round1.mjs --prepare "$audit/request-parity"
+
+      - name: Record the first response for each fixed sample
+        if: steps.trigger.outputs.ready == 'true'
+        env:
+          TERRA_FIRST_PASS: authorized-synthetic
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-cloud-sync/repository-scoring/terra-round1.mjs --live "$RUNNER_TEMP/terra-first-pass/live"
+
+      - name: Preserve first-pass evidence even if the model or schema check failed
+        if: always() && steps.trigger.outputs.ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: r24-terra-r2-first-pass
+          path: ${{ runner.temp }}/terra-first-pass/
+          retention-days: 14
+          if-no-files-found: error

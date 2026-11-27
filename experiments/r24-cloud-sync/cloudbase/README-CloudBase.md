@@ -97,9 +97,11 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 
 ### 上海原生混元联调
 
-原生模式使用锁定的 `@cloudbase/node-sdk@4.2.1` 与云函数临时服务身份。请在上海试点环境开通指定模型，并确认模型 token 额度、运营名单、试点评选表及共享日限额 RPC 已就绪。出题与评选均使用选定的模型组和模型 ID。每次调用至多尝试一次，服务端等待上限 30 秒。
+原生出题使用 `@cloudbase/node-sdk@4.2.1` 和云函数临时服务身份。开通指定模型后，请核实出题用的供应商 token 额度、运营名单和试点日限额 RPC。每次出题至多尝试一次，服务端等待上限为 30 秒。
 
-用合成运营与主播分别调用出题和评选。成功响应应显示 `source=cloudbase_hunyuan`、配置的模型 ID、`degraded=false` 和请求编号。只有上游原始响应报告用量时才记录相应字段。上游明确返回 `EXCEED_TOKEN_QUOTA_LIMIT` 时，业务接口显示 `HUNYUAN_TOKEN_QUOTA_EXCEEDED`。只有完整结构化原资料可按 `AI_FALLBACK_ENABLED` 生成规则草稿，所有评选失败均保留文字提交通道。正式组与预览组需分别核验授权及额度。[腾讯云模型额度错误说明](https://docs.cloudbase.net/error-code/EXCEED_TOKEN_QUOTA_LIMIT)
+用合成运营调用出题。成功响应显示 `source=cloudbase_hunyuan`、配置的模型 ID、`degraded=false` 和请求编号。上游报告的用量保存在响应中。供应商返回 `EXCEED_TOKEN_QUOTA_LIMIT` 时，业务接口显示 `HUNYUAN_TOKEN_QUOTA_EXCEEDED`。开启 `AI_FALLBACK_ENABLED` 时，完整结构化资料可生成规则草稿。[腾讯云模型额度错误说明](https://docs.cloudbase.net/error-code/EXCEED_TOKEN_QUOTA_LIMIT)
+
+新作答先提交，由已开通的仓库队列处理评分。旧客户端请求同步评选时，可读回本人匹配的历史结果；需新评分时收到提交指引。上海出题模型和日额度仅用于出题。[评分接口](../backend/API.md#ai-辅助评选)
 
 ### 私有网关联调
 
