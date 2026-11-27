@@ -25,9 +25,11 @@ function sharedReservation(db, prefix, env, codePrefix) {
 }
 
 export function createCloudBaseEvaluationGeneration({client, db, prefix, env = process.env}) {
-  if (!env.AI_GATEWAY_URL?.trim() || !env.AI_GATEWAY_TOKEN?.trim()) return undefined;
+  if (client?.source !== 'cloudbase_hunyuan' && (!env.AI_GATEWAY_URL?.trim() || !env.AI_GATEWAY_TOKEN?.trim())) return undefined;
   const reserve = sharedReservation(db, prefix, env, 'AI_EVALUATION');
   return {
+    source: client?.source ?? 'openai_gateway',
+    model: client?.model,
     async evaluate(items) {
       if (env.TCL_R24_SYNC_AI_ENABLED !== 'true') throw draftError('AI_EVALUATION_DISABLED');
       if (!reserve) throw draftError('AI_EVALUATION_QUOTA_UNAVAILABLE');
@@ -63,6 +65,7 @@ export function createCloudBaseDraftGeneration({client, db, prefix, env = proces
     canGenerate,
     generate,
     model: client.model,
+    source: client.source ?? 'openai_gateway',
     fallbackEnabled: (env.AI_FALLBACK_ENABLED ?? 'true') === 'true',
   };
 }

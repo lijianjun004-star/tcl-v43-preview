@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { chromium } from 'playwright-core';
-import { createAiGatewayClient } from '../backend/ai-gateway-client.mjs';
+import { createAiGatewayClient, createHunyuanClient } from '../backend/ai-gateway-client.mjs';
 import { startTestSite, identities } from './test-site.mjs';
 
 const fixtureScript = new URL('./fixtures.py', import.meta.url);
@@ -501,7 +501,7 @@ test('one-click cloud drafts use text and Excel, discard stale results, and publ
     assert.equal(textResult.source, 'openai_gateway');
     assert.equal(textResult.degraded, false);
     await panel.locator('#assignmentDraftOrigin').filter({ hasText: textResult.requestId }).waitFor();
-    assert.match(await panel.locator('#assignmentDraftOrigin').textContent(), /AI 网关草稿/);
+    assert.match(await panel.locator('#assignmentDraftOrigin').textContent(), /AI 出题草稿 · OpenAI/);
     assert.deepEqual(fromText.request().postDataJSON(), {
       material: newerSource, boardId: '01', platform: '京东', count: 3,
     });
@@ -600,12 +600,18 @@ test('operator can distinguish a gateway failure and a local fallback through ed
   assert.equal(await panel.locator('[data-assignment-draft-row]').count(), 0);
 
   // A mixed-version or malformed HTTP success must not label arbitrary questions as AI output.
-  await page.route('**' + draftPath, route => route.fulfill({
-    json: {questions: [draft], source: 'fallback', degraded: false},
-  }), {times: 1});
-  await postDraft();
-  await status.filter({hasText: 'INVALID_AI_JSON'}).waitFor();
-  assert.equal(await panel.locator('[data-assignment-draft-row]').count(), 0);
+  for (const metadata of [
+    {source: 'fallback', degraded: false},
+    {source: 'openai_gateway', model: 'hy3-preview', degraded: false},
+    {source: 'cloudbase_hunyuan', model: 'gpt-4o-mini', degraded: false},
+  ]) {
+    await page.route('**' + draftPath, route => route.fulfill({
+      json: {questions: [draft], ...metadata},
+    }), {times: 1});
+    await postDraft();
+    await status.filter({hasText: 'INVALID_AI_JSON'}).waitFor();
+    assert.equal(await panel.locator('[data-assignment-draft-row]').count(), 0);
+  }
 
   await material.fill(JSON.stringify({questions: [draft]}));
   const fallback = await (await postDraft()).json();
@@ -700,7 +706,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.11';
+  const shortVersion = 'R24-20261124.12';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -1086,23 +1092,52 @@ async function scrollBelowHeader(panel) {
   });
 }
 
-for (const width of [375, 390]) {
-  test('mobile AI evaluation at ' + width + 'px uses real assignment, review and submission routes', {timeout: 90000}, async t => {
+function simulatedModelClient(source, vendorCalls, usage) {
+  if (source === 'cloudbase_hunyuan') {
+    const model = {
+      async generateText(options) {
+        assert.equal(options.model, 'hy3');
+        vendorCalls.push(options.model);
+        if (vendorCalls.length === 1) {
+          throw new Error('AI+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，错误信息：Token usage exceeded quota limit.');
+        }
+        const content = JSON.stringify(vendorCalls.length === 3 ? evaluationFixture : {questions: practiceDraft});
+        return {text: content, rawResponses: [{
+          choices: [{finish_reason: 'stop', message: {role: 'assistant', content}}], usage,
+        }]};
+      },
+    };
+    const cloudApp = {ai: () => ({createModel(provider) {
+      assert.equal(provider, 'cloudbase');
+      return model;
+    }})};
+    return createHunyuanClient({cloudApp, env: {
+      TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase', TCL_R24_SYNC_AI_MODEL_ID: 'hy3',
+    }});
+  }
+  return createAiGatewayClient({
+    env: {AI_GATEWAY_URL: 'https://evaluation.invalid', AI_GATEWAY_TOKEN: 'test-transport-only', AI_GATEWAY_MODEL: 'gpt-4o-mini'},
+    fetchImpl: async (url, options) => {
+      assert.equal(String(url), 'https://evaluation.invalid/v1/chat/completions');
+      const body = JSON.parse(options.body);
+      vendorCalls.push(body.response_format.type);
+      if (vendorCalls.length === 1) return Response.json({}, {status: 401});
+      const content = body.response_format.type === 'json_schema' ? evaluationFixture : {questions: practiceDraft};
+      return Response.json({choices: [{finish_reason: 'stop', message: {role: 'assistant', content: JSON.stringify(content)}}], usage});
+    },
+  });
+}
+
+for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'], [393, 'cloudbase_hunyuan']]) {
+  test('mobile AI evaluation at ' + width + 'px uses real assignment, review and submission routes (' + source + ')', {timeout: 90000}, async t => {
     const vendorCalls = [];
     const simulatedUsage = {prompt_tokens: 100, completion_tokens: 50, total_tokens: 150};
-    const gateway = createAiGatewayClient({
-      env: {AI_GATEWAY_URL: 'https://evaluation.invalid', AI_GATEWAY_TOKEN: 'test-transport-only', AI_GATEWAY_MODEL: 'gpt-4o-mini'},
-      fetchImpl: async (url, options) => {
-        assert.equal(String(url), 'https://evaluation.invalid/v1/chat/completions');
-        const body = JSON.parse(options.body);
-        vendorCalls.push(body.response_format.type);
-        if (vendorCalls.length === 1) return Response.json({}, {status: 401});
-        const content = body.response_format.type === 'json_schema' ? evaluationFixture : {questions: practiceDraft};
-        return Response.json({choices: [{finish_reason: 'stop', message: {role: 'assistant', content: JSON.stringify(content)}}], usage: simulatedUsage});
-      },
-    });
+    const gateway = simulatedModelClient(source, vendorCalls, simulatedUsage);
+    const hunyuan = source === 'cloudbase_hunyuan';
+    const modelName = hunyuan ? 'hy3' : 'gpt-4o-mini';
+    const label = hunyuan ? '腾讯混元 · hy3' : 'OpenAI · gpt-4o-mini';
     const {newPage, server} = await browserFixture(t, {
-      draftGeneration: {canGenerate: actor => actor.role === 'operator', fallbackEnabled: true, model: gateway.model,
+      draftGeneration: {canGenerate: actor => actor.role === 'operator', fallbackEnabled: true, model: gateway.model, source,
         generate: (_actor, prompt) => gateway.generate(prompt)},
       evaluationGeneration: gateway,
     });
@@ -1125,16 +1160,19 @@ for (const width of [375, 390]) {
     const [fallback] = await draftRequest();
     const failed = await fallback.json();
     assert.equal(failed.degraded, true);
-    assert.equal(failed.errorCode, 'GATEWAY_HTTP_401');
+    assert.equal(failed.errorCode, hunyuan ? 'HUNYUAN_TOKEN_QUOTA_EXCEEDED' : 'GATEWAY_HTTP_401');
     await draft.locator('#assignmentDraftOrigin').filter({hasText: failed.requestId}).waitFor();
-    assert.match(await draft.locator('#assignmentDraftOrigin').innerText(), /GATEWAY_HTTP_401/);
+    assert.ok((await draft.locator('#assignmentDraftOrigin').innerText()).includes(failed.errorCode));
+    if (hunyuan) await draft.locator('#assignmentDraftOrigin').filter({hasText: '上海试点的腾讯云模型额度已用完'}).waitFor();
     await scrollBelowHeader(draft.locator('#assignmentDraftOrigin'));
     await captureMobile(ops, width, 'draft-fallback');
     await material.fill('顾客关心电视入户的包装尺寸、球赛中的运动表现和安装范围。参考依据包括通道净宽、对照片源以及订单说明。');
     const [generated] = await draftRequest();
     const drafted = await generated.json();
     assert.equal(generated.status(), 200);
-    assert.equal(drafted.source, 'openai_gateway');
+    assert.equal(drafted.source, source);
+    assert.equal(drafted.model, modelName);
+    await draft.locator('#assignmentDraftOrigin').filter({hasText: label}).waitFor();
     await draft.locator('#assignmentDraftConfirm').click();
     await ops.locator('#assignmentExcelPreview').filter({hasText: practiceDraft[0].question}).waitFor();
     assert.equal(server.requests.filter(r => r.method === 'POST' && r.path.endsWith('/assignments')).length, 0);
@@ -1172,10 +1210,12 @@ for (const width of [375, 390]) {
     assert.equal(scored.status(), 200, JSON.stringify(scoredBody));
     assert.deepEqual(scoredBody.evaluation.items, evaluationFixture.items);
     assert.deepEqual(scoredBody.evaluation.usage, simulatedUsage);
-    assert.equal(scoredBody.evaluation.source, 'openai_gateway');
+    assert.equal(scoredBody.evaluation.source, source);
+    assert.equal(scoredBody.evaluation.model, modelName);
     assert.equal(scoredBody.evaluation.degraded, false);
     const displayed = trainee.locator('#reviewAiEvaluation [data-ai-eval-result]');
     await verifyEvaluation(displayed);
+    await displayed.locator('[data-ai-model]').filter({hasText: label}).waitFor();
     await scrollBelowHeader(displayed);
     await captureMobile(trainee, width, 'anchor-evaluation');
     await trainee.locator('#reviewDetailsBack').click();
@@ -1193,81 +1233,76 @@ for (const width of [375, 390]) {
     await ops.locator('#syncAnchorRecords details summary').filter({hasText: '演示主播'}).click();
     const received = ops.locator('#syncAnchorRecords [data-ai-eval-result]');
     await verifyEvaluation(received);
+    await received.locator('[data-ai-model]').filter({hasText: label}).waitFor();
     assert.equal(await received.locator('input,textarea,select,[contenteditable="true"]').count(), 0);
     await scrollBelowHeader(received);
     await captureMobile(ops, width, 'operator-evaluation');
-    assert.deepEqual(vendorCalls, ['json_object', 'json_object', 'json_schema']);
+    assert.deepEqual(vendorCalls, hunyuan ? ['hy3', 'hy3', 'hy3'] : ['json_object', 'json_object', 'json_schema']);
     assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
     assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
-    t.diagnostic('Two isolated browser sessions; simulated gateway 401 and 200; 3 evaluated answers in the operator record; both close glyphs visible/clickable; no overflow, console errors or page errors.');
+    t.diagnostic('Two isolated browser sessions; simulated provider failure and success; 3 evaluated answers in the operator record; both close glyphs visible/clickable; no overflow, console errors or page errors.');
   });
 }
 
-test('mobile AI evaluation failure shows a request ID and preserves unscored submission', {timeout: 60000}, async t => {
-  let attempts = 0;
-  const evaluationGeneration = createAiGatewayClient({
-    env: {AI_GATEWAY_URL: 'https://evaluation.invalid', AI_GATEWAY_TOKEN: 'test-transport-only'},
-    fetchImpl: async (url, options) => {
-      assert.equal(String(url), 'https://evaluation.invalid/v1/chat/completions');
-      assert.equal(JSON.parse(options.body).response_format.type, 'json_schema');
-      attempts++;
-      return Response.json({}, {status:401});
-    },
+for (const source of ['openai_gateway', 'cloudbase_hunyuan']) {
+  test('mobile AI evaluation failure shows a request ID and preserves unscored submission (' + source + ')', {timeout: 60000}, async t => {
+    const vendorCalls = [];
+    const evaluationGeneration = simulatedModelClient(source, vendorCalls, null);
+    const {excel, newPage} = await browserFixture(t, {evaluationGeneration});
+    const operatorView = await newPage('/sync/', 375), anchorView = await newPage('/sync/', 375);
+    const ops = operatorView.page, trainee = anchorView.page;
+    await autoEnter(ops, 'operator', '演示运营');
+    await autoEnter(trainee, 'anchor', '演示主播');
+    await fillAssignment(ops, excel);
+    const [published] = await Promise.all([
+      ops.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments')),
+      ops.locator('#publishAssignment').click(),
+    ]);
+    assert.equal(published.status(), 201);
+    const {assignment} = await published.json();
+    await trainee.locator('#assignmentFold summary').click();
+    await trainee.locator('#assignmentSearch').fill('演示运营');
+    await trainee.locator('#syncRefresh').click();
+    await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click());
+    await trainee.locator('#reviewDetails').click();
+    const [failed] = await Promise.all([
+      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
+      trainee.locator('#reviewAiEvaluate').click(),
+    ]);
+    const failure = await failed.json();
+    assert.equal(failed.ok(), false);
+    assert.equal(failure.error.code, source === 'cloudbase_hunyuan' ? 'HUNYUAN_TOKEN_QUOTA_EXCEEDED' : 'GATEWAY_HTTP_401');
+    assert.match(failure.requestId, /^[a-f0-9-]{36}$/i);
+    assert.deepEqual(vendorCalls, [source === 'cloudbase_hunyuan' ? 'hy3' : 'json_schema']);
+    const panel = trainee.locator('#reviewAiEvaluation');
+    const message = panel.locator('[data-ai-eval-status]');
+    await message.filter({hasText: failure.requestId}).waitFor();
+    assert.match(await message.innerText(), source === 'cloudbase_hunyuan' ? /上海试点的腾讯云模型额度已用完/ : /评选服务鉴权失败/);
+    assert.equal(await panel.locator('[data-ai-eval-result]').count(), 0);
+    await trainee.locator('#reviewDetailsBack').click();
+    const [submitted] = await Promise.all([
+      trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/' + assignment.id + '/submissions')),
+      trainee.locator('#submitSession').click(),
+    ]);
+    assert.equal(submitted.status(), 201);
+    const {submission} = await submitted.json();
+    assert.deepEqual(submission.turns.map(turn => turn.answer), answers);
+    assert.equal(Object.hasOwn(submitted.request().postDataJSON(), 'evaluationId'), false);
+    assert.equal(Object.hasOwn(submission, 'evaluation'), false);
+    await ops.locator('[data-ops-tab="lookup"]').click();
+    await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
+    await ops.locator('#syncAnchorLookup').fill('演示主播');
+    const record = ops.locator('#syncAnchorRecords details').filter({hasText:'演示主播'});
+    await record.locator('summary').click();
+    await record.getByText('未生成 AI 评选', {exact:true}).waitFor();
+    assert.equal(await record.locator('[data-ai-eval-result]').count(), 0);
+    assert.deepEqual(vendorCalls, [source === 'cloudbase_hunyuan' ? 'hy3' : 'json_schema']);
+    assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
+    assert.deepEqual(operatorView.consoleErrors, []);
+    // Chromium may report the deliberate non-2xx /evaluate response as a resource error.
+    assert.ok(anchorView.consoleErrors.length <= 1);
+    for (const error of anchorView.consoleErrors) {
+      assert.ok(error.startsWith('Failed to load resource') && error.includes(String(failed.status())), error);
+    }
   });
-  const {excel, newPage} = await browserFixture(t, {evaluationGeneration});
-  const operatorView = await newPage('/sync/', 375), anchorView = await newPage('/sync/', 375);
-  const ops = operatorView.page, trainee = anchorView.page;
-  await autoEnter(ops, 'operator', '演示运营');
-  await autoEnter(trainee, 'anchor', '演示主播');
-  await fillAssignment(ops, excel);
-  const [published] = await Promise.all([
-    ops.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments')),
-    ops.locator('#publishAssignment').click(),
-  ]);
-  assert.equal(published.status(), 201);
-  const {assignment} = await published.json();
-  await trainee.locator('#assignmentFold summary').click();
-  await trainee.locator('#assignmentSearch').fill('演示运营');
-  await trainee.locator('#syncRefresh').click();
-  await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click());
-  await trainee.locator('#reviewDetails').click();
-  const [failed] = await Promise.all([
-    trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/assignments/evaluate')),
-    trainee.locator('#reviewAiEvaluate').click(),
-  ]);
-  const failure = await failed.json();
-  assert.equal(failed.ok(), false);
-  assert.equal(failure.error.code, 'GATEWAY_HTTP_401');
-  assert.match(failure.requestId, /^[a-f0-9-]{36}$/i);
-  assert.equal(attempts, 1);
-  const panel = trainee.locator('#reviewAiEvaluation');
-  const message = panel.locator('[data-ai-eval-status]');
-  await message.filter({hasText: failure.requestId}).waitFor();
-  assert.match(await message.innerText(), /评选服务鉴权失败/);
-  assert.equal(await panel.locator('[data-ai-eval-result]').count(), 0);
-  await trainee.locator('#reviewDetailsBack').click();
-  const [submitted] = await Promise.all([
-    trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/' + assignment.id + '/submissions')),
-    trainee.locator('#submitSession').click(),
-  ]);
-  assert.equal(submitted.status(), 201);
-  const {submission} = await submitted.json();
-  assert.deepEqual(submission.turns.map(turn => turn.answer), answers);
-  assert.equal(Object.hasOwn(submitted.request().postDataJSON(), 'evaluationId'), false);
-  assert.equal(Object.hasOwn(submission, 'evaluation'), false);
-  await ops.locator('[data-ops-tab="lookup"]').click();
-  await ops.locator('#syncRecordsAssignment').selectOption(assignment.id);
-  await ops.locator('#syncAnchorLookup').fill('演示主播');
-  const record = ops.locator('#syncAnchorRecords details').filter({hasText:'演示主播'});
-  await record.locator('summary').click();
-  await record.getByText('未生成 AI 评选', {exact:true}).waitFor();
-  assert.equal(await record.locator('[data-ai-eval-result]').count(), 0);
-  assert.equal(attempts, 1);
-  assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
-  assert.deepEqual(operatorView.consoleErrors, []);
-  // Chromium may report the deliberate non-2xx /evaluate response as a resource error.
-  assert.ok(anchorView.consoleErrors.length <= 1);
-  for (const error of anchorView.consoleErrors) {
-    assert.ok(error.startsWith('Failed to load resource') && error.includes(String(failed.status())), error);
-  }
-});
+}

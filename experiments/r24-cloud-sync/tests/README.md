@@ -12,7 +12,7 @@ TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/path/to/staged-site node v2-smoke.mjs
 
 常规回归用例覆盖跨浏览器发布、领取、提交，服务端已经写入但首个响应丢失后的重试去重，已登记姓名与设备的登录兼容，设备码生成确认及失败反馈、角色隔离与本机体验。刷新回归在配置与作业响应延迟期间检查云同步加载提示、已绑定状态、未提交复盘恢复、导航后作业计数更新及原回答。V2 流程用例新增以下检查。
 
-一键出题回归使用本地替身模拟私有网关。只有已开放的运营会看到按钮。测试分别核对文字和表格的草稿、失败与兜底反馈、人工确认后发布的作业以及主播看到的弹幕。运行 `node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs` 可在试点工程目录执行服务端回归。真实网关的身份、协议、超时和计费须单独联调。[上线前联调步骤](../cloudbase/README-CloudBase.md#私有网关联调)
+一键出题回归分别模拟 OpenAI 网关和腾讯云混元 SDK 的响应。只有已开放的运营会看到按钮。测试分别核对文字和表格的草稿、失败与兜底反馈、人工确认后发布的作业以及主播看到的弹幕。运行 `node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs` 可在试点工程目录执行服务端回归。真实网关的身份、协议、超时和计费须单独联调。[上线前联调步骤](../cloudbase/README-CloudBase.md#私有网关联调)
 
 - 两名合成测试人员分别自动开通。运营发布合成 XLSX，主播搜索领取并提交三题文字及 Chromium 合成录音。
 - 运营刷新后看见该次提交和逐题文字，并验证至少一段云端音频可播放。
@@ -25,7 +25,7 @@ TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/path/to/staged-site node v2-smoke.mjs
 
 ## 评选与网关回归
 
-在试点工程目录运行以下命令。`tests/browser.test.mjs` 使用本地业务 API、两个独立浏览器会话及可控的模拟模型。设置 `TCL_EVAL_SCREENSHOTS` 指定截图输出目录。真实模型联调由管理员在获准的环境执行。
+在当前试点工程目录运行以下命令。`tests/browser.test.mjs` 使用本地业务 API、两个独立浏览器会话及可控的模拟模型。设置 `TCL_EVAL_SCREENSHOTS` 指定截图输出目录。真实模型联调由管理员在获准的环境执行。
 
 ```sh
 node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs
@@ -33,4 +33,4 @@ node --test tests/evaluation-ui.test.mjs tests/gateway-roundtrip.test.mjs singap
 TCL_TEST_SITE_DIR=/path/to/staged-site TCL_EVAL_SCREENSHOTS=/path/to/screenshots node --test tests/browser.test.mjs
 ```
 
-复验双端流程时先对照逐题评选与本人作答，再核对运营回看的是同一次提交。两个手机宽度均检查开播前及直播中的关闭按钮、横向滚动和浏览器异常。HTTP 回环用例通过打包所用的网关服务端实现处理两类请求，上游使用测试替身。
+复验双端流程时先对照逐题评选与本人作答，再核对运营回看的是同一次提交。Chromium 在 375px 和 390px 校验网关记录，在 393px 校验混元记录。三个宽度均检查开播前及直播中的关闭按钮、横向滚动和浏览器异常。混元用例还核对额度用完的提示、草稿确认和双方看到的模型名称。HTTP 回环用例通过打包所用的网关服务端实现处理两类请求，上游使用测试替身。

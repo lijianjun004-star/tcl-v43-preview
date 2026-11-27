@@ -1,0 +1,71 @@
+{
+  "phase": "exercise",
+  "environment": "Shanghai public pilot",
+  "start": "2026-11-27T02:14:05.488Z",
+  "steps": [
+    {
+      "label": "version and separate bound sessions",
+      "version": "r24-paraformer-excel-cloud-sync-v2-20261124.12",
+      "sha256": "c0c615d69232ab6dd1c76b415ad5ee8dc9bb15d9c937aa146260ce34acb4a814"
+    },
+    {
+      "label": "UI narrative to 3 draft questions and review confirmation",
+      "http": 200,
+      "source": "cloudbase_hunyuan",
+      "model": "hy3",
+      "requestId": "276320a4-86b9-4e71-a17d-2ec07f846533",
+      "retryCount": 0,
+      "usage": {
+        "prompt_tokens": 353,
+        "completion_tokens": 275,
+        "total_tokens": 628
+      },
+      "materialHash": "e3c341c891bfd5050e305ffe7ac6e983f9ef6ee907877dd0c01efd88e6f48c25",
+      "questionsHash": "ce389b9b462806983963843ecfe0916b38de57fbb7414443dc1f4eb8f15a74b7"
+    },
+    {
+      "label": "private publish via legitimate product API (UI publishes to all anchors)",
+      "http": 201,
+      "recipientCount": 1,
+      "snapshotSha256": "85666643100de685db4a703dd168f088dcb65c7d55635feaca85ae96cc298c46"
+    },
+    {
+      "label": "anchor claimed, practised and saved all text answers in UI",
+      "http": 201,
+      "turns": 3
+    },
+    {
+      "label": "anchor viewed full server score",
+      "http": 200,
+      "model": "hy3",
+      "source": "cloudbase_hunyuan",
+      "usage": {
+        "prompt_tokens": 566,
+        "completion_tokens": 418,
+        "total_tokens": 984
+      },
+      "requestId": "23df5ef6-cb13-4472-8564-bfcdccdcb976",
+      "evaluationId": "601fdcfb9bb849799b4112f732b2a2af807c654aca90803c3e8804f26199be26",
+      "evaluationHash": "920d9f022cf7031f7a52675db9c0a674cfac1234441237cffecca5ee09788b81",
+      "score": 33
+    },
+    {
+      "label": "submitted confirmed answers and identical evaluationId",
+      "http": 201,
+      "submissionId": "f5a7bc169c3e9ccc1297d2b3a02c7938d0ec98738c612e255169508a56bf2ca5"
+    },
+    {
+      "label": "reloaded operator verified same full score, matched/missed rubric and readonly controls",
+      "evaluationHash": "920d9f022cf7031f7a52675db9c0a674cfac1234441237cffecca5ee09788b81",
+      "score": 33
+    }
+  ],
+  "modelRequests": {
+    "draft": 1,
+    "evaluation": 1
+  },
+  "engine": "Chromium 156.0.8078.79 mobile viewport 390×844",
+  "assignmentId": "hy-smoke-e1e0b2b49c413133c52c",
+  "status": "PASS",
+  "end": "2026-11-27T02:14:53.418Z"
+}

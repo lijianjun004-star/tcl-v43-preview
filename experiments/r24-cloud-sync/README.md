@@ -1,6 +1,8 @@
 # TCL R24 Excel 作业云同步试点
 
-试点版本 `R24-20261124.8`。沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。登录页和工作台均可展开「设备码使用说明」。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit) · [`.5` 公网双账号验收](evidence/shanghai/v2-5-public/README.md)
+上海试点版本 `R24-20261124.12`，线上出题与评分使用腾讯混元 `hy3`。[公网双角色验收](evidence/shanghai/v2-12-hunyuan/README.md)
+
+沿用 QA3 的 Excel 校验、作业快照和浏览器本机复盘，身份、领取、提交和逐题录音写入专用 CloudBase 资源。登录页和工作台均可展开「设备码使用说明」。[上海试点入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [操作说明](https://docs.google.com/document/d/1jWoMetHhMePm1fArrmYkKEGETwXOCoMq/edit) · [`.5` 公网双账号验收](evidence/shanghai/v2-5-public/README.md)
 
 ## 登录与换设备
 
@@ -32,6 +34,12 @@
 
 领取已发布的云端作业，逐题填写回答或核对录音转写。练播结束后，在「逐题复盘详情」上方点「发起 AI 评选」，核对总分、每题评语、命中及遗漏要点和改进话术，再提交到云端。运营打开「作业进度」或「主播记录」可查看随该次提交保存的评选，最终由运营复核。历史记录会标出「未生成 AI 评选」。服务暂不可用时，可保留请求编号用于排查，也可直接提交已有回答。管理员需启用试点 AI 功能。[评选接口与数据边界](backend/API.md) · [云函数配置](cloudbase/README-CloudBase.md)
 
+### 上海混元出题与评选（`.12`）
+
+上海试点通过 CloudBase 的腾讯混元模型生成草稿和逐题评选。运营先核对草稿的产品参数、话术与评分要点再发布。主播可以在复盘页查看评分依据，提交后运营可回看这一场次的评选结果。模型名称以本次响应或已保存的记录为准。
+
+北京时间 2026-11-27 10:04，使用开发端临时身份和官方服务端 SDK 在上海调用 `cloudbase/hy3`，真实生成并校验一份合成草稿（407 tokens）和一份逐题评选（717 tokens）。本次沿用已有环境模型配置。旧分组 `hunyuan-v3/hy3-preview` 在同一环境返回 HTTP 429 `EXCEED_TOKEN_QUOTA_LIMIT`。正式分组可用，管理清单显示的空模型数组不足以判断可用性。[脱敏实测记录](evidence/shanghai/v2-12-hunyuan/sdk-probe.json) · [腾讯云额度错误说明](https://docs.cloudbase.net/error-code/EXCEED_TOKEN_QUOTA_LIMIT)
+
 ## 构建与验证
 
 准备 Python 3.11+、Node.js 22+ 和 Chromium。先用原 QA3 LITE 包的工具补齐四个模型，核验清单本身和列出的 35 个资源。使用新的输出目录生成候选。
@@ -45,4 +53,4 @@ node --test backend/tests/*.test.mjs
 (cd tests && TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/absolute/path/to/candidate-cloud node v2-smoke.mjs)
 ```
 
-仅用于本机或静态演示时可以省略环境和 API 参数，候选保留原有手工 JSON 交接。本版云端候选含 40 个资源及 `static-manifest.json`。构建和本机测试均在独立候选目录执行。[CloudBase 适配与部署](cloudbase/README-CloudBase.md) · [API 接口](backend/API.md) · [浏览器复验](tests/README.md)
+仅用于本机或静态演示时可以省略环境和 API 参数，候选保留原有手工 JSON 交接。本版云端候选含 41 个资源及 `static-manifest.json`。构建和本机测试均在独立候选目录执行。[CloudBase 适配与部署](cloudbase/README-CloudBase.md) · [API 接口](backend/API.md) · [浏览器复验](tests/README.md)

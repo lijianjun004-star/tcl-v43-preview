@@ -5,11 +5,11 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.11';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.12';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { evaluationInputKey, evaluationResultHtml, validEvaluation, evaluationFailure } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.11';
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.11';
+import { evaluationInputKey, evaluationResultHtml, validEvaluation, evaluationFailure } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.12';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.12';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;

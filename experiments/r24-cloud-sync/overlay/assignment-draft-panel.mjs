@@ -1,3 +1,4 @@
+import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.12';
 import {
   assignmentDraftTableText,
   buildAssignmentDraftPrompt,
@@ -6,18 +7,19 @@ import {
 
 const draftErrorHints = {
   AI_DRAFT_UNAVAILABLE: '当前账号暂无法使用一键出题。',
+  HUNYUAN_TOKEN_QUOTA_EXCEEDED: '上海试点的腾讯云模型额度已用完，请联系管理员补充额度。可继续用 Excel 发布作业。',
   AI_DRAFT_LIMIT: '今天的一键出题次数已用完。',
   AI_DRAFT_QUOTA_UNAVAILABLE: '暂时无法核实出题额度，请稍后重试。',
   AI_DRAFT_INPUT_INVALID: '请检查资料格式，最多可填写 20,000 字。',
   INVALID_AI_JSON: '返回的草稿未通过题目校验。',
-  GATEWAY_CONFIG_MISSING: '管理员需要补齐出题网关配置。',
-  GATEWAY_CONFIG_INVALID: '管理员需要核对出题网关配置。',
-  GATEWAY_TIMEOUT: '出题网关响应超时。',
-  GATEWAY_HTTP_401: '出题网关鉴权失败，请联系管理员。',
-  GATEWAY_HTTP_403: '出题网关拒绝访问，请联系管理员。',
-  GATEWAY_HTTP_404: '未找到出题网关接口，请联系管理员。',
-  GATEWAY_NETWORK_ERROR: '暂时无法连接出题网关。',
-  GATEWAY_NETWORK_RESET: '与出题网关的连接已中断。',
+  GATEWAY_CONFIG_MISSING: '管理员需要补齐出题服务配置。',
+  GATEWAY_CONFIG_INVALID: '管理员需要核对出题服务配置。',
+  GATEWAY_TIMEOUT: '出题服务响应超时。',
+  GATEWAY_HTTP_401: '出题服务鉴权失败，请联系管理员。',
+  GATEWAY_HTTP_403: '出题服务拒绝访问，请联系管理员。',
+  GATEWAY_HTTP_404: '未找到出题服务接口，请联系管理员。',
+  GATEWAY_NETWORK_ERROR: '暂时无法连接出题服务。',
+  GATEWAY_NETWORK_RESET: '与出题服务的连接已中断。',
   CLIENT_TIMEOUT: '等待出题结果超时，请稍后重试。',
   CLIENT_NETWORK_ERROR: '网络连接中断，请检查网络后重试。',
   RATE_LIMITED: '出题请求过多，请稍后再试。',
@@ -25,13 +27,14 @@ const draftErrorHints = {
 
 function draftErrorHint(code) {
   if (Object.hasOwn(draftErrorHints, code)) return draftErrorHints[code];
-  if (/^GATEWAY_HTTP_[45]\d{2}$/u.test(code)) return '出题网关暂时无法处理请求，请凭请求编号核查。';
+  if (/^GATEWAY_HTTP_[45]\d{2}$/u.test(code)) return '出题服务暂时无法处理请求，请凭请求编号核查。';
   return '云端出题未完成，请稍后重试。';
 }
 
 function draftDiagnostics({requestId, retryCount, errorCode}) {
   const details = [];
-  if (/^(?:AI_DRAFT|GATEWAY|INVALID_AI|RATE|CLIENT)_[A-Z0-9_]{1,45}$/u.test(errorCode)) details.push(errorCode);
+  if (errorCode === 'HUNYUAN_TOKEN_QUOTA_EXCEEDED' ||
+      /^(?:AI_DRAFT|GATEWAY|INVALID_AI|RATE|CLIENT)_[A-Z0-9_]{1,45}$/u.test(errorCode)) details.push(errorCode);
   if (retryCount === 1) details.push('已重试 1 次');
   if (typeof requestId === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/iu.test(requestId)) {
     details.push('请求编号 ' + requestId);
@@ -51,7 +54,7 @@ export function assignmentDraftPanelHtml() {
     <div id="assignmentDraftTextFields"><div class="field"><label for="assignmentDraftSourceText">场景、资料或客户原话</label><textarea id="assignmentDraftSourceText" rows="4" placeholder="粘贴顾客需求、使用场景或产品资料"></textarea></div></div>
     <div id="assignmentDraftTableFields" hidden><div class="field"><label for="assignmentDraftSourceFile">选择 Excel 或文本表格</label><input id="assignmentDraftSourceFile" type="file" accept=".xlsx,.xls,.csv,.tsv"><small>支持 XLSX、XLS、CSV、TSV。较长资料可按主题分批。</small></div></div>
     <div id="assignmentDraftCloudControls" hidden>
-      <p class="hub-task-tip">点击生成会把所选文字经配置的网关发送给模型服务。请先去除姓名、电话、地址等个人信息，并确认资料可分享。</p>
+      <p class="hub-task-tip">点击生成会将所选文字发送给已配置的模型服务。请先去除姓名、电话、地址等个人信息，并确认资料可分享。</p>
       <button type="button" class="btn dark" id="assignmentDraftGenerate" aria-describedby="assignmentDraftCloudStatus">AI 一键出题</button>
     </div>
     <p class="scene-tip" id="assignmentDraftCloudStatus" role="status" hidden></p>
@@ -207,9 +210,9 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
       const generated = await cloud.generate({ material: source.trim(), boardId: scope.boardId, platform: scope.platform, count: desiredCount });
       if (!isCurrent()) return;
       const fallback = generated?.source === 'fallback' && generated.degraded === true;
-      const fromGateway = generated?.source === 'openai_gateway' && generated.degraded === false;
+      const modelLabel = aiModelLabel(generated);
       try {
-        if (!fallback && !fromGateway) throw new Error();
+        if (!fallback && !modelLabel) throw new Error();
         if (fallback && !generated.errorCode) throw new Error();
         const questions = readAssignmentDraftResponse(JSON.stringify({questions: generated.questions}));
         if (questions.some(row => !row.keyPoints.length)) throw new Error();
@@ -219,7 +222,7 @@ export function bindAssignmentDraftPanel({ panel, parseDocumentFile, getAssignme
           code: 'INVALID_AI_JSON', requestId: generated?.requestId, retryCount: generated?.retryCount,
         });
       }
-      origin = fallback ? '本地兜底草稿' : 'AI 网关草稿';
+      origin = fallback ? '本地兜底草稿' : 'AI 出题草稿 · ' + modelLabel;
       generatedScope = scope;
       const reason = fallback ? '。' + draftErrorHint(generated.errorCode) : '';
       originNote.textContent = origin + reason + draftDiagnostics(generated);

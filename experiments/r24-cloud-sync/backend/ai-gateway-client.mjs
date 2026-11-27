@@ -5,6 +5,11 @@ import {evaluationInstructions, evaluationResponseFormat, validateEvaluationInpu
 
 const transientStatuses = new Set([429, 502, 503, 504]);
 const defaultModel = 'gpt-4o-mini';
+const hunyuanModels = new Map([['cloudbase', 'hy3'], ['hunyuan-v3', 'hy3-preview']]);
+
+export function isHunyuanModel(model) {
+  return [...hunyuanModels.values()].includes(model);
+}
 const maxResponseBytes = 256 * 1024;
 const maxPromptBytes = 128 * 1024;
 const jsonInstructions = '仅输出一个 JSON 对象。questions 为非空数组，每项须含 question（非空顾客弹幕字符串）、answer（非空参考话术字符串）、keyPoints（非空评分要点字符串数组）。不要额外添加字段。';
@@ -73,7 +78,7 @@ function completionText(envelope, meta, strict, token) {
   if (((strict || choice?.finish_reason !== undefined) && choice?.finish_reason !== 'stop') ||
       ((strict || message?.role !== undefined) && message?.role !== 'assistant') ||
       message?.refusal || message?.tool_calls || message?.function_call ||
-      typeof message?.content !== 'string' || !message.content.trim() || message.content.includes(token)) {
+      typeof message?.content !== 'string' || !message.content.trim() || (token && message.content.includes(token))) {
     throw new ClientFailure('INVALID_AI_JSON', meta);
   }
   return message.content;
@@ -121,26 +126,77 @@ export function createAiGatewayClient({env = process.env, fetchImpl = fetch, sle
   const valid = url && model && typeof token === 'string' && /^[\x21-\x7e]{1,8192}$/u.test(token) &&
     !/^sk[-_]/iu.test(token) && /^\d+$/u.test(rawTimeout) && timeout >= 1 && timeout <= 30000;
 
+  async function requestEnvelope(body, meta, signal) {
+    const response = await fetchImpl(url, {
+      method: 'POST', redirect: 'error', signal, body: JSON.stringify(body),
+      headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'},
+    });
+    meta.httpStatus = response.status;
+    if (response.status !== 200) {
+      void response.body?.cancel().catch(() => {});
+      throw new ClientFailure('GATEWAY_HTTP_' + response.status, meta);
+    }
+    return readEnvelope(response, meta);
+  }
+  return completionClient({model, source: 'openai_gateway', missing, valid, timeout, token, requestEnvelope, sleep});
+}
+
+export function createHunyuanClient({cloudApp, env = process.env} = {}) {
+  const group = env.TCL_R24_SYNC_AI_MODEL_PROVIDER;
+  const model = env.TCL_R24_SYNC_AI_MODEL_ID;
+  const valid = typeof cloudApp?.ai === 'function' && typeof model === 'string' && hunyuanModels.get(group) === model;
+  async function requestEnvelope(body, meta) {
+    const messages = body.messages.map(message => ({...message}));
+    const format = group === 'cloudbase' ? body.response_format : {type: 'json_object'};
+    // The preview group uses JSON object mode with the same trusted schema and validation.
+    if (format.type !== 'json_schema' && body.response_format.type === 'json_schema') {
+      messages[0].content += '\n' + JSON.stringify(body.response_format.json_schema.schema);
+    }
+    let result;
+    try {
+      result = await cloudApp.ai().createModel(group).generateText({
+        model, messages, maxSteps: 1, max_tokens: body.max_tokens,
+        thinking: {type: 'disabled'}, response_format: format,
+      });
+      if (result?.error) throw result.error;
+    } catch (error) {
+      // @cloudbase/node-sdk 4.2.1 surfaces CloudBase's error code in this exact message prefix.
+      // Do not expose upstream diagnostic text, request bodies, tokens or stack traces.
+      if (error?.code === 'EXCEED_TOKEN_QUOTA_LIMIT' ||
+          /^AI\+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，/u.test(error?.message)) {
+        throw new ClientFailure('HUNYUAN_TOKEN_QUOTA_EXCEEDED', {...meta, httpStatus: 429});
+      }
+      const status = error?.response?.status ?? error?.statusCode ?? error?.status;
+      if (Number.isInteger(status) && status >= 400 && status <= 599) {
+        throw new ClientFailure('GATEWAY_HTTP_' + status, {...meta, httpStatus: status});
+      }
+      throw error;
+    }
+    const envelope = result?.rawResponses?.[0];
+    meta.httpStatus = 200;
+    if (result?.rawResponses?.length !== 1 || !envelope ||
+        (envelope.model !== undefined && envelope.model !== model) ||
+        Buffer.byteLength(JSON.stringify(envelope)) > maxResponseBytes) {
+      throw new ClientFailure('INVALID_AI_JSON', meta);
+    }
+    return envelope;
+  }
+  // CloudBase bills by attempt and its SDK doesn't implement abortSignal. Do not retry here.
+  return completionClient({model: valid ? model : null, source: 'cloudbase_hunyuan',
+    missing: !model, valid, timeout: 30_000, requestEnvelope});
+}
+
+function completionClient({model, source, missing, valid, timeout, token, requestEnvelope, sleep}) {
   async function attempt(body, meta, parse, scoring, budget, retryCount) {
     const controller = new AbortController();
     async function request() {
-      // A retry becomes an attempt only when its HTTP request is dispatched.
       meta.retryCount = retryCount;
-      const response = await fetchImpl(url, {
-        method: 'POST', redirect: 'error', signal: controller.signal, body,
-        headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'},
-      });
-      meta.httpStatus = response.status;
-      if (response.status !== 200) {
-        void response.body?.cancel().catch(() => {});
-        throw new ClientFailure('GATEWAY_HTTP_' + response.status, meta);
-      }
-      const envelope = await readEnvelope(response, meta);
+      const envelope = await requestEnvelope(body, meta, controller.signal);
       meta.usage = publicUsage(envelope?.usage);
-      const content = completionText(envelope, meta, scoring, token);
+      const content = completionText(envelope, meta, scoring || source === 'cloudbase_hunyuan', token);
       try {
         const result = parse(content);
-        if (JSON.stringify(result).includes(token)) throw new Error('INVALID_AI_JSON');
+        if (token && JSON.stringify(result).includes(token)) throw new Error('INVALID_AI_JSON');
         return {...result, ...meta};
       } catch {
         throw new ClientFailure('INVALID_AI_JSON', meta);
@@ -162,13 +218,13 @@ export function createAiGatewayClient({env = process.env, fetchImpl = fetch, sle
     if (!valid) throw new ClientFailure('GATEWAY_CONFIG_INVALID', initial);
     const operation = scoring ? 'AI_EVALUATION' : 'AI_DRAFT';
     if (typeof prompt !== 'string' || !prompt.trim() || Buffer.byteLength(prompt) > maxPromptBytes ||
-        prompt.includes(token)) throw new ClientFailure(operation + '_INPUT_INVALID', initial);
-    const body = JSON.stringify({
+        (token && prompt.includes(token))) throw new ClientFailure(operation + '_INPUT_INVALID', initial);
+    const body = {
       model, stream: false, store: false, response_format: scoring ? evaluationResponseFormat : {type: 'json_object'},
       max_tokens: maxTokens,
       messages: [{role: 'system', content: scoring ? evaluationInstructions : jsonInstructions}, {role: 'user', content: prompt}],
-    });
-    const end = performance.now() + 2 * timeout + 1500;
+    };
+    const end = performance.now() + (source === 'cloudbase_hunyuan' ? timeout : 2 * timeout + 1500);
     for (let retryCount = 0; ; retryCount++) {
       const meta = {...initial};
       if (beforeFetch) {
@@ -185,7 +241,7 @@ export function createAiGatewayClient({env = process.env, fetchImpl = fetch, sle
       } catch (error) {
         const transient = transientStatuses.has(error.httpStatus) || error.code === 'GATEWAY_TIMEOUT' ||
           (!scoring && error.code === 'GATEWAY_NETWORK_RESET');
-        if (retryCount || !transient) throw error;
+        if (source === 'cloudbase_hunyuan' || retryCount || !transient) throw error;
         await withDeadline(() => sleep(1500), end - performance.now(), meta);
       }
     }
@@ -202,5 +258,5 @@ export function createAiGatewayClient({env = process.env, fetchImpl = fetch, sle
       parse: content => validateEvaluationResult(JSON.parse(content), input),
     });
   }
-  return {model, generate, evaluate};
+  return {model, source, generate, evaluate};
 }

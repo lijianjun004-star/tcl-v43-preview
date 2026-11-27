@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createApi} from '../api.mjs';
 import {createMemoryStore} from '../memory-store.mjs';
 import {makeAssignment} from '../vendor/assignment-excel.mjs';
-import {createAiGatewayClient} from '../ai-gateway-client.mjs';
+import {createAiGatewayClient, createHunyuanClient} from '../ai-gateway-client.mjs';
 import {createCloudBaseEvaluationGeneration} from '../../cloudbase/ai-draft-provider.mjs';
 
 const path = '/assignments/evaluate';
@@ -30,12 +30,14 @@ function reply(content = JSON.stringify(score), finish = 'stop', stats = usage) 
 }
 
 async function fixture({configuration = env, reserve = () => ({data: true}), receive = () => reply(),
-  keyPoints = ['核对尺寸', '咨询配送']} = {}) {
+  nativeReceive, keyPoints = ['核对尺寸', '咨询配送']} = {}) {
   const store = createMemoryStore();
   const calls = [];
   const reservations = [];
   const waits = [];
-  const client = createAiGatewayClient({env: configuration,
+  const client = nativeReceive ? createHunyuanClient({env: configuration, cloudApp: {
+    ai: () => ({createModel: () => ({generateText(options) { calls.push(options); return nativeReceive(); }})}),
+  }}) : createAiGatewayClient({env: configuration,
     fetchImpl: async (url, options) => { calls.push(JSON.parse(options.body)); return receive(calls.length, options); },
     sleep: async ms => { waits.push(ms); },
   });
@@ -198,4 +200,32 @@ test('401 is terminal; 429, 502 and a timeout use one 1500ms backoff and one res
     assert.equal(f.reservations.length, 2);
     assert.deepEqual(f.waits, [1500]);
   }
+});
+
+test('native Shanghai scores keep model provenance through submission, retries and operator replay', async () => {
+  const configuration = {TCL_R24_SYNC_AI_ENABLED: 'true', TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase', TCL_R24_SYNC_AI_MODEL_ID: 'hy3'};
+  const nativeReceive = async () => ({rawResponses: [await reply().json()]});
+  const f = await fixture({configuration, nativeReceive});
+  const scored = await f.evaluate();
+  assert.equal(scored.status, 200);
+  assert.deepEqual(scored.evaluation, {...score, model: 'hy3', source: 'cloudbase_hunyuan',
+    requestId: scored.requestId, usage, degraded: false});
+  assert.deepEqual((await f.submit(f.snapshot, scored.evaluationId)).submission.evaluation, scored.evaluation);
+  assert.deepEqual((await f.call('GET', f.base + '/submissions', 'operator')).submissions[0].evaluation, scored.evaluation);
+  assert.deepEqual((await f.evaluate()).evaluation, scored.evaluation);
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.reservations.length, 1);
+
+  const exhausted = await fixture({configuration, nativeReceive() {
+    throw new Error('AI+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，错误信息：private-diagnostic');
+  }});
+  const denied = await exhausted.evaluate();
+  assert.equal(denied.status, 503);
+  assert.equal(denied.error.code, 'HUNYUAN_TOKEN_QUOTA_EXCEEDED');
+  assert.match(denied.error.message, /腾讯云混元模型额度/);
+  assert.match(denied.requestId, /^[0-9a-f-]{36}$/);
+  assert.equal(denied.evaluation, undefined);
+  assert.equal(JSON.stringify(denied).includes('private-diagnostic'), false);
+  assert.equal((await exhausted.submit()).submission.evaluation, undefined);
+  assert.equal(exhausted.calls.length, 1);
 });

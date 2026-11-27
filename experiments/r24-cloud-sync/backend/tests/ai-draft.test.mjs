@@ -24,7 +24,7 @@ const question = {
 };
 const modelOutput = questions => ({questions, httpStatus: 200, retryCount: 0, usage: null});
 
-function fixture(generate, {fallbackEnabled = true} = {}) {
+function fixture(generate, {fallbackEnabled = true, providerMetadata = {}} = {}) {
   const audit = [];
   const calls = [];
   const logged = [];
@@ -33,6 +33,7 @@ function fixture(generate, {fallbackEnabled = true} = {}) {
     store: createMemoryStore(),
     draftGeneration: generate && {
       model: 'synthetic-model',
+      ...providerMetadata,
       fallbackEnabled,
       canGenerate: actor => actor.id === actors.allowed.id,
       generate: async (actor, prompt, context) => {
@@ -324,4 +325,28 @@ test('HTTP handler and real gateway client agree on retry, usage, fallback and t
     assert.doesNotMatch(JSON.stringify([audit, data]), /SENSITIVE-MARKER|secretDebugField|truncated|gateway\.example/);
     assert.deepEqual((await call('GET', '/assignments', 'allowed')).data.assignments, []);
   }
+});
+
+test('native unpublished draft attributes the configured model and only reports source-material fallback on upstream exhaustion', async () => {
+  const providerMetadata = {model: 'hy3', source: 'cloudbase_hunyuan'};
+  const usage = {total_tokens: 42};
+  const ok = fixture(() => ({...modelOutput([question]), model: 'hy3', usage}), {providerMetadata});
+  const accepted = await ok.call('POST', draftPath, 'allowed', source);
+  assert.equal(accepted.data.source, 'cloudbase_hunyuan');
+  assert.equal(accepted.data.model, 'hy3');
+  assert.deepEqual(accepted.data.usage, usage);
+  assert.deepEqual((await ok.call('GET', '/assignments', 'allowed')).data.assignments, []);
+  const mismatch = fixture(() => ({...modelOutput([question]), model: 'hy3-preview'}), {providerMetadata});
+  assert.equal((await mismatch.call('POST', draftPath, 'allowed', source)).data.errorCode, 'INVALID_AI_JSON');
+  const failed = fixture(() => {throw Object.assign(new Error('redacted'), {code: 'HUNYUAN_TOKEN_QUOTA_EXCEEDED', httpStatus: 429});}, {providerMetadata});
+  const rejected = await failed.call('POST', draftPath, 'allowed', source);
+  assert.equal(rejected.status, 503);
+  assert.equal(rejected.data.errorCode, 'HUNYUAN_TOKEN_QUOTA_EXCEEDED');
+  assert.equal(rejected.data.source, 'none');
+  assert.match(rejected.data.errorMessage, /腾讯云混元模型额度/);
+  const fallback = await failed.call('POST', draftPath, 'allowed', {...source, material: JSON.stringify({questions: [question]})});
+  assert.equal(fallback.data.source, 'fallback');
+  assert.equal(fallback.data.degraded, true);
+  assert.equal(fallback.data.errorCode, 'HUNYUAN_TOKEN_QUOTA_EXCEEDED');
+  assert.deepEqual(fallback.data.questions, [question]);
 });

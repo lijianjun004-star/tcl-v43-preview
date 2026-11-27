@@ -11,7 +11,8 @@ const escape = value => String(value).replaceAll('&','&amp;').replaceAll('<','&l
 
 test('records without a complete gateway result display the legacy no-evaluation state', () => {
   for (const value of [null, undefined, {}, {...result,degraded:true}, {...result,source:'local'},
-    {...result,overallScore:101}, {...result,items:[]}, {...result,items:[{...result.items[0],questionIndex:1}]}]) {
+    {...result,source:'cloudbase_hunyuan'}, {...result,source:'cloudbase_hunyuan',model:'gpt-4o-mini'},
+    {...result,model:'hy3-preview'}, {...result,overallScore:101}, {...result,items:[]}, {...result,items:[{...result.items[0],questionIndex:1}]}]) {
     assert.equal(Boolean(validEvaluation(value,turns.length)),false);
     assert.match(evaluationResultHtml(value,turns,escape),/未生成 AI 评选/);
     assert.doesNotMatch(evaluationResultHtml(value,turns,escape),/总分/);
@@ -41,4 +42,21 @@ test('errors show a safe localized explanation and the returned trace ID', () =>
   assert.match(failed,/尚未配置/);assert.match(failed,/trace-123/);assert.doesNotMatch(failed,/private raw/);
   assert.match(evaluationFailure({code:'CLIENT_TIMEOUT'}),/未收到服务端请求编号/);
   assert.doesNotMatch(evaluationFailure({requestId:'<invalid>'}),/<invalid>/);
+  const quota = evaluationFailure({code:'HUNYUAN_TOKEN_QUOTA_EXCEEDED',requestId:'hy-quota-1'});
+  assert.match(quota,/上海试点的腾讯云模型额度已用完/);
+  assert.match(quota,/hy-quota-1.*仍可提交本场回答/);
+});
+
+test('review displays the saved provider and model for Hunyuan and both generations of OpenAI records', () => {
+  for (const [source, model, label] of [
+    ['cloudbase_hunyuan', 'hy3', '腾讯混元 · hy3'],
+    ['cloudbase_hunyuan', 'hy3-preview', '腾讯混元 · hy3-preview'],
+    ['openai_gateway', 'gpt-4o-mini', 'OpenAI · gpt-4o-mini'],
+    ['openai_gateway', 'gpt-4o', 'OpenAI · gpt-4o'],
+    ['openai_gateway', undefined, 'OpenAI 网关'],
+  ]) {
+    const record = {...result, source, model};
+    assert.equal(validEvaluation(record, turns.length), true);
+    assert.ok(evaluationResultHtml(record, turns, escape).includes(label));
+  }
 });

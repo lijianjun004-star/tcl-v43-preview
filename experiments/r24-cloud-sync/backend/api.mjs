@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { startDraftCall, finishDraftCall, generateAssignmentDraft } from './assignment-draft-service.mjs';
+import { isHunyuanModel } from './ai-gateway-client.mjs';
 import { validateEvaluationInput, validateEvaluationResult } from './evaluation-schema.mjs';
 import { buildAssignmentDraftPrompt } from '../overlay/assignment-drafts.mjs';
 import {
@@ -339,6 +340,7 @@ function evaluationFailure(code) {
     GATEWAY_TIMEOUT: [504, '评选网关超时，可稍后重试'],
     GATEWAY_NETWORK_ERROR: [503, '评选网关暂时无法连接'],
     GATEWAY_NETWORK_RESET: [503, '评选网关连接中断'],
+    HUNYUAN_TOKEN_QUOTA_EXCEEDED: [503, '腾讯云混元模型额度已用完，请联系管理员核查模型额度'],
     INVALID_AI_JSON: [502, '模型结果不完整或格式异常，本次未评分'],
     AI_EVALUATION_INPUT_INVALID: [422, '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'],
     AI_EVALUATION_LIMIT: [429, '今天的 AI 调用额度已用完'],
@@ -393,8 +395,11 @@ async function evaluateAssignment(request, principal, {store, evaluationGenerati
   } catch (error) { evaluationFailure(error?.code); }
 
   let scoring;
+  const source = evaluationGeneration.source ?? 'openai_gateway';
   try {
-    if (result.httpStatus !== 200 || !['gpt-4o-mini', 'gpt-4o'].includes(result.model)) {
+    const validModel = source === 'openai_gateway' ? ['gpt-4o-mini', 'gpt-4o'].includes(result?.model) :
+      source === 'cloudbase_hunyuan' && isHunyuanModel(result?.model) && evaluationGeneration.model === result.model;
+    if (!validModel || result.httpStatus !== 200) {
       throw new Error('Invalid upstream result');
     }
     scoring = validateEvaluationResult({overallScore: result.overallScore, grade: result.grade, items: result.items}, items);
@@ -403,7 +408,7 @@ async function evaluateAssignment(request, principal, {store, evaluationGenerati
     .filter(key => Number.isSafeInteger(result.usage?.[key]) && result.usage[key] >= 0)
     .map(key => [key, result.usage[key]]));
   const evaluation = {...scoring, model: result.model, usage: Object.keys(usage).length ? usage : null,
-    requestId: evaluationRequestId, source: 'openai_gateway', degraded: false};
+    requestId: evaluationRequestId, source, degraded: false};
   const record = {id, assignmentId: snapshot.assignmentId, teamId: principal.teamId, anchorId: principal.id, evaluation};
   // Insert-only storage makes concurrent completions converge on the same authoritative score.
   const confirmed = await store.createEvaluation(record) ? record : await store.getEvaluation(id);

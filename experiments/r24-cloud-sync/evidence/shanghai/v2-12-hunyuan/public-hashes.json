@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-11-27T10:14:00.972817+08:00",
+  "site": "https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/",
+  "version": "r24-paraformer-excel-cloud-sync-v2-20261124.12",
+  "totalAssets": 41,
+  "publicSha256": {
+    "static-manifest.json": "c0c615d69232ab6dd1c76b415ad5ee8dc9bb15d9c937aa146260ce34acb4a814",
+    "ai-model-label.mjs": "0fab1718b6aeba00b557d50085524d82db13c5893ff82760d868277cf1abe76a",
+    "app.js": "8bcfee8d58276e3d6da7a13cb02e96d0fe93b71b819a77bddc1444ea161483a2",
+    "assignment-draft-panel.mjs": "69eafa5c6707d99e3d5df34dbc120e4f28fe1a3e77c28a476b132a74b99ad885",
+    "assignment-evaluation.css": "64b5f9c3551d5535034acaaaf80999d6550b0ec512c0bd1e4c689f4b4726c9ed",
+    "assignment-evaluation.mjs": "d38fc20a58889689442f9298cee4437f335c6c5fcd3988b271702bea774f1d68",
+    "assignment-sync.mjs": "12127b04158c888a7b70a03eb0854bab94fab6164cce0afc117f37db4c562ba3",
+    "index.html": "03b257e6c541712ca408df99c9358064e8903e450127bcba5f84a3acc888ceb2"
+  }
+}

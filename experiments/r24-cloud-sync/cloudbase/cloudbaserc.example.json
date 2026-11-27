@@ -18,6 +18,8 @@
         "TCL_R24_SYNC_AI_ENABLED": "false",
         "TCL_R24_SYNC_AI_OPERATOR_IDS": "<verified-operator-id>",
         "TCL_R24_SYNC_AI_DAILY_LIMIT": "5",
+        "TCL_R24_SYNC_AI_MODEL_PROVIDER": "openai_gateway",
+        "TCL_R24_SYNC_AI_MODEL_ID": "",
         "AI_GATEWAY_URL": "https://gateway.example.invalid",
         "AI_GATEWAY_TOKEN": "",
         "AI_GATEWAY_MODEL": "gpt-4o-mini",
