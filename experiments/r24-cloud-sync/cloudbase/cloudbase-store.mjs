@@ -119,6 +119,17 @@ export function createDatabaseAdapter(db, prefix) {
         id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
         anchor_id: record.anchorId, submitted_at: record.submittedAt, payload: record,
       }),
+      async listRepositoryReviews(assignmentId, principal, ids) {
+        if (!ids.length || typeof db.rpc !== 'function') return [];
+        const result = await db.rpc(prefix + '_read_repository_reviews', {
+          p_assignment_id: assignmentId, p_team_id: principal.teamId, p_viewer_id: principal.id,
+          p_viewer_role: principal.role, p_ids: ids,
+        });
+        // An older installation can still serve its original immutable submissions.
+        if (['PGRST202', '42883'].includes(result?.error?.code)) return [];
+        if (result?.error || !Array.isArray(result?.data)) throw new Error('Repository review read unavailable');
+        return result.data;
+      },
       async listSubmissionHeaders(assignmentId, teamId, anchorId, cursor, limit) {
         const scope = {assignment_id: assignmentId, team_id: teamId, ...(anchorId ? {anchor_id: anchorId} : {})};
         const ordered = () => queryFrom(submissions, 'id,submitted_at', scope)

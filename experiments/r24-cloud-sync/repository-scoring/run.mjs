@@ -1,18 +1,27 @@
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
 import pg from 'pg';
 import {createQueue} from './queue.mjs';
 import {createRepositoryArchive} from './archive.mjs';
 import {createOpenAIScorer, processOne} from './worker.mjs';
 
+export function acceptsQueueSignal(event, env) {
+  if (env.GITHUB_RUN_ATTEMPT !== '1' || env.R24_REPO_SCORING_ENABLED !== 'true') return false;
+  // GitHub schedules use the default branch and may omit repository metadata.
+  // The official GitHub API still verifies private visibility before touching the queue.
+  if (env.GITHUB_EVENT_NAME === 'schedule') return true;
+  if (env.GITHUB_EVENT_NAME !== 'workflow_dispatch' || event.repository?.private !== true ||
+      event.repository.full_name !== env.GITHUB_REPOSITORY ||
+      env.GITHUB_REF !== 'refs/heads/' + event.repository.default_branch) return false;
+  const inputs = event.inputs ?? {};
+  return Object.keys(inputs).every(k => k === 'signal') &&
+    ['sweep','submission_saved'].includes(inputs.signal ?? 'sweep');
+}
+
 async function main(env) {
   const event = JSON.parse(await readFile(env.GITHUB_EVENT_PATH, 'utf8'));
-  if (!['schedule', 'workflow_dispatch'].includes(env.GITHUB_EVENT_NAME) || env.GITHUB_RUN_ATTEMPT !== '1' ||
-      (env.GITHUB_EVENT_NAME === 'workflow_dispatch' && (event.repository?.private !== true ||
-       event.repository.full_name !== env.GITHUB_REPOSITORY || env.GITHUB_REF !== 'refs/heads/' + event.repository.default_branch)) ||
-      env.R24_REPO_SCORING_ENABLED !== 'true')
-    throw new Error('JOB_DISABLED');
-
+  if (!acceptsQueueSignal(event, env)) throw new Error('JOB_DISABLED');
   const archive = createRepositoryArchive({repo: env.GITHUB_REPOSITORY, token: env.GITHUB_TOKEN});
   await archive.verifyDestination();
   const uri = new URL(env.R24_SCORE_DATABASE_URL);
@@ -46,4 +55,6 @@ async function main(env) {
 }
 
 // Provider and database messages can contain identifying information.
-main(process.env).catch(() => { console.error('Private scoring worker stopped. Check the scoped queue and destination configuration.'); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main(process.env).catch(() => { console.error('Private scoring worker stopped. Check the scoped queue and destination configuration.'); process.exitCode = 1; });
+}

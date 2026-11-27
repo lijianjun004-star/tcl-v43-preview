@@ -1,7 +1,9 @@
 import {createHash} from 'node:crypto';
 
 const archiveBranch = 'r24-score-receipts';
-const allowedModels = new Set(['hy3', 'hy3-preview', 'gpt-4o', 'gpt-4o-mini']);
+const currentReviewModel = 'gpt-6.1-terra';
+const historicalOpenAIModels = new Set(['gpt-4o', 'gpt-4o-mini']);
+const originalSubmissionModels = new Set(['hy3', 'hy3-preview', ...historicalOpenAIModels, currentReviewModel]);
 const receiptFields = ['schemaVersion', 'jobId', 'origin', 'model', 'overallScore', 'grade', 'items', 'reviewStatus'];
 const itemFields = ['questionIndex', 'score', 'matched', 'missed'];
 const digestPattern = /^[a-f0-9]{40}$/;
@@ -29,13 +31,16 @@ function numericList(values) {
   return list.sort((a, b) => a - b);
 }
 
-export function validateScoreReceipt(value) {
+export function validateScoreReceipt(value, {historical = false} = {}) {
   exactFields(value, receiptFields);
   if (value.schemaVersion !== 1 || typeof value.jobId !== 'string' ||
       !/^[a-f0-9]{64}$/.test(value.jobId) ||
-      !['submission', 'openai_review'].includes(value.origin) || !allowedModels.has(value.model) ||
+      !['submission', 'openai_review'].includes(value.origin) || !originalSubmissionModels.has(value.model) ||
       !integer(value.overallScore, 0, 100) || value.reviewStatus !== 'pending_review' ||
       !Array.isArray(value.items) || !integer(value.items.length, 1, 15)) fail('ARCHIVE_INVALID_RECEIPT');
+  // The historical exception is for an already-saved OpenAI receipt being recovered.
+  if (value.origin === 'openai_review' && value.model !== currentReviewModel &&
+      !(historical === true && historicalOpenAIModels.has(value.model))) fail('ARCHIVE_INVALID_RECEIPT');
   const items = Array.from(value.items, (item, index) => {
     exactFields(item, itemFields);
     if (item.questionIndex !== index || !integer(item.score, 0, 100)) fail('ARCHIVE_INVALID_RECEIPT');
@@ -97,8 +102,8 @@ export function createRepositoryArchive({repo, token, fetchImpl = globalThis.fet
     return {repo: info.full_name, branch, protected: branchInfo.protected === true};
   }
 
-  async function archive(input) {
-    const receipt = validateScoreReceipt(input);
+  async function archive(input, {historical = false} = {}) {
+    const receipt = validateScoreReceipt(input, {historical});
     const bytes = Buffer.from(JSON.stringify(receipt, null, 2) + '\n');
     const encoded = bytes.toString('base64');
     const sha = createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex');

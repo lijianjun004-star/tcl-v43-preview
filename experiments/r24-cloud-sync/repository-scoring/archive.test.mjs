@@ -130,3 +130,19 @@ test('a fake success for the wrong file is rejected, never updated or retried', 
   await assert.rejects(archive(receipt()), {code: 'ARCHIVE_INVALID_RESPONSE'});
   assert.equal(calls.length, 4);
 });
+
+test('OpenAI review receipts require Terra; recovery separately admits known historical OpenAI receipts', async()=>{
+  const fresh={...receipt(),origin:'openai_review',model:'gpt-6.1-terra'};
+  assert.equal(validateScoreReceipt(fresh).model,'gpt-6.1-terra');
+  for (const name of ['gpt-4o','gpt-4o-mini','hy3','hy3-preview']) {
+    const legacy={...fresh,model:name};
+    assert.throws(()=>validateScoreReceipt(legacy),{code:'ARCHIVE_INVALID_RECEIPT'});
+    assert.equal(validateScoreReceipt({...legacy,origin:'submission'}).model,name);
+    if (name.startsWith('gpt-')) assert.equal(validateScoreReceipt(legacy,{historical:true}).model,name);
+    else {
+      const {archive,calls}=script();
+      await assert.rejects(archive(legacy,{historical:true}),{code:'ARCHIVE_INVALID_RECEIPT'});
+      assert.equal(calls.length,0);
+    }
+  }
+});

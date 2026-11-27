@@ -2,12 +2,13 @@ import cloudbase from '@cloudbase/node-sdk';
 import {createApi} from './portable/api.mjs';
 import {createAuthenticator} from './cloudbase-identity.mjs';
 import {createDatabaseAdapter} from './cloudbase-store.mjs';
+import {createRepositoryNotifier} from './repository-notifier.mjs';
 import {createGatewayHandler} from './gateway.mjs';
 import {readFunctionConfig} from './function-config.mjs';
 import {createDeviceAccess} from './device-access.mjs';
 import {createDeviceGrantStore} from './device-grants-store.mjs';
 import {createCloudBaseAudio} from './cloudbase-audio.mjs';
-import {createCloudBaseDraftGeneration, createCloudBaseEvaluationGeneration} from './ai-draft-provider.mjs';
+import {createCloudBaseDraftGeneration} from './ai-draft-provider.mjs';
 import {createAiGatewayClient, createHunyuanClient} from './portable/ai-gateway-client.mjs';
 
 function createFunction(runtimeNamespace) {
@@ -28,8 +29,7 @@ function createFunction(runtimeNamespace) {
     }},
   });
   const draftGeneration = createCloudBaseDraftGeneration({client, db, prefix});
-  const evaluationGeneration = createCloudBaseEvaluationGeneration({client, db, prefix});
-  const api = createApi({authenticate, authenticateEvaluation: authenticateBoundDevice, directory, store, media, draftGeneration, evaluationGeneration, allowedOrigins, basePath: ''});
+  const api = createApi({notifyRepositoryQueue: createRepositoryNotifier(), authenticate, authenticateEvaluation: authenticateBoundDevice, directory, store, media, draftGeneration, allowedOrigins, basePath: ''});
   return createGatewayHandler((request, context) => handleDeviceRequest(request, api, context));
 }
 

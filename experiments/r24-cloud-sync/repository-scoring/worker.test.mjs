@@ -12,7 +12,7 @@ const input = [{question:'顾客的合成问题',referenceAnswer:'合成参考�
 const item = {questionIndex:0,score:75,matchedPoints:['核对资料'],missedPoints:['询问尺寸'],comment,suggestedScript:'请告诉我具体尺寸。'};
 const scoring = {overallScore:75,grade:'良好',items:[item]};
 const existing = {...scoring,model:'hy3',source:'cloudbase_hunyuan'};
-const openai = {...scoring,model:'gpt-4o-mini-2024-07-18',source:'openai_offline',usage:{total_tokens:140}};
+const openai = {...scoring,model:'gpt-6.1-terra-2026-01-01',source:'openai_offline',usage:{total_tokens:140}};
 const archived = {status:'archived'};
 const mockLease = () => randomUUID();
 
@@ -64,9 +64,12 @@ test('new score reserves a single attempt, stores feedback privately before arch
   const h=harness();
   assert.deepEqual(await processOne(h.deps),{status:'archived'});
   assert.deepEqual(h.events,['claim','start','openai','save','archive','ack']);
-  assert.equal(h.archives[0].model,'gpt-4o-mini'); assert.equal(h.archives[0].origin,'openai_review');
+  assert.equal(h.archives[0].model,'gpt-6.1-terra'); assert.equal(h.archives[0].origin,'openai_review');
   assert.equal(h.stored().items[0].suggestedScript,item.suggestedScript);
-  assert.deepEqual(h.stored().usage,{total_tokens:140});
+  assert.deepEqual(h.stored().usage,{total_tokens:140,completion_tokens_details:{reasoning_tokens:null}});
+  assert.equal(h.stored().requestedModel,'gpt-6.1-terra');
+  assert.equal(h.stored().returnedModel,'gpt-6.1-terra-2026-01-01');
+  assert.equal(h.stored().rubricVersion,'r24-evaluation-v1');
 });
 
 test('the one-way atomic guard rejects a competing worker before calling the model',async()=>{
@@ -77,7 +80,7 @@ test('the one-way atomic guard rejects a competing worker before calling the mod
 });
 
 test('provider errors and invalid responses enter hold without reattempt or raw error disclosure',async()=>{
-  for (const result of [null,{...openai,model:'freeform-private-name'}, {...openai,overallScore:72}]) {
+  for (const result of [null,{...openai,model:'freeform-private-name'}, {...openai,overallScore:72}, {...openai,model:'gpt-4o-mini'}, {...openai,model:'hy3'}, {...openai,source:'cloudbase_hunyuan'}]) {
     const h=harness(); let calls=0;
     h.deps.score=async()=>{calls++;if (!result) throw new Error(answer);return result;};
     assert.deepEqual(await processOne(h.deps),{status:'held'}); assert.equal(calls,1);
@@ -139,9 +142,9 @@ test('save and claim exceptions redact raw diagnostics; false reservation and fa
 
 const fakeCredential='synthetic-openai-credential-long';
 function validEnvelope(result=scoring) {
-  return {object:'chat.completion',model:'gpt-4o-mini-2024-07-18',
+  return {object:'chat.completion',model:'gpt-6.1-terra-2026-01-01',
     choices:[{finish_reason:'stop',message:{role:'assistant',content:JSON.stringify(result)}}],
-    usage:{prompt_tokens:301,completion_tokens:66,total_tokens:367,extra:'private'}};
+    usage:{prompt_tokens:301,completion_tokens:66,total_tokens:367,completion_tokens_details:{reasoning_tokens:17},extra:'private'}};
 }
 
 test('official request uses only the fixed rubric, original sample, strict format and least metadata',async()=>{
@@ -150,12 +153,14 @@ test('official request uses only the fixed rubric, original sample, strict forma
     called++;assert.equal(url,'https://api.openai.com/v1/chat/completions');
     assert.equal(opts.method,'POST');assert.equal(opts.redirect,'error');assert.ok(opts.signal instanceof AbortSignal);
     assert.deepEqual(opts.headers,{'Content-Type':'application/json',Authorization:'Bearer '+fakeCredential});
-    assert.deepEqual(JSON.parse(opts.body),{model:'gpt-4o-mini',store:false,stream:false,response_format:evaluationResponseFormat,
-      max_tokens:1162,messages:[{role:'system',content:evaluationInstructions},{role:'user',content:JSON.stringify([{questionIndex:0,...input[0]}])}]});
+    assert.deepEqual(JSON.parse(opts.body),{model:'gpt-6.1-terra',store:false,stream:false,response_format:evaluationResponseFormat,
+      reasoning_effort:'low',max_completion_tokens:8192,messages:[{role:'system',content:evaluationInstructions},{role:'user',content:JSON.stringify([{questionIndex:0,...input[0]}])}]});
     return Response.json(validEnvelope(),{headers:{'x-request-id':'req_synthetic'}});
   }});
-  const out=await score(input);assert.equal(called,1); assert.deepEqual(out.items,scoring.items); assert.equal(out.model,'gpt-4o-mini');
-  assert.deepEqual(out.usage,{prompt_tokens:301,completion_tokens:66,total_tokens:367});assert.equal(out.requestId,'req_synthetic');
+  const out=await score(input);assert.equal(called,1); assert.deepEqual(out.items,scoring.items); assert.equal(out.model,'gpt-6.1-terra-2026-01-01');
+  assert.equal(out.requestedModel,'gpt-6.1-terra');assert.equal(out.returnedModel,out.model);
+  assert.equal(out.rubricVersion,'r24-evaluation-v1');assert.equal(out.reasoningEffort,'low');assert.equal(out.maxCompletionTokens,8192);
+  assert.deepEqual(out.usage,{prompt_tokens:301,completion_tokens:66,total_tokens:367,completion_tokens_details:{reasoning_tokens:17}});assert.equal(out.requestId,'req_synthetic');
   assert.ok(Number.isInteger(out.elapsedMs));
 });
 
@@ -183,4 +188,31 @@ test('missing OpenAI credentials only defer fresh scores; persisted and original
   const scored=harness();scored.tamper(original.getReceipt());scored.deps.score=undefined;
   assert.deepEqual(await processOne(scored.deps),{status:'archived'});
   assert.deepEqual(scored.events,['claim','archive','ack']);
+});
+
+test('zero reasoning tokens stay zero and missing provider metrics stay unknown',async()=>{
+  for (const n of [0,undefined]) {
+    const envelope=validEnvelope();
+    if (n===undefined) delete envelope.usage;
+    else envelope.usage.completion_tokens_details.reasoning_tokens=n;
+    const score=createOpenAIScorer(fakeCredential,{fetchImpl:async()=>Response.json(envelope)});
+    const result=await score(input);
+    assert.equal(result.usage.completion_tokens_details.reasoning_tokens,n??null);
+    assert.equal(result.usage.total_tokens,n===undefined?undefined:367);
+  }
+});
+
+test('recovering a persisted legacy OpenAI receipt archives it without reserving or calling a model',async()=>{
+  const first=harness();await processOne(first.deps);
+  const receipt={...first.getReceipt(),model:'gpt-4o-mini'};
+  const recovered=harness();
+  recovered.tamper(receipt);
+  recovered.deps.archive=async(value,options)=>{
+    assert.deepEqual(value,receipt);
+    assert.deepEqual(options,{historical:true});
+    return archived;
+  };
+  assert.deepEqual(await processOne(recovered.deps),{status:'archived'});
+  assert.equal(recovered.scoreCount(),0);
+  assert.deepEqual(recovered.events,['claim','ack']);
 });

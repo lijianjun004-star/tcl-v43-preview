@@ -15,14 +15,14 @@ const identities = {
   disabled: { id: 'a4', teamId: 't1', role: 'anchor', displayName: '陈主播', active: false },
 };
 
-function fixture(media) {
+function fixture(media, notifyRepositoryQueue) {
   const store = createMemoryStore();
   const accounts = structuredClone(identities);
   let now = '2026-11-24T11:00:00.000Z';
   const handle = createApi({
     authenticate: async token => accounts[token] ?? null,
     directory: { listAnchors: async () => Object.values(accounts) },
-    store, media,
+    store, media, notifyRepositoryQueue,
     now: () => new Date(now),
     allowedOrigins: [allowedOrigin],
     basePath: '/qa-sync',
@@ -298,4 +298,40 @@ test('private audio is separately retried, verified, size-limited and restricted
   assert.equal((await call('GET',playback,'peer')).status,404);
   assert.deepEqual((await call('GET',playback,'publisher')).data,
     {mimeType:body.mimeType,base64:body.base64});
+});
+
+test('only a new committed waiting review wakes the repository; wake outages do not lose texts', async () => {
+  let wakes = 0;
+  const {call, store} = fixture(undefined, async (...args) => {
+    wakes++;
+    assert.deepEqual(args, []); // never send customer or assignment data to dispatch
+    throw new Error('synthetic wake outage');
+  });
+  const assignment = await make();
+  await call('POST', '/assignments', 'publisher', {assignment, recipientIds:[]});
+  let status = 'waiting';
+  store.listRepositoryReviews = async (assignmentId, principal, [id]) => {
+    if (!status) return [];
+    assert.equal(principal.id, identities.anchor.id);
+    const committed = await store.getSubmission(id);
+    assert.equal(committed.assignmentId, assignmentId); // never called before commit
+    return [{id, repository_review:{status}}];
+  };
+  const snapshot = practice(assignment);
+  const submit = (actor, doc=snapshot) => call('POST', submissionsPath(assignment), actor, {snapshot:doc});
+  const denied = await submit('outside');
+  assert.notEqual(denied.status, 201);
+  assert.equal(wakes, 0);
+  const duplicate = await Promise.all([submit('anchor'), submit('anchor')]);
+  assert.deepEqual(duplicate.map(r=>r.status).sort(), [200,201]);
+  assert.deepEqual(duplicate.map(r=>r.data.submission.repositoryReview.status), ['waiting','waiting']);
+  assert.equal(wakes,1);
+  assert.equal((await submit('anchor', {...snapshot, turns:snapshot.turns.map(t=>({...t,answer:'不同的作答'}))})).status,409);
+  status = null;
+  const unenrolled = await submit('anchor', {...snapshot,id:'new-session-unenrolled'});
+  assert.equal(unenrolled.status,201);
+  assert.equal(unenrolled.data.submission.repositoryReview,undefined);
+  store.listRepositoryReviews = async () => {throw new Error('projection outage');};
+  assert.equal((await submit('anchor',{...snapshot,id:'new-session-timeout'})).status,201);
+  assert.equal(wakes,1);
 });

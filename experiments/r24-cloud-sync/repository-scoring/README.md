@@ -20,3 +20,9 @@
 - 在授权的私有处理仓库放入本目录、相邻 backend 的 `evaluation-schema.mjs` 与 `.github/workflows/r24-private-score-archive.yml`。从默认分支启用调度，准备专用非默认回执分支 `r24-score-receipts`，给予工作流写入该分支的权限。
 - 配置仓库变量 `R24_REPO_SCORING_ENABLED=true`、Secret `R24_SCORE_DATABASE_URL`（标准 PostgreSQL 连接地址，TLS 由程序启用），以及需要时的 `R24_SCORE_DB_CA_PEM`。仅当需要对缺分的作业调用 OpenAI 时提供 `OPENAI_API_KEY`。运行程序访问源库和 GitHub 都需要该执行网络可达，不应为此将数据库开放到整个公网。
 - 上海正式数据接线、私有仓库权限及人工复核流程须另行验收。当前源码没有将辅助评分发布为正式考核成绩的入口。
+
+### 提交后唤醒私有仓库
+
+上海只在新提交已经保存、且该用户可以读取到对应排队任务时发一次唤醒信号。服务端通过已限制在专用私有仓库的 GitHub App 签发短期令牌，只申请 `actions:write` 权限并检验仓库 ID、名称和可见性。它调用固定文件 `r24-private-score-archive.yml` 的 `workflow_dispatch`，附带默认分支和常量 `submission_saved`。唤醒请求没有作业编号、课件、回答、姓名或云凭证。GitHub 访问整体超时为 3 秒，失败或漏唤醒由每 15 分钟的计划检查恢复，文本提交可正常完成。前端不需要 GitHub 凭证或直接调用 GitHub。
+
+合成验收仅使用模拟 GitHub App 和模拟的私有目的地。正式启用时，需在上海试点云函数的服务端配置 `R24_REPO_WAKE_ENABLED=true`、`R24_REPO_WAKE_REPOSITORY`（精确 owner/repo）、`R24_REPO_WAKE_REPOSITORY_ID`、`R24_REPO_WAKE_APP_ID`、`R24_REPO_WAKE_INSTALLATION_ID`，以及以多行 PEM 存放的 Secret `R24_REPO_WAKE_APP_PRIVATE_KEY`。待私有工作流合并至默认分支、允许处理该批数据且配置完整后再开启该选项。可关闭唤醒单独使用定时检查。

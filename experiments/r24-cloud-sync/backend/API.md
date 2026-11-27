@@ -24,7 +24,7 @@
 | GET | `/assignments` | 运营读取自己发布的作业，主播读取团队中可领取的作业。主播行含本人 `claimedAt`、`submitted` 和 `lastSubmittedAt`。 |
 | GET | `/assignments/draft` | 已登录运营读取 `{available}`，表示当前账号是否已开放一键出题。 |
 | POST | `/assignments/draft` | 已开放的运营传 `{material,boardId,platform,count}`，成功时返回 `{requestId,source,degraded,retryCount,questions:[{question,answer,keyPoints}]}`。 |
-| POST | `/assignments/evaluate` | 已绑定主播提交当前未上交的练播快照 `{snapshot}`。成功返回 `{requestId,evaluationId,evaluation}`。 |
+| POST | `/assignments/evaluate` | 已绑定主播凭冻结快照 `{snapshot}` 读取旧评选。已有结果返回 200，新作答返回 409 和 `AI_EVALUATION_AFTER_SUBMIT`。 |
 | POST | `/assignments/:id/claim` | 主播传 `{}`，返回 `{claimedAt,replayed}`。同一主播重复领取返回同一时间，新领取超过截止时间将被拒绝。 |
 | GET | `/assignments/:id/progress` | 发布运营读取 `{claims,nextCursor}`，每项包括 `anchorId,anchorName,claimedAt,submittedAt`。 |
 | POST | `/assignments/:id/submissions` | 主播传 `{snapshot,evaluationId?}`，返回 `{submission,replayed}`。先保存文字和转写。 |
@@ -43,23 +43,23 @@
 
 `turns` 必须覆盖每道冻结原题并按原顺序提交。服务端记录提交人账号、时间和逾期情况。发布、领取和提交首次写入为 201，同内容安全重试为 200。沿用作业 ID 或同场次键但内容不同会返回 409。提交列表按提交时间和 ID 倒序在数据库内选取游标页，再分批读取该页的答案、评分与录音元数据。列表最多每页 20 条且受响应大小限制，传 `?cursor=<nextCursor>` 继续。
 
+已纳入异步评分的提交在提交回执及上述两个提交列表中携带 `submission.repositoryReview`。刷新同一列表即可看到进度；换机后使用同一已绑定账号可读回结果。`waiting` 表示已排队，`processing` 表示正在评分，`needs_attention` 表示需要运营核查，`pending_review` 表示已取得 OpenAI 辅助评分，待运营复核。`pending_review` 附带 `evaluation` 对象，含 `overallScore`、`grade`、`items`、`model`、`source: "openai_offline"` 和 `degraded: false`。没有对应异步任务时返回原提交；`submission.evaluation` 保留当时已写入的历史成绩。
+
+服务端通过 `cloudbase/schema-repository-score-readback.sql` 安装的只读函数查询结果。提交人须对作业仍有查看权限，运营须为该作业发布者。结果在试点源库保存后即可读取，私有仓库归档可单独重试。读取函数仅向 `service_role` 授权，浏览器使用已有设备凭证通过作业接口访问。
+
 一键出题的资料最多 20,000 字，目标题数为 1–15。返回值是待复核草稿，运营确认后另行调用常规发布接口。上海原生混元草稿的来源为 `cloudbase_hunyuan`，并返回 `model` 和 `usage`。已有网关调用的来源为 `openai_gateway`。兜底草稿返回 `source=fallback`、`degraded=true`、`errorCode` 和脱敏中文 `errorMessage`。拒绝访问或无可用兜底时返回非 200。网关错误可按请求编号和 `GATEWAY_HTTP_xxx`、`GATEWAY_TIMEOUT`、`GATEWAY_CONFIG_MISSING`、`INVALID_AI_JSON` 等错误码排查。网关成功、兜底及失败的来源与编辑确认流程见[联调说明](../cloudbase/README-CloudBase.md#私有网关联调)。
 
 ## AI 辅助评选
 
-`POST /assignments/evaluate` 接收与提交接口相同的冻结场次快照。仅接受已绑定且仍有效的主播设备凭证，并校验该主播能否访问此作业。服务器对照原题 ID、顺序、版本、型号与哈希核实场次，并从已发布原题取参考话术和评分要点。评分只传题目、参考话术、要点和最终回答。最终回答优先用 `turn.answer`，仅在缺少该字段时接受 `answerText` 或 `transcript`。手动清空的回答必须重新填写。音频文件、设备标识、账号名不加入模型请求。
+主播先确认文字或转写并提交作业。已获准的作业由仓库工作流从队列异步评分，队列与回执的开通条件见[仓库评分说明](../repository-scoring/README.md)。运营出题继续使用原有模型配置、名单和按上海日期计数的出题额度。
 
-评选请求体上限 128 KiB，要求 1–15 道完整题。每题题目上限 500、参考话术 3,000、最终回答 4,000 个 UTF-16 单元。各题需有 1–12 条评分要点，每条最多 200 个单元，全场评审文字合计最多 20,000 个单元。缺少评分依据的历史作业可照常手动复盘、提交。
+旧版客户端的 `POST /assignments/evaluate` 仍需已绑定主播的有效设备凭证。服务器用原题、账号、场次、快照哈希和最终回答核对历史结果。相同的已提交评选或旧缓存返回 200，保留原来的分数、来源、模型、请求编号和用量。有效的新作答返回 HTTP 409 和 `AI_EVALUATION_AFTER_SUBMIT`，提示主播先确认并提交本次作答。已提交场次与请求中的回答或评选不符时，返回 `AI_EVALUATION_ALREADY_SUBMITTED`。每次请求都带本次的 `requestId`。
 
-`evaluation` 包含 `overallScore`、`grade` 和 `items`。每项的 `questionIndex` 从 0 开始，按原题顺序排列，附 `score`、`matchedPoints`、`missedPoints`、`comment` 与 `suggestedScript`。原要点完整分配给命中和遗漏两组。逐题分数为 0–100 的整数，总分为逐题分数的四舍五入平均值，85 分及以上为优秀，60–84 为良好，其余为待提升。评选仅作辅助，最终以运营复核为准。
+旧接口的请求体上限为 128 KiB。快照包含 1–15 道题，最终回答优先取 `turn.answer`，缺少此字段时使用 `answerText` 或 `transcript`。手动清空的回答需重新填写。缺少历史评分依据的作业仍可提交文字。输入不符合要求返回 `AI_EVALUATION_INPUT_INVALID` 或 `SUBMISSION_INVALID`。
 
-成功结果按实际服务写入 `source=cloudbase_hunyuan` 或 `source=openai_gateway`，并返回 `degraded=false`、模型、产生该结果的 `requestId` 和上游实际返回的 token 用量；未报告用量时为 `null`。已完成的相同回答再次评选会读回同一份不可覆盖的候选结果。并发生成即使各自占用额度，最终只接受首先写入的一份。顶层 `requestId` 标识当前请求。
+提交时仍可携带与当前快照匹配的历史 `evaluationId`，服务器将对应的既有结果写入该次 `submission.evaluation`。编号不匹配时返回 `AI_EVALUATION_MISMATCH`。主播可以省略旧编号，提交当前回答。已保存的原始作答与原评选保留，仓库复核结果另行关联。
 
-提交时可带服务器返回的 64 位十六进制 `evaluationId`。服务器按团队、稳定主播账号、作业、场次、快照哈希及当前逐题回答与转写核对，随后将可信评选写入这次新提交的 `submission.evaluation`。修改回答后须重新评选或省略该编号提交普通记录。运营和主播只读列表返回已附加的评选。当记录没有这个字段时，展示“未生成 AI 评选”。历史提交不可追加或改分。评选本身仅新增试点评选记录，正式提交才保存最终记录。
-
-错误包含当前 `requestId` 及 `error.code`、中文 `error.message`。`GATEWAY_CONFIG_MISSING` 表示网关未配置；`AI_EVALUATION_INPUT_INVALID`、`SUBMISSION_INVALID` 表示资料或快照不符合要求；`AI_EVALUATION_LIMIT` 为试点应用当日次数用尽。`HUNYUAN_TOKEN_QUOTA_EXCEEDED` 表示腾讯云模型的 token 额度用尽，可按请求编号核查供应商配额。`INVALID_AI_JSON` 包括输出截断、评分或要点与规则不符；`AI_EVALUATION_MISMATCH` 指当前回答与评选编号不匹配。失败时显示未评分，仍可仅提交文字。
-
-管理员获准上线时需先核对试点独立表定义 `cloudbase/schema-ai-evaluations.sql` 和既有 `cloudbase/schema-ai-drafts.sql` 的配额函数。每个上游 HTTP 尝试均通过同一个按上海日期原子扣减的额度；`TCL_R24_SYNC_AI_DAILY_LIMIT` 默认 5、允许 1–20。出题与评选共用 `TCL_R24_SYNC_AI_ENABLED` 总开关。运营出题仍受运营白名单限制。
+`evaluation` 含 `overallScore`、`grade` 与按原题顺序排列的 `items`，每题含从 0 开始的 `questionIndex`、整数 `score`、`matchedPoints`、`missedPoints`、`comment` 与 `suggestedScript`。总分是逐题分数的四舍五入平均值，85 分起为优秀，60–84 为良好，低于 60 为待提升。最终判定由运营复核。
 
 ## 逐题录音
 
