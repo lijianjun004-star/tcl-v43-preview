@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_PIN = "ce897151ee99aeed5b9b946c27119b3a6b9f74ab372903b147b68a7a0e2556e1"
-VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.11"
-SHORT_VERSION = "R24-20261124.11"
-ASSET_REVISION = "r24-sync-v2-20261124.11"
+VERSION = "r24-paraformer-excel-cloud-sync-v2-20261124.12"
+SHORT_VERSION = "R24-20261124.12"
+ASSET_REVISION = "r24-sync-v2-20261124.12"
 
 
 def digest(path):
@@ -101,7 +101,7 @@ def main():
         .replace(old_script, f'src="app.js?v={ASSET_REVISION}"'.encode())
     )
     for name in ("app.js", "assignment-sync.mjs", "assignment-drafts.mjs", "assignment-draft-panel.mjs",
-                 "assignment-evaluation.mjs", "assignment-evaluation.css"):
+                 "assignment-evaluation.mjs", "assignment-evaluation.css", "ai-model-label.mjs"):
         shutil.copyfile(overlay / name, target / name)
     update_assignment_excel_limit(target / "lib/parser.js")
     shutil.copyfile(overlay.parent / "backend/vendor/assignment-excel.mjs", target / "assignment-excel.mjs")

@@ -76,14 +76,16 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 
 ## 一键出题的启用配置
 
-该候选仅从试点云函数访问管理员指定的 HTTPS Chat Completions 网关。原有设备凭证继续用于浏览器到试点云函数的鉴权。云函数到网关使用独立凭证。请由网关负责人核实服务条款、调用方和实际用户地区、资料处理范围。新加坡托管位置本身不能确认上海业务已获上游授权。[OpenAI 支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
+试点云函数可按显式配置使用上海 CloudBase 原生混元或已有的 HTTPS Chat Completions 网关。原有设备凭证继续用于浏览器到试点云函数的鉴权。云函数到网关使用独立凭证。请由网关负责人核实服务条款、调用方和实际用户地区、资料处理范围。新加坡托管位置本身不能确认上海业务已获上游授权。[OpenAI 支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
 
 在 CloudBase 控制台选择上海环境 → 云函数 → `tcl-r24-sync` → 配置，将以下参数并入现有函数配置。密钥值仅通过云端安全配置录入。示例中的必填值留空，须替换为运营方提供的实际值。[环境变量样例](.env.example) · [函数配置样例](cloudbaserc.example.json)
 
 | 变量 | 必填与默认 | 用途 |
 | --- | --- | --- |
-| `AI_GATEWAY_URL` | 必填 | 已获授权的 HTTPS 网关，可填根地址、以 `/v1` 结尾的地址或完整 `/v1/chat/completions`。 |
-| `AI_GATEWAY_TOKEN` | 必填 | 网关分配给试点函数的服务凭证。 |
+| `TCL_R24_SYNC_AI_MODEL_PROVIDER` | 缺省 `openai_gateway` | 上海原生混元正式组填 `cloudbase`。预览组填 `hunyuan-v3`。 |
+| `TCL_R24_SYNC_AI_MODEL_ID` | 原生混元必填 | 配对使用 `cloudbase / hy3` 或 `hunyuan-v3 / hy3-preview`。仅在环境开通相应模型和额度后使用。 |
+| `AI_GATEWAY_URL` | 网关模式必填 | 已获授权的 HTTPS 网关，可填根地址、以 `/v1` 结尾的地址或完整 `/v1/chat/completions`。 |
+| `AI_GATEWAY_TOKEN` | 网关模式必填 | 网关分配给试点函数的服务凭证。 |
 | `AI_GATEWAY_MODEL` | 默认 `gpt-4o-mini` | 由网关实际开放的模型标识。 |
 | `AI_GATEWAY_TIMEOUT_MS` | 默认 `30000` 毫秒 | 单次请求时限，支持 1–30000 毫秒。超时包括读取响应。 |
 | `AI_FALLBACK_ENABLED` | 默认 `true` | `true` 允许用完整结构化资料生成规则草稿；`false` 返回包含原因和请求编号的错误。 |
@@ -92,6 +94,12 @@ npm run stage -- /path/to/isolated-staging/functions/tcl-r24-sync
 | `TCL_R24_SYNC_AI_DAILY_LIMIT` | 默认 `5` | 整个试点按上海日期计数，范围 1–20。 |
 
 启用前确认试点专用日限额表和服务端 RPC 已就绪。[日限额 SQL](schema-ai-drafts.sql) 每次实际调用前预留一次额度，包括重试；连接超时可能发生在网关已开始生成之后，重试可能再次消耗 token。配置示例使用 90 秒云函数执行时限。共享客户端每次 HTTP 尝试最多 30 秒，最多重试一次，退避 1.5 秒。两次请求与配额预留、退避共用 61.5 秒上限；其余时间留给鉴权、存储和返回。管理员需同时核对网关和 HTTP 入口的时限。
+
+### 上海原生混元联调
+
+原生模式使用锁定的 `@cloudbase/node-sdk@4.2.1` 与云函数临时服务身份。请在上海试点环境开通指定模型，并确认模型 token 额度、运营名单、试点评选表及共享日限额 RPC 已就绪。出题与评选均使用选定的模型组和模型 ID。每次调用至多尝试一次，服务端等待上限 30 秒。
+
+用合成运营与主播分别调用出题和评选。成功响应应显示 `source=cloudbase_hunyuan`、配置的模型 ID、`degraded=false` 和请求编号。只有上游原始响应报告用量时才记录相应字段。上游明确返回 `EXCEED_TOKEN_QUOTA_LIMIT` 时，业务接口显示 `HUNYUAN_TOKEN_QUOTA_EXCEEDED`。只有完整结构化原资料可按 `AI_FALLBACK_ENABLED` 生成规则草稿，所有评选失败均保留文字提交通道。正式组与预览组需分别核验授权及额度。[腾讯云模型额度错误说明](https://docs.cloudbase.net/error-code/EXCEED_TOKEN_QUOTA_LIMIT)
 
 ### 私有网关联调
 

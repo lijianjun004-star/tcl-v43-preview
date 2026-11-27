@@ -1,8 +1,12 @@
 # 练播房：模型通用项目上下文
 
-更新日期：2026-11-26。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
+更新日期：2026-11-27。适用于ChatGPT、Codex、Gemini、Claude及其他能读取Markdown的模型或代理。
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
+
+## R24 `.12` 上海混元候选（2026-11-27）
+
+本候选基于 `.11` 固定提交 `5764bab9e6fd3feb1c5b4e0ccbdb9ec083071cb6`。11 月 27 日北京时间 10:04，使用上海 CloudBase 的正式分组 `cloudbase/hy3`，以合成资料成功生成草稿并完成逐题评选，分别使用 407、717 tokens。旧分组 `hunyuan-v3/hy3-preview` 在同一环境返回 HTTP 429。管理清单中的空 Models 数组不能用来判定正式模型不可用。云函数按运营白名单和全试点共享日限额控制调用，运营审核草稿后发布。网页上线情况以公网版本清单和双角色验收记录为准。[上海试点业务说明](experiments/r24-cloud-sync/README.md)
 
 ## R24 `.11` 评选与出题候选
 

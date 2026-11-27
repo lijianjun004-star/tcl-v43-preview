@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isHunyuanModel } from './ai-gateway-client.mjs';
 import { readAssignmentDraftResponse } from '../overlay/assignment-drafts.mjs';
 import { validateExcelQuestions } from './vendor/assignment-excel.mjs';
 
@@ -8,6 +9,7 @@ const errors = new Map([
   ['GATEWAY_TIMEOUT', [504, '出题网关请求超时，请稍后重试。']],
   ['GATEWAY_NETWORK_RESET', [503, '连接出题网关时网络中断，请稍后重试。']],
   ['GATEWAY_NETWORK_ERROR', [503, '暂时无法连接出题网关，请稍后重试。']],
+  ['HUNYUAN_TOKEN_QUOTA_EXCEEDED', [503, '腾讯云混元模型额度已用完，请联系管理员核查模型额度。']],
   ['INVALID_AI_JSON', [502, '网关返回的草稿未通过题目格式校验。']],
   ['AI_DRAFT_LIMIT', [429, '今天的一键出题次数已用完。']],
   ['AI_DRAFT_QUOTA_UNAVAILABLE', [503, '暂时无法核实出题额度，请稍后重试。']],
@@ -113,7 +115,15 @@ export async function generateAssignmentDraft({draftGeneration, principal, promp
     recordGatewayOutcome(audit, result);
     try {
       const questions = gatewayQuestions(result, context);
-      return {body: {questions, degraded: false, source: 'openai_gateway'}};
+      const source = draftGeneration.source ?? 'openai_gateway';
+      if (source === 'cloudbase_hunyuan') {
+        if (!isHunyuanModel(audit.model) || result.model !== audit.model) throw new Error('Invalid model');
+        return {body: {questions, degraded: false, source, model: audit.model, usage: audit.usage}};
+      }
+      if (source !== 'openai_gateway') throw new Error('Invalid source');
+      const metadata = ['gpt-4o-mini', 'gpt-4o'].includes(audit.model) && result.model === audit.model
+        ? {model: audit.model, usage: audit.usage} : {};
+      return {body: {questions, degraded: false, source, ...metadata}};
     } catch {
       failure = {code: 'INVALID_AI_JSON'};
     }
@@ -123,7 +133,7 @@ export async function generateAssignmentDraft({draftGeneration, principal, promp
   }
 
   const [errorCode, status, errorMessage] = knownFailure(failure);
-  const mayFallback = errorCode.startsWith('GATEWAY_') || errorCode === 'INVALID_AI_JSON';
+  const mayFallback = errorCode.startsWith('GATEWAY_') || errorCode === 'INVALID_AI_JSON' || errorCode === 'HUNYUAN_TOKEN_QUOTA_EXCEEDED';
   if (mayFallback && draftGeneration.fallbackEnabled === true) {
     const questions = localQuestions(material, context);
     if (questions) return {body: {questions, degraded: true, source: 'fallback', errorCode, errorMessage}};

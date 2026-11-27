@@ -1,0 +1,48 @@
+{
+  "scope": "Authorized synthetic server-side SDK probe from development machine, Shanghai CloudBase. External website and SCF runtime identity are outside this probe.",
+  "tested_at_bjt": "2026-11-27T10:04:43.908000+08:00",
+  "provider": "cloudbase",
+  "model": "hy3",
+  "sdk": "@cloudbase/node-sdk 4.2.1",
+  "sdk_auth": "temporary scoped development STS; SDK exchanges for access token",
+  "status": "PASS",
+  "steps": [
+    {
+      "operation": "draft",
+      "response_format": "json_object",
+      "model": "hy3",
+      "finish_reason": "stop",
+      "request_id": "d660fd65-912a-47cb-b891-9b6a26486ecc",
+      "elapsed_ms": 7477,
+      "usage": {
+        "prompt_tokens": 275,
+        "completion_tokens": 132,
+        "total_tokens": 407
+      },
+      "schema_valid": true
+    },
+    {
+      "operation": "evaluate",
+      "response_format": "json_schema",
+      "model": "hy3",
+      "finish_reason": "stop",
+      "request_id": "ee157d39-5548-4a7a-a780-8e8f63c628c4",
+      "elapsed_ms": 6319,
+      "usage": {
+        "prompt_tokens": 558,
+        "completion_tokens": 159,
+        "total_tokens": 717
+      },
+      "schema_valid": true,
+      "overall_score": 100
+    }
+  ],
+  "total_tokens": 1124,
+  "legacy_preview": {
+    "provider": "hunyuan-v3",
+    "model": "hy3-preview",
+    "http_status": 429,
+    "error_code": "EXCEED_TOKEN_QUOTA_LIMIT"
+  },
+  "changes_to_cloud_settings": false
+}

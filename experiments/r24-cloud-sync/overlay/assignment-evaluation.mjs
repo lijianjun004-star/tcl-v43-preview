@@ -1,3 +1,5 @@
+import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.12';
+
 // Keep the receipt for this exact set of saved answers. Only the server's opaque ID
 // is used at submission; a local rendering of a score never becomes a cloud score.
 export function evaluationInputKey(snapshot) {
@@ -10,7 +12,7 @@ const stringList = list => Array.isArray(list) && list.every(value => typeof val
 const gradeLabels = ['优秀', '良好', '待提升'];
 
 export function validEvaluation(result, questionCount) {
-  return result?.source === 'openai_gateway' && result.degraded === false &&
+  return Boolean(aiModelLabel(result)) &&
     validScore(result.overallScore) && gradeLabels.includes(result.grade) &&
     Array.isArray(result.items) && result.items.length === questionCount && questionCount > 0 &&
     result.items.every((item, index) => item && item.questionIndex === index && validScore(item.score) &&
@@ -27,7 +29,7 @@ export function evaluationResultHtml(result, turns, escape) {
     (list.length ? list.map(point => '<span class="eval-point">' + escape(point) + '</span>').join('') : '<span>无</span>') + '</div>';
   return `<section class="eval-result" data-ai-eval-result aria-label="AI 辅助评选">
     <div class="eval-result-head"><strong>总分 ${result.overallScore} / 100</strong><span class="pill">${escape(result.grade)}</span></div>
-    <p class="scene-tip">AI 辅助评选，最终以运营复核为准。</p>
+    <p class="scene-tip" data-ai-model>${escape(aiModelLabel(result))} 辅助评选，最终以运营复核为准。</p>
     ${result.items.map((item,index)=>`<article class="eval-item">
        <h4>第 ${index + 1} 题 · ${item.score} 分</h4>
        <p>${escape(turns[index].question || turns[index].prompt || '')}</p>
@@ -45,8 +47,9 @@ const errorMessages = {
   GATEWAY_HTTP_401: 'AI 评选服务鉴权失败，请联系管理员。',
   GATEWAY_HTTP_403: 'AI 评选服务拒绝了请求，请联系管理员。',
   GATEWAY_HTTP_429: '评选服务繁忙，请稍后重试。',
-  GATEWAY_NETWORK_ERROR: '暂时无法连接评选网关，请稍后重试。',
-  GATEWAY_NETWORK_RESET: '评选网关连接中断，请重试。',
+  GATEWAY_NETWORK_ERROR: '暂时无法连接评选服务，请稍后重试。',
+  GATEWAY_NETWORK_RESET: '评选服务连接中断，请重试。',
+  HUNYUAN_TOKEN_QUOTA_EXCEEDED: '上海试点的腾讯云模型额度已用完，请联系管理员补充额度后再评选。',
   GATEWAY_TIMEOUT: '服务等待模型响应超时，请稍后重试。',
   INVALID_AI_JSON: '模型返回的评选不完整，请重试。',
   AI_EVALUATION_INPUT_INVALID: '每次评选须含 1–15 道完整题目和有效回答，参考资料与回答合计最多 20,000 字符。',
@@ -66,7 +69,7 @@ export function evaluationFailure(error) {
   const code = error?.code;
   const upstream = typeof code === 'string' && /^GATEWAY_HTTP_([45]\d{2})$/u.exec(code);
   const reason = Object.hasOwn(errorMessages,code) ? errorMessages[code] :
-    upstream ? '评选网关返回 HTTP ' + upstream[1] + '，请凭请求编号联系运营。' : '云端未生成有效评选，请稍后重试或联系运营。';
+    upstream ? '评选服务返回 HTTP ' + upstream[1] + '，请凭请求编号联系运营。' : '云端未生成有效评选，请稍后重试或联系运营。';
   const id = typeof error?.requestId === 'string' && /^[A-Za-z0-9._:-]{1,96}$/u.test(error.requestId)
     ? '请求编号 '+error.requestId : '未收到服务端请求编号';
   return reason + ' ' + id + '。仍可提交本场回答。';
