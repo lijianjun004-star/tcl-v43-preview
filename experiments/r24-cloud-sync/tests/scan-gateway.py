@@ -3,6 +3,7 @@
 import argparse
 import base64
 import gzip
+import hashlib
 import io
 import json
 import re
@@ -41,6 +42,60 @@ SCF_DECLARATIONS = {
 }
 SCF_LOG_ARGUMENT = re.compile(rb"\b(?:token|providerKey|auth|req|body|upstream|response|env)\b", re.I)
 
+# Repository scoring runs in GitHub Actions. Treat a workflow's triggers,
+# permissions and exact credential-consuming step as one reviewed unit.
+# A change to any of those workflows requires reviewing the new blob.
+SCORING_WORKFLOWS = {
+    '.github/workflows/r24-private-score-archive.yml': '39541ee105c4620832948f1571ee4c366a0ca1665ccb39952e8e6591a4413433',
+    '.github/workflows/r24-synthetic-score-acceptance.yml': '4c4dda37562878af6681ccaca664b77dbee492b5434967b9004dbb6384c25d12',
+    '.github/workflows/r24-terra-first-pass.yml': '7ec5675e546958445c21085ed9d58ed2963b0b758007b5eb8bed8385e6fedf93',
+}
+SCORING = 'experiments/r24-cloud-sync/repository-scoring/'
+CHAT_URL = b'https://api' + b'.openai.com/v1/chat/completions'
+# Complete source lines. Each is allowed once in the exact tracked file.
+# The placeholders keep this scanner from needing an exception for itself.
+SCORING_LINES = {
+    SCORING + 'worker.mjs': (b"const endpoint = '@url';",),
+    SCORING + 'worker.test.mjs': (b"    called++;assert.equal(url,'@url');",),
+    SCORING + 'run.mjs': (
+        b"    const score = env.@key?.trim() ? createOpenAIScorer(env.@key) : null;",
+    ),
+    SCORING + 'acceptance.mjs': (
+        b"    env.GITHUB_RUN_ATTEMPT === '1' && !!env.@key;",
+        b"    const provider = live ? createOpenAIScorer(process.env.@key,{async fetchImpl(url, options) {",
+        b"      assert.equal(url,'@url');",
+    ),
+    SCORING + 'terra-round1.mjs': (
+        b"const endpoint = '@url';",
+        b"    typeof env.@key==='string' && env.@key.trim().length>0;",
+        b"  const token=live?env.@key:'offline-comparison-fixture';",
+    ),
+    SCORING + 'check-no-scoring-fallback.sh': (
+        b"rg -nF \"const endpoint = '@url'\" \"$scoring/worker.mjs\"",
+        b"rg -nF 'createOpenAIScorer(env.@key)' \"$scoring/run.mjs\"",
+    ),
+}
+# Exact UTF-8 README setup sentence; edits to the rest of the guide do not affect the rule.
+SCORING_README_LINE_SHA = '72a8af22fdf41aa68ef7a13b1dfc3e7d52326f850fb591df6aff475e61efd5ed'
+SCORING_LOG_ARGUMENT = re.compile(rb'\b(?:apiKey|providerKey|credential|token|env|authorization|headers)\b', re.I)
+
+
+def approved_scoring_reference(path, data, kind, pattern):
+    if kind not in ('public-api-host', 'public-api-key-variable'):
+        return False
+    if path in SCORING_WORKFLOWS:
+        return kind == 'public-api-key-variable' and hashlib.sha256(data).hexdigest() == SCORING_WORKFLOWS[path]
+    if path not in SCORING_LINES and path != SCORING + 'README.md':
+        return False
+    # Do not strip whitespace or collapse duplicates. A repeated declaration,
+    # suffix, or second reference in another context needs a fresh review.
+    actual = [line for line in data.split(b'\n') if pattern.search(line)]
+    if path == SCORING + 'README.md':
+        return (kind == 'public-api-key-variable' and len(actual) == 1
+                and hashlib.sha256(actual[0]).hexdigest() == SCORING_README_LINE_SHA)
+    expected = {line.replace(b'@key', PUBLIC_KEY_NAME).replace(b'@url', CHAT_URL) for line in SCORING_LINES[path]}
+    return len(actual) == len(set(actual)) and all(line in expected for line in actual)
+
 
 def safe_name(path):
     name = re.sub(KEY, b"[REDACTED]", path.encode("utf-8", "backslashreplace"))
@@ -58,6 +113,7 @@ class Scan:
         self.findings = set()
         self.gaps = set()
         self.public_declarations = set()
+        self.scoring_declarations = set()
 
     def marked(self, path, data):
         for kind, pattern in CHECKS.items():
@@ -68,12 +124,15 @@ class Scan:
                 if expected and not (pattern.search(data, 0, expected.start()) or pattern.search(data, expected.end())):
                     self.public_declarations.add((kind, path))
                     continue
+            if approved_scoring_reference(path, data, kind, pattern):
+                self.scoring_declarations.add((kind, path))
+                continue
             self.findings.add((kind, path))
         member_path = path.rsplit('!', 1)[-1]
-        if (RUNTIME.fullmatch(member_path) or member_path == SCF_RUNTIME) and any(
-            SENSITIVE_ARGUMENT.search(m[1]) or (member_path == SCF_RUNTIME and SCF_LOG_ARGUMENT.search(m[1]))
-            for m in LOG_CALL.finditer(data)
-        ):
+        is_scoring_script = member_path.startswith(SCORING) and member_path.endswith(('.js', '.mjs', '.cjs'))
+        if (RUNTIME.fullmatch(member_path) or member_path == SCF_RUNTIME or is_scoring_script) and any(
+                SENSITIVE_ARGUMENT.search(m[1]) or (member_path == SCF_RUNTIME and SCF_LOG_ARGUMENT.search(m[1]))
+                or (is_scoring_script and SCORING_LOG_ARGUMENT.search(m[1])) for m in LOG_CALL.finditer(data)):
             self.findings.add(("possible-sensitive-log-argument", path))
 
     def fits(self, path, size):
@@ -176,6 +235,7 @@ def main():
     print('limits: member=32MiB total=384MiB nesting=5 archive-entries=12000')
     print('counts:', json.dumps(dict(scan.counts), sort_keys=True), 'scanned-bytes=' + str(scan.bytes))
     for label, issues in [('PUBLIC-SCF-DECLARATION', scan.public_declarations),
+                          ('REPOSITORY-SCORING-DECLARATION', scan.scoring_declarations),
                           ('FINDING', scan.findings), ('COVERAGE-GAP', scan.gaps)]:
         for kind, path in sorted(issues):
             print(label, kind, safe_name(path))

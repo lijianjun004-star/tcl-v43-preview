@@ -3,6 +3,7 @@ import base64
 import gzip
 import io
 from pathlib import Path
+import runpy
 import subprocess
 import sys
 import tarfile
@@ -11,12 +12,20 @@ import unittest
 import zipfile
 
 SCANNER = Path(__file__).with_name('scan-gateway.py')
+ROOT = SCANNER.resolve().parents[3]
+MODULE = runpy.run_path(str(SCANNER))
+PILOT = 'experiments/r24-cloud-sync/'
+SCORING = PILOT + 'repository-scoring/'
+WORKFLOWS = tuple('.github/workflows/' + name for name in (
+    'r24-private-score-archive.yml', 'r24-synthetic-score-acceptance.yml', 'r24-terra-first-pass.yml',
+))
+HOST = b'api' + b'.openai.com'
+KEY_NAME = b'OPENAI' + b'_API_KEY'
 
 
 class ScanGatewayTest(unittest.TestCase):
     def test_only_fixed_singapore_declarations_are_allowed(self):
-        import runpy
-        mod = runpy.run_path(str(SCANNER))
+        mod = MODULE
         path = mod['SCF_RUNTIME']
         declarations = list(mod['SCF_DECLARATIONS'].values())
         good = b'\n'.join(declarations) + b'\n'
@@ -35,6 +44,95 @@ class ScanGatewayTest(unittest.TestCase):
                 scan = mod['Scan']()
                 scan.marked(filename, data)
                 self.assertIn((kind, filename), scan.findings)
+
+    def test_reviewed_scoring_files_and_workflows(self):
+        paths = [SCORING + name for name in (
+            'acceptance.mjs', 'check-no-scoring-fallback.sh', 'terra-round1.mjs',
+            'worker.mjs', 'worker.test.mjs', 'README.md', 'run.mjs',
+        )]
+        for path in [*paths, *WORKFLOWS]:
+            with self.subTest(path=path):
+                data = (ROOT / path).read_bytes()
+                self.assertTrue(HOST in data or KEY_NAME in data)
+                scan = MODULE['Scan']()
+                scan.marked(path, data)
+                self.assertFalse(scan.findings)
+                self.assertTrue(scan.scoring_declarations)
+
+    def test_reviewed_declarations_do_not_follow_the_file(self):
+        declarations = []
+        for name, marker in [('worker.mjs', HOST), ('run.mjs', KEY_NAME)]:
+            lines = (ROOT / SCORING / name).read_bytes().splitlines()
+            declarations.append(next(line for line in lines if marker in line))
+        data = b'\n'.join(declarations)
+        for path in [
+            PILOT + 'overlay/app.js', PILOT + 'backend/worker.mjs',
+            PILOT + 'cloudbase/function.mjs', PILOT + 'stage-site.py',
+            SCORING + 'unreviewed.mjs', 'site.zip!' + SCORING + 'worker.mjs',
+            'stage/function/' + SCORING + 'run.mjs',
+        ]:
+            with self.subTest(path=path):
+                scan = MODULE['Scan']()
+                scan.marked(path, data)
+                self.assertIn(('public-api-host', path), scan.findings)
+                self.assertIn(('public-api-key-variable', path), scan.findings)
+
+    def test_reviewed_runtime_rejects_duplicates_literals_and_sensitive_logs(self):
+        for filename, marker, kind in [
+            ('worker.mjs', HOST, 'public-api-host'), ('run.mjs', KEY_NAME, 'public-api-key-variable'),
+        ]:
+            path = SCORING + filename
+            data = (ROOT / path).read_bytes()
+            original_line = next(line for line in data.splitlines() if marker in line)
+            for revision, finding in [
+                (data + original_line + b'\n', kind),
+                (data.replace(original_line, original_line + b' // changed context'), kind),
+                (data + b'const sample = "sk' + b'-NeverAnIssuedKeyFixture";\n', 'provider-key-like-literal'),
+                (data + b'console.log(apiKey);\n', 'possible-sensitive-log-argument'),
+            ]:
+                with self.subTest(path=path, finding=finding):
+                    scan = MODULE['Scan']()
+                    scan.marked(path, revision)
+                    self.assertIn((finding, path), scan.findings)
+
+    def test_workflow_secret_is_scoped_to_reviewed_path_and_trigger(self):
+        for approved in WORKFLOWS:
+            original = (ROOT / approved).read_bytes()
+            self.assertEqual(original.count(b'\non:\n'), 1)
+            # Extend the event list without changing the reviewed Secret reference.
+            other_trigger = original.replace(b'\non:\n', b'\non:\n  pull_request:\n')
+            for path, data in [
+                (approved, other_trigger),
+                ('.github/workflows/unreviewed.yml', original),
+                ('source.zip!' + approved, original),
+            ]:
+                with self.subTest(approved=approved, path=path):
+                    scan = MODULE['Scan']()
+                    scan.marked(path, data)
+                    self.assertTrue(scan.findings)
+
+    def test_cli_accepts_only_the_reviewed_top_level_files(self):
+        path = SCORING + 'worker.mjs'
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(['git', 'init', '--quiet'], cwd=root, check=True)
+            for source in (path, WORKFLOWS[0]):
+                target = root / source
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((ROOT / source).read_bytes())
+
+            def staged_scan():
+                subprocess.run(['git', 'add', '-A'], cwd=root, check=True)
+                return subprocess.run([sys.executable, str(SCANNER.resolve()), '--cached'],
+                                      cwd=root, capture_output=True)
+
+            clean = staged_scan()
+            self.assertEqual(clean.returncode, 0, clean.stdout)
+            with zipfile.ZipFile(root / 'staged-site.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+                archive.write(root / path, path)
+            blocked = staged_scan()
+            self.assertEqual(blocked.returncode, 1)
+            self.assertIn(('FINDING public-api-host "staged-site.zip!' + path + '"').encode(), blocked.stdout)
 
     def test_report_nested_fixtures_without_echoing_values(self):
         with tempfile.TemporaryDirectory() as directory:
