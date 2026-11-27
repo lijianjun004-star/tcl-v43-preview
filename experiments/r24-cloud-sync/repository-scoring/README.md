@@ -16,7 +16,7 @@
 ## 正式接线所需资源
 
 - 业务方确认允许的处理地域、服务供应商和人员范围。公开测试程序的成功只覆盖合成样本。
-- 经批准后，管理员在试点 PostgreSQL 单独应用 `../cloudbase/schema-repository-scoring.sql`。该脚本默认创建空的 `r24_repo_scoring.allowlist`。授权粒度为团队、作业与主播的组合；只允许授权后的新提交。数据库连接使用仅加入 `r24_scoring_worker` 的独立登录角色，TLS 证书须可验证；不要配置业务管理员密钥。
+- 经批准后，管理员核对试点 PostgreSQL 既有业务基础表后，依次应用 `../cloudbase/schema-repository-scoring.sql` 和 `../cloudbase/schema-repository-score-readback.sql`。第一个脚本默认创建空的 `r24_repo_scoring.allowlist`。授权粒度为团队、作业与主播的组合；只允许授权后的新提交。数据库连接使用仅加入 `r24_scoring_worker` 的独立登录角色，TLS 证书须可验证；不要配置业务管理员密钥。
 - 在授权的私有处理仓库放入本目录、相邻 backend 的 `evaluation-schema.mjs` 与 `.github/workflows/r24-private-score-archive.yml`。从默认分支启用调度，准备专用非默认回执分支 `r24-score-receipts`，给予工作流写入该分支的权限。
 - 配置仓库变量 `R24_REPO_SCORING_ENABLED=true`、Secret `R24_SCORE_DATABASE_URL`（标准 PostgreSQL 连接地址，TLS 由程序启用），以及需要时的 `R24_SCORE_DB_CA_PEM`。仅当需要对缺分的作业调用 OpenAI 时提供 `OPENAI_API_KEY`。运行程序访问源库和 GitHub 都需要该执行网络可达，不应为此将数据库开放到整个公网。
 - 上海正式数据接线、私有仓库权限及人工复核流程须另行验收。当前源码没有将辅助评分发布为正式考核成绩的入口。

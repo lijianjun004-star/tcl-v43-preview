@@ -57,7 +57,7 @@
 
 旧接口的请求体上限为 128 KiB。快照包含 1–15 道题，最终回答优先取 `turn.answer`，缺少此字段时使用 `answerText` 或 `transcript`。手动清空的回答需重新填写。缺少历史评分依据的作业仍可提交文字。输入不符合要求返回 `AI_EVALUATION_INPUT_INVALID` 或 `SUBMISSION_INVALID`。
 
-提交时仍可携带与当前快照匹配的历史 `evaluationId`，服务器将对应的既有结果写入该次 `submission.evaluation`。编号不匹配时返回 `AI_EVALUATION_MISMATCH`。主播可以省略旧编号，提交当前回答。已保存的原始作答与原评选保留，仓库复核结果另行关联。
+提交时服务器按稳定账号、团队、作业、练播场次、快照哈希、题目 ID、逐题最终回答和转写重算旧评选编号。升级后的页面可以省略 `evaluationId`，服务器仍会把完全匹配的既有结果写入 `submission.evaluation`，队列直接复用。修改回答后允许按新回答提交。显式携带的旧编号与当前快照不符会返回 `AI_EVALUATION_MISMATCH`。旧表无记录或数据库确认旧表不存在时照常提交。历史记录暂时无法核实时返回 503 和 `AI_EVALUATION_HISTORY_UNAVAILABLE`，主播可在当前页面重试，提交成功后才会进评分队列。已保存的原始作答与原评选保留，仓库复核结果另行关联。
 
 `evaluation` 含 `overallScore`、`grade` 与按原题顺序排列的 `items`，每题含从 0 开始的 `questionIndex`、整数 `score`、`matchedPoints`、`missedPoints`、`comment` 与 `suggestedScript`。总分是逐题分数的四舍五入平均值，85 分起为优秀，60–84 为良好，低于 60 为待提升。最终判定由运营复核。
 

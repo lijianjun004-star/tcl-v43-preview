@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {evaluationFailure, evaluationInputKey, evaluationResultHtml, validEvaluation} from '../overlay/assignment-evaluation.mjs';
+import {evaluationReadbackHtml, evaluationResultHtml, isRepositoryReviewPending, repositoryReviewLabel, validEvaluation} from '../overlay/assignment-evaluation.mjs';
 
 const turns = [{questionId: 'q1', question:'如何介绍配送？', answer:'先核实通道', transcript:''}];
 const result = {source:'openai_gateway', degraded:false, grade:'良好', overallScore:75, items:[
@@ -26,25 +26,34 @@ test('read-only evaluation includes both groups of points, comments, suggestions
   assert.doesNotMatch(html,/<script>|<button|<input/);
 });
 
-test('cached results are bound to session, assignment snapshot, order and saved answers', () => {
-  const snapshot = {id:'session',assignmentId:'task',assignmentSnapshotSha256:'frozen',turns};
-  const key = evaluationInputKey(snapshot);
-  assert.equal(evaluationInputKey(structuredClone(snapshot)),key);
-  for (const changed of [{id:'other'}, {assignmentId:'other'}, {assignmentSnapshotSha256:'revised'},
-    {turns:[{...turns[0],questionId:'other'}]}, {turns:[{...turns[0],answer:'补充过的回答'}]},
-    {turns:[{...turns[0],transcript:'新的转写'}]}, {turns:[{...turns[0],manualCleared:true}]}]) {
-    assert.notEqual(evaluationInputKey({...snapshot,...changed}),key);
-  }
+test('the original immutable evaluation takes priority over a later readback evaluation', () => {
+  const newer = {...result,model:'gpt-6.1-terra',source:'openai_offline',overallScore:0};
+  const html = evaluationReadbackHtml({evaluation:result,turns,repositoryReview:{status:'pending_review',evaluation:newer}},escape);
+  assert.match(html,/待运营复核/);
+  assert.match(html,/75 \/ 100/);
+  assert.match(html,/OpenAI 网关/);
+  assert.doesNotMatch(html,/gpt-6\.1-terra/);
 });
 
-test('errors show a safe localized explanation and the returned trace ID', () => {
-  const failed = evaluationFailure({code:'GATEWAY_CONFIG_MISSING',requestId:'trace-123',message:'private raw details'});
-  assert.match(failed,/尚未配置/);assert.match(failed,/trace-123/);assert.doesNotMatch(failed,/private raw/);
-  assert.match(evaluationFailure({code:'CLIENT_TIMEOUT'}),/未收到服务端请求编号/);
-  assert.doesNotMatch(evaluationFailure({requestId:'<invalid>'}),/<invalid>/);
-  const quota = evaluationFailure({code:'HUNYUAN_TOKEN_QUOTA_EXCEEDED',requestId:'hy-quota-1'});
-  assert.match(quota,/上海试点的腾讯云模型额度已用完/);
-  assert.match(quota,/hy-quota-1.*仍可提交本场回答/);
+test('pending and terminal labels are limited to the server states', () => {
+  for (const [status,label,pending] of [
+    ['waiting','等待后台 AI 评选',true],
+    ['processing','正在后台 AI 评选',true],
+    ['pending_review','待运营复核',false],
+    ['needs_attention','需要运营处理',false],
+  ]) {
+    const repositoryReview = {status};
+    assert.equal(repositoryReviewLabel(repositoryReview), label);
+    assert.equal(isRepositoryReviewPending(repositoryReview), pending);
+    const html = evaluationReadbackHtml({turns,repositoryReview},escape);
+    assert.ok(html.includes(label));
+    assert.doesNotMatch(html,/未生成 AI 评选|总分/);
+  }
+  for (const repositoryReview of [undefined,{}, {status:'<script>'}, {status:'toString'}]) {
+    assert.equal(repositoryReviewLabel(repositoryReview),'');
+    assert.equal(isRepositoryReviewPending(repositoryReview),false);
+    assert.match(evaluationReadbackHtml({turns,repositoryReview},escape),/未生成 AI 评选/);
+  }
 });
 
 test('review displays the saved provider and model for Hunyuan and both generations of OpenAI records', () => {
@@ -54,6 +63,8 @@ test('review displays the saved provider and model for Hunyuan and both generati
     ['openai_gateway', 'gpt-4o-mini', 'OpenAI · gpt-4o-mini'],
     ['openai_gateway', 'gpt-4o', 'OpenAI · gpt-4o'],
     ['openai_gateway', undefined, 'OpenAI 网关'],
+    ['openai_offline', 'gpt-6.1-terra', 'OpenAI · gpt-6.1-terra'],
+    ['openai_offline', 'gpt-4o-mini', 'OpenAI · gpt-4o-mini'],
   ]) {
     const record = {...result, source, model};
     assert.equal(validEvaluation(record, turns.length), true);

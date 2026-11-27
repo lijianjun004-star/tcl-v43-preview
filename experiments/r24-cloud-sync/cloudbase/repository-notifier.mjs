@@ -40,7 +40,7 @@ export function createRepositoryNotifier({env = process.env, fetchImpl = fetch} 
     const target = await request('/repos/' + name, token, 'GET');
     if (target.status !== 200) return false;
     const metadata = await target.json();
-    if (metadata.private !== true || metadata.id !== Number(id) ||
+    if (metadata.private !== true || metadata.visibility !== 'private' || metadata.id !== Number(id) ||
         metadata.full_name?.toLowerCase() !== name.toLowerCase() ||
         typeof metadata.default_branch !== 'string' || !metadata.default_branch ||
         metadata.default_branch === 'r24-score-receipts') return false;

@@ -92,7 +92,7 @@ export function createRepositoryArchive({repo, token, fetchImpl = globalThis.fet
     const metadata = await request('GET', '');
     expectStatus(metadata, 200);
     const info = await responseJson(metadata);
-    if (info?.private !== true || typeof info.full_name !== 'string' ||
+    if (info?.private !== true || info.visibility !== 'private' || typeof info.full_name !== 'string' ||
         info.full_name.toLowerCase() !== repo.toLowerCase() || !info.default_branch ||
         info.default_branch === branch) fail('ARCHIVE_UNSAFE_DESTINATION');
     const branchResponse = await request('GET', '/branches/' + branch);

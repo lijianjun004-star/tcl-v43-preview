@@ -56,9 +56,12 @@ scan -nH -- '/assignments/evaluate|readLegacyEvaluation|createCloudBaseDraftGene
 scan -nHi -- 'createCloudBaseEvaluationGeneration|evaluationGeneration|\.evaluate\s*\(' "$api" "$native" "$wiring" > "$work/wiring"
 if [[ -s "$work/wiring" ]]; then cat "$work/wiring"; exit 1; fi
 
-# Inspect the complete body of the legacy route separately from the permitted
-# operator draft path in the same API module. Refuse a missing or renamed body.
-sed -n '/^async function readLegacyEvaluation(/,/^}/p' "$api" > "$work/legacy"
+# Inspect full historical lookup, legacy route and submission bodies separately
+# from the permitted operator draft path. Refuse a missing or renamed body.
+sed -n -e '/^async function historicalEvaluation(/,/^}/p' -e '/^async function readLegacyEvaluation(/,/^}/p' \
+  -e '/^async function submit(/,/^}/p' "$api" > "$work/legacy"
+rg -q -F 'store.getEvaluation(id)' "$work/legacy"
+rg -q -F 'historicalEvaluation(store, expectedId, principal, assignmentId)' "$work/legacy"
 rg -q -F 'AI_EVALUATION_AFTER_SUBMIT' "$work/legacy"
 scan -ni -- "$pattern|fetch\(|\.generate\(|\.evaluate\(|reserve\(" "$work/legacy" > "$work/legacy-calls"
 if [[ -s "$work/legacy-calls" ]]; then cat "$work/legacy-calls"; exit 1; fi

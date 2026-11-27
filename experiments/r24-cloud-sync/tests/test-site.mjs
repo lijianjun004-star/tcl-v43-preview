@@ -40,7 +40,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-export async function startTestSite({ draftGeneration, evaluationGeneration } = {}) {
+export async function startTestSite({ draftGeneration, repositoryReviews, legacyEvaluation } = {}) {
   let origin;
   let api;
   const requests = [];
@@ -172,8 +172,17 @@ export async function startTestSite({ draftGeneration, evaluationGeneration } = 
   });
   origin = 'http://127.0.0.1:' + server.address().port;
   const clips = new Map();
+  const store = createMemoryStore();
+  if (repositoryReviews) store.listRepositoryReviews = repositoryReviews;
+  if (legacyEvaluation) {
+    const listSubmissions = store.listSubmissions;
+    store.listSubmissions = async (...args) => (await listSubmissions(...args)).map(row => {
+      const evaluation = legacyEvaluation(row);
+      return evaluation ? { ...row, evaluation } : row;
+    });
+  }
   api = createApi({
-    draftGeneration, evaluationGeneration,
+    draftGeneration,
     media: {
       async put(path, _mimeType, bytes) {
         if (!clips.has(path)) clips.set(path, Buffer.from(bytes));
@@ -184,7 +193,7 @@ export async function startTestSite({ draftGeneration, evaluationGeneration } = 
       },
     },
     authenticate: async token => tokens.get(token) || null,
-    store: createMemoryStore(),
+    store,
     directory: {
       async listAnchors(teamId) {
         return actors.filter(actor => actor.role === 'anchor' && actor.teamId === teamId);

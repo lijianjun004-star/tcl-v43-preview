@@ -345,6 +345,18 @@ function evaluationKey(sessionKey, receipt) {
     receipt.turns.map(turn => [turn.questionId, turn.answer, turn.transcript])]);
 }
 
+async function historicalEvaluation(store, id, principal, assignmentId) {
+  try {
+    const row = await store.getEvaluation(id);
+    if (row == null) return null;
+    if (row.id === id && row.teamId === principal.teamId && row.anchorId === principal.id &&
+        row.assignmentId === assignmentId && isRecord(row.evaluation)) return row.evaluation;
+  } catch {
+    // An inconclusive lookup must not initialize a second paid attempt.
+  }
+  problem(503, 'AI_EVALUATION_HISTORY_UNAVAILABLE', '暂时无法核对本次作答的旧评选，请保留当前作答并稍后重试。');
+}
+
 async function readLegacyEvaluation(request, principal, {store}) {
   anchorOnly(principal);
   const body = await readJson(request, 128 * 1024);
@@ -369,8 +381,8 @@ async function readLegacyEvaluation(request, principal, {store}) {
     }
     problem(409, 'AI_EVALUATION_ALREADY_SUBMITTED', '这场练播已经提交，已提交记录只支持查看');
   }
-  const existing = await store.getEvaluation(id);
-  if (existing) return {body: {evaluationId: id, evaluation: existing.evaluation}};
+  const existing = await historicalEvaluation(store, id, principal, snapshot.assignmentId);
+  if (existing) return {body: {evaluationId: id, evaluation: existing}};
   try {
     validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
       question: q.question, referenceAnswer: q.answer, keyPoints: q.keyPoints, answerText: receipt.turns[index].answer,
@@ -424,13 +436,10 @@ async function submit(request, assignmentId, principal, { store, now, notifyRepo
   }
   if (current) return confirmed(current, true);
 
-  let evaluation;
-  if (evaluationId !== undefined) {
-    const expectedId = await evaluationKey(id, receipt);
-    if (expectedId !== evaluationId) evaluationMismatch();
-    evaluation = (await store.getEvaluation(evaluationId))?.evaluation;
-    if (!evaluation) evaluationMismatch();
-  }
+  const expectedId = await evaluationKey(id, receipt);
+  if (evaluationId !== undefined && expectedId !== evaluationId) evaluationMismatch();
+  const evaluation = await historicalEvaluation(store, expectedId, principal, assignmentId);
+  if (evaluationId !== undefined && !evaluation) evaluationMismatch();
 
   const submittedAt = now().toISOString();
   const submission = {
@@ -446,7 +455,7 @@ async function submit(request, assignmentId, principal, { store, now, notifyRepo
     late: isReceiptLate({ submittedAt }, assignmentRecord.assignment),
     turns: receipt.turns,
     payloadHash,
-    ...(evaluation ? {evaluationId, evaluation} : {}),
+    ...(evaluation ? {evaluationId: expectedId, evaluation} : {}),
   };
   if (await store.createSubmission(submission)) return confirmed(submission, false);
   return confirmed(await store.getSubmission(id), true);

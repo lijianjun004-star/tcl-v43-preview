@@ -65,6 +65,10 @@ function submissionStore(db) {
   return {
     getAssignment:assignments.get,createAssignment:assignments.create,getClaim:claims.get,createClaim:claims.create,
     getSubmission:submissions.get,createSubmission:submissions.create,
+    async getEvaluation(id) {
+      const rows = await service('select payload from public.tcl_r24_sync_v1_evaluations where id=$1',[id]);
+      return rows[0]?.payload ?? null;
+    },
     async listSubmissionHeaders(aid,team,owner,cursor,limit) {
       assert.equal(cursor,null);
       return service(`select id, payload->>'submittedAt' as "submittedAt"
@@ -97,7 +101,8 @@ async function initialize(db) {
     alter table storage.buckets enable row level security;
     alter table storage.objects enable row level security;
   `);
-  for (const file of ['schema-postgresql.sql','schema-workflow-v2.sql','schema-repository-scoring.sql','schema-repository-score-readback.sql']) {
+  for (const file of ['schema-postgresql.sql','schema-workflow-v2.sql','schema-ai-evaluations.sql',
+    'schema-repository-scoring.sql','schema-repository-score-readback.sql']) {
     await db.exec(await readFile(new URL('../cloudbase/'+file,import.meta.url),'utf8'));
   }
   for (const actor of actors) {
@@ -118,7 +123,7 @@ async function localGitArchive(dir) {
   const archive = createRepositoryArchive({repo:metadataRepo,token:'in-memory-test-token',
     async fetchImpl(url,options) {
       if (url===base && options.method==='GET') {
-        return Response.json({full_name:metadataRepo,private:true,default_branch:'main'});
+        return Response.json({full_name:metadataRepo,private:true,visibility:'private',default_branch:'main'});
       }
       if (url===base+'/branches/'+branch && options.method==='GET') {
         return Response.json({name:branch,protected:false});

@@ -109,7 +109,14 @@ export function createDatabaseAdapter(db, prefix) {
         id: record.id, team_id: record.teamId, payload: record,
       }),
       listAssignments: async teamId => (await pageById(assignments, 'id,payload', {team_id: teamId})).map(payload),
-      getEvaluation: id => getRecord(evaluations, id),
+      async getEvaluation(id) {
+        const response = await queryFrom(evaluations, 'id,payload', {id}).limit(1);
+        // Some pilot installations never ran schema-ai-evaluations.sql.
+        // A PostgREST cache miss, permission failure or timeout is inconclusive.
+        if (response?.error?.code === '42P01') return null;
+        const rows = await resultRows(response);
+        return rows.length ? payload(rows[0]) : null;
+      },
       createEvaluation: record => insertRecord(evaluations, {
         id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
         anchor_id: record.anchorId, payload: record,

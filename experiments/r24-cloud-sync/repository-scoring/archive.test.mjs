@@ -16,7 +16,7 @@ const sha = createHash('sha1').update('blob ' + canonical.length + '\0').update(
 const content = canonical.toString('base64');
 const file = {type: 'file', path, encoding: 'base64', content: content.match(/.{1,60}/g).join('\n'), sha};
 const created = {content: {type: 'file', path, sha}};
-const metadata = [200, {private: true, full_name: repo, default_branch: 'main'}];
+const metadata = [200, {private: true, visibility: 'private', full_name: repo, default_branch: 'main'}];
 const branchInfo = [200, {name: branch, protected: false}];
 function script(responses = []) {
   const calls = [];
@@ -51,6 +51,14 @@ test('destination can be checked before paying for a model call', async () => {
   const {archive, calls} = script([metadata, branchInfo]);
   assert.deepEqual(await archive.verifyDestination(), {repo, branch, protected: false});
   assert.equal(calls.length, 2);
+});
+
+test('enterprise-internal and missing visibility fail on metadata alone', async () => {
+  for (const visibility of ['internal', undefined]) {
+    const {archive, calls} = script([[200, {...metadata[1], private: true, visibility}]]);
+    await assert.rejects(archive.verifyDestination(), {code: 'ARCHIVE_UNSAFE_DESTINATION'});
+    assert.deepEqual(calls.map(c => [c.method, c.url]), [['GET', 'https://api.github.com/repos/' + repo]]);
+  }
 });
 
 test('identical existing bytes are accepted without writing, even for a differently ordered input', async () => {

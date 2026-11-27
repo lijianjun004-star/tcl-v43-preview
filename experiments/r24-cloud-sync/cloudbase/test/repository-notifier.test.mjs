@@ -9,7 +9,7 @@ const configuration = {
   R24_REPO_WAKE_ENABLED:'true', R24_REPO_WAKE_REPOSITORY:repo, R24_REPO_WAKE_REPOSITORY_ID:'42',
   R24_REPO_WAKE_APP_ID:'4', R24_REPO_WAKE_INSTALLATION_ID:'24', R24_REPO_WAKE_APP_PRIVATE_KEY:privateKey,
 };
-const target = {private:true,id:42,full_name:repo,default_branch:'main'};
+const target = {private:true,visibility:'private',id:42,full_name:repo,default_branch:'main'};
 function setup(metadata = target) {
   const calls = [];
   const fetchImpl = async (url,opts) => {
@@ -49,5 +49,14 @@ test('public, different or invalid destinations never receive a workflow dispatc
     const {notify,calls} = setup(data);
     assert.equal(await notify(),false);
     assert.equal(calls.length,2);
+  }
+});
+
+test('enterprise-internal and missing visibility cannot wake a worker', async () => {
+  for (const visibility of ['internal', undefined]) {
+    const {notify,calls} = setup({...target,private:true,visibility});
+    assert.equal(await notify(),false);
+    assert.deepEqual(calls.map(c => c.opts.method), ['POST', 'GET']);
+    assert.ok(calls.every(c => !c.url.endsWith('/dispatches')));
   }
 });
