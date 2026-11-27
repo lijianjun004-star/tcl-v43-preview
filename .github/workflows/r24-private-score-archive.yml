@@ -1,0 +1,34 @@
+name: R24 private score archive
+on:
+  schedule:
+    - cron: '8,23,38,53 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: r24-private-score-archive
+  cancel-in-progress: false
+jobs:
+  archive:
+    if: >-
+      vars.R24_REPO_SCORING_ENABLED == 'true' && github.run_attempt == '1' &&
+      (github.event_name == 'schedule' || (github.event.repository.private &&
+      github.ref_name == github.event.repository.default_branch))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: experiments/r24-cloud-sync/repository-scoring
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Archive up to three confirmed submissions
+        env:
+          R24_REPO_SCORING_ENABLED: ${{ vars.R24_REPO_SCORING_ENABLED }}
+          R24_SCORE_DATABASE_URL: ${{ secrets.R24_SCORE_DATABASE_URL }}
+          R24_SCORE_DB_CA_PEM: ${{ secrets.R24_SCORE_DB_CA_PEM }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node run.mjs

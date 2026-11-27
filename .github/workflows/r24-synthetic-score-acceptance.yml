@@ -1,0 +1,66 @@
+name: R24 synthetic score archive acceptance
+on:
+  push:
+    branches: [feat/r24-repository-scoring]
+    paths: ['experiments/r24-cloud-sync/repository-scoring/synthetic-acceptance-v1.txt']
+permissions:
+  contents: read
+jobs:
+  grade:
+    if: >-
+      github.repository == 'lijianjun004-star/tcl-v43-preview' && !github.event.created &&
+      !github.event.deleted && !github.event.forced && github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: experiments/r24-cloud-sync/repository-scoring
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: trigger
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          marker=experiments/r24-cloud-sync/repository-scoring/synthetic-acceptance-v1.txt
+          if ! git cat-file -e "${BEFORE}:${marker}" 2>/dev/null && test "$(cat synthetic-acceptance-v1.txt)" = "r24-synthetic-archive-v1"; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.trigger.outputs.ready == 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund && npm test
+      - name: Submit the frozen synthetic exercise and evaluate it once
+        if: steps.trigger.outputs.ready == 'true'
+        env:
+          TEST_LIVE_OPENAI: 'true'
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node acceptance.mjs "$RUNNER_TEMP/r24-acceptance"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: steps.trigger.outputs.ready == 'true'
+        with:
+          name: synthetic-score-proof
+          path: ${{ runner.temp }}/r24-acceptance/
+          if-no-files-found: error
+          retention-days: 14
+    outputs:
+      ready: ${{ steps.trigger.outputs.ready }}
+  record:
+    needs: grade
+    if: needs.grade.outputs.ready == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: synthetic-score-proof
+          path: ${{ runner.temp }}/r24-acceptance
+      - name: Record only the fixed synthetic receipt in its QA branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node experiments/r24-cloud-sync/repository-scoring/record-synthetic.mjs "$RUNNER_TEMP/r24-acceptance/receipt.json"
