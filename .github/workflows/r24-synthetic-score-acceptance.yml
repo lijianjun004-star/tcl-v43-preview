@@ -1,8 +1,8 @@
-name: R24 synthetic score archive acceptance
+name: R24 Terra synthetic source-to-archive acceptance
 on:
   push:
-    branches: [feat/r24-repository-scoring]
-    paths: ['experiments/r24-cloud-sync/repository-scoring/synthetic-acceptance-v1.txt']
+    branches: [feat/r24-openai-async-terra]
+    paths: ['experiments/r24-cloud-sync/repository-scoring/terra-e2e-trigger.txt']
 permissions:
   contents: read
 jobs:
@@ -21,15 +21,24 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - id: trigger
+        working-directory: .
+        shell: bash
         env:
           BEFORE: ${{ github.event.before }}
         run: |
-          marker=experiments/r24-cloud-sync/repository-scoring/synthetic-acceptance-v1.txt
-          if ! git cat-file -e "${BEFORE}:${marker}" 2>/dev/null && test "$(cat synthetic-acceptance-v1.txt)" = "r24-synthetic-archive-v1"; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          fi
+          set -euo pipefail
+          marker=experiments/r24-cloud-sync/repository-scoring/terra-e2e-trigger.txt
+          test "$(git rev-list -1 --parents "$GITHUB_SHA")" = "$GITHUB_SHA $BEFORE"
+          test "$(git diff --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
+          test "$(git diff --diff-filter=A --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
+          test -z "$(git log --full-history -1 --format=%H "$BEFORE" -- "$marker")"
+          printf 'R24-TERRA-SYNTHETIC-ARCHIVE-V1\n' | cmp - "$marker"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
       - if: steps.trigger.outputs.ready == 'true'
-        run: npm ci --ignore-scripts --no-audit --no-fund && npm test
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          node acceptance.mjs "$RUNNER_TEMP/r24-offline-precheck"
       - name: Submit the frozen synthetic exercise and evaluate it once
         if: steps.trigger.outputs.ready == 'true'
         env:
@@ -37,11 +46,11 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node acceptance.mjs "$RUNNER_TEMP/r24-acceptance"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: steps.trigger.outputs.ready == 'true'
+        if: always() && steps.trigger.outputs.ready == 'true'
         with:
-          name: synthetic-score-proof
+          name: terra-synthetic-score-proof
           path: ${{ runner.temp }}/r24-acceptance/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
     outputs:
       ready: ${{ steps.trigger.outputs.ready }}
@@ -58,7 +67,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: synthetic-score-proof
+          name: terra-synthetic-score-proof
           path: ${{ runner.temp }}/r24-acceptance
       - name: Record only the fixed synthetic receipt in its QA branch
         env:
