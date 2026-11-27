@@ -3,6 +3,11 @@ name: R24 batch questions export
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: 生成作业，或运行固定 R2 三样本语义复验
+        type: choice
+        default: export
+        options: [export, evaluate-fixed-r2]
       material:
         description: '可用于此公开仓库的练播资料，1–20000 字符'
         type: string
@@ -40,6 +45,7 @@ permissions:
 
 jobs:
   export:
+    if: inputs.operation != 'evaluate-fixed-r2'
     runs-on: ubuntu-24.04
     timeout-minutes: 6
     steps:
@@ -59,5 +65,30 @@ jobs:
         with:
           name: r24-batch-questions
           path: ${{ runner.temp }}/review/
+          retention-days: 14
+          if-no-files-found: error
+
+  evaluate-fixed-r2:
+    if: >-
+      inputs.operation == 'evaluate-fixed-r2' && !inputs.dry_run &&
+      github.repository == 'lijianjun004-star/tcl-v43-preview' &&
+      github.ref == 'refs/heads/qa/r24-r2-openai-evaluation' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Evaluate the three frozen R2 answers
+        env:
+          BATCH_API_TOKEN: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-r2-openai-review/run.mjs --live "$RUNNER_TEMP/r2-review"
+      - name: Save original responses and timing
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: r24-r2-openai-evidence
+          path: ${{ runner.temp }}/r2-review/
           retention-days: 14
           if-no-files-found: error
