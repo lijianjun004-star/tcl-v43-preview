@@ -156,8 +156,14 @@ async function main() {
             !/^gpt-4o-mini(?:-\d{4}-\d{2}-\d{2})?$/.test(envelope.model) ||
             envelope.choices?.length !== 1 || envelope.choices[0]?.finish_reason !== 'stop' ||
             envelope.choices[0]?.message?.refusal) throw new Error('Unexpected completion envelope');
-        validateEvaluationResult(JSON.parse(envelope.choices[0].message.content), input);
-        meta.outcome = 'valid_response';
+        try {
+          validateEvaluationResult(JSON.parse(envelope.choices[0].message.content), input);
+          meta.outcome = 'valid_response';
+        } catch {
+          // A grading-format problem belongs to this answer. Keep the original reply
+          // and continue with the next independent sample without retrying this one.
+          meta.outcome = 'invalid_evaluation';
+        }
       } catch {
         throw new Error(label + ' stopped: ' + meta.outcome + ', HTTP ' + (meta.httpStatus ?? 'unavailable'));
       } finally {
