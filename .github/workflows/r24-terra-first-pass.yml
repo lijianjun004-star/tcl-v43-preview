@@ -2,10 +2,11 @@ name: R24 Terra fixed first-pass evaluation
 on:
   push:
     branches: [feat/r24-openai-async-terra]
-    paths: ['experiments/r24-cloud-sync/repository-scoring/terra-round1-trigger.txt']
+    paths: ['experiments/r24-cloud-sync/repository-scoring/terra-round1-preflight-recovery.txt']
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   evaluate:
@@ -27,13 +28,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          marker=experiments/r24-cloud-sync/repository-scoring/terra-round1-trigger.txt
+          marker=experiments/r24-cloud-sync/repository-scoring/terra-round1-preflight-recovery.txt
           test "$(git diff --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
           test "$(git diff --diff-filter=A --name-only "$BEFORE" "$GITHUB_SHA")" = "$marker"
           test -z "$(git log -1 --format=%H "$BEFORE" -- "$marker")"
-          printf 'R24-TERRA-R2-FIRST-PASS-V1\n' | cmp - "$marker"
+          printf 'R24-TERRA-R2-PREFLIGHT-RECOVERY-V1\n' | cmp - "$marker"
           mkdir -p "$RUNNER_TEMP/terra-first-pass/audit"
           echo 'ready=true' >> "$GITHUB_OUTPUT"
+
+      - name: Confirm the earlier preflight never reached OpenAI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/lijianjun004-star/tcl-v43-preview/actions/runs/45942987929/jobs \
+            --jq '[.jobs[].steps[] | select(.name=="Record the first response for each fixed sample") | .conclusion] == ["skipped"]' | grep -Fx true
+      - name: Install the static scanner if needed
+        run: |
+          if ! command -v rg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install --yes ripgrep
+          fi
+          rg --version
 
       - name: Prove scoring isolation and frozen request parity before using the credential
         if: steps.trigger.outputs.ready == 'true'
