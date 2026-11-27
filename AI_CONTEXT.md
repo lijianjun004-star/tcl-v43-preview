@@ -4,6 +4,10 @@
 
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
+## R24 提交后评分自动归档 · 合成验收（2026-11-27）
+
+在隔离的 .12 提交 API 与 PostgreSQL 兼容测试库完成合成作业发布、领取、确认提交和并发重复提交。两个提交返回 201、200；只产生一次官方 OpenAI 评分。模型给出 80 分（良好），两个要点均命中，用量为输入 491、输出 124，共 615 tokens。结果保留待复核状态。GitHub Actions 在固定的合成 QA 分支自动创建回执，读回固定 Git 提交的文件与源端回执逐字节一致（SHA-256 `da3c7f415c468454fa0fb77a86aea463e1f43e39041bc9941787fc09a2cf7448`）。已有分数复用、不可覆盖、权限、租约和归档重试等测试 29/29 通过。私有仓库和上海生产数据库尚未接线，未部署或迁移。[GitHub 运行](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45938002726) · [自动归档提交](https://github.com/lijianjun004-star/tcl-v43-preview/commit/1c981e11d421faef36266664bde9d1e1836122e1)
+
 ## R24 `.12` 上海混元试点已上线（2026-11-27）
 
 本版基于 `.11` 固定提交 `5764bab9e6fd3feb1c5b4e0ccbdb9ec083071cb6`。11 月 27 日北京时间 10:04，使用上海 CloudBase 的正式分组 `cloudbase/hy3`，以合成资料成功生成草稿并完成逐题评选，分别使用 407、717 tokens。旧分组 `hunyuan-v3/hy3-preview` 在同一环境返回 HTTP 429。管理清单中的空 Models 数组不能用来判定正式模型不可用。云函数按运营白名单和全试点共享日限额控制调用，运营审核草稿后发布。北京时间 10:14，公网双浏览器使用上海云函数完成 3 道题的生成、评选、提交和运营回看，真实调用 1,612 tokens。合成运营以外的账号尚未开放在线出题。[上海公网回执](experiments/r24-cloud-sync/evidence/shanghai/v2-12-hunyuan/README.md) [上海试点业务说明](experiments/r24-cloud-sync/README.md)
