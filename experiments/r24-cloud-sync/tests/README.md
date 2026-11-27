@@ -10,6 +10,8 @@ TCL_V2_LOCAL=1 TCL_TEST_SITE_DIR=/path/to/staged-site node v2-smoke.mjs
 
 默认 Chromium 路径为 `/usr/bin/chromium`，可用 `CHROMIUM_EXECUTABLE` 覆盖。本机模式连接 127.0.0.1，使用真实的业务 API 处理器和内存数据，写入在测试结束后消失。
 
+两个脚本启动 Chromium 时固定设置 `LANG=C.UTF-8` 和 `LC_ALL=C.UTF-8`，其余环境变量照常传入。未设置 locale 的 Linux 容器默认使用 POSIX，Chromium 会把中文下载文件名（如「作业提交回执」）改成 `download`，导致回执用例失败。在其他自动化中自行启动 Chromium 时，请同样设置这两个变量。
+
 常规回归用例覆盖跨浏览器发布、领取、提交，服务端已经写入但首个响应丢失后的重试去重，已登记姓名与设备的登录兼容，设备码生成确认及失败反馈、角色隔离与本机体验。刷新回归在配置与作业响应延迟期间检查云同步加载提示、已绑定状态、未提交复盘恢复、导航后作业计数更新及原回答。V2 流程用例新增以下检查。
 
 一键出题回归使用本地替身模拟私有网关。只有已开放的运营会看到按钮。测试分别核对文字和表格的草稿、失败与兜底反馈、人工确认后发布的作业以及主播看到的弹幕。运行 `node --test backend/tests/*.test.mjs cloudbase/test/*.test.mjs tests/assignment-drafts.test.mjs` 可在试点工程目录执行服务端回归。真实网关的身份、协议、超时和计费须单独联调。[上线前联调步骤](../cloudbase/README-CloudBase.md#私有网关联调)

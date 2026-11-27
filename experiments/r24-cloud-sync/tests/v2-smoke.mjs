@@ -393,6 +393,8 @@ try {
   await promisify(execFile)('python3',[new URL('./fixtures.py',import.meta.url).pathname,excel]);
   const launch={
     executablePath:process.env.CHROMIUM_EXECUTABLE||'/usr/bin/chromium',
+    // POSIX locale makes Linux Chromium rename the Chinese device-code download.
+    env:{...process.env,LANG:'C.UTF-8',LC_ALL:'C.UTF-8'},
     args:['--no-sandbox','--disable-dev-shm-usage','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--autoplay-policy=no-user-gesture-required'],
   };
   if(process.env.TCL_PILOT_PROXY&&!config.local)launch.proxy={server:process.env.TCL_PILOT_PROXY};

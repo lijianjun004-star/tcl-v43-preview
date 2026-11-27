@@ -11,6 +11,8 @@ import { startTestSite, identities } from './test-site.mjs';
 
 const fixtureScript = new URL('./fixtures.py', import.meta.url);
 const executablePath = process.env.CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+// Under the POSIX locale Linux Chromium renames non-ASCII downloads to "download".
+const browserEnv = { ...process.env, LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8' };
 const operator = identities.operator;
 const anchor = identities.anchor;
 const assignmentTitle = '合成跨设备三题作业';
@@ -27,6 +29,7 @@ async function browserFixture(t, options) {
   t.after(() => server.close());
   const browser = await chromium.launch({
     executablePath,
+    env: browserEnv,
     args: ['--no-sandbox', '--disable-dev-shm-usage']
   });
   t.after(() => browser.close());
