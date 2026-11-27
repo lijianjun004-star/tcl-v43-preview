@@ -1,0 +1,44 @@
+name: R24 offline audio transcription
+on:
+  push:
+    branches: [main, feat/r24-offline-audio-transcription]
+    paths:
+      - 'asr-review-inbox/*'
+      - 'experiments/r24-offline-asr/public-example/audio.wav'
+
+permissions:
+  contents: read
+
+jobs:
+  transcribe:
+    if: >-
+      github.run_attempt == '1' && !github.event.forced && !github.event.deleted && !github.event.created &&
+      ((github.event.repository.private && github.ref == 'refs/heads/main' && vars.R24_OFFLINE_ASR_ENABLED == 'true') ||
+      (!github.event.repository.private && github.repository == 'lijianjun004-star/tcl-v43-preview' &&
+      github.ref == 'refs/heads/feat/r24-offline-audio-transcription'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select newly added recordings
+        id: select
+        run: node experiments/r24-offline-asr/select.mjs
+      - name: Check audio before using the API
+        if: steps.select.outputs.ready == 'true'
+        run: node experiments/r24-offline-asr/worker/transcribe.mjs --prepare "$RUNNER_TEMP/r24-asr-in/manifest.json" "$RUNNER_TEMP/r24-asr-prepare"
+      - name: Transcribe the recordings
+        if: steps.select.outputs.ready == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node experiments/r24-offline-asr/worker/transcribe.mjs --live "$RUNNER_TEMP/r24-asr-in/manifest.json" "$RUNNER_TEMP/r24-asr-review"
+      - name: Save the review transcript and request receipts
+        if: always() && steps.select.outputs.ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: r24-asr-review-${{ github.run_id }}
+          path: ${{ runner.temp }}/r24-asr-review/
+          if-no-files-found: warn
+          retention-days: 3
