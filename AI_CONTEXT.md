@@ -5,6 +5,10 @@
 这是本仓库唯一的模型通用交接入口。AGENTS.md、GEMINI.md、CLAUDE.md与START_HERE.md只指向本文件，不分别维护业务状态。开始或续接任务先读本文件，再核对仓库当前main、PR、Actions和线上页面；实时证据优先于历史快照。
 
 ## R24 运营离线批量出题（2026-11-26）
+
+### GitHub 自动转写试验（2026-11-27）
+
+独立分支的一次正常 push 已自动触发官方 OpenAI 音频转写。固定 9.78 秒合成音频，`gpt-transcribe` 请求 HTTP 200，服务端计量 10 秒，未返回模型快照。忽略标点等书写差异后，OpenAI 错 2/50 字符，将 T5M 写成 T5N。上海 .12 冻结版的本机 Paraformer 在同一音频上错 7/50 个字符，两处型号音节正确但未规范成字符串。上海线上继续使用原转写和评分入口，本次仅验证离线自动调度。真实员工语音需要另行验证私有任务及主播确认流程。[原始运行](https://github.com/lijianjun004-star/tcl-v43-preview/actions/runs/45936855929) · [对照记录](experiments/r24-offline-asr/public-example/result.md)
 独立手动工作流生成 XLSX、TSV、JSON 与哈希用量清单；运营下载后在上海试点预览并审核。密钥只交给真实模型步骤。合成模式及模拟异常回归覆盖 50 题往返、重试、空答案与凭证保护。真实运行请以 Actions 记录为准。[使用说明](experiments/r24-cloud-sync/README.md)
 
 资料收件箱支持五种格式，新增或修改的每份资料生成独立四件套。自动生成需要仓库变量 `R24_INBOX_AUTO_ENABLED=true`。单文件手动入口可勾选零模型用量演练。周一刷新另需指定固定资料。运营在上海试点预览并确认发布。[收件箱操作说明](materials-inbox/README.md)

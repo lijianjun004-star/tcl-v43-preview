@@ -1,0 +1,15 @@
+{
+  "encoding": "PCM signed 16-bit little-endian",
+  "channels": 1,
+  "sampleRateHz": 16000,
+  "frames": 156410,
+  "durationSeconds": 9.775625,
+  "wavBytes": 312864,
+  "rmsDbfs": -16.87,
+  "peakDbfs": -1.01,
+  "clippedSamples": 0,
+  "activeFractionOfFull20msFramesAtMinus45dBFS": 0.9262,
+  "silenceIntervalsAtMinus45dBFSForAtLeast250ms": [],
+  "wavSha256": "1f057810087628dda970919ee85c2c377124f9d50813cdaf25e5119ee7c42f7c",
+  "goldSha256": "32df9b885f7f92e36abd8cf2aa3bcecf838a25b0c00360517dd0134736e7f464"
+}

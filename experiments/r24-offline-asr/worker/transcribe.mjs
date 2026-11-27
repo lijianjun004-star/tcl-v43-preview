@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { mkdir, open, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { dirname, extname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -26,7 +26,8 @@ function audioSignature(data, ext) {
     case 'mp4': return data.length >= 16 && begins('ftyp', 4);
     case 'mp3':
     case 'mpga':
-    case 'mpeg': return data.length >= 8 && (begins('ID3') || (data[0] === 0xff && (data[1] & 0xe0) === 0xe0));
+    case 'mpeg': return data.length >= 10 && (begins('ID3') || (data[0] === 0xff && (data[1] & 0xe0) === 0xe0 &&
+      (data[1] & 0x18) !== 0x08 && (data[1] & 0x06) !== 0 && (data[2] & 0xf0) !== 0xf0 && (data[2] & 0x0c) !== 0x0c));
     case 'webm': return data.length > 16 && data.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])) &&
       data.subarray(0, 1024).includes(Buffer.from('webm'));
     case 'flac': return data.length > 42 && begins('fLaC');
@@ -40,15 +41,17 @@ async function loadSamples(path) {
   if (!Array.isArray(samples) || !samples.length) fail('EMPTY_MANIFEST');
   const seenIds = new Set();
   const seenFiles = new Set();
+  const seenHashes = new Set();
   const loaded = [];
   for (const row of samples) {
     const {id, file, sha256: expected} = row ?? {};
     if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(id) || seenIds.has(id.toLowerCase()) ||
         typeof file !== 'string' || !/^[^/\\\x00-\x1f\x7f]+\.[A-Za-z0-9]+$/u.test(file) ||
-        file.startsWith('.') || seenFiles.has(file) || typeof expected !== 'string' || !/^[a-f0-9]{64}$/.test(expected))
+        file.startsWith('.') || seenFiles.has(file) || typeof expected !== 'string' || !/^[a-f0-9]{64}$/.test(expected) || seenHashes.has(expected))
       fail('INVALID_SAMPLE_MANIFEST');
     seenIds.add(id.toLowerCase());
     seenFiles.add(file);
+    seenHashes.add(expected);
     const ext = extname(file).slice(1).toLowerCase();
     if (!Object.hasOwn(formats, ext)) fail('UNSUPPORTED_AUDIO_FORMAT');
     const handle = await open(join(dirname(path), file), constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
@@ -127,8 +130,11 @@ export async function run({mode, manifest, output, token, fetchImpl = fetch}) {
   const root = resolve(output);
   await mkdir(root, {recursive: true, mode: 0o700});
   // Input and output must be separate so uploading the evidence folder cannot include a source recording.
-  const inputDir = dirname(resolve(manifest));
-  if (root === inputDir || inputDir.startsWith(root + '/') || root === '/') fail('OUTPUT_CONTAINS_INPUT');
+  const inputDir = dirname(await realpath(manifest));
+  const outputDir = await realpath(root);
+  if (outputDir === inputDir || inputDir.startsWith(outputDir + '/') || outputDir === '/') fail('OUTPUT_CONTAINS_INPUT');
+  const existing = await readdir(root, {withFileTypes:true});
+  if (existing.some(entry => entry.name !== 'preflight.json' || !entry.isFile())) fail('OUTPUT_DIR_ALREADY_USED');
   const plan = {model, language, endpoint, responseFormat: 'json', maxBytes,
     samples: samples.map(({id, ext, size, sha256}) => ({id, ext, size, sha256}))};
   await withPlan(root, plan);
