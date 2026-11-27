@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "jobId": "e2a5786137d30c1a568e1d23589a5bc011ab9324be76edb8ce795fd0efd13207",
+  "origin": "openai_review",
+  "model": "gpt-4o-mini",
+  "overallScore": 80,
+  "grade": "良好",
+  "items": [
+    {
+      "questionIndex": 0,
+      "score": 80,
+      "matched": [
+        1,
+        2
+      ],
+      "missed": []
+    }
+  ],
+  "reviewStatus": "pending_review"
+}
