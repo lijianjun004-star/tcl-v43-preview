@@ -22,6 +22,16 @@ Claude 云端会话按复验包 `R24-Claude-QA-20261127.zip`（SHA-256 `d0320198
 - **输入来源说明**：Drive 上 78 MB 的 QA3 包为私有文件，未下载，其 ZIP SHA `2f07989a…` 未核验。改用 GitHub Pages 已发布的 `tcl-r24-paraformer-excel-qa/` 作为输入：清单 SHA 等于固定值 `ce897151…`，35/35 资源哈希一致。
 - 本轮未写入共享数据、未改令牌、未部署。原始日志、截图和脚本的证据包已在会话中交给用户，未入库。
 
+## R24 `.12` 主入口自动评分：Claude 只读核查（2026-11-28 北京时间）
+
+结论：上海 `.12` 主入口「员工提交后自动评分」的验收为 **NOT RUN**，主库评分链路未就绪。本轮只做只读核查：未登录、未提交、未手动触发任何工作流。[完整核查报告](evidence/r24-12-auto-scoring-readonly-20261128/REPORT.md)
+
+- **主入口版本**：2026-11-28 01:19 公网读取，`r24-paraformer-excel-cloud-sync-v2-20261124.12`，41/41 资源哈希一致，清单 SHA `c0c615d6…a814`。前端仍需主播手动点「发起 AI 评选」，API 为主函数 `tcl-r24-sync`。
+- **生产开关**（证据：GitHub Actions 运行记录）：截至北京时间 11 月 28 日 00:58，私库生产工作流 `r24-private-score-archive.yml` 仅有 1 次定时运行 [46037978999](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/runs/46037978999)，结论为 `skipped`。由 job 条件推断，这是因为 `R24_REPO_SCORING_ENABLED` 未开启。
+- **主库安装状态**（证据：运维记录，未经数据库直查）：私库 `operations/shanghai-synthetic.md`（提交 `bd9c2c0`，北京时间 11-27 15:06）记载，主库评分队列、回读函数、入队触发器和评分 worker 角色尚未安装。
+- **包内 100 分**：来自手动触发的 canary（函数 `tcl-r24-sync-can1`，运行 [45961302717](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/runs/45961302717)，`workflow_dispatch`，由验收观察程序补触发），**只能作为 canary 的验收证据**。canary 工作流 4 次运行全部为手动触发，定时从未触发。
+- **下一步**：管理员确认主库接线、评分账号权限和生产开关就绪后，Claude 用获批账号从 `.12` 主入口提交一题。全程不点击「发起 AI 评选」，不手动触发工作流，按该次提交的实际评分结果更新验收结论。
+
 ## 最新状态：R24 Excel QA3 两轮复验修复已上线（2026-11-23）
 
 本节优先于下方 QA2/QA1 章节。固定测试网址不变：https://lijianjun004-star.github.io/tcl-v43-preview/tcl-r24-paraformer-excel-qa/ ，线上版本 `r24-paraformer-excel-assignment-20261123-qa3-review-fixes`。仍是本机 IndexedDB + 人工传 JSON，**未接共享后台**；原正式 R24、R25、CloudBase、历史页面/数据不变。用户在本会话明确批准合并门禁与发行 PR 并部署。
