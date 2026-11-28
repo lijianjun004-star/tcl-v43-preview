@@ -67,9 +67,15 @@ test('a team-wide grant scores every anchor of that team and can be closed again
   for (const teamId of [team, otherTeam])
     await db.query('insert into public.tcl_r24_sync_v1_assignments values ($1,$2,$3)', [assignmentOf(teamId), teamId,
       {id:assignmentOf(teamId),teamId,operatorId:'operator',recipients:[],assignment:{snapshotSha256:'hash',questions:[question]}}]);
-  const submit = async (jobId, anchorId, teamId = team) => db.query(
-    'insert into public.tcl_r24_sync_v1_submissions values ($1,$2,$3,$4,now(),$5)', [jobId, teamId, assignmentOf(teamId), anchorId,
-      {id:jobId,teamId,assignmentId:assignmentOf(teamId),anchorId,snapshotSha256:'hash',turns:[{questionId:'q',answer:'confirmed'}]}]);
+  const submit = async (jobId, anchorId, teamId = team, assignmentId = assignmentOf(teamId)) => db.query(
+    'insert into public.tcl_r24_sync_v1_submissions values ($1,$2,$3,$4,now(),$5)', [jobId, teamId, assignmentId, anchorId,
+      {id:jobId,teamId,assignmentId,anchorId,snapshotSha256:'hash',turns:[{questionId:'q',answer:'confirmed'}]}]);
+  // The scorer accepts 1-15 questions; larger assignments are not opened team-wide.
+  const sized = count => 'assignment-' + count + '-questions';
+  for (const count of [15, 16])
+    await db.query('insert into public.tcl_r24_sync_v1_assignments values ($1,$2,$3)', [sized(count), team,
+      {id:sized(count),teamId:team,operatorId:'operator',recipients:[],assignment:{snapshotSha256:'hash',
+        questions:Array.from({length:count}, (_, i) => ({...question, id:'q' + i}))}}]);
   const jobs = async () => { await owner(); return (await query('select job_id from r24_repo_scoring.jobs order by job_id')).map(r => r.job_id); };
   const id = n => String(n).repeat(64);
 
@@ -91,10 +97,17 @@ test('a team-wide grant scores every anchor of that team and can be closed again
   await service();
   assert.equal(await eligibility(team, assignment, 'any-new-anchor'), true);
   assert.equal(await eligibility(otherTeam, otherAssignment, 'any-new-anchor'), false);
+  assert.equal(await eligibility(team, sized(15), 'any-new-anchor'), true);
+  assert.equal(await eligibility(team, sized(16), 'any-new-anchor'), false);
+  assert.equal(await eligibility(team, 'no-such-assignment', 'any-new-anchor'), false);
   await owner();
   await submit(id(2), 'any-new-anchor');
   await submit(id(3), 'outsider', otherTeam);
+  await submit('c'.repeat(64), 'any-new-anchor', team, sized(16));
   assert.deepEqual(await jobs(), [id(2)]);
+  await submit('d'.repeat(64), 'any-new-anchor', team, sized(15));
+  assert.deepEqual(await jobs(), [id(2), 'd'.repeat(64)]);
+  await db.query('delete from r24_repo_scoring.jobs where job_id=$1', ['d'.repeat(64)]);
 
   // The full worker transition works for the open grant and both roles read the result.
   await service();

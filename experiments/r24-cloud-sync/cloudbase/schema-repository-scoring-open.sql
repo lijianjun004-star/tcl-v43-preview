@@ -4,6 +4,8 @@
 --   insert into r24_repo_scoring.open_grants(team_id) values ('r24-pilot');
 -- and closes it again with
 --   delete from r24_repo_scoring.open_grants where team_id = 'r24-pilot';
+-- An open team covers assignments with 1-15 questions, the range the scorer accepts;
+-- larger assignments stay manual (autoScore false) unless listed exactly.
 -- Exact allowlist grants keep working either way and take precedence for new jobs.
 -- Closing a team invalidates its unprocessed jobs; reopening issues a new grant_id
 -- and cannot revive them, matching the allowlist's revocation rule.
@@ -27,6 +29,17 @@ returns boolean language sql stable security definer set search_path = pg_catalo
       where o.grant_id=p_grant_id and o.team_id=p_team_id);
 $$;
 
+-- The scorer accepts 1-15 questions per submission (claim() below and the
+-- worker's input validation). A team-wide grant only covers assignments it can
+-- score, so no larger assignment is shown as auto-scored and then held.
+create function r24_repo_scoring.open_assignment_supported(p_team_id text, p_assignment_id text)
+returns boolean language sql stable security definer set search_path = pg_catalog, pg_temp as $$
+  select exists(select 1 from public.tcl_r24_sync_v1_assignments a
+    where a.id=p_assignment_id and a.team_id=p_team_id
+      and jsonb_typeof(a.payload #> '{assignment,questions}')='array'
+      and jsonb_array_length(a.payload #> '{assignment,questions}') between 1 and 15);
+$$;
+
 create or replace function r24_repo_scoring.enqueue() returns trigger
 language plpgsql security definer set search_path = pg_catalog, pg_temp as $$
 declare
@@ -36,7 +49,9 @@ begin
     where g.team_id = new.team_id and g.assignment_id = new.assignment_id
       and g.anchor_id = new.anchor_id;
   if v_grant is null then
-    select o.grant_id into v_grant from r24_repo_scoring.open_grants o where o.team_id = new.team_id;
+    select o.grant_id into v_grant from r24_repo_scoring.open_grants o
+      where o.team_id = new.team_id
+        and r24_repo_scoring.open_assignment_supported(new.team_id, new.assignment_id);
   end if;
   if v_grant is not null then
     insert into r24_repo_scoring.jobs(job_id, grant_id) values (new.id, v_grant)
@@ -175,12 +190,14 @@ begin
   perform r24_repo_scoring.require_service();
   return exists(select 1 from r24_repo_scoring.allowlist g
       where g.team_id=p_team_id and g.assignment_id=p_assignment_id and g.anchor_id=p_anchor_id)
-    or exists(select 1 from r24_repo_scoring.open_grants o where o.team_id=p_team_id);
+    or (exists(select 1 from r24_repo_scoring.open_grants o where o.team_id=p_team_id)
+      and r24_repo_scoring.open_assignment_supported(p_team_id, p_assignment_id));
 end
 $$;
 
 -- Same privilege shape as the installer: the runtime only calls its entry points.
 revoke all on table r24_repo_scoring.open_grants from public, anon, authenticated, service_role;
 revoke all on function r24_repo_scoring.grant_active(uuid,text,text,text) from public, anon, authenticated, service_role;
+revoke all on function r24_repo_scoring.open_assignment_supported(text,text) from public, anon, authenticated, service_role;
 end
 $open$;
