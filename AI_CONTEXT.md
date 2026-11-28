@@ -1,5 +1,13 @@
 # 练播房：模型通用项目上下文
 
+## 上海主入口共享库自动评分已上线（2026-11-28）
+
+上海现有试点入口已发布 `R24-20261124.13-shared.1`。实际下载的 41 份静态资源全部与清单匹配。主函数沿用原配置，新增经 GitHub OIDC 认证的 HTTPS 评分通道，使用 CloudBase SDK 调用共享 PostgreSQL。该环境走 `schema-repository-scoring-shared.sql`，现有个人版套餐即可运行。本次只为一个新建测试主播的一份合成作业开通，其他作业保留原有手动评选。[上海主入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [上线源码](https://github.com/lijianjun004-star/tcl-v43-preview/commit/af1e2af42bd7003de28cd28a1a4661e59c9c07bf)
+
+北京时间 17:18，上线验收先通过私库的 `pilot_start` 启动评分程序并确认空队列。测试主播点击一次「完成并提交」，主入口返回 HTTP 201 并显示等待评分。同一页面在点击后 17 秒内自动展示 100/100，评级优秀。OpenAI 模型 `gpt-6.1-terra` 使用 561 个输入和 140 个输出 tokens。源库任务已归档。主播和所属运营重新打开后读回同一份待复核成绩。提交后没有手动触发工作流或调用评选按钮。[私库验收运行](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/runs/46129799290) · [评分回执](https://github.com/lijianjun004-star/tcl-r24-score-archive/commit/60467c56b27c94c506b81eaa66f2751bf010d8d9)
+
+常规任务由私有仓库默认分支的 GitHub Actions 每 15 分钟计划领取，实际启动由 GitHub 调度。试点尚未配置提交即唤醒的专用 GitHub App。上述 17 秒是评分程序已就绪时的实测耗时。暂停共享评分可将私库变量 `R24_SHANGHAI_HTTPS_SCORING_ENABLED` 设为 `false`，或撤销特定作业的授权。平台无需提供 PostgreSQL 直连凭据。[生产工作流](https://github.com/lijianjun004-star/tcl-r24-score-archive/blob/c7fad4e1c43e0c923790fb7826d3e3529c82422e/.github/workflows/r24-private-score-archive.yml)
+
 ## R24 提交后自动显示评分（2026-11-28，候选版）
 
 主播确认提交云端作业后，已纳入评分名单的提交会自动入队。复盘页在任务排队或评分期间持续读取进度，最长查询间隔为 30 秒。页面收到成绩后停止查询。375px Chromium 用例用模拟时钟验证后台经过五次读取后才完成时，成绩仍会自动显示。隔离数据库验收中，两次重复提交对应一次模拟唤醒和一次模拟评分，主播与运营均可读回结果。本次未部署上海主入口，生产接线及真实提交验收仍待完成。
