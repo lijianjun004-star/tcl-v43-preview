@@ -1,17 +1,21 @@
 const ACCOUNT_ID = /^[A-Za-z0-9_-]{1,128}$/u;
 const PILOT_PREFIX = /^tcl_r24_sync_[a-z0-9_]{1,22}$/u;
-const DEFAULT_DAILY_LIMIT = '5';
-const MAX_DAILY_LIMIT = 20;
+// Limits above 20 need schema-ai-drafts-limit.sql on the pilot database.
+const MAX_DAILY_LIMIT = 10_000;
 const MAX_PROMPT_BYTES = 128 * 1024;
+const ALL_OPERATORS = '*';
 
 function draftError(code) {
   return Object.assign(new Error(code), {code});
 }
 
 function sharedReservation(db, prefix, env, codePrefix) {
-  const raw = env.TCL_R24_SYNC_AI_DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT;
+  const raw = env.TCL_R24_SYNC_AI_DAILY_LIMIT ?? '';
   if (typeof db?.rpc !== 'function' || typeof prefix !== 'string' || !PILOT_PREFIX.test(prefix) ||
-      typeof raw !== 'string' || !/^[1-9][0-9]?$/u.test(raw) || Number(raw) > MAX_DAILY_LIMIT) return null;
+      typeof raw !== 'string') return null;
+  // An unset or empty limit means no daily cap: nothing is reserved or counted.
+  if (raw.trim() === '') return async () => {};
+  if (!/^[1-9][0-9]{0,4}$/u.test(raw) || Number(raw) > MAX_DAILY_LIMIT) return null;
   return async () => {
     let result;
     try {
@@ -44,12 +48,16 @@ export function createCloudBaseDraftGeneration({client, db, prefix, env = proces
   if (env.TCL_R24_SYNC_AI_ENABLED !== 'true' || typeof client?.generate !== 'function' ||
       !reserveQuota || typeof rawOperatorIds !== 'string') return undefined;
 
-  const operatorIds = rawOperatorIds.split(',').map(id => id.trim());
+  // "*" alone opens generation to every active operator; otherwise list exact IDs.
+  const allOperators = rawOperatorIds.trim() === ALL_OPERATORS;
+  const operatorIds = allOperators ? [] : rawOperatorIds.split(',').map(id => id.trim());
   const allowedOperators = new Set(operatorIds);
   if (operatorIds.some(id => !ACCOUNT_ID.test(id)) || operatorIds.length !== allowedOperators.size) return undefined;
 
   function canGenerate(principal) {
-    return principal?.active === true && principal.role === 'operator' && allowedOperators.has(principal.id);
+    return principal?.active === true && principal.role === 'operator' &&
+      typeof principal.id === 'string' && ACCOUNT_ID.test(principal.id) &&
+      (allOperators || allowedOperators.has(principal.id));
   }
 
   async function generate(principal, prompt) {

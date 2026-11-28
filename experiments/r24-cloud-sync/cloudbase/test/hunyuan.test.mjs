@@ -6,7 +6,7 @@ import {createCloudBaseDraftGeneration, createCloudBaseEvaluationGeneration} fro
 const prefix = 'tcl_r24_sync_test';
 const actor = {id: 'demo_operator', role: 'operator', active: true};
 const env = {TCL_R24_SYNC_AI_ENABLED: 'true', TCL_R24_SYNC_AI_OPERATOR_IDS: actor.id,
-  TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase', TCL_R24_SYNC_AI_MODEL_ID: 'hy3'};
+  TCL_R24_SYNC_AI_DAILY_LIMIT: '5', TCL_R24_SYNC_AI_MODEL_PROVIDER: 'cloudbase', TCL_R24_SYNC_AI_MODEL_ID: 'hy3'};
 const draft = {questions: [{question: '安装前要测量什么？', answer: '请先测量通道。', keyPoints: ['测量通道']}]};
 const stats = {completion_tokens: 12, prompt_tokens: 20, total_tokens: 32};
 const denied = 'AI+ 请求出错，错误码：EXCEED_TOKEN_QUOTA_LIMIT，错误信息：redacted-provider-message';
