@@ -5,11 +5,11 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.13-async-rc1';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.13-async-rc2';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { evaluationReadbackHtml, isRepositoryReviewPending, repositoryReviewLabel } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.13-async-rc1';
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.13-async-rc1';
+import { evaluationReadbackHtml, isRepositoryReviewPending, repositoryReviewLabel } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.13-async-rc2';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.13-async-rc2';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
 let sessionAssignmentSnapshot=null;
@@ -926,6 +926,7 @@ function liveTurnStatusText(turn){
 }
 function renderTurnStatus(turn,opts={}){
  if(!turn)return;
+ if(isFinalCloudQuestion())paintFinalQuestionActions();
  if(activeTurn?.id===turn.id){
   const status=ELEM('turnStatus');
   if(status)status.textContent=`弹幕响应：${turn.responseSeconds===null?'待回答':turn.responseSeconds+'秒'} · 回答时长：${turn.durationSeconds===null?'待录音':turn.durationSeconds+'秒'} · ${turn.asrStatus||'待录音'}`;
@@ -1508,26 +1509,36 @@ function cloudClaimList(claims){
  </div>`).join('')||'<p class="scene-tip">暂无主播领取</p>'}`;
 }
 const repositoryReviewPolls=new WeakMap();
-const repositoryReviewDelays=[1500,3000,6000,12000];
+const repositoryReviewDelays=[1500,3000,6000,12000,30000];
 function watchRepositoryReviews(target,records,{load,update,visible,immediate=false,onError}){
- const member=syncMember(),previous=repositoryReviewPolls.get(target),ticket={};
+ const member=syncMember(),previous=repositoryReviewPolls.get(target),ticket={refresh};
  clearTimeout(previous?.timer);
+ if(previous)document.removeEventListener('visibilitychange',previous.refresh);
  repositoryReviewPolls.set(target,ticket);
- let attempt=0;
+ let delayIndex=0;
  const current=()=>target.isConnected&&syncMember()===member&&repositoryReviewPolls.get(target)===ticket&&visible();
+ const pending=()=>records.some(record=>isRepositoryReviewPending(record.repositoryReview));
  const schedule=()=>{
-  if(!current()||attempt>=repositoryReviewDelays.length||!records.some(record=>isRepositoryReviewPending(record.repositoryReview)))return;
-  ticket.timer=setTimeout(refresh,repositoryReviewDelays[attempt++]);
+  if(!current()||!pending())return;
+  ticket.timer=setTimeout(refresh,repositoryReviewDelays[delayIndex]);
+  delayIndex=Math.min(delayIndex+1,repositoryReviewDelays.length-1);
  };
  async function refresh(){
   if(!current())return;
+  if(document.hidden){
+   document.addEventListener('visibilitychange',refresh,{once:true});
+   return;
+  }
   try{
    const next=await load();
    if(!current())return;
    records=next;
    update(records);
-  }catch{
-   if(current())onError?.();
+  }catch(error){
+   if(!current())return;
+   const retry=pending()&&![401,403,404].includes(error?.status);
+   onError?.(retry);
+   if(!retry)return;
   }
   schedule();
  }
@@ -2168,6 +2179,7 @@ function openBoard(id,platform='',opts={}){
 }
 function quickSwitchBoard(id,platform='',opts={}){if(!BOARDS.some(b=>b.id===id)){if(ELEM('quickBoardSelect'))ELEM('quickBoardSelect').value=selectedBoard;return;}openBoard(id,platform,{checkDevicesOnOpen:opts.checkDevicesOnOpen===true});if(ELEM('quickBoardSelect'))ELEM('quickBoardSelect').value=selectedBoard;}
 function categoryPlatformChoices(b){const same=BOARDS.filter(q=>q.category===b.category);const opts=[];for(const x of same){for(const p of x.platforms){opts.push({boardId:x.id,platform:p,selected:x.id===b.id&&p===activePlatform,label:p==='抖音生活服务'?'抖音':p});}}return opts;}
+const cloudSubmissionNote='运营可查看已提交的回答和逐题录音。已开通 AI 评分的作业会自动出分。';
 function trainingHome(){
 const b=boardById(selectedBoard);
 setTitle(`${b.category} · 视频预览`);
@@ -2192,7 +2204,7 @@ ELEM('view').innerHTML=`
       <div class="phone-tools-group"><h4>弹幕设置</h4><label class="phone-tool-field">闲聊弹幕间隔<select id="prepBarrageInterval"><option value="30000">30 秒</option><option value="60000">1 分钟</option><option value="120000">2 分钟</option></select></label><small>该间隔控制闲聊和投诉；训练题由「下一条」手动切换。</small></div>
       <div class="phone-tools-group"><h4>设备与录制</h4><p id="prepDeviceStatus" class="phone-device-status">正在检查真实设备…</p><div class="phone-tool-grid"><button type="button" id="prepRecheck">重新检测设备</button><button type="button" id="prepTextOnly">仅文字练播</button><button type="button" id="prepPreloadVosk">准备中文识别模型</button></div><small>本机录像最多 8 分钟或约 64 MB，结束后请及时下载；录像提取音频限 3 分钟且不超过 48 MB。无法使用摄像头时可选择文字练播。</small></div>
     </section>
-    <div class="r2-qcard" id="liveQuestionCard" hidden><div class="r2-qcard-top"><span id="liveQIndex">第 1 题</span><span id="liveQTimer" data-state="wait">等待回答 0:00</span></div><p id="liveQContext" class="muted" hidden></p><p id="liveQText"></p><p id="liveTurnStatus" class="r5-turn-status" role="status" aria-live="polite">准备录音</p><button type="button" class="r3-question-expand" id="liveQExpand" aria-controls="liveQText" aria-expanded="false" hidden>查看完整问题 ↓</button></div><button class="focus-close" id="focusClose" type="button">结束直播</button><button class="focus-next" id="focusNext" type="button">下一条 ›</button><button class="focus-speak" id="focusSpeak" type="button" aria-label="朗读当前弹幕">🔊 朗读</button><button class="focus-review" id="focusReview" type="button" aria-expanded="false" aria-controls="liveMoreSheet" aria-label="更多练播工具">${ICON.more}<span>工具</span></button><button class="focus-mic" id="focusMic" type="button">● 回答录音</button><div class="text-answer-sheet" id="textAnswerSheet" hidden><label for="liveTextAnswer">文字回答这条弹幕</label><textarea id="liveTextAnswer" rows="3" maxlength="800" placeholder="像直播时一样，直接打字回答当前弹幕"></textarea><div class="text-answer-actions"><button type="button" id="liveTextSave" class="btn primary small">保存回答</button><button type="button" id="liveTextClose" class="btn soft small">收起</button></div></div>
+    <div class="r2-qcard" id="liveQuestionCard" hidden><div class="r2-qcard-top"><span id="liveQIndex">第 1 题</span><span id="liveQTimer" data-state="wait">等待回答 0:00</span></div><p id="liveQContext" class="muted" hidden></p><p id="liveQText"></p><p id="liveTurnStatus" class="r5-turn-status" role="status" aria-live="polite">准备录音</p><p id="liveSubmitNote" class="r5-turn-status" hidden>${cloudSubmissionNote}</p><button type="button" class="r3-question-expand" id="liveQExpand" aria-controls="liveQText" aria-expanded="false" hidden>查看完整问题 ↓</button></div><button class="focus-close" id="focusClose" type="button">结束直播</button><button class="focus-next" id="focusNext" type="button">下一条 ›</button><button class="focus-speak" id="focusSpeak" type="button" aria-label="朗读当前弹幕">🔊 朗读</button><button class="focus-review" id="focusReview" type="button" aria-expanded="false" aria-controls="liveMoreSheet" aria-label="更多练播工具">${ICON.more}<span>工具</span></button><button class="focus-mic" id="focusMic" type="button">● 回答录音</button><div class="text-answer-sheet" id="textAnswerSheet" hidden><label for="liveTextAnswer">文字回答这条弹幕</label><textarea id="liveTextAnswer" rows="3" maxlength="800" placeholder="像直播时一样，直接打字回答当前弹幕"></textarea><small id="liveTextSubmitNote" hidden>${cloudSubmissionNote}</small><div class="text-answer-actions"><button type="button" id="liveTextFinishSubmit" class="btn primary small" hidden>完成并提交</button><button type="button" id="liveTextSave" class="btn primary small">保存回答</button><button type="button" id="liveTextClose" class="btn soft small">收起</button></div></div>
     <section class="phone-tools-sheet" id="liveMoreSheet" role="dialog" aria-modal="false" aria-label="直播中更多工具" hidden><div class="phone-tools-heading"><h3>练播工具</h3><button type="button" id="liveMoreClose" class="tool-sheet-close" aria-label="关闭">×</button></div>
       <div class="phone-tools-group"><h4>回答辅助</h4><div class="phone-tool-grid"><button type="button" id="liveToolText">文字回答</button><button type="button" id="liveToolSpeak">朗读弹幕</button><button type="button" id="liveToolRecord">单题录音</button><button type="button" id="liveToolReference">参考要点</button></div><div class="phone-reference" id="liveReferenceBox" hidden></div></div>
       <div class="phone-tools-group"><h4>语音与弹幕</h4><div class="phone-tool-grid"><button type="button" id="liveToolRetry">本题补转写</button><button type="button" id="liveToolVosk">准备识别模型</button><button type="button" id="liveToolBrowserAsr">试用浏览器中文语音识别</button></div><div data-vosk-widget="card" aria-label="中文语音模型进度"></div><label class="phone-tool-field">闲聊弹幕间隔<select id="liveBarrageInterval"><option value="30000">30 秒</option><option value="60000">1 分钟</option><option value="120000">2 分钟</option></select></label><small>闲聊自动出现；训练题请点「下一条」。需要回放和导出，请在结束练播后打开复盘。</small></div>
@@ -2280,7 +2292,10 @@ ELEM('liveQExpand').onclick=()=>{const text=ELEM('liveQText'),btn=ELEM('liveQExp
 const intervalSelect=ELEM('barrageInterval');if(intervalSelect){intervalSelect.value=String(barrageIntervalMs);intervalSelect.onchange=async()=>{barrageIntervalMs=Number(intervalSelect.value)||60000;for(const id of ['prepBarrageInterval','liveBarrageInterval'])if(ELEM(id))ELEM(id).value=String(barrageIntervalMs);await savePref('barrageIntervalMs',barrageIntervalMs);toast('自动弹幕间隔已设置为 '+(barrageIntervalMs/1000)+' 秒');if(roomPhase==='live')scheduleChatQuestion();};}
 ELEM('answerText').oninput=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('answerText').onchange=()=>saveCurrentTypedAnswer({asDraft:true});ELEM('submitAnswer').onclick=submitAnswer;ELEM('retryQuestionAsr').onclick=()=>activeTurn&&retryLocalQuestion(activeTurn.id);ELEM('closeReview').onclick=toggleLiveDrawer;
 ELEM('focusMic').onclick=()=>{if(questionTransition||finishingSession)return toast('正在整理本题录音，请稍候');if(deviceCheck.mode==='text')return toggleTextAnswer();if(currentRecorder?.state==='recording')stopRecord();else void startRecord();};
-ELEM('liveTextAnswer').oninput=syncTextAnswer;ELEM('liveTextSave').onclick=()=>{syncTextAnswer();toggleTextAnswer(false);toast('已保存本题文字回答');};ELEM('liveTextClose').onclick=()=>toggleTextAnswer(false);
+ELEM('liveTextAnswer').oninput=syncTextAnswer;
+ELEM('liveTextSave').onclick=()=>{confirmLiveTextAnswer();toggleTextAnswer(false);toast('已保存本题文字回答');};
+ELEM('liveTextFinishSubmit').onclick=()=>{confirmLiveTextAnswer();void advanceQuestion();};
+ELEM('liveTextClose').onclick=()=>toggleTextAnswer(false);
 ELEM('questionCount').textContent=practicePoolLabel(b,activePlatform);
 ELEM('transcribeVideoBtn').onclick=()=>transcribeSessionVideo();if(ELEM('transcribeWhisperBtn'))ELEM('transcribeWhisperBtn').onclick=()=>transcribeSessionVideo('vosk');if(ELEM('preloadVoskBtn'))ELEM('preloadVoskBtn').onclick=preloadVoskModel;ELEM('downloadWavBtn').onclick=downloadAudioCopy;
 ELEM('copyTranscriptToAnswer').onclick=()=>{const v=ELEM('postTranscript').value.trim();if(!v)return toast('尚无可复制的录后文字');ELEM('answerText').value=v;saveCurrentTypedAnswer();toast('已复制到当前回答栏并存为本题草稿，请核对与本题的对应关系');};
@@ -2487,7 +2502,9 @@ async function finishScene(){
   }catch(e){
    if(!localTrainingLogs.some(x=>x.id===log.id))localTrainingLogs.unshift(log);
    toast('训练日志持久化尚未确认：'+(e?.message||e)+'。本页复盘可以继续使用，但刷新后记录可能丢失，请先下载录像。');
+   return;
   }
+  if(captureOk&&lastSessionSnapshot?.id===ownerRun)return lastSessionSnapshot;
  }catch(e){
   console.error('finishScene failed',e);
   // Do not leave the app stuck in a permanently locked "finishing" state on unexpected exceptions.
@@ -2659,11 +2676,63 @@ async function finishQuestionCapture(){
   if(!currentRecorder&&!recorderFinalizing)done(false);
  });
 }
+function isFinalCloudQuestion(){
+ return page==='training'&&roomPhase==='live'&&syncMember()?.role==='anchor'&&
+  Boolean(sessionAssignmentSnapshot?.schema)&&questions.length>0&&sessionTurns.length===questions.length;
+}
+function hasConfirmedAnswer(turn){
+ return turn.manualEdited&&!turn.manualCleared&&Boolean(turn.answer?.trim());
+}
+function paintFinalQuestionActions(){
+ const confirmed=sessionTurns.every(hasConfirmedAnswer);
+ const label=confirmed?'完成并提交':'结束并核对';
+ ELEM('liveSubmitNote').hidden=false;
+ for(const id of ['focusNext','nextQuestion'])setNodeText(ELEM(id),label);
+ // The text sheet lets the user explicitly accept an unchanged transcript too.
+ const inSheet=ELEM('liveTextFinishSubmit');
+ inSheet.hidden=!activeTurn?.answer?.trim()||!sessionTurns.slice(0,-1).every(hasConfirmedAnswer);
+ ELEM('liveTextSubmitNote').hidden=inSheet.hidden;
+ const save=ELEM('liveTextSave');
+ save.classList.toggle('primary',inSheet.hidden);
+ save.classList.toggle('soft',!inSheet.hidden);
+}
+function confirmLiveTextAnswer(){
+ syncTextAnswer();
+ if(activeTurn?.answer?.trim()&&!activeTurn.manualEdited){
+  activeTurn.manualEdited=true;
+  void saveTurn(activeTurn);
+  renderTurnStatus(activeTurn,{preserveInput:true});
+ }
+}
+async function finishAndSubmitCloudAssignment(){
+ const member=syncMember(),ownerRun=runId;
+ const confirmedText=sessionTurns.map(({id,answer,transcript})=>({id,answer,transcript}));
+ const snap=await finishScene();
+ if(!snap||snap.id!==ownerRun)return;
+ const button=ELEM('submitSession');
+ const current=()=>button?.isConnected&&page==='sessionReview'&&reviewStage==='overview'&&
+  lastSessionSnapshot===snap&&syncMember()===member&&runId===ownerRun&&!reviewSubmission()&&!submissionSaving;
+ // The recorder's stop watchdog bounds finalization. Leaving the review cancels the shortcut.
+ while(videoRecorderFinalizing&&current())await new Promise(resolve=>setTimeout(resolve,150));
+ if(!current())return;
+ const answersUnchanged=snap.turns.length===confirmedText.length&&snap.turns.every((turn,index)=>{
+  const original=confirmedText[index];
+  return hasConfirmedAnswer(turn)&&turn.id===original.id&&turn.answer===original.answer&&turn.transcript===original.transcript;
+ });
+ if(!answersUnchanged||r6WhisperRunning||r6WhisperQueue.length){
+  return toast('请在逐题复盘中核对转写和最终回答，再提交作业。');
+ }
+ await submitSessionRecord(snap.operatorName);
+}
 async function advanceQuestion(){
  if(questionTransition||finishingSession)return;
  if(!liveStarted||roomPhase!=='live')return toast('请先开始练播');
  questionTransition=true;const ownerRun=runId,previous=activeTurn;
  try{
+  if(isFinalCloudQuestion()){
+   if(!sessionTurns.every(hasConfirmedAnswer))return requestFinishScene();
+   return await finishAndSubmitCloudAssignment();
+  }
   if(!(await finishQuestionCapture())){if(previous&&previous.runId===runId){previous.asrStatus='本题录音尚未整理完成，请稍后重试切题';renderTurnStatus(previous)}return toast('本题录音尚未整理完成，请稍后重试');}
   if(finishingSession||runId!==ownerRun||roomPhase!=='live'||activeTurn!==previous)return;
   nextQuestion();
@@ -2692,6 +2761,7 @@ function nextQuestion(){
   responseSeconds:null,durationSeconds:null,createdAt:nowIso(),shownAt:performance.now(),
   transcript:'',answer:'',autoCapture:deviceCheck.mode!=='text',asrStatus:'等待主播回答',pointsHit:[],compliance:[]};
  if(turn&&typeof activeTurn!=='undefined'){activeTurn=turn;sessionTurns.push(turn);}
+ ELEM('livePhone').classList.toggle('final-cloud-question',isFinalCloudQuestion());
  ELEM('currentQuestion').textContent=danmu.text;updateLiveQuestionCard(danmu.text,q.stage);
  const hintEl=ELEM('trainingHint');if(hintEl)hintEl.textContent=q.kind==='seed'?`训练要点（${q.stage||'教学题'}）：${q.question}`:'';
  ELEM('questionStage').textContent=`第 ${sessionTurns.length||1} 题 · 本场 ${questions.length} 道${q.kind==='seed'?'教学示例':'已审核资料题'}${q.stage?' · '+q.stage:''}`;
@@ -3627,7 +3697,7 @@ async function submitAnswer(){
  const text=ELEM('answerText').value.trim();
  if(text.length<5)return toast('请先说出并填写至少5个字的练习回答');
  if(turn.runId!==runId||turn.boardId!==selectedBoard||turn.platform!==activePlatform)return toast('当前题目会话已过期');
- turn.answer=text;turn.compliance=complianceHints(text,turn.platform);
+ turn.answer=text;turn.manualEdited=true;turn.manualCleared=false;turn.compliance=complianceHints(text,turn.platform);
  turn.pointsHit=(turn.keyPoints||[]).filter((p,i)=>fuzzyPoint(p,text,turn.pointKeywords?.[i]||[]));
  turn.asrStatus=turn.transcript?'已转写并人工核对':'手动编辑回答';
  renderTurnStatus(turn);const saved=await saveTurn(turn);if(!saved||turn.runId!==runId||!ELEM('scoreBox'))return;renderTurnStatus(turn);
@@ -3670,7 +3740,7 @@ function refreshReviewEvaluation({immediate=true}={}){
    setNodeText(message,'');
    paintReviewEvaluation();
   },
-  onError:()=>setNodeText(message,'评选状态读取未完成，请稍后刷新。'),
+  onError:retry=>setNodeText(message,retry?'暂时无法读取评选状态，稍后会自动重试。':'评选状态读取未完成，请稍后刷新。'),
  });
 }
 

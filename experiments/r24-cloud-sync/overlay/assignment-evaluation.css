@@ -16,6 +16,14 @@
   outline: 3px solid #1d4e83;
   outline-offset: 2px;
 }
+@media (max-width: 480px) {
+  .room-flow .danmu-phone.is-focused.final-cloud-question .focus-mic {
+    left: 80px;
+    width: min(176px, calc(100% - 210px));
+    margin-left: 0;
+    transform: none;
+  }
+}
 .review-ai-panel {
   display: grid;
   gap: 10px;

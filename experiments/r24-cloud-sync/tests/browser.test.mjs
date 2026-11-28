@@ -31,7 +31,7 @@ async function browserFixture(t, options) {
   });
   t.after(() => browser.close());
 
-  async function newPage(path = '/sync/', width = 390) {
+  async function newPage(path = '/sync/', width = 390, {useClock = false} = {}) {
     const context = await browser.newContext({
       viewport: { width, height: width === 375 ? 812 : 844 }, acceptDownloads: true,
     });
@@ -40,6 +40,7 @@ async function browserFixture(t, options) {
       return url.origin === server.origin ? route.continue() : route.abort();
     });
     const page = await context.newPage();
+    if (useClock) await page.clock.install();
     page.setDefaultTimeout(12_000);
     const errors = [];
     const consoleErrors = [];
@@ -156,10 +157,17 @@ async function startTextPractice(page, enter) {
   await start.click();
 }
 
-async function textPractice(page, enter) {
+async function textPractice(page, enter, {finishWithBlankAnswer = false} = {}) {
   await startTextPractice(page, enter);
   for (const [index, question] of questions.entries()) {
     await page.locator('#liveQText').filter({ hasText: question }).waitFor();
+    if (finishWithBlankAnswer && index === questions.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 710));
+      await page.locator('#focusNext').filter({hasText: '结束并核对'}).click();
+      await page.locator('#tclEndYes').click();
+      await page.locator('#reviewDetails').waitFor();
+      return;
+    }
     await page.locator('#focusMic').click();
     await page.locator('#liveTextAnswer').fill(answers[index]);
     await page.locator('#liveTextSave').click();
@@ -177,6 +185,17 @@ async function textPractice(page, enter) {
 
 async function checkNoOverflow(page) {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+}
+
+async function checkFinalActionSpacing(page) {
+  const [next, mic] = await Promise.all([
+    page.locator('#focusNext').boundingBox(),
+    page.locator('#focusMic').boundingBox(),
+  ]);
+  assert.ok(next && mic, 'Both final question controls must be visible');
+  const overlaps = next.x < mic.x + mic.width && mic.x < next.x + next.width &&
+    next.y < mic.y + mic.height && mic.y < next.y + next.height;
+  assert.equal(overlaps, false, 'Final controls overlap: ' + JSON.stringify({next, mic}));
 }
 
 test('two independent browsers: publish a real XLSX, claim, submit, operator reads exact answers', { timeout: 90_000 }, async t => {
@@ -706,7 +725,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.13-async-rc1';
+  const shortVersion = 'R24-20261124.13-async-rc2';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -1146,7 +1165,9 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
         ? ids.map(id => ({id,repository_review:repositoryReview})) : [],
       legacyEvaluation: () => legacyEvaluation,
     });
-    const operatorView = await newPage('/sync/', width), anchorView = await newPage('/sync/', width);
+    const delayedScore = width === 375;
+    const operatorView = await newPage('/sync/', width);
+    const anchorView = await newPage('/sync/', width, {useClock: delayedScore});
     const ops = operatorView.page, trainee = anchorView.page;
     await autoEnter(ops, 'operator', '演示运营');
     await autoEnter(trainee, 'anchor', '演示主播');
@@ -1194,30 +1215,74 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
     await openAndCloseDrawer(trainee, width, 'prepMore', 'prepMoreSheet', 'prepMoreClose');
     await startTextPractice(trainee);
     await openAndCloseDrawer(trainee, width, 'focusReview', 'liveMoreSheet', 'liveMoreClose');
+    const submissions = '/assignments/' + encodeURIComponent(assignment.id) + '/submissions';
+    const submissionCount = () => server.requests.filter(r => r.method === 'POST' && r.path.endsWith(submissions)).length;
     for (const [index, {question}] of practiceDraft.entries()) {
       await trainee.locator('#liveQText').filter({hasText: question}).waitFor();
+      if (index === practiceDraft.length - 1) await checkFinalActionSpacing(trainee);
       await trainee.locator('#focusMic').click();
+      if (delayedScore && index === practiceDraft.length - 1) {
+        assert.equal(await trainee.locator('#liveTextFinishSubmit').isVisible(), false);
+        await trainee.locator('#liveTextAnswer').fill('待修订的回答');
+        await trainee.locator('#liveTextClose').click();
+        assert.equal(submissionCount(), 0);
+        await trainee.locator('#focusMic').click();
+        assert.equal(await trainee.locator('#liveTextAnswer').inputValue(), '待修订的回答');
+      }
       await trainee.locator('#liveTextAnswer').fill(practiceReplies[index]);
+      if (index === practiceDraft.length - 1) await checkFinalActionSpacing(trainee);
+      if (delayedScore && index === practiceDraft.length - 1) break;
+      if (index < practiceDraft.length - 1) {
+        assert.equal(await trainee.locator('#liveTextFinishSubmit').isVisible(), false);
+      }
       await trainee.locator('#liveTextSave').click();
       if (index < practiceDraft.length - 1) {
         if (index) await new Promise(resolve => setTimeout(resolve, 710));
         await trainee.locator('#focusNext').click();
       }
     }
-    await trainee.locator('#focusClose').click();
-    await trainee.getByRole('button', {name: '结束并进入复盘', exact: true}).click();
-    await trainee.locator('#reviewDetails').click();
-    assert.equal(await trainee.locator('#reviewAiEvaluate').count(), 0);
-    assert.equal(await trainee.locator('#reviewAiEvaluation').isVisible(), false);
-    await trainee.locator('#reviewDetailsBack').click();
-    const submissions = '/assignments/' + encodeURIComponent(assignment.id) + '/submissions';
+    assert.equal(submissionCount(), 0, 'Editing answers does not submit the practice');
+    let confirm;
+    let originalSubmissionId;
+    if (delayedScore) {
+      confirm = trainee.locator('#liveTextFinishSubmit').filter({hasText: '完成并提交'});
+      await confirm.waitFor();
+      await captureMobile(trainee, width, 'anchor-finish-and-submit');
+    } else if (width === 393) {
+      await new Promise(resolve => setTimeout(resolve, 710));
+      // The first submit commits on the server, but its acknowledgement is lost.
+      await trainee.route('**' + submissions, async route => {
+        const response = await route.fetch();
+        assert.equal(response.status(), 201);
+        originalSubmissionId = (await response.json()).submission.id;
+        await route.fulfill({status: 200, json: {}});
+      }, {times: 1});
+      await trainee.locator('#focusNext').filter({hasText: '完成并提交'}).click();
+      await trainee.locator('#toast').filter({hasText: '未收到云端确认'}).waitFor();
+      assert.equal(submissionCount(), 1);
+      confirm = trainee.locator('#submitSession');
+    } else {
+      await trainee.locator('#focusClose').click();
+      await trainee.getByRole('button', {name: '结束并进入复盘', exact: true}).click();
+      await trainee.locator('#reviewDetails').click();
+      assert.equal(await trainee.locator('#reviewAiEvaluate').count(), 0);
+      assert.equal(await trainee.locator('#reviewAiEvaluation').isVisible(), false);
+      await trainee.locator('#reviewDetailsBack').click();
+      confirm = trainee.locator('#submitSession');
+    }
     const [sent] = await Promise.all([
       trainee.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith(submissions)),
-      trainee.locator('#submitSession').click(),
+      delayedScore ? confirm.dblclick() : confirm.click(),
     ]);
-    assert.equal(sent.status(), 201, JSON.stringify(await sent.json()));
+    const receipt = await sent.json();
+    assert.equal(sent.status(), originalSubmissionId ? 200 : 201, JSON.stringify(receipt));
+    if (originalSubmissionId) {
+      assert.equal(receipt.submission.id, originalSubmissionId);
+      assert.equal(receipt.replayed, true);
+    }
     assert.deepEqual(Object.keys(sent.request().postDataJSON()), ['snapshot']);
-    assert.deepEqual((await sent.json()).submission.repositoryReview, {status:'waiting'});
+    assert.deepEqual(receipt.submission.turns.map(turn => turn.answer), practiceReplies);
+    assert.deepEqual(receipt.submission.repositoryReview, {status:'waiting'});
     const reviewPanel = trainee.locator('#reviewAiEvaluation');
     await reviewPanel.getByText('等待后台 AI 评选', {exact:true}).waitFor();
     await scrollBelowHeader(reviewPanel);
@@ -1230,15 +1295,37 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
     await operatorRecord.locator('summary').click();
     await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'等待后台 AI 评选'}).waitFor();
     repositoryReview = {status:'processing'};
-    await reviewPanel.locator('#reviewAiRefresh').click();
+    const mySubmissionsPath = '/assignments/' + assignment.id + '/my-submissions';
+    const advanceToRead = async () => {
+      const [response] = await Promise.all([
+        trainee.waitForResponse(r => r.request().method() === 'GET' && new URL(r.url()).pathname.endsWith(mySubmissionsPath)),
+        trainee.clock.fastForward(60_000),
+      ]);
+      assert.equal(response.status(), 200);
+      await response.finished();
+      await reviewPanel.locator('#reviewAiRefresh:enabled').waitFor();
+    };
+    if (delayedScore) {
+      // The worker may still be running after the original four polling intervals.
+      for (let read = 0; read < 5; read++) await advanceToRead();
+    } else {
+      await reviewPanel.locator('#reviewAiRefresh').click();
+    }
     await reviewPanel.getByText('正在后台 AI 评选', {exact:true}).waitFor();
     await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'正在后台 AI 评选'}).waitFor();
     repositoryReview = {status:'pending_review',evaluation};
+    if (delayedScore) await advanceToRead();
 
     const displayed = reviewPanel.locator('[data-ai-eval-result]');
     await verifyEvaluation(displayed);
     await displayed.locator('[data-ai-model]').filter({hasText: 'OpenAI · gpt-6.1-terra'}).waitFor();
     await reviewPanel.getByText('待运营复核', {exact:true}).waitFor();
+    if (delayedScore) {
+      const anchorReads = () => server.requests.filter(r => r.method === 'GET' && r.path.endsWith(mySubmissionsPath)).length;
+      const finishedReads = anchorReads();
+      await trainee.clock.fastForward(15 * 60_000);
+      assert.equal(anchorReads(), finishedReads, 'Readback stops when the score has arrived');
+    }
     await scrollBelowHeader(displayed);
     await captureMobile(trainee, width, 'anchor-evaluation');
     const received = operatorRecord.locator('[data-ai-eval-result]');
@@ -1285,6 +1372,7 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
       await captureMobile(ops, width, 'operator-historical-evaluation');
     }
     assert.deepEqual(vendorCalls, hunyuan ? ['hy3', 'hy3'] : ['json_object', 'json_object']);
+    assert.equal(submissionCount(), originalSubmissionId ? 2 : 1);
     assert.equal(server.requests.filter(r=>r.path.endsWith('/assignments/evaluate')).length, 0);
     assert.deepEqual([...operatorView.errors, ...anchorView.errors], []);
     assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
@@ -1312,7 +1400,17 @@ for (const status of [undefined, 'needs_attention']) {
     await trainee.locator('#assignmentFold summary').click();
     await trainee.locator('#assignmentSearch').fill('演示运营');
     await trainee.locator('#syncRefresh').click();
-    await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click());
+    await textPractice(trainee, () => trainee.locator('#assignmentSearchResults [data-join-assignment="' + assignment.id + '"]').click(),
+      {finishWithBlankAnswer: !status});
+    if (!status) {
+      assert.equal(server.requests.filter(r => r.method === 'POST' && r.path.endsWith('/submissions')).length, 0,
+        'Completing a cloud exercise with a missing answer opens review without submitting');
+      await trainee.locator('#reviewDetails').click();
+      const missing = trainee.locator('#questionSummary tr').filter({has: trainee.locator('textarea')}).last();
+      await missing.locator('textarea').fill(answers.at(-1));
+      await missing.getByRole('button', {name: '保存本题修改', exact: true}).click();
+      await trainee.locator('#reviewDetailsBack').click();
+    }
     assert.equal(await trainee.locator('#reviewAiEvaluate').count(), 0);
     assert.equal(await trainee.locator('#reviewAiEvaluation').isVisible(), false);
     const [submitted] = await Promise.all([

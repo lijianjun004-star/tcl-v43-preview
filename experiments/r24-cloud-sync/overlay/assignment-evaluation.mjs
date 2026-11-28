@@ -1,4 +1,4 @@
-import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.13-async-rc1';
+import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.13-async-rc2';
 
 const offlineModels = ['gpt-6.1-terra', 'gpt-4o-mini', 'gpt-4o'];
 const reviewStatusLabels = {
