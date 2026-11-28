@@ -10,21 +10,70 @@ const configuration = {
   R24_REPO_WAKE_APP_ID:'4', R24_REPO_WAKE_INSTALLATION_ID:'24', R24_REPO_WAKE_APP_PRIVATE_KEY:privateKey,
 };
 const target = {private:true,visibility:'private',id:42,full_name:repo,default_branch:'main'};
-function setup(metadata = target) {
+function setup(metadata = target, env = configuration, secretResponse) {
   const calls = [];
   const fetchImpl = async (url,opts) => {
     calls.push({url,opts});
+    if (url === 'https://ssm.tencentcloudapi.com/') return secretResponse();
     if (url.endsWith('/access_tokens')) return Response.json({token:'synthetic-installation-token'}, {status:201});
     if (opts.method === 'GET') return Response.json(metadata);
     return new Response(null,{status:204});
   };
-  return {notify:createRepositoryNotifier({env:configuration, fetchImpl}), calls};
+  return {notify:createRepositoryNotifier({env, fetchImpl}), calls};
 }
 
 test('wake requires opt-in explicit repository, installation and App identity', () => {
   for (const overrides of [{R24_REPO_WAKE_ENABLED:'false'},{R24_REPO_WAKE_APP_ID:''},
     {R24_REPO_WAKE_REPOSITORY:'test/..'}, {R24_REPO_WAKE_REPOSITORY_ID:'NaN'}]) {
     assert.equal(createRepositoryNotifier({env:{...configuration,...overrides}}), undefined);
+  }
+});
+
+const namedSecret = 'r24-shanghai-github-wake';
+const managedConfiguration = {
+  ...configuration, R24_REPO_WAKE_APP_PRIVATE_KEY: undefined, R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_NAME: namedSecret,
+  TENCENTCLOUD_SECRETID:'test-role-id', TENCENTCLOUD_SECRETKEY:'test-role-secret', TENCENTCLOUD_SESSIONTOKEN:'test-role-token',
+};
+
+test('Shanghai reads the current key with the SCF session and signs one data-free GitHub wake', async t => {
+  t.mock.method(Date, 'now', () => 1700000000000);
+  const pem = privateKey.export({type:'pkcs1', format:'pem'});
+  const secretResponse = () => Response.json({Response:{SecretName:namedSecret,SecretString:pem}});
+  const {notify,calls} = setup(target, managedConfiguration, secretResponse);
+  assert.equal(await notify(), true);
+  const [lookup, grant] = calls;
+  assert.equal(calls.length, 4);
+  assert.deepEqual(JSON.parse(lookup.opts.body), {SecretName:namedSecret,VersionStage:'Stage_Current'});
+  assert.equal(lookup.opts.headers['X-TC-Token'], 'test-role-token');
+  assert.equal(lookup.opts.headers['X-TC-Action'], 'GetSecretValue');
+  assert.equal(lookup.opts.headers['X-TC-Region'], 'ap-shanghai');
+  assert.equal(lookup.opts.headers['X-TC-Version'], '2019-09-23');
+  // Reproduced independently with Tencent's official Node SDK sign3 for these synthetic inputs.
+  assert.equal(lookup.opts.headers.Authorization, 'TC3-HMAC-SHA256 Credential=test-role-id/2023-11-14/ssm/tc3_request, SignedHeaders=content-type;host, Signature=77b58f50179400ed212f3f7c3ae26a1e4404f69017eb3c00ad21d58b907f62f5');
+  assert.ok(calls.every(({opts}) => opts.signal === lookup.opts.signal && opts.redirect === 'error'));
+  const [head,claims,signature] = grant.opts.headers.Authorization.slice(7).split('.');
+  assert.ok(verify('RSA-SHA256', Buffer.from(head+'.'+claims), publicKey, Buffer.from(signature,'base64url')));
+});
+
+test('managed key access fails closed before GitHub without the exact name, session, or usable current key', async () => {
+  for (const overrides of [{R24_REPO_WAKE_APP_PRIVATE_KEY:privateKey},{R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_NAME:'other'}]) {
+    assert.equal(createRepositoryNotifier({env:{...managedConfiguration,...overrides}}), undefined);
+  }
+  for (const credential of ['TENCENTCLOUD_SECRETID','TENCENTCLOUD_SECRETKEY','TENCENTCLOUD_SESSIONTOKEN']) {
+    const {notify,calls} = setup(target, {...managedConfiguration,[credential]:undefined});
+    assert.equal(await notify(), false);
+    assert.equal(calls.length, 0);
+  }
+  for (const reply of [
+    () => {throw new Error('synthetic network error');},
+    () => new Response(null,{status:403}),
+    () => Response.json({Response:{Error:{Code:'UnauthorizedOperation'}}}),
+    () => Response.json({Response:{SecretName:'other',SecretString:'unexpected'}}),
+    () => Response.json({Response:{SecretName:namedSecret,SecretString:'malformed'}}),
+  ]) {
+    const {notify,calls} = setup(target, managedConfiguration, reply);
+    assert.equal(await notify(), false);
+    assert.deepEqual(calls.map(({url})=>url), ['https://ssm.tencentcloudapi.com/']);
   }
 });
 

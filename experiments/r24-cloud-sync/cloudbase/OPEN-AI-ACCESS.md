@@ -44,7 +44,8 @@
 | `R24_REPO_WAKE_REPOSITORY_ID` | `1474053872` |
 | `R24_REPO_WAKE_APP_ID` | 第 3 步创建的 GitHub App ID |
 | `R24_REPO_WAKE_INSTALLATION_ID` | 该 App 在私库的安装 ID |
-| `R24_REPO_WAKE_APP_PRIVATE_KEY` | 唤醒代码在运行时读取的 PEM。原文仅通过受保护凭据通道交给签名代码 |
+| `R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_NAME` | 上海腾讯云凭据管理系统（SSM）中的凭据名称 `r24-shanghai-github-wake`。普通函数配置只存这个名称 |
+| `R24_REPO_WAKE_APP_PRIVATE_KEY` | 已有受保护注入通道可直接提供运行时 PEM。通过 SSM 读取时留空；同时配置两个来源会关闭唤醒 |
 
 模型通道相关变量保持现有配置。
 
@@ -54,7 +55,7 @@
    - 权限只勾选 **Actions: Read and write**，Metadata 为默认只读。
    - 不订阅任何 Webhook。
 2. 只安装到私库 `lijianjun004-star/tcl-r24-score-archive`。
-3. 将生成的 PEM 存入受保护的密钥管理系统，只向部署人员提供 App ID、安装 ID 和密钥引用。上海 SCF 的普通环境变量 API 保存字符串，现有签名代码直接读取 PEM。启用唤醒前，需接通函数安全读取凭据的方式；直接填引用名称会导致签名失败。私钥原文须避开普通函数配置、日志和工单。[SCF 环境变量结构](https://cloud.tencent.com/document/api/583/17244#Variable)
+3. 使用上海 SSM 时，新建名为 `r24-shanghai-github-wake` 的自定义凭据，把多行 PEM 保存为文本值（API 字段 `SecretString`），将该版本关联到 `Stage_Current` 标签。给函数执行角色授予对这条凭据的 `ssm:GetSecretValue` 权限，填写第 2 节的凭据名称。函数用 SCF 临时身份读取当前版本；密钥轮换时将标签切换至新版本。该路径需要账号已开通 SSM。私钥原文须避开普通函数配置、日志和工单。[SSM 读取接口](https://console.cloud.tencent.com/api/explorer?Product=ssm&Version=2019-09-23&Action=GetSecretValue) · [SCF 环境变量结构](https://cloud.tencent.com/document/api/583/17244#Variable)
 
 启用后，上海函数向私库工作流 `r24-private-score-archive.yml` 发送 `submission_saved`，该信号只用于唤醒。唤醒失败时作答仍可提交。定时工作流按每 15 分钟配置，实际领取积压任务取决于 GitHub 何时启动运行以及评分作业是否执行。核对时请查看实际运行记录和评分回执。
 
