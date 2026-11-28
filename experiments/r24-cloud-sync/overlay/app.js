@@ -5,13 +5,14 @@ import { createLocalWhisper } from './whisper-bridge.mjs';
 import { createLocalParaformer } from './paraformer-bridge.mjs';
 import { parseDocumentFile } from './lib/parser.js?v=r24-sync-v2-20261124.7';
 import { extractQA, detectReviewConflicts } from './lib/qa-import.js';
-import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.13-async-rc2';
+import { assignmentDraftPanelHtml, bindAssignmentDraftPanel } from './assignment-draft-panel.mjs?v=r24-sync-v2-20261124.13-shared.1';
 import {validateExcelQuestions,assertExcelOneRowPerQuestion,makeAssignment,isAssigned,questionsForAssignment,toExchangePackage,verifyAssignment,toReceipt,verifyReceipt,verifyAssignmentSnapshot,assertExcelExtractionComplete,isReceiptLate} from './assignment-excel.mjs';
 
-import { evaluationReadbackHtml, isRepositoryReviewPending, repositoryReviewLabel } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.13-async-rc2';
-import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.13-async-rc2';
+import { evaluationInputKey, evaluationFailure, validEvaluation, evaluationResultHtml, evaluationReadbackHtml, isRepositoryReviewPending, repositoryReviewLabel } from './assignment-evaluation.mjs?v=r24-sync-v2-20261124.13-shared.1';
+import { createAssignmentSync, normalizeDeviceCode } from './assignment-sync.mjs?v=r24-sync-v2-20261124.13-shared.1';
 
 const STORE_NAME='tcl-specialty-r24-paraformer-excel-qa-v1';
+let pendingEvaluation=null,reviewEvaluationError=null;
 let sessionAssignmentSnapshot=null;
 let assignmentSync=null, syncConfigError='', cloudAssignments=[], syncSubmitStatus=new Map();
 let syncAssignmentsLoading=false, syncAssignmentsLoaded=false, syncAssignmentsMessage='';
@@ -965,9 +966,9 @@ function createQuestionSummaryRow(turn){
  entry.raw=detail('查看模型识别原文');entry.candidate=detail('查看识别候选（未覆盖当前回答）');
  const use=document.createElement('button');use.type='button';use.className='btn soft';use.textContent='采用此候选回答';entry.candidate.box.append(use);
  use.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=toSimplified(t.whisperCandidate);t.transcript=t.answer;t.manualEdited=true;t.manualCleared=false;t.compliance=complianceHints(t.answer,t.platform);t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='已采用识别候选（请核对）';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};
- const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true'};entry.editor=editor;entry.answerCell.append(editor);
+ const editor=document.createElement('textarea');editor.rows=3;editor.setAttribute('aria-label','编辑本题回答');editor.oninput=()=>{editor.dataset.dirty='true';paintReviewEvaluation()};entry.editor=editor;entry.answerCell.append(editor);
  const save=document.createElement('button');save.type='button';save.className='btn soft';save.textContent='保存本题修改';
- save.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=editor.value.trim();t.manualEdited=true;t.manualCleared=!t.answer;t.compliance=t.answer?complianceHints(t.answer,t.platform):[];t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();};entry.answerCell.append(save);
+ save.onclick=()=>{const t=entry.turn;if(!isRunPage()||t.runId!==runId)return;t.answer=editor.value.trim();t.manualEdited=true;t.manualCleared=!t.answer;t.compliance=t.answer?complianceHints(t.answer,t.platform):[];t.pointsHit=(t.keyPoints||[]).filter((point,i)=>fuzzyPoint(point,t.answer,t.pointKeywords?.[i]||[]));t.asrStatus='人工修改（请核对）';editor.dataset.dirty='';void saveTurn(t);renderQuestionSummary();refreshReviewMetrics();paintReviewEvaluation();};entry.answerCell.append(save);
  const copy=document.createElement('button');copy.type='button';copy.className='btn soft';copy.textContent='将整场文字填入本题';
  copy.onclick=()=>{const text=ELEM('postTranscript')?.value.trim();if(!text)return toast('尚无整场录后文字');editor.value=text;editor.dataset.dirty='true';editor.focus();toast('已填入本题编辑框，请核对后保存');};entry.answerCell.append(copy);
  entry.actions=cell('状态');entry.status=document.createElement('div');entry.actions.append(entry.status);
@@ -1464,6 +1465,7 @@ async function refreshSyncAssignments(){
   if(syncMember()!==member)return;
   if(assignmentJoinPending||assignmentPublishPending||cloudAssignments!==previousRows){syncAssignmentsMessage=' 作业刚有更新，可刷新查看最新列表';return;}
   cloudAssignments=rows;syncAssignmentsLoaded=true;
+  if(page==='sessionReview')paintLegacyEvaluation();
   syncAssignmentsMessage=` 已读取 ${rows.length} 份云端作业`;
   if(page==='home'){
    if(userRole==='anchor')updateAnchorAssignmentDashboard();
@@ -2678,7 +2680,8 @@ async function finishQuestionCapture(){
 }
 function isFinalCloudQuestion(){
  return page==='training'&&roomPhase==='live'&&syncMember()?.role==='anchor'&&
-  Boolean(sessionAssignmentSnapshot?.schema)&&questions.length>0&&sessionTurns.length===questions.length;
+  Boolean(sessionAssignmentSnapshot?.schema)&&cloudAssignmentState(sessionAssignmentSnapshot.id)?.autoScore===true&&
+  questions.length>0&&sessionTurns.length===questions.length;
 }
 function hasConfirmedAnswer(turn){
  return turn.manualEdited&&!turn.manualCleared&&Boolean(turn.answer?.trim());
@@ -3708,7 +3711,78 @@ async function submitAnswer(){
 function hasUnsavedReviewEdits(){
  return !!ELEM('questionSummary')?.querySelector('textarea[data-dirty="true"]');
 }
+function matchingEvaluation(snap,key=evaluationInputKey(snap)){
+ const saved=snap.aiReview;
+ return saved?.key===key && /^[a-f0-9]{64}$/.test(saved.evaluationId) &&
+  validEvaluation(saved.evaluation,snap.turns.length)?saved:null;
+}
+
+function paintLegacyEvaluation(){
+ const slot=ELEM('legacyAiSlot'),snap=lastSessionSnapshot;
+ if(!slot||!snap||!reviewAlive())return;
+ if(reviewSubmission()||cloudAssignmentState(snap.assignmentId)?.autoScore!==false){
+  if(slot.childElementCount)slot.replaceChildren();
+  return;
+ }
+ if(!slot.childElementCount){
+  slot.innerHTML=`<section class="review-ai-panel" id="legacyAiEvaluation" aria-label="AI 口播评选">
+    <h3>AI 口播评选</h3><button type="button" class="btn soft" id="reviewAiEvaluate">发起 AI 评选</button>
+    <p class="scene-tip" role="status" data-ai-eval-status></p><div data-ai-eval-output></div>
+  </section>`;
+  ELEM('reviewAiEvaluate').onclick=()=>void evaluateReview();
+ }
+ const panel=ELEM('legacyAiEvaluation');
+ const submitted=reviewSubmission(),key=evaluationInputKey(snap);
+ const dirty=hasUnsavedReviewEdits();
+ const waiting=pendingEvaluation?.snapshot===snap;
+ const empty=!snap.turns.length||snap.turns.some(turn=>turn.manualCleared||!(turn.answer?.trim()||turn.transcript?.trim()));
+ const current=matchingEvaluation(snap,key);
+ const failed=reviewEvaluationError;
+ let message='';
+ if(submitted)message=submitted.evaluation?'以下为已提交回答的评选。':'未生成 AI 评选';
+ else if(dirty)message='请先保存已编辑的逐题回答，再发起评选。';
+ else if(empty)message='请先为每道题填写回答或核对转写文字。';
+ else if(waiting)message='正在评选。如果现在提交作业，将按未评分保存。';
+ else if(failed?.snapshot===snap && failed.key===key)message=failed.message;
+ else if(current)message='评选已完成，提交作业时会一并交给运营。';
+ else message=snap.aiReview?'回答已更新，请重新评选。':'可使用已保存的文字或转写回答获取逐题点评。';
+ const button=ELEM('reviewAiEvaluate');
+ button.hidden=!!submitted;
+ button.disabled=!!(submitted||submissionSaving||waiting||dirty||empty||current);
+ setNodeText(button,waiting?'正在评选…':'发起 AI 评选');
+ setNodeText(panel.querySelector('[data-ai-eval-status]'),message);
+ const output=panel.querySelector('[data-ai-eval-output]');
+ const visible=submitted?submitted.evaluation:dirty?null:current?.evaluation;
+ if(output.evaluationResult!==visible){
+  output.evaluationResult=visible;
+  output.innerHTML=visible?evaluationResultHtml(visible,submitted?.turns||snap.turns,ESC):'';
+ }
+}
+
+async function evaluateReview(){
+ const snap=lastSessionSnapshot,member=syncMember(),button=ELEM('reviewAiEvaluate');
+ if(!snap||!reviewAlive()||!button||button.disabled||member?.role!=='anchor'||!snap.assignmentId||reviewSubmission())return;
+ const key=evaluationInputKey(snap),request={snapshot:snap,key};
+ pendingEvaluation=request;reviewEvaluationError=null;paintReviewEvaluation();
+ const current=()=>pendingEvaluation===request&&syncMember()===member&&lastSessionSnapshot===snap&&
+  runId===snap.id&&evaluationInputKey(snap)===key&&!submissionSaving&&!reviewSubmission();
+ try{
+  const response=await assignmentSync.evaluate(cloudSubmissionPayload(snap));
+  if(!current())return;
+  if(!/^[a-f0-9]{64}$/.test(response?.evaluationId)||!validEvaluation(response?.evaluation,snap.turns.length))
+   throw Object.assign(new Error('评选结果无效'),{code:'INVALID_AI_JSON',requestId:response?.evaluation?.requestId});
+  snap.aiReview={key,evaluationId:response.evaluationId,evaluation:response.evaluation};
+  await persistSessionCheckpoint();
+ }catch(error){
+  if(current())reviewEvaluationError={snapshot:snap,key,message:evaluationFailure(error)};
+ }finally{
+  if(pendingEvaluation===request)pendingEvaluation=null;
+  paintReviewEvaluation();
+ }
+}
+
 function paintReviewEvaluation(){
+ paintLegacyEvaluation();
  const panel=ELEM('reviewAiEvaluation'),submitted=reviewSubmission();
  if(!panel)return;
  panel.hidden=!submitted?.cloudConfirmed;
@@ -3816,6 +3890,7 @@ function sessionReviewPage(){
  <section id="reviewDetailsScreen" class="review-stage review-details-screen" aria-label="逐题复盘详情" hidden aria-hidden="true">
   <div class="review-subbar"><button type="button" id="reviewDetailsBack" class="review-back" aria-label="返回复盘总览">‹ <span>返回复盘</span></button><div><h2>逐题复盘</h2><small>${snap.turns.length} 条弹幕 · 按题校正</small></div><span class="review-subbadge">详情</span></div>
   <div class="review-details-intro"><b>每道弹幕逐条查看</b><p>识别可能有错别字或型号偏差。你可以修改回答并单独保存。要点覆盖属于参考提示，不是 AI 自动打分。</p></div>
+  ${syncMember()?.role==='anchor'&&snap.assignmentId?'<div id="legacyAiSlot"></div>':''}
   <div id="questionSummary" class="review-question-cards" aria-live="polite"></div>
   <div class="review-secondary-link"><button type="button" id="reviewGoReplay" class="review-inline-link">▶ 打开本场录像 <span>›</span></button></div>
  </section>
@@ -3868,7 +3943,7 @@ async function submitSessionRecord(operatorName){
   if(syncMember()&&lateAssignment){
    if(!current())throw new Error('本场记录已变化，请核对后重试');
    const payload=cloudSubmissionPayload(snap);
-   const result=await assignmentSync.submit(payload);
+   const result=await assignmentSync.submit(payload,matchingEvaluation(snap)?.evaluationId);
    const accepted=result.submission;
    if(accepted?.sessionId!==snap.id||accepted.assignmentId!==snap.assignmentId||!accepted.submittedAt||!accepted.id)throw new Error('云端回执未确认，请重试');
    submission.cloudId=accepted.id;

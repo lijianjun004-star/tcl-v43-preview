@@ -11,7 +11,7 @@ const target = resolve(destination);
 const files = [
   'package.json', 'package-lock.json', 'index.js', 'function.mjs', 'gateway.mjs',
   'cloudbase-identity.mjs', 'cloudbase-store.mjs', 'function-config.mjs', 'repository-notifier.mjs',
-  'device-access.mjs', 'device-grants-store.mjs', 'cloudbase-audio.mjs', 'ai-draft-provider.mjs',
+  'worker-relay.mjs', 'worker-oidc.mjs', 'worker-jwks.mjs', 'device-access.mjs', 'device-grants-store.mjs', 'cloudbase-audio.mjs', 'ai-draft-provider.mjs',
 ].map(name => [new URL(name, import.meta.url), name]);
 files.push(
   [new URL('../backend/api.mjs', import.meta.url), 'portable/api.mjs'],

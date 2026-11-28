@@ -138,17 +138,7 @@ export function createAiGatewayClient({env = process.env, fetchImpl = fetch, sle
     }
     return readEnvelope(response, meta);
   }
-  const source = 'openai_gateway';
-  const {generate, complete} = completionClient({model, source, missing, valid, timeout, token, requestEnvelope, sleep});
-  async function evaluate(items, {beforeFetch} = {}) {
-    const input = validateEvaluationInput(items);
-    const prompt = JSON.stringify(input.map((item, questionIndex) => ({questionIndex, ...item})));
-    return complete(prompt, {
-      beforeFetch, scoring: true, maxTokens: Math.min(8192, 512 + 650 * input.length),
-      parse: content => validateEvaluationResult(JSON.parse(content), input),
-    });
-  }
-  return {model, source, generate, evaluate};
+  return completionClient({model, source: 'openai_gateway', missing, valid, timeout, token, requestEnvelope, sleep});
 }
 
 export function createHunyuanClient({cloudApp, env = process.env} = {}) {
@@ -156,11 +146,17 @@ export function createHunyuanClient({cloudApp, env = process.env} = {}) {
   const model = env.TCL_R24_SYNC_AI_MODEL_ID;
   const valid = typeof cloudApp?.ai === 'function' && typeof model === 'string' && hunyuanModels.get(group) === model;
   async function requestEnvelope(body, meta) {
+    const messages = body.messages.map(message => ({...message}));
+    const format = group === 'cloudbase' ? body.response_format : {type: 'json_object'};
+    // The preview group uses JSON object mode with the same trusted schema and validation.
+    if (format.type !== 'json_schema' && body.response_format.type === 'json_schema') {
+      messages[0].content += '\n' + JSON.stringify(body.response_format.json_schema.schema);
+    }
     let result;
     try {
       result = await cloudApp.ai().createModel(group).generateText({
-        model, messages: body.messages, maxSteps: 1, max_tokens: body.max_tokens,
-        thinking: {type: 'disabled'}, response_format: body.response_format,
+        model, messages, maxSteps: 1, max_tokens: body.max_tokens,
+        thinking: {type: 'disabled'}, response_format: format,
       });
       if (result?.error) throw result.error;
     } catch (error) {
@@ -186,10 +182,8 @@ export function createHunyuanClient({cloudApp, env = process.env} = {}) {
     return envelope;
   }
   // CloudBase bills by attempt and its SDK doesn't implement abortSignal. Do not retry here.
-  const source = 'cloudbase_hunyuan';
-  const configuredModel = valid ? model : null;
-  const {generate} = completionClient({model: configuredModel, source, missing: !model, valid, timeout: 30_000, requestEnvelope});
-  return {model: configuredModel, source, generate};
+  return completionClient({model: valid ? model : null, source: 'cloudbase_hunyuan',
+    missing: !model, valid, timeout: 30_000, requestEnvelope});
 }
 
 function completionClient({model, source, missing, valid, timeout, token, requestEnvelope, sleep}) {
@@ -256,5 +250,13 @@ function completionClient({model, source, missing, valid, timeout, token, reques
   function generate(prompt, {beforeFetch} = {}) {
     return complete(prompt, {beforeFetch, parse: readDraft, scoring: false, maxTokens: 4096});
   }
-  return {generate, complete};
+  async function evaluate(items, {beforeFetch} = {}) {
+    const input = validateEvaluationInput(items);
+    const prompt = JSON.stringify(input.map((item, questionIndex) => ({questionIndex, ...item})));
+    return complete(prompt, {
+      beforeFetch, scoring: true, maxTokens: Math.min(8192, 512 + 650 * input.length),
+      parse: content => validateEvaluationResult(JSON.parse(content), input),
+    });
+  }
+  return {model, source, generate, evaluate};
 }

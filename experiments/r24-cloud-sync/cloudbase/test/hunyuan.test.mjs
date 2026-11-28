@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createHunyuanClient} from '../../backend/ai-gateway-client.mjs';
-import {createCloudBaseDraftGeneration} from '../ai-draft-provider.mjs';
+import {createCloudBaseDraftGeneration, createCloudBaseEvaluationGeneration} from '../ai-draft-provider.mjs';
 
 const prefix = 'tcl_r24_sync_test';
 const actor = {id: 'demo_operator', role: 'operator', active: true};
@@ -30,11 +30,11 @@ function harness(receive, configuration = env, reserve = () => true) {
     drafts: createCloudBaseDraftGeneration({env: configuration, client, db, prefix})};
 }
 
-test('both Shanghai groups expose draft generation only; a valid draft reserves exactly once', async () => {
+test('both supported Shanghai groups expose the .12 manual scorer; a valid draft reserves exactly once', async () => {
   for (const [group, model] of [['cloudbase', 'hy3'], ['hunyuan-v3', 'hy3-preview']]) {
     const h = harness(() => ({...envelope(draft),usage:{...stats,internal:'ignored'}}),
       {...env, TCL_R24_SYNC_AI_MODEL_PROVIDER: group, TCL_R24_SYNC_AI_MODEL_ID: model});
-    assert.equal(h.client.evaluate, undefined);
+    assert.equal(typeof h.client.evaluate, 'function');
     assert.equal(h.drafts.source, 'cloudbase_hunyuan');
     assert.deepEqual(await h.drafts.generate(actor, '生成安装练习题。'), {...draft, model, retryCount: 0, httpStatus: 200, usage: stats});
     assert.equal(h.calls.length, 1);
@@ -96,6 +96,7 @@ test('native generation honors the operator allowlist and feature gate', async (
   assert.equal(h.calls.length, 0);
   const disabled = harness(() => envelope(draft), {...env, TCL_R24_SYNC_AI_ENABLED: 'false'});
   assert.equal(disabled.drafts, undefined);
-  assert.equal(disabled.client.evaluate, undefined);
+  const disabledScore=createCloudBaseEvaluationGeneration({client:disabled.client,db:{},prefix:'tcl_r24_sync_test',env:{...env,TCL_R24_SYNC_AI_ENABLED:'false'}});
+  await assert.rejects(disabledScore.evaluate([]),{code:'AI_EVALUATION_DISABLED'});
   assert.equal(disabled.reservations.length, 0);
 });

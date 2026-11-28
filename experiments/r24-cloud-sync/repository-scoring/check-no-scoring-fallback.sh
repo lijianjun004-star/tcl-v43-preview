@@ -5,9 +5,6 @@ cd "$(dirname "$0")/../../.."
 base=experiments/r24-cloud-sync
 scoring="$base/repository-scoring"
 api="$base/backend/api.mjs"
-native="$base/cloudbase/ai-draft-provider.mjs"
-wiring="$base/cloudbase/function.mjs"
-adapter="$base/backend/ai-gateway-client.mjs"
 sources=("$scoring/run.mjs" "$scoring/worker.mjs" "$scoring/queue.mjs" "$scoring/archive.mjs" "$base/backend/evaluation-schema.mjs" "$base/cloudbase/repository-notifier.mjs")
 pattern='hy3|hunyuan|混元|@cloudbase|cloudbase[/_]|ai-draft-provider|ai-gateway-client|ai_gateway|fallback|reserve_ai_draft|generateText|evaluationGeneration'
 work=$(mktemp -d)
@@ -40,31 +37,33 @@ while IFS= read -r hit; do
   esac
 done < "$work/runtime"
 
-printf '\nBrowser overlay and packager. Reject direct scoring triggers, even from error handlers.\n'
-printf '  %s\n' "$base/overlay/" "$base/stage-site.py"
-browserPattern='/evaluate|evaluateAssignment|assignmentsEvaluate|requestEvaluation|\.evaluate\s*\(|createHunyuanClient|generateText|api\.openai\.com|reserve_ai_draft'
-printf 'rg -nHi -- %s\n' "$browserPattern"
-scan -nHi -g '*.js' -g '*.mjs' -g '*.py' -- "$browserPattern" "$base/overlay/" "$base/stage-site.py" > "$work/browser"
-if [[ -s "$work/browser" ]]; then cat "$work/browser"; exit 1; fi
-printf 'No direct browser scoring trigger. Retained history labels, read and display sites:\n'
-scan -nH -- 'cloudbase_hunyuan|hy3|mySubmissions:|evaluationReadbackHtml\(|if \(existing\) return|submitted\.evaluationId === id|AI_EVALUATION_ALREADY_SUBMITTED|AI_EVALUATION_AFTER_SUBMIT' "$base/overlay/ai-model-label.mjs" "$base/overlay/assignment-sync.mjs" "$base/overlay/assignment-evaluation.mjs" "$api"
+# The independent manual button remains available for assignments outside the
+# rollout. Automatic submission/polling paths must never call that button.
+browserPattern='/evaluate|evaluateAssignment|assignmentsEvaluate|requestEvaluation|\.evaluate\s*\(|evaluateReview|createHunyuanClient|generateText|api\.openai\.com|reserve_ai_draft'
+scan -Hi -g '*.js' -g '*.mjs' -g '*.py' -- "$browserPattern" "$base/overlay/" "$base/stage-site.py" | sort > "$work/browser"
+cat > "$work/allowed-browser" <<EOF
+$base/overlay/app.js:async function evaluateReview(){
+$base/overlay/app.js:  const response=await assignmentSync.evaluate(cloudSubmissionPayload(snap));
+$base/overlay/app.js:  ELEM('reviewAiEvaluate').onclick=()=>void evaluateReview();
+$base/overlay/assignment-sync.mjs:    evaluate: snapshot => get('/assignments/evaluate', 'POST', {snapshot}, 95_000),
+EOF
+sort "$work/allowed-browser" | diff -u - "$work/browser"
 
-printf '\nJob failure and no-retry branches\n'
-scan -nH -- 'catch|needs_model|await score\(|await queue\.startAttempt' "$scoring/run.mjs" "$scoring/worker.mjs" "$scoring/archive.mjs"
-printf '\nSynchronous evaluation route, cloud composition and Hunyuan draft adapter\n'
-scan -nH -- '/assignments/evaluate|readLegacyEvaluation|createCloudBaseDraftGeneration|draftGeneration|createHunyuanClient|_reserve_ai_draft|generateText|return \{model: configuredModel, source, generate' "$api" "$native" "$wiring" "$adapter"
-scan -nHi -- 'createCloudBaseEvaluationGeneration|evaluationGeneration|\.evaluate\s*\(' "$api" "$native" "$wiring" > "$work/wiring"
-if [[ -s "$work/wiring" ]]; then cat "$work/wiring"; exit 1; fi
+# Only an explicit manual request with a confirmed negative eligibility result
+# may reach the synchronous provider. Missing eligibility must not select it.
+guard='  if (eligible === false) return generateLegacyEvaluation(dependencies, principal, snapshot.assignmentId, id, items);'
+sed -n '/^async function readLegacyEvaluation(/,/^}/p' "$api" > "$work/manual"
+rg -q -F 'const eligible = await store.canAutoScore?.(snapshot.assignmentId, principal);' "$work/manual"
+rg -q -xF "$guard" "$work/manual"
+rg -q -F 'AI_EVALUATION_AFTER_SUBMIT' "$work/manual"
+scan -F 'generateLegacyEvaluation(' "$api" | rg -v '^async function generateLegacyEvaluation\(' > "$work/calls"
+printf '%s\n' "$guard" | diff -u - "$work/calls"
 
-# Inspect full historical lookup, legacy route and submission bodies separately
-# from the permitted operator draft path. Refuse a missing or renamed body.
-sed -n -e '/^async function historicalEvaluation(/,/^}/p' -e '/^async function readLegacyEvaluation(/,/^}/p' \
-  -e '/^async function submit(/,/^}/p' "$api" > "$work/legacy"
-rg -q -F 'store.getEvaluation(id)' "$work/legacy"
-rg -q -F 'historicalEvaluation(store, expectedId, principal, assignmentId)' "$work/legacy"
-rg -q -F 'AI_EVALUATION_AFTER_SUBMIT' "$work/legacy"
-scan -ni -- "$pattern|fetch\(|\.generate\(|\.evaluate\(|reserve\(" "$work/legacy" > "$work/legacy-calls"
-if [[ -s "$work/legacy-calls" ]]; then cat "$work/legacy-calls"; exit 1; fi
+sed -n -e '/^async function historicalEvaluation(/,/^}/p' -e '/^async function submit(/,/^}/p' "$api" > "$work/submit"
+rg -q -F 'store.getEvaluation(id)' "$work/submit"
+rg -q -F 'historicalEvaluation(store, expectedId, principal, assignmentId)' "$work/submit"
+scan -ni -- "$pattern|generateLegacyEvaluation|fetch\(|\.generate\(|\.evaluate\(|reserve\(" "$work/submit" > "$work/submit-calls"
+if [[ -s "$work/submit-calls" ]]; then cat "$work/submit-calls"; exit 1; fi
 rg -nF "const endpoint = 'https://api.openai.com/v1/chat/completions'" "$scoring/worker.mjs"
 rg -nF 'createOpenAIScorer(env.OPENAI_API_KEY)' "$scoring/run.mjs"
-printf 'PASS. The legacy handler reads history. New scores use the repository worker. Draft-only matches are listed above.\n'
+printf 'PASS. Automatic submissions use the repository worker. Only explicitly manual, non-enrolled work can call the legacy provider.\n'

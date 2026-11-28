@@ -1,4 +1,4 @@
-import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.13-async-rc2';
+import {aiModelLabel} from './ai-model-label.mjs?v=r24-sync-v2-20261124.13-shared.1';
 import {
   assignmentDraftTableText,
   buildAssignmentDraftPrompt,

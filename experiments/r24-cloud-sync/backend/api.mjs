@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { startDraftCall, finishDraftCall, generateAssignmentDraft } from './assignment-draft-service.mjs';
-import { validateEvaluationInput } from './evaluation-schema.mjs';
+import { isHunyuanModel } from './ai-gateway-client.mjs';
+import { validateEvaluationInput, validateEvaluationResult } from './evaluation-schema.mjs';
 import { buildAssignmentDraftPrompt } from '../overlay/assignment-drafts.mjs';
 import {
   isReceiptLate,
@@ -357,7 +358,59 @@ async function historicalEvaluation(store, id, principal, assignmentId) {
   problem(503, 'AI_EVALUATION_HISTORY_UNAVAILABLE', '暂时无法核对本次作答的旧评选，请保留当前作答并稍后重试。');
 }
 
-async function readLegacyEvaluation(request, principal, {store}) {
+function evaluationFailure(code) {
+  const errors = {
+    GATEWAY_CONFIG_MISSING: [503, '评选网关尚未配置，请联系管理员'],
+    GATEWAY_CONFIG_INVALID: [503, '评选网关配置无效，请联系管理员'],
+    GATEWAY_TIMEOUT: [504, '评选网关超时，可稍后重试'],
+    GATEWAY_NETWORK_ERROR: [503, '评选网关暂时无法连接'],
+    GATEWAY_NETWORK_RESET: [503, '评选网关连接中断'],
+    HUNYUAN_TOKEN_QUOTA_EXCEEDED: [503, '腾讯云混元模型额度已用完，请联系管理员核查模型额度'],
+    INVALID_AI_JSON: [502, '模型结果不完整或格式异常，本次未评分'],
+    AI_EVALUATION_INPUT_INVALID: [422, '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'],
+    AI_EVALUATION_LIMIT: [429, '今天的 AI 调用额度已用完'],
+    AI_EVALUATION_DISABLED: [403, '试点尚未启用 AI 评选'],
+    AI_EVALUATION_QUOTA_UNAVAILABLE: [503, '暂时无法核实评选额度'],
+  };
+  if (typeof code === 'string' && /^GATEWAY_HTTP_[45]\d\d$/u.test(code)) {
+    problem(code === 'GATEWAY_HTTP_429' || code === 'GATEWAY_HTTP_503' ? 503 : 502, code,
+      '评选网关返回 HTTP ' + code.slice(-3) + '，请凭请求编号核查');
+  }
+  if (Object.hasOwn(errors, code)) problem(errors[code][0], code, errors[code][1]);
+  problem(503, 'AI_EVALUATION_FAILED', '暂时无法完成 AI 评选，可以继续提交文字');
+}
+
+async function generateLegacyEvaluation({store, evaluationGeneration, evaluationRequestId}, principal, assignmentId, id, items) {
+  if (!evaluationGeneration) evaluationFailure('GATEWAY_CONFIG_MISSING');
+  let result;
+  try {
+    result = await evaluationGeneration.evaluate(items);
+  } catch (error) { evaluationFailure(error?.code); }
+
+  let scoring;
+  const source = evaluationGeneration.source ?? 'openai_gateway';
+  try {
+    const validModel = source === 'openai_gateway' ? ['gpt-4o-mini', 'gpt-4o'].includes(result?.model) :
+      source === 'cloudbase_hunyuan' && isHunyuanModel(result?.model) && evaluationGeneration.model === result.model;
+    if (!validModel || result.httpStatus !== 200) {
+      throw new Error('Invalid upstream result');
+    }
+    scoring = validateEvaluationResult({overallScore: result.overallScore, grade: result.grade, items: result.items}, items);
+  } catch { evaluationFailure('INVALID_AI_JSON'); }
+  const usage = Object.fromEntries(['prompt_tokens', 'completion_tokens', 'total_tokens']
+    .filter(key => Number.isSafeInteger(result.usage?.[key]) && result.usage[key] >= 0)
+    .map(key => [key, result.usage[key]]));
+  const evaluation = {...scoring, model: result.model, usage: Object.keys(usage).length ? usage : null,
+    requestId: evaluationRequestId, source, degraded: false};
+  const record = {id, assignmentId, teamId: principal.teamId, anchorId: principal.id, evaluation};
+  // Insert-only storage makes concurrent completions converge on the same authoritative score.
+  const confirmed = await store.createEvaluation(record) ? record : await store.getEvaluation(id);
+  if (!confirmed) problem(503, 'WRITE_PENDING', '评选结果尚未确认，请用同一场次重试');
+  return {body: {evaluationId: id, evaluation: confirmed.evaluation}};
+}
+
+async function readLegacyEvaluation(request, principal, dependencies) {
+  const {store} = dependencies;
   anchorOnly(principal);
   const body = await readJson(request, 128 * 1024);
   const snapshot = body.snapshot;
@@ -383,12 +436,17 @@ async function readLegacyEvaluation(request, principal, {store}) {
   }
   const existing = await historicalEvaluation(store, id, principal, snapshot.assignmentId);
   if (existing) return {body: {evaluationId: id, evaluation: existing}};
+  let items;
   try {
-    validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
+    items = validateEvaluationInput(assignmentRecord.assignment.questions.map((q, index) => ({
       question: q.question, referenceAnswer: q.answer, keyPoints: q.keyPoints, answerText: receipt.turns[index].answer,
     })));
   } catch { problem(422, 'AI_EVALUATION_INPUT_INVALID', '评选需要 1–15 道完整题目和有效回答，且须符合内容长度上限'); }
-  problem(409, 'AI_EVALUATION_AFTER_SUBMIT', '请先确认并提交本次作答，已开通的作业会在提交后自动评分。');
+  const eligible = await store.canAutoScore?.(snapshot.assignmentId, principal);
+  if (eligible === false) return generateLegacyEvaluation(dependencies, principal, snapshot.assignmentId, id, items);
+  if (eligible === true || !store.canAutoScore)
+    problem(409, 'AI_EVALUATION_AFTER_SUBMIT', '请先确认并提交本次作答，已开通的作业会在提交后自动评分。');
+  problem(503, 'AI_ELIGIBILITY_UNAVAILABLE', '暂时无法核对这份作业的评分方式，请稍后重试。');
 }
 
 function submissionResponse(record, payloadHash, replayed, evaluationId) {
@@ -481,7 +539,14 @@ async function assignmentPage(store, principal, url) {
     submitted: latest.has(record.id),
     lastSubmittedAt: latest.get(record.id) ?? null,
   });
-  return page(records, view, 'publishedAt', url, 'assignments');
+  const result = page(records, view, 'publishedAt', url, 'assignments');
+  if (store.canAutoScore) {
+    await Promise.all(result.assignments.map(async row => {
+      try { row.autoScore = await store.canAutoScore(row.assignment.id, principal); }
+      catch { /* Text submission remains available during an eligibility outage. */ }
+    }));
+  }
+  return result;
 }
 
 function resourceId(encoded, label, pattern = ASSIGNMENT_ID) {
@@ -753,6 +818,7 @@ export function createApi({
   store,
   media,
   draftGeneration,
+  evaluationGeneration,
   notifyRepositoryQueue,
   now = () => new Date(),
   boards = boardDefinitions,
@@ -762,7 +828,7 @@ export function createApi({
   logDraft = entry => console.info(JSON.stringify(entry)),
 }) {
   const dependencies = {
-    directory, store, now, media, notifyRepositoryQueue, draftGeneration,
+    directory, store, now, media, notifyRepositoryQueue, draftGeneration, evaluationGeneration,
     boards: new Map(boards.map(board => [board.id, board])),
   };
   const origins = new Set(allowedOrigins);
@@ -797,7 +863,7 @@ export function createApi({
       if (basePath && !url.pathname.startsWith(basePath + '/')) {
         problem(404, 'ROUTE_NOT_FOUND', '找不到请求的接口');
       }
-      const result = await route(request, url, url.pathname.slice(basePath.length), principal, {...dependencies, draftAudit});
+      const result = await route(request, url, url.pathname.slice(basePath.length), principal, {...dependencies, draftAudit, evaluationRequestId});
       return respond(result.body, result.status ?? 200);
     } catch (error) {
       if (error instanceof ApiProblem) {

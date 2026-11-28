@@ -22,7 +22,7 @@ const score = {
 };
 const usage = {prompt_tokens: 80, completion_tokens: 90, total_tokens: 170};
 
-async function fixture({keyPoints = ['核对尺寸', '咨询配送'], store = createMemoryStore(), draftEnv = env} = {}) {
+async function fixture({keyPoints = ['核对尺寸', '咨询配送'], store = createMemoryStore(), draftEnv = env, manual = false} = {}) {
   const counters = {legacyEvalCalls:0, cloudModelCalls:0, quotaReservations:0};
   const client = createHunyuanClient({env:draftEnv, cloudApp:{ai:() => ({createModel:() => ({
     generateText() {
@@ -34,8 +34,11 @@ async function fixture({keyPoints = ['核对尺寸', '咨询配送'], store = cr
   const db = {rpc() {counters.quotaReservations++; return {data: true};}};
   const draftGeneration = createCloudBaseDraftGeneration({client,db,prefix,env:draftEnv});
   const api = createApi({store,draftGeneration,logDraft:()=>{},
-    // A pre-upgrade caller can still pass this removed option. It must never be called.
-    evaluationGeneration:{evaluate(){counters.legacyEvalCalls++; throw Error('obsolete dependency used');}},
+    evaluationGeneration:{source:'cloudbase_hunyuan',model:'hy3',evaluate(){
+      counters.legacyEvalCalls++;
+      if (!manual) throw Error('unexpected manual evaluation');
+      return {...score,httpStatus:200,model:'hy3',usage};
+    }},
     authenticate: async t => t === 'native-user' ? accounts.anchor : accounts[t],
     authenticateEvaluation: async t => accounts[t],
     directory: {listAnchors: async () => Object.values(accounts).filter(a => a.role === 'anchor')}});
@@ -220,4 +223,29 @@ test('storage failure, malformed payload and revoked identity never activate a p
   assert.deepEqual(retry.submission.evaluation,previous.evaluation);
   assertNoScoringCalls(f);
   t.diagnostic('After temporary history failure 503, malformed snapshot 422, revoked credential 401 and recovered submission: ' + JSON.stringify(f.counters));
+});
+
+test('mixed enrollment is resolved using the authenticated tuple before invoking the legacy model', async () => {
+  const observed=[];
+  const store=createMemoryStore();
+  let enabled=false;
+  store.canAutoScore=async (assignmentId,principal)=>{
+    observed.push([assignmentId,principal.teamId,principal.id]);
+    return enabled;
+  };
+  const f=await fixture({store,manual:true});
+  const list=await f.call('GET','/assignments','anchor');
+  assert.equal(list.assignments[0].autoScore,false);
+  const legacy=await f.evaluate();
+  assert.equal(legacy.status,200);
+  assert.equal(legacy.evaluation.model,'hy3');
+  assert.equal(f.counters.legacyEvalCalls,1);
+  enabled=true;
+  const fresh={...f.snapshot,id:'another-session'};
+  assert.equal((await f.evaluate(fresh)).error.code,'AI_EVALUATION_AFTER_SUBMIT');
+  store.canAutoScore=async()=>{throw Error('unavailable')};
+  assert.equal((await f.evaluate(fresh)).status,500);
+  assert.equal(f.counters.legacyEvalCalls,1);
+  assert.ok(observed.length>=3);
+  assert.ok(observed.every(([id,team,anchor])=>id===f.snapshot.assignmentId&&team===accounts.anchor.teamId&&anchor===accounts.anchor.id));
 });

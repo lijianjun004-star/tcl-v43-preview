@@ -725,7 +725,7 @@ test('a new browser requires a valid code and a different role on a bound browse
 test('login validates the 28-character R24 format and normalizes real clipboard paste', { timeout: 45_000 }, async t => {
   const { server, newPage } = await browserFixture(t);
   const { page, context, errors } = await newPage();
-  const shortVersion = 'R24-20261124.13-async-rc2';
+  const shortVersion = 'R24-20261124.13-shared.1';
   const mode = page.locator('#modeText');
   const field = page.locator('#syncActivationCode');
   const submit = page.locator('#syncLoginForm button[type="submit"]');
@@ -1444,3 +1444,38 @@ for (const status of [undefined, 'needs_attention']) {
     assert.deepEqual([...operatorView.consoleErrors, ...anchorView.consoleErrors], []);
   });
 }
+
+test('ordinary assignments retain explicit .12 scoring and save the score with the answers', {timeout:60000}, async t => {
+  let modelCalls=0;
+  const evaluated={...evaluationFixture,model:'hy3',source:'cloudbase_hunyuan',httpStatus:200};
+  const {newPage,excel,server}=await browserFixture(t,{
+    canAutoScore: async () => false,
+    evaluationGeneration:{source:'cloudbase_hunyuan',model:'hy3',async evaluate(items){
+      modelCalls++;
+      return {...evaluated,items:evaluated.items.map((item,index)=>({...item, matchedPoints:items[index].keyPoints,missedPoints:[]}))};
+    }},
+  });
+  const {page:ops}=await newPage(),{page:trainee}=await newPage();
+  await autoEnter(ops,'operator','演示运营');
+  await autoEnter(trainee,'anchor','演示主播');
+  await fillAssignment(ops,excel);
+  const [published]=await Promise.all([ops.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/assignments')),ops.locator('#publishAssignment').click()]);
+  const {assignment}=await published.json();
+  await trainee.locator('#assignmentFold summary').click();
+  await trainee.locator('#assignmentSearch').fill('演示运营');
+  await trainee.locator('#syncRefresh').click();
+  await textPractice(trainee,()=>trainee.locator('#assignmentSearchResults [data-join-assignment="'+assignment.id+'"]').click());
+  assert.equal(modelCalls,0);
+  await trainee.locator('#reviewDetails').click();
+  const [response]=await Promise.all([trainee.waitForResponse(r=>r.url().endsWith('/assignments/evaluate')),trainee.locator('#reviewAiEvaluate').click()]);
+  const result=await response.json();
+  assert.equal(response.status(),200,JSON.stringify(result));
+  await trainee.locator('#legacyAiEvaluation [data-ai-eval-result]').waitFor();
+  await trainee.locator('#reviewDetailsBack').click();
+  const [saved]=await Promise.all([trainee.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/submissions')),trainee.locator('#submitSession').click()]);
+  assert.equal(saved.status(),201);
+  assert.equal(saved.request().postDataJSON().evaluationId,result.evaluationId);
+  assert.deepEqual((await saved.json()).submission.evaluation,result.evaluation);
+  assert.equal(modelCalls,1);
+  assert.equal(server.requests.filter(r=>r.path.endsWith('/assignments/evaluate')).length,1);
+});

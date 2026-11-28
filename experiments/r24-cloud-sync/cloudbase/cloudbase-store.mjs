@@ -126,6 +126,14 @@ export function createDatabaseAdapter(db, prefix) {
         id: record.id, team_id: record.teamId, assignment_id: record.assignmentId,
         anchor_id: record.anchorId, submitted_at: record.submittedAt, payload: record,
       }),
+      async canAutoScore(assignmentId, principal) {
+        const result = await db.rpc(prefix + '_can_auto_score', {
+          p_team_id: principal.teamId, p_assignment_id: assignmentId, p_anchor_id: principal.id,
+        });
+        if (result?.error || !Array.isArray(result?.data) || result.data.length !== 1 ||
+            typeof result.data[0]?.value !== 'boolean') throw new Error('Scoring eligibility unavailable');
+        return result.data[0].value;
+      },
       async listRepositoryReviews(assignmentId, principal, ids) {
         if (!ids.length || typeof db.rpc !== 'function') return [];
         const result = await db.rpc(prefix + '_read_repository_reviews', {

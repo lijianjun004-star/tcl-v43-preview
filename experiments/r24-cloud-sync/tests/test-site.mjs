@@ -40,7 +40,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-export async function startTestSite({ draftGeneration, repositoryReviews, legacyEvaluation } = {}) {
+export async function startTestSite({ draftGeneration, evaluationGeneration, canAutoScore = async () => true, repositoryReviews, legacyEvaluation } = {}) {
   let origin;
   let api;
   const requests = [];
@@ -173,6 +173,7 @@ export async function startTestSite({ draftGeneration, repositoryReviews, legacy
   origin = 'http://127.0.0.1:' + server.address().port;
   const clips = new Map();
   const store = createMemoryStore();
+  store.canAutoScore = canAutoScore;
   if (repositoryReviews) store.listRepositoryReviews = repositoryReviews;
   if (legacyEvaluation) {
     const listSubmissions = store.listSubmissions;
@@ -181,7 +182,7 @@ export async function startTestSite({ draftGeneration, repositoryReviews, legacy
       return evaluation ? { ...row, evaluation } : row;
     });
   }
-  api = createApi({
+  api = createApi({evaluationGeneration,
     draftGeneration,
     media: {
       async put(path, _mimeType, bytes) {
@@ -204,6 +205,9 @@ export async function startTestSite({ draftGeneration, repositoryReviews, legacy
   return {
     origin,
     requests,
-    close: () => new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
+    close: () => new Promise((resolve, reject) => {
+      server.close(error => error ? reject(error) : resolve());
+      server.closeAllConnections();
+    })
   };
 }

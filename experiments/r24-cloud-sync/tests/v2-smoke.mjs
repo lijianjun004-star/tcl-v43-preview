@@ -11,7 +11,7 @@ const envId = 'unknown-roadrunner-d7cap6e21f517';
 const siteHost = envId + '-1519058345.tcloudbaseapp.com';
 const apiHost = envId + '-1519058345.ap-shanghai.app.tcloudbase.com';
 const expectedVersion = process.env.TCL_V2_EXPECTED_VERSION ||
-  (process.env.TCL_V2_LOCAL === '1' ? 'R24-20261124.13-async-rc2' : 'R24-20261124.12');
+  (process.env.TCL_V2_LOCAL === '1' ? 'R24-20261124.13-shared.1' : 'R24-20261124.12');
 const runTag = '验收' + randomBytes(4).toString('hex');
 const names = { operator: runTag + '运营', anchor: runTag + '主播' };
 const title = runTag + '三题作业';

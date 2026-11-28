@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@cloudbase/node-sdk": "4.2.1",
-    "@cloudbase/signature-nodejs": "2.2.2"
+    "@cloudbase/signature-nodejs": "2.2.2",
+    "jose": "6.2.18"
   },
   "overrides": {
     "@cloudbase/node-sdk": {
