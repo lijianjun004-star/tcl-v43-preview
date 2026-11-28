@@ -1,5 +1,11 @@
 # 练播房：模型通用项目上下文
 
+## 上海提交唤醒 App 已安装，等待私钥接入（2026-11-28 21:43 北京时间）
+
+专用 GitHub App 已安装到私有评分仓库，安装页显示仅该仓库、Actions 读写和 Metadata 只读。上海 `tcl-r24-sync` 已回读确认 App、安装和仓库标识。主函数已部署上海 SSM 签名凭据读取代码，52 项离线测试通过，线上匿名 `GET /me` 返回 401 `AUTH_REQUIRED`。[函数与凭据说明](https://github.com/lijianjun004-star/tcl-v43-preview/commit/68ef46a)
+
+上海 SSM 返回 `ResourceUnavailable.NotPurchased`。当前主函数与另外两个函数共用执行角色。采用 SSM 时，需要将多行 PEM 存入上海自定义凭据 `r24-shanghai-github-wake`，并通过独立运行身份限定读取权限。生产唤醒开关仍关闭，尚待使用正常提交验证 App 发起的 `submission_saved` 和实际出分。此前的团队评分资格继续生效。[上海接线说明](experiments/r24-cloud-sync/cloudbase/OPEN-AI-ACCESS.md)
+
 ## 上海全员主播评分授权已开通，提交唤醒待接入（2026-11-28 20:13 北京时间）
 
 负责人已授权将 `r24-pilot` 有效主播（含今后自助注册者）提交的 1–15 题作业答文发送给 OpenAI 评分。上海主库已写入并回读该团队授权，原有单项授权仍有 1 条。合成主播读取主入口 `GET /assignments` 返回 200，可见的 15 份作业全部返回 `autoScore: true`，其中 14 份仅通过团队授权获得资格。线上样本分别含 1、2、3 题。前端仍是 `.13-shared.1`，41 份静态文件哈希与清单一致。
