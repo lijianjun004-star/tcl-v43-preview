@@ -8,7 +8,7 @@ import {createCloudBaseDraftGeneration} from '../../cloudbase/ai-draft-provider.
 
 const path = '/assignments/evaluate';
 const prefix = 'tcl_r24_sync_test';
-const env = {TCL_R24_SYNC_AI_ENABLED:'true', TCL_R24_SYNC_AI_OPERATOR_IDS:'o1',
+const env = {TCL_R24_SYNC_AI_ENABLED:'true', TCL_R24_SYNC_AI_OPERATOR_IDS:'o1', TCL_R24_SYNC_AI_DAILY_LIMIT:'5',
   TCL_R24_SYNC_AI_MODEL_PROVIDER:'cloudbase', TCL_R24_SYNC_AI_MODEL_ID:'hy3'};
 const accounts = Object.fromEntries([
   ['anchor', 'a1', 'anchor', '合成主播'], ['second', 'a2', 'anchor', '另一主播'],

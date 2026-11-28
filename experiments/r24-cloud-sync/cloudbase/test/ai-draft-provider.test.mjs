@@ -9,6 +9,7 @@ const prompt = '请按 JSON 格式生成一题。';
 const enabled = {
   TCL_R24_SYNC_AI_ENABLED: 'true',
   TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator, uid-other',
+  TCL_R24_SYNC_AI_DAILY_LIMIT: '5',
   AI_GATEWAY_URL: 'https://gateway.example.invalid',
   AI_GATEWAY_TOKEN: 'fixture-value-for-local-tests',
 };
@@ -42,9 +43,11 @@ const reservation = [prefix + '_reserve_ai_draft', {p_daily_limit: 5}];
 test('pilot generation is disabled without a valid opt-in, daily limit, and exact operator list', () => {
   for (const partial of [
     {TCL_R24_SYNC_AI_ENABLED: undefined}, {TCL_R24_SYNC_AI_ENABLED: 'false'},
-    {TCL_R24_SYNC_AI_OPERATOR_IDS: undefined}, {TCL_R24_SYNC_AI_OPERATOR_IDS: '*'},
+    {TCL_R24_SYNC_AI_OPERATOR_IDS: undefined}, {TCL_R24_SYNC_AI_OPERATOR_IDS: '*,uid-operator'},
+    {TCL_R24_SYNC_AI_OPERATOR_IDS: '**'}, {TCL_R24_SYNC_AI_OPERATOR_IDS: ' '},
     {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,uid-operator'}, {TCL_R24_SYNC_AI_OPERATOR_IDS: 'uid-operator,'},
-    {TCL_R24_SYNC_AI_DAILY_LIMIT: ''}, {TCL_R24_SYNC_AI_DAILY_LIMIT: '0'}, {TCL_R24_SYNC_AI_DAILY_LIMIT: '21'},
+    {TCL_R24_SYNC_AI_DAILY_LIMIT: '0'}, {TCL_R24_SYNC_AI_DAILY_LIMIT: '10001'},
+    {TCL_R24_SYNC_AI_DAILY_LIMIT: '05'}, {TCL_R24_SYNC_AI_DAILY_LIMIT: 'unlimited'},
   ]) {
     assert.equal(setup({env: {...enabled, ...partial}}).generation, undefined);
   }
@@ -63,6 +66,39 @@ test('only exact active operators with valid prompts can reach quota and transpo
     await assert.rejects(generation.generate(operator, input), {code: 'AI_DRAFT_INPUT_INVALID'});
   }
   assert.deepEqual(calls, []);
+});
+
+test('"*" opens generation to every active operator but never to anchors or inactive accounts', async () => {
+  const {generation, calls} = setup({env: {...enabled, TCL_R24_SYNC_AI_OPERATOR_IDS: ' * '}});
+  for (const id of ['uid-operator', 'self-enrolled_operator', 'x']) {
+    assert.equal(generation.canGenerate({...operator, id}), true);
+  }
+  for (const principal of [null, {...operator, role: 'anchor'}, {...operator, active: false},
+    {...operator, id: ''}, {...operator, id: 'has space'}, {...operator, id: undefined}]) {
+    assert.equal(generation.canGenerate(principal), false);
+    await assert.rejects(generation.generate(principal, prompt), {code: 'AI_DRAFT_UNAVAILABLE'});
+  }
+  assert.deepEqual(calls, []);
+  const result = await generation.generate({...operator, id: 'self-enrolled_operator'}, prompt);
+  assert.deepEqual(result.questions, [row]);
+  assert.deepEqual(calls, [reservation, 'fetch']);
+});
+
+test('an unset or empty daily limit sends requests without reserving quota', async () => {
+  for (const value of [undefined, '', '  ']) {
+    const {generation, calls} = setup({env: {...enabled, TCL_R24_SYNC_AI_DAILY_LIMIT: value}});
+    const result = await generation.generate(operator, prompt);
+    assert.deepEqual(result.questions, [row]);
+    assert.deepEqual(calls, ['fetch']);
+  }
+});
+
+test('a numeric daily limit above 20 is passed to the quota store unchanged', async () => {
+  for (const value of ['21', '500', '10000']) {
+    const {generation, calls} = setup({env: {...enabled, TCL_R24_SYNC_AI_DAILY_LIMIT: value}});
+    await generation.generate(operator, prompt);
+    assert.deepEqual(calls, [[prefix + '_reserve_ai_draft', {p_daily_limit: Number(value)}], 'fetch']);
+  }
 });
 
 test('missing gateway fields surface a typed error to an eligible operator without spending quota', async () => {
