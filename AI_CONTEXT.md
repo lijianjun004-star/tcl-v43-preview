@@ -1,5 +1,11 @@
 # 练播房：模型通用项目上下文
 
+## 上海主入口全员运营出题与主播评分开通进度（2026-11-28 19:47 北京时间）
+
+上海主函数 `tcl-r24-sync` 已更新，出题使用腾讯混元 `cloudbase/hy3`。所有有效运营可进入出题，应用层每日限额已移除。线上用两个合成账号读取出题权限，运营返回 HTTP 200 和 `available:true`，主播返回 HTTP 403 和 `OPERATOR_REQUIRED`。本轮只验证了权限，真实生成记录见下方混元试点。[函数与数据库变更](https://github.com/lijianjun004-star/tcl-v43-preview/pull/200)
+
+全员评分迁移已安装。上海主库回读显示 `r24-pilot` 团队授权 0 条、原有精确授权 1 条。扩大至自助注册主播仍待负责人确认员工答文的 OpenAI 处理范围。私库 HTTPS 开关允许评分，专用 GitHub App 及其受保护凭据仍待配置。尚无本轮从提交、自动唤醒到出分的线上耗时。[私库工作流变更](https://github.com/lijianjun004-star/tcl-r24-score-archive/pull/1) · [HTTPS 开关核验](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/runs/46141089486)
+
 ## 上海主入口共享库自动评分已上线（2026-11-28）
 
 上海现有试点入口已发布 `R24-20261124.13-shared.1`。实际下载的 41 份静态资源全部与清单匹配。主函数沿用原配置，新增经 GitHub OIDC 认证的 HTTPS 评分通道，使用 CloudBase SDK 调用共享 PostgreSQL。该环境走 `schema-repository-scoring-shared.sql`，现有个人版套餐即可运行。本次只为一个新建测试主播的一份合成作业开通，其他作业保留原有手动评选。[上海主入口](https://unknown-roadrunner-d7cap6e21f517-1519058345.tcloudbaseapp.com/tcl-r24-cloud-sync-pilot/) · [上线源码](https://github.com/lijianjun004-star/tcl-v43-preview/commit/af1e2af42bd7003de28cd28a1a4661e59c9c07bf)
