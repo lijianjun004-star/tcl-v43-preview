@@ -12,7 +12,7 @@
 - **地区与授权**：评分在 GitHub Actions 上调用 OpenAI，员工提交的回答文字会发送给 OpenAI。请负责人确认员工所在地区及数据处理符合 OpenAI 的使用授权。
 - **费用**：按用户要求不设日上限。试点允许任何人填写姓名自动开通账号，拿到网址的人都能消耗模型额度。紧急关闭方式见第 6 节。
 - **出题模型通道**：AI 出题由上海函数直接调用模型，不经过 GitHub。请确认以下二选一已可用：
-  - 腾讯混元：`TCL_R24_SYNC_AI_MODEL_PROVIDER=cloudbase`
+  - 腾讯混元：上海现网使用 `TCL_R24_SYNC_AI_MODEL_PROVIDER=cloudbase` 和 `TCL_R24_SYNC_AI_MODEL_ID=hy3`，部署时保留这两个值
   - 已部署的 AI 网关：`AI_GATEWAY_URL` 与 `AI_GATEWAY_TOKEN`
 
 ## 1. 数据库（上海试点库，用试点表的所有者执行）
@@ -77,7 +77,7 @@
    - 私库运行开始时间（事件应为 `workflow_dispatch`，由 GitHub App 发起，`signal=submission_saved`）
    - 出分时间
 5. 主播与运营分别刷新，核对总分和逐题评语一致。
-6. 用该运营在「AI 出题草稿」实际生成一次，确认不再提示"当前账号暂无法使用云端出题"。
+6. 用该运营在「AI 出题草稿」实际生成一次，核对返回的草稿为 `degraded:false`、提供方及模型正确，记录用量，并检查题面、参考答案和评分点。
 
 ## 6. 紧急关闭与回退
 
