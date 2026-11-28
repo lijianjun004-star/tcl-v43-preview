@@ -1,5 +1,11 @@
 # 练播房：模型通用项目上下文
 
+## 上海全员主播评分授权已开通，提交唤醒待接入（2026-11-28 20:13 北京时间）
+
+负责人已授权将 `r24-pilot` 有效主播（含今后自助注册者）提交的 1–15 题作业答文发送给 OpenAI 评分。上海主库已写入并回读该团队授权，原有单项授权仍有 1 条。合成主播读取主入口 `GET /assignments` 返回 200，可见的 15 份作业全部返回 `autoScore: true`，其中 14 份仅通过团队授权获得资格。线上样本分别含 1、2、3 题。前端仍是 `.13-shared.1`，41 份静态文件哈希与清单一致。
+
+截至 20:12，私库生产评分工作流在合并后尚无运行记录。当日 3 次定时运行全部跳过，最近一次成功运行为 17:17 的人工启动。上海主函数的专用 GitHub App 唤醒凭据仍待接入。本轮验收只读作业资格；从正常提交、App 以 `submission_saved` 唤醒到两端读回分数的实测仍待完成。[生产工作流](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/workflows/r24-private-score-archive.yml) · [最近一次定时运行](https://github.com/lijianjun004-star/tcl-r24-score-archive/actions/runs/46125755954)
+
 ## 上海主入口全员运营出题与主播评分开通进度（2026-11-28 19:47 北京时间）
 
 上海主函数 `tcl-r24-sync` 已更新，出题使用腾讯混元 `cloudbase/hy3`。所有有效运营可进入出题，应用层每日限额已移除。线上用两个合成账号读取出题权限，运营返回 HTTP 200 和 `available:true`，主播返回 HTTP 403 和 `OPERATOR_REQUIRED`。本轮只验证了权限，真实生成记录见下方混元试点。[函数与数据库变更](https://github.com/lijianjun004-star/tcl-v43-preview/pull/200)

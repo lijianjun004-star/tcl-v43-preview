@@ -44,7 +44,7 @@
 | `R24_REPO_WAKE_REPOSITORY_ID` | `1474053872` |
 | `R24_REPO_WAKE_APP_ID` | 第 3 步创建的 GitHub App ID |
 | `R24_REPO_WAKE_INSTALLATION_ID` | 该 App 在私库的安装 ID |
-| `R24_REPO_WAKE_APP_PRIVATE_KEY` | 该 App 的私钥，放在受保护变量中，不得写入源码、截图或工单 |
+| `R24_REPO_WAKE_APP_PRIVATE_KEY` | 唤醒代码在运行时读取的 PEM。原文仅通过受保护凭据通道交给签名代码 |
 
 模型通道相关变量保持现有配置。
 
@@ -54,9 +54,9 @@
    - 权限只勾选 **Actions: Read and write**，Metadata 为默认只读。
    - 不订阅任何 Webhook。
 2. 只安装到私库 `lijianjun004-star/tcl-r24-score-archive`。
-3. 生成私钥，按第 2 节填入上海函数。
+3. 将生成的 PEM 存入受保护的密钥管理系统，只向部署人员提供 App ID、安装 ID 和密钥引用。上海 SCF 的普通环境变量 API 保存字符串，现有签名代码直接读取 PEM。启用唤醒前，需接通函数安全读取凭据的方式；直接填引用名称会导致签名失败。私钥原文须避开普通函数配置、日志和工单。[SCF 环境变量结构](https://cloud.tencent.com/document/api/583/17244#Variable)
 
-上海函数在每次提交成功后，向私库工作流 `r24-private-score-archive.yml` 发送 `submission_saved`，该信号不携带任何提交内容。唤醒失败不影响提交本身，定时任务会作为兜底处理积压。
+启用后，上海函数向私库工作流 `r24-private-score-archive.yml` 发送 `submission_saved`，该信号只用于唤醒。唤醒失败时作答仍可提交。定时工作流按每 15 分钟配置，实际领取积压任务取决于 GitHub 何时启动运行以及评分作业是否执行。核对时请查看实际运行记录和评分回执。
 
 ## 4. 私库 `tcl-r24-score-archive`
 
