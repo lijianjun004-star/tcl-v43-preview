@@ -55,6 +55,22 @@ test('Shanghai reads the current key with the SCF session and signs one data-fre
   assert.ok(verify('RSA-SHA256', Buffer.from(head+'.'+claims), publicKey, Buffer.from(signature,'base64url')));
 });
 
+test('a pinned SSM version uses only VersionId and must match the returned version', async () => {
+  const env = {...managedConfiguration, R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_VERSION:'v1'};
+  const SecretString = privateKey.export({type:'pkcs1', format:'pem'});
+  for (const VersionId of ['v1', 'v2', undefined]) {
+    const secretResponse = () => Response.json({Response:{SecretName:namedSecret,VersionId,SecretString}});
+    const {notify,calls} = setup(target, env, secretResponse);
+    assert.equal(await notify(), VersionId === 'v1');
+    assert.deepEqual(JSON.parse(calls[0].opts.body), {SecretName:namedSecret,VersionId:'v1'});
+    assert.equal(calls.length, VersionId === 'v1' ? 4 : 1);
+  }
+  for (const version of ['', ' v1', 'v1\n', '-1', 'v/1', 'x'.repeat(65)]) {
+    assert.equal(createRepositoryNotifier({env:{...env,R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_VERSION:version}}), undefined);
+  }
+  assert.equal(createRepositoryNotifier({env:{...configuration,R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_VERSION:'v1'}}), undefined);
+});
+
 test('managed key access fails closed before GitHub without the exact name, session, or usable current key', async () => {
   for (const overrides of [{R24_REPO_WAKE_APP_PRIVATE_KEY:privateKey},{R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_NAME:'other'}]) {
     assert.equal(createRepositoryNotifier({env:{...managedConfiguration,...overrides}}), undefined);

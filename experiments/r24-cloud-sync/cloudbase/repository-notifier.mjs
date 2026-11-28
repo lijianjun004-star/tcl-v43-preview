@@ -6,11 +6,11 @@ const workflow = 'r24-private-score-archive.yml';
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
 const wakeSecret = 'r24-shanghai-github-wake';
 
-async function readShanghaiKey(env, fetchImpl, signal) {
+async function readShanghaiKey(env, versionId, fetchImpl, signal) {
   const {TENCENTCLOUD_SECRETID: secretId, TENCENTCLOUD_SECRETKEY: secretKey, TENCENTCLOUD_SESSIONTOKEN: token} = env;
   if (!secretId || !secretKey || !token) return undefined;
   const url = 'https://ssm.tencentcloudapi.com/';
-  const params = {SecretName: wakeSecret, VersionStage: 'Stage_Current'};
+  const params = versionId ? {SecretName: wakeSecret, VersionId: versionId} : {SecretName: wakeSecret, VersionStage: 'Stage_Current'};
   const headers = {Host: 'ssm.tencentcloudapi.com', 'Content-Type': 'application/json'};
   const {authorization, timestamp} = signCloudApi({
     method: 'POST', url, headers, params, service: 'ssm', secretId, secretKey,
@@ -25,6 +25,7 @@ async function readShanghaiKey(env, fetchImpl, signal) {
   if (!result.ok) return undefined;
   const {Response: value} = await result.json();
   if (value?.Error || value?.SecretName !== wakeSecret || typeof value.SecretString !== 'string') return undefined;
+  if (versionId && value.VersionId !== versionId) return undefined;
   return value.SecretString;
 }
 
@@ -38,7 +39,9 @@ export function createRepositoryNotifier({env = process.env, fetchImpl = fetch} 
   const installation = env.R24_REPO_WAKE_INSTALLATION_ID;
   const injectedKey = env.R24_REPO_WAKE_APP_PRIVATE_KEY;
   const secretName = env.R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_NAME;
+  const versionId = env.R24_REPO_WAKE_APP_PRIVATE_KEY_SECRET_VERSION;
   if (secretName && (secretName !== wakeSecret || injectedKey)) return undefined;
+  if (versionId !== undefined && (!secretName || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$/.test(versionId))) return undefined;
   if (!/^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9_.-]{1,100}$/.test(name || '') ||
       ['.', '..'].includes(name.split('/')[1]) ||
       ![id, app, installation].every(value => /^[1-9]\d{0,15}$/.test(value || '') && Number.isSafeInteger(Number(value))) ||
@@ -51,7 +54,7 @@ export function createRepositoryNotifier({env = process.env, fetchImpl = fetch} 
     const data = encode({alg:'RS256',typ:'JWT'}) + '.' + encode({iat:now-60,exp:now+300,iss:app});
     let jwt;
     try {
-      const key = injectedKey || await readShanghaiKey(env, fetchImpl, signal);
+      const key = injectedKey || await readShanghaiKey(env, versionId, fetchImpl, signal);
       if (!key) return false;
       jwt = data + '.' + sign('RSA-SHA256', Buffer.from(data), key).toString('base64url');
     } catch {
