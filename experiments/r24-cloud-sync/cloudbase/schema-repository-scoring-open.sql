@@ -18,26 +18,32 @@ create table r24_repo_scoring.open_grants (
 );
 alter table r24_repo_scoring.open_grants enable row level security;
 
+-- The main API checks account activation, recipient visibility and the scoring
+-- input limit. The queue checks the same scope at submission and before the
+-- worker can read answers, reserve a model call or save its result.
+create function r24_repo_scoring.open_assignment_eligible(p_team_id text, p_assignment_id text, p_anchor_id text)
+returns boolean language sql stable security invoker set search_path = pg_catalog, pg_temp as $$
+  select exists(select 1 from public.tcl_r24_sync_v1_assignments a
+    join public.tcl_r24_sync_v1_enrollments e on e.id=p_anchor_id and e.team_id=a.team_id
+      and e.active and e.role='anchor'
+    where a.id=p_assignment_id and a.team_id=p_team_id
+      and (a.payload->'recipients'='[]'::jsonb or
+        a.payload->'recipients' @> jsonb_build_array(jsonb_build_object('id',p_anchor_id)))
+      and case when jsonb_typeof(a.payload #> '{assignment,questions}')='array'
+        then jsonb_array_length(a.payload #> '{assignment,questions}') between 1 and 15
+        else false end);
+$$;
+
 -- A job stays authorized while the grant it was queued under still exists for
 -- the same submission scope: an exact allowlist row or its team's open grant.
 create function r24_repo_scoring.grant_active(p_grant_id uuid, p_team_id text, p_assignment_id text, p_anchor_id text)
-returns boolean language sql stable security definer set search_path = pg_catalog, pg_temp as $$
+returns boolean language sql stable security invoker set search_path = pg_catalog, pg_temp as $$
   select exists(select 1 from r24_repo_scoring.allowlist g
       where g.grant_id=p_grant_id and g.team_id=p_team_id
         and g.assignment_id=p_assignment_id and g.anchor_id=p_anchor_id)
     or exists(select 1 from r24_repo_scoring.open_grants o
-      where o.grant_id=p_grant_id and o.team_id=p_team_id);
-$$;
-
--- The scorer accepts 1-15 questions per submission (claim() below and the
--- worker's input validation). A team-wide grant only covers assignments it can
--- score, so no larger assignment is shown as auto-scored and then held.
-create function r24_repo_scoring.open_assignment_supported(p_team_id text, p_assignment_id text)
-returns boolean language sql stable security definer set search_path = pg_catalog, pg_temp as $$
-  select exists(select 1 from public.tcl_r24_sync_v1_assignments a
-    where a.id=p_assignment_id and a.team_id=p_team_id
-      and jsonb_typeof(a.payload #> '{assignment,questions}')='array'
-      and jsonb_array_length(a.payload #> '{assignment,questions}') between 1 and 15);
+      where o.grant_id=p_grant_id and o.team_id=p_team_id
+        and r24_repo_scoring.open_assignment_eligible(p_team_id,p_assignment_id,p_anchor_id));
 $$;
 
 create or replace function r24_repo_scoring.enqueue() returns trigger
@@ -51,7 +57,7 @@ begin
   if v_grant is null then
     select o.grant_id into v_grant from r24_repo_scoring.open_grants o
       where o.team_id = new.team_id
-        and r24_repo_scoring.open_assignment_supported(new.team_id, new.assignment_id);
+        and r24_repo_scoring.open_assignment_eligible(new.team_id,new.assignment_id,new.anchor_id);
   end if;
   if v_grant is not null then
     insert into r24_repo_scoring.jobs(job_id, grant_id) values (new.id, v_grant)
@@ -191,13 +197,13 @@ begin
   return exists(select 1 from r24_repo_scoring.allowlist g
       where g.team_id=p_team_id and g.assignment_id=p_assignment_id and g.anchor_id=p_anchor_id)
     or (exists(select 1 from r24_repo_scoring.open_grants o where o.team_id=p_team_id)
-      and r24_repo_scoring.open_assignment_supported(p_team_id, p_assignment_id));
+      and r24_repo_scoring.open_assignment_eligible(p_team_id,p_assignment_id,p_anchor_id));
 end
 $$;
 
 -- Same privilege shape as the installer: the runtime only calls its entry points.
 revoke all on table r24_repo_scoring.open_grants from public, anon, authenticated, service_role;
 revoke all on function r24_repo_scoring.grant_active(uuid,text,text,text) from public, anon, authenticated, service_role;
-revoke all on function r24_repo_scoring.open_assignment_supported(text,text) from public, anon, authenticated, service_role;
+revoke all on function r24_repo_scoring.open_assignment_eligible(text,text,text) from public, anon, authenticated, service_role;
 end
 $open$;

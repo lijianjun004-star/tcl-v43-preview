@@ -67,6 +67,18 @@ test('a team-wide grant scores every anchor of that team and can be closed again
   for (const teamId of [team, otherTeam])
     await db.query('insert into public.tcl_r24_sync_v1_assignments values ($1,$2,$3)', [assignmentOf(teamId), teamId,
       {id:assignmentOf(teamId),teamId,operatorId:'operator',recipients:[],assignment:{snapshotSha256:'hash',questions:[question]}}]);
+  const restricted = 'anchor-only-assignment';
+  await db.query('insert into public.tcl_r24_sync_v1_assignments values ($1,$2,$3)', [restricted,team,
+    {id:restricted,teamId:team,operatorId:'operator',recipients:[{id:'any-new-anchor'}],
+      assignment:{snapshotSha256:'hash',questions:[question]}}]);
+  for (const [account, teamId, role, active] of [
+    ['any-new-anchor',team,'anchor',true], ['late-anchor',team,'anchor',true],
+    ['inactive',team,'anchor',false], ['operator',team,'operator',true],
+    ['outsider',otherTeam,'anchor',true],
+  ]) {
+    await db.query('insert into public.tcl_r24_sync_v1_enrollments(id,team_id,display_name,role,active) values ($1,$2,$1,$3,$4)',
+      [account,teamId,role,active]);
+  }
   const submit = async (jobId, anchorId, teamId = team, assignmentId = assignmentOf(teamId)) => db.query(
     'insert into public.tcl_r24_sync_v1_submissions values ($1,$2,$3,$4,now(),$5)', [jobId, teamId, assignmentId, anchorId,
       {id:jobId,teamId,assignmentId,anchorId,snapshotSha256:'hash',turns:[{questionId:'q',answer:'confirmed'}]}]);
@@ -97,10 +109,19 @@ test('a team-wide grant scores every anchor of that team and can be closed again
   await service();
   assert.equal(await eligibility(team, assignment, 'any-new-anchor'), true);
   assert.equal(await eligibility(otherTeam, otherAssignment, 'any-new-anchor'), false);
+  for (const excluded of ['missing','inactive','operator','outsider']) {
+    assert.equal(await eligibility(team,assignment,excluded), false, excluded);
+  }
+  assert.equal(await eligibility(team,restricted,'any-new-anchor'), true);
+  assert.equal(await eligibility(team,restricted,'late-anchor'), false);
   assert.equal(await eligibility(team, sized(15), 'any-new-anchor'), true);
   assert.equal(await eligibility(team, sized(16), 'any-new-anchor'), false);
   assert.equal(await eligibility(team, 'no-such-assignment', 'any-new-anchor'), false);
   await owner();
+  for (const [i, excluded] of ['missing','inactive','operator','outsider'].entries()) {
+    await submit(i.toString(16).padStart(64,'a'), excluded);
+  }
+  await submit('e'.repeat(64), 'late-anchor', team, restricted);
   await submit(id(2), 'any-new-anchor');
   await submit(id(3), 'outsider', otherTeam);
   await submit('c'.repeat(64), 'any-new-anchor', team, sized(16));
@@ -125,6 +146,34 @@ test('a team-wide grant scores every anchor of that team and can be closed again
   assert.deepEqual(await read('operator', 'operator', [id(2)]), scored);
   assert.deepEqual(await read('anchor', 'someone-else', [id(2)]), []);
 
+  // Revalidate team eligibility between submission, claiming and the billable call.
+  await owner();
+  await submit('f'.repeat(64), 'late-anchor');
+  await db.query("update public.tcl_r24_sync_v1_enrollments set active=false where id='late-anchor'");
+  await service();
+  assert.equal(await claim(randomUUID()), null);
+  await owner();
+  await db.query("update public.tcl_r24_sync_v1_enrollments set active=true where id='late-anchor'");
+  const restrictedLease = randomUUID();
+  await service();
+  assert.equal((await claim(restrictedLease)).jobId, 'f'.repeat(64));
+  await owner();
+  await db.query("update public.tcl_r24_sync_v1_assignments set payload=jsonb_set(payload,'{recipients}',$2::jsonb) where id=$1",
+    [assignment,JSON.stringify([{id:'any-new-anchor'}])]);
+  await service();
+  assert.equal(await start('f'.repeat(64), restrictedLease), false);
+  assert.deepEqual(await read('anchor','any-new-anchor',[id(2)]), scored);
+
+  await owner();
+  await db.query("update public.tcl_r24_sync_v1_assignments set payload=jsonb_set(payload,'{recipients}','[]') where id=$1", [assignment]);
+  await service();
+  assert.equal(await start('f'.repeat(64), restrictedLease), true);
+  await owner();
+  await db.query("update public.tcl_r24_sync_v1_enrollments set active=false where id='late-anchor'");
+  await service();
+  assert.equal(await save('f'.repeat(64), restrictedLease), false);
+  await owner();
+  await db.query("update public.tcl_r24_sync_v1_enrollments set active=true where id='late-anchor'");
   // Closing the team stops pending work; reopening issues a new grant and cannot revive it.
   await owner();
   await submit(id(4), 'late-anchor');

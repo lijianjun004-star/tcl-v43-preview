@@ -2,7 +2,7 @@
 
 本清单把上海试点的 AI 功能从名单制改为全员开放：
 
-- **AI 评分**：团队 `r24-pilot` 内所有有效主播，提交作业后自动评分。只覆盖 1–15 题的作业，这是评分程序可处理的范围；16 题及以上的作业仍显示为未开通自动评分，由运营人工复核。
+- **AI 评分**：团队 `r24-pilot` 的有效主播，提交发给本人或全团队的作业后自动评分。只覆盖 1–15 题的作业，这是评分程序可处理的范围；16 题及以上的作业仍显示为未开通自动评分，由运营人工复核。
 - **AI 出题**：所有有效运营都能一键出题或解析题目。
 
 代码默认保持关闭。下列步骤需由具备上海 CloudBase、数据库和 GitHub 管理权限的人员按顺序执行。
@@ -84,7 +84,7 @@
 | 目的 | 操作 |
 | --- | --- |
 | 停止全员评分（保留名单） | `delete from r24_repo_scoring.open_grants where team_id = 'r24-pilot';`。未处理的任务随之失效，重新开启不会复活它们 |
-| 停止所有评分 | 私库仓库变量 `R24_SHANGHAI_HTTPS_SCORING_ENABLED=false` |
+| 暂停所有新评分调用 | 私库设置 `R24_SHANGHAI_HTTPS_SCORING_ENABLED=false` 和 `R24_REPO_SCORING_ENABLED=false`，并停止正在运行的评分工作流。上海函数设置 `TCL_R24_SYNC_AI_ENABLED=false`，这会同时关闭手动评分和 AI 出题。已经发给模型的调用可能仍会完成。队列与已有成绩保留，恢复后继续处理仍有效的授权 |
 | 停止提交后唤醒 | `R24_REPO_WAKE_ENABLED=false` |
 | 停止 AI 出题 | `TCL_R24_SYNC_AI_ENABLED=false`，或把 `TCL_R24_SYNC_AI_OPERATOR_IDS` 改回运营 ID 名单 |
 | 给出题加日上限 | `TCL_R24_SYNC_AI_DAILY_LIMIT` 填数字；超过 20 先执行第 1 节第 4 步 |
