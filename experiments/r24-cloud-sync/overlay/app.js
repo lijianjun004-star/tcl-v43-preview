@@ -1508,26 +1508,36 @@ function cloudClaimList(claims){
  </div>`).join('')||'<p class="scene-tip">暂无主播领取</p>'}`;
 }
 const repositoryReviewPolls=new WeakMap();
-const repositoryReviewDelays=[1500,3000,6000,12000];
+const repositoryReviewDelays=[1500,3000,6000,12000,30000];
 function watchRepositoryReviews(target,records,{load,update,visible,immediate=false,onError}){
- const member=syncMember(),previous=repositoryReviewPolls.get(target),ticket={};
+ const member=syncMember(),previous=repositoryReviewPolls.get(target),ticket={refresh};
  clearTimeout(previous?.timer);
+ if(previous)document.removeEventListener('visibilitychange',previous.refresh);
  repositoryReviewPolls.set(target,ticket);
- let attempt=0;
+ let delayIndex=0;
  const current=()=>target.isConnected&&syncMember()===member&&repositoryReviewPolls.get(target)===ticket&&visible();
+ const pending=()=>records.some(record=>isRepositoryReviewPending(record.repositoryReview));
  const schedule=()=>{
-  if(!current()||attempt>=repositoryReviewDelays.length||!records.some(record=>isRepositoryReviewPending(record.repositoryReview)))return;
-  ticket.timer=setTimeout(refresh,repositoryReviewDelays[attempt++]);
+  if(!current()||!pending())return;
+  ticket.timer=setTimeout(refresh,repositoryReviewDelays[delayIndex]);
+  delayIndex=Math.min(delayIndex+1,repositoryReviewDelays.length-1);
  };
  async function refresh(){
   if(!current())return;
+  if(document.hidden){
+   document.addEventListener('visibilitychange',refresh,{once:true});
+   return;
+  }
   try{
    const next=await load();
    if(!current())return;
    records=next;
    update(records);
-  }catch{
-   if(current())onError?.();
+  }catch(error){
+   if(!current())return;
+   const retry=pending()&&![401,403,404].includes(error?.status);
+   onError?.(retry);
+   if(!retry)return;
   }
   schedule();
  }
@@ -3670,7 +3680,7 @@ function refreshReviewEvaluation({immediate=true}={}){
    setNodeText(message,'');
    paintReviewEvaluation();
   },
-  onError:()=>setNodeText(message,'评选状态读取未完成，请稍后刷新。'),
+  onError:retry=>setNodeText(message,retry?'暂时无法读取评选状态，稍后会自动重试。':'评选状态读取未完成，请稍后刷新。'),
  });
 }
 

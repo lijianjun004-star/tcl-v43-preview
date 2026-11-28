@@ -31,7 +31,7 @@ async function browserFixture(t, options) {
   });
   t.after(() => browser.close());
 
-  async function newPage(path = '/sync/', width = 390) {
+  async function newPage(path = '/sync/', width = 390, {useClock = false} = {}) {
     const context = await browser.newContext({
       viewport: { width, height: width === 375 ? 812 : 844 }, acceptDownloads: true,
     });
@@ -40,6 +40,7 @@ async function browserFixture(t, options) {
       return url.origin === server.origin ? route.continue() : route.abort();
     });
     const page = await context.newPage();
+    if (useClock) await page.clock.install();
     page.setDefaultTimeout(12_000);
     const errors = [];
     const consoleErrors = [];
@@ -1146,7 +1147,9 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
         ? ids.map(id => ({id,repository_review:repositoryReview})) : [],
       legacyEvaluation: () => legacyEvaluation,
     });
-    const operatorView = await newPage('/sync/', width), anchorView = await newPage('/sync/', width);
+    const delayedScore = width === 375;
+    const operatorView = await newPage('/sync/', width);
+    const anchorView = await newPage('/sync/', width, {useClock: delayedScore});
     const ops = operatorView.page, trainee = anchorView.page;
     await autoEnter(ops, 'operator', '演示运营');
     await autoEnter(trainee, 'anchor', '演示主播');
@@ -1230,15 +1233,37 @@ for (const [width, source] of [[375, 'openai_gateway'], [390, 'openai_gateway'],
     await operatorRecord.locator('summary').click();
     await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'等待后台 AI 评选'}).waitFor();
     repositoryReview = {status:'processing'};
-    await reviewPanel.locator('#reviewAiRefresh').click();
+    const mySubmissionsPath = '/assignments/' + assignment.id + '/my-submissions';
+    const advanceToRead = async () => {
+      const [response] = await Promise.all([
+        trainee.waitForResponse(r => r.request().method() === 'GET' && new URL(r.url()).pathname.endsWith(mySubmissionsPath)),
+        trainee.clock.fastForward(60_000),
+      ]);
+      assert.equal(response.status(), 200);
+      await response.finished();
+      await reviewPanel.locator('#reviewAiRefresh:enabled').waitFor();
+    };
+    if (delayedScore) {
+      // The worker may still be running after the original four polling intervals.
+      for (let read = 0; read < 5; read++) await advanceToRead();
+    } else {
+      await reviewPanel.locator('#reviewAiRefresh').click();
+    }
     await reviewPanel.getByText('正在后台 AI 评选', {exact:true}).waitFor();
     await operatorRecord.locator('[data-ai-eval-status]').filter({hasText:'正在后台 AI 评选'}).waitFor();
     repositoryReview = {status:'pending_review',evaluation};
+    if (delayedScore) await advanceToRead();
 
     const displayed = reviewPanel.locator('[data-ai-eval-result]');
     await verifyEvaluation(displayed);
     await displayed.locator('[data-ai-model]').filter({hasText: 'OpenAI · gpt-6.1-terra'}).waitFor();
     await reviewPanel.getByText('待运营复核', {exact:true}).waitFor();
+    if (delayedScore) {
+      const anchorReads = () => server.requests.filter(r => r.method === 'GET' && r.path.endsWith(mySubmissionsPath)).length;
+      const finishedReads = anchorReads();
+      await trainee.clock.fastForward(15 * 60_000);
+      assert.equal(anchorReads(), finishedReads, 'Readback stops when the score has arrived');
+    }
     await scrollBelowHeader(displayed);
     await captureMobile(trainee, width, 'anchor-evaluation');
     const received = operatorRecord.locator('[data-ai-eval-result]');
